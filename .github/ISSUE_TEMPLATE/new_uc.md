@@ -11,12 +11,11 @@ assignees: ''
 ### 📋 Descripción de la Tarea / Caso de Uso
 <!-- Describe brevemente qué debe hacer esta pantalla o función -->
 
-### 📐 Fases y Ponderación (% Avance)
-Marca las casillas conforme avances y actualiza el campo "% Avance" del proyecto:
+### 🚀 Fases del Caso de Uso
 
-- [ ] **Análisis (10%)**: Requerimientos entendidos.
-- [ ] **Diseño (15%)**: Interfaz o diagrama definido.
-- [ ] **Desarrollo (45%)**: Código escrito y funcional.
-- [ ] **Pruebas (15%)**: Probado en simulador / dispositivo.
-- [ ] **Correcciones (10%)**: Revisiones atendidas.
-- [ ] **Despliegue (5%)**: Subido al repositorio / ambiente de pruebas.
+- [ ] **Fase 1: Análisis y Requerimientos**
+- [ ] **Fase 2: Diseño de Interfaz / UI**
+- [ ] **Fase 3: Desarrollo de Código**
+- [ ] **Fase 4: Pruebas y Validación**
+- [ ] **Fase 5: Correcciones de Review**
+- [ ] **Fase 6: Despliegue en Ambiente de Pruebas**
