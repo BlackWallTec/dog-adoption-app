@@ -9,8 +9,8 @@ assignees: ''
 ---
 
 ---
-name: "📋 Caso de Uso / Función"
-about: Plantilla estándar para el desarrollo de la App Móvil
+name: "📋 Caso de Uso / Función (Con Sub-issues)"
+about: Plantilla estándar con desglose de fases como Sub-issues
 title: "[CU00] Nombre de la función"
 labels: ""
 assignees: ""
@@ -21,15 +21,22 @@ assignees: ""
 
 ---
 
-### 🚀 Fases del Desarrollo
-*Marca cada casilla conforme completes la fase. El progreso se actualizará solo.*
+### 💡 INSTRUCCIONES PARA EL PROGRAMADOR
+> ⚠️ **IMPORTANTE:** Transforma cada una de las 6 fases de abajo en un **Sub-issue**:
+> 1. Pasa el cursor sobre la línea de la fase.
+> 2. Haz clic en el ícono de la derecha **"Convert to issue"** (o el botón con el signo `+`).
+> 3. Asigna la sub-tarea a quien corresponda.
 
-- [ ] **1. Análisis:** Requerimientos entendidos y casos de borde revisados.
-- [ ] **2. Diseño UI/UX:** Pantalla o diagramas de flujo definidos.
-- [ ] **3. Desarrollo:** Código escrito y funcionando en local.
-- [ ] **4. Pruebas:** Funcionalidad validada en simulador / dispositivo real.
-- [ ] **5. Corrección de Bugs:** Ajustes aplicados tras la revisión de código.
-- [ ] **6. Despliegue:** Código publicado en la rama principal / ambiente de pruebas.
+---
+
+### 🚀 Fases del Desarrollo
+
+- [ ] **Fase 1: Análisis y Requerimientos** - Definir lógica y casos de borde.
+- [ ] **Fase 2: Diseño UI/UX** - Pantalla / Componentes definidos.
+- [ ] **Fase 3: Desarrollo de Código** - Programación de la funcionalidad.
+- [ ] **Fase 4: Pruebas y Validación** - Probar en simulador o dispositivo real.
+- [ ] **Fase 5: Corrección de Bugs** - Ajustes tras revisión de código (PR).
+- [ ] **Fase 6: Despliegue** - Fusionar con la rama principal / ambiente de pruebas.
 
 ---
 
