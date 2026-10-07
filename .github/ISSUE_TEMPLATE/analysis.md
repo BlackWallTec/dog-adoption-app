@@ -1,11 +1,11 @@
 ---
-name: Historia Usuario
-about: This Issue is for new HUs of the project. It covers from Analysis to Development
-  and Implementation.
-title: HU00
+name: Analysis
+about: Para la fase de analysis, aqui van todo el escrito y se ponen links para los
+  artefactos necesarios
+title: "[ANÁLISIS] [HU00]"
 labels: ''
 assignees: ''
-type: User Story
+type: Analysis
 
 ---
 
@@ -175,6 +175,18 @@ Estas conclusiones deben proporcionar suficiente información para iniciar Dise�
 -
 
 ---
+## Consideraciones de seguridad y privacidad
+
+<!--
+Completar únicamente si la HU maneja autenticación, autorización,
+datos personales, documentos, información sensible o acciones restringidas.
+Escribe "No aplica" cuando corresponda.
+-->
+
+- **Datos sensibles involucrados:**
+- **Quién puede consultar/modificar la información:**
+- **Riesgos identificados:**
+- **Restricciones relevantes:**
 
 ## Checklist de finalización
 
