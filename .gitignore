@@ -25,3 +25,29 @@ replay_pid*
 
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
+
+
+
+# --- SEGURIDAD ---
+# Bloquea tus credenciales secretas de Supabase. 
+# Si subes esto a GitHub, cualquiera podría borrar la base de datos.
+.env
+.env.local
+.env.*.local
+
+# --- OPTIMIZACIÓN ---
+# Descarta la carpeta de librerías instaladas. 
+# Pesa cientos de megabytes y se regenera automáticamente con 'npm install'.
+node_modules/
+
+# --- LOGS Y DEPURACIÓN ---
+# Archivos de texto que se crean automáticamente si tu script arroja un error.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- SISTEMA OPERATIVO ---
+# Archivos basura que crean Windows o macOS en las carpetas.
+.DS_Store
+Thumbs.db
