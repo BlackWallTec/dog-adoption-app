@@ -22,182 +22,82 @@ assignees: ""
 - **HU:** #
 - **Responsable del análisis:** @
 
-<!--
-Enlaza aquí la Historia de Usuario padre.
-El análisis debe partir de la HU y sus criterios de aceptación.
--->
-
 ---
 
-## Objetivo del análisis
+## Objetivo
 
-<!--
-Explica brevemente qué se necesita comprender o definir antes de diseñar la solución.
-No describas todavía cómo se implementará técnicamente.
--->
+<!-- Una o dos líneas: qué hay que entender o definir antes de diseñar. -->
 
 -
 
 ---
 
-## Reglas de negocio
+## Reglas de negocio y condiciones
 
-<!--
-Condiciones, restricciones o reglas que debe respetar la funcionalidad.
+<!-- Solo las reglas que aplican a esta HU. -->
 
-Ejemplos:
-- Solo se permiten solicitudes de usuarios autenticados.
-- Una solicitud aprobada ya no puede modificarse.
-- El usuario debe cargar todos los documentos obligatorios antes de continuar.
--->
-
--
+- **Reglas:**
+- **Precondiciones:**
+- **Postcondiciones:**
 
 ---
 
-## Precondiciones
-
-<!--
-¿Qué debe ser verdadero antes de que pueda comenzar este flujo?
--->
-
--
-
----
-
-## Postcondiciones
-
-<!--
-¿Qué debe ser verdadero después de completar correctamente el flujo?
--->
-
--
-
----
-
-## Flujo principal
-
-<!--
-Describe el comportamiento esperado desde el inicio hasta completar exitosamente la HU.
-Mantén el flujo independiente de detalles técnicos de implementación.
--->
+## Flujo principal y casos alternos
 
 1.
 2.
 3.
 
----
+**Alternos y casos de borde** (condición → comportamiento esperado):
 
-## Flujos alternos y casos de borde
-
-<!--
-Considera errores, información inválida, acciones canceladas,
-falta de datos, problemas de conexión, estados previos, etc.
--->
-
-### Flujo alterno 1
-- **Condición:**
-- **Comportamiento esperado:**
-
-### Flujo alterno 2
-- **Condición:**
-- **Comportamiento esperado:**
+-
+-
 
 ---
 
 ## Datos involucrados
 
-<!--
-No es necesario definir todavía clases, tablas o modelos técnicos.
-Identifica únicamente qué información necesita, consulta o modifica la HU.
--->
-
-### Entradas
--
-
-### Información consultada
--
-
-### Información generada o modificada
--
+- **Entradas:**
+- **Consultados:**
+- **Generados o modificados:**
 
 ---
 
-## Dependencias y restricciones
+## Dependencias y preguntas abiertas
 
-<!--
-Otras HU, módulos, servicios externos, decisiones pendientes,
-permisos, autenticación, restricciones del socio, etc.
--->
-
-- **Dependencias:**
-- **Restricciones:**
+- **Dependencias** (HU, módulos, servicios):
+- **Preguntas abiertas** (con responsable, marcar las que BLOQUEAN):
 
 ---
 
-## Spike / Investigación
+## Spike
 
-<!--
-Un Spike solo debe realizarse cuando existe una incertidumbre que no puede
-resolverse razonablemente con el conocimiento actual del equipo.
--->
-
-- [ ] No se requiere Spike
-- [ ] Se requiere Spike
-
-### Si se requiere
-
-- **Pregunta a resolver:**
-- **Motivo de la investigación:**
-- **Resultado esperado:**
-- **Conclusión:**
-- **Issue / documentación relacionada:**
+- [ ] No se requiere
+- [ ] Se requiere → **Pregunta:** / **Conclusión:**
 
 ---
 
-## Diagrama de actividades
+## Seguridad y privacidad
 
-<!--
-Representa el flujo principal, decisiones relevantes y caminos alternos.
--->
+<!-- "No aplica" si la HU no maneja datos personales, documentos, autenticación o acciones restringidas. -->
 
-- **Enlace al diagrama:**
+- **Datos sensibles:**
+- **Quién puede ver o modificar:**
+- **Riesgos principales:**
+
+---
+
+## Decisiones y diagrama
+
+- **Decisiones:**
+- **Diagrama** (actividades o estados, solo si hay ramificación real): enlace o "No aplica"
 
 ---
 
-## Decisiones y conclusiones del análisis
+## Checklist
 
-<!--
-Resume las decisiones importantes obtenidas durante esta fase.
-Estas conclusiones deben proporcionar suficiente información para iniciar Diseño.
--->
-
--
-
----
-## Consideraciones de seguridad y privacidad
-
-<!--
-Completar únicamente si la HU maneja autenticación, autorización,
-datos personales, documentos, información sensible o acciones restringidas.
-Escribe "No aplica" cuando corresponda.
--->
-
-- **Datos sensibles involucrados:**
-- **Quién puede consultar/modificar la información:**
-- **Riesgos identificados:**
-- **Restricciones relevantes:**
-
-## Checklist de finalización
-
-- [ ] La HU y sus criterios de aceptación fueron revisados.
-- [ ] Las reglas de negocio están identificadas.
-- [ ] Las precondiciones y postcondiciones están definidas.
-- [ ] El flujo principal está documentado.
-- [ ] Los principales flujos alternos y casos de borde están considerados.
-- [ ] Los datos involucrados están identificados.
-- [ ] Las dependencias y restricciones están identificadas.
-- [ ] Se determinó si es necesario realizar un Spike.
-- [ ] El Spike fue concluido, en caso de ser necesario.
-- [ ] El diagrama de actividades está terminado.
-- [ ] No existen preguntas abiertas que bloqueen la fase de Diseño.
+- [ ] Reglas, flujo principal y casos alternos definidos.
+- [ ] Datos y dependencias identificados.
+- [ ] Spike resuelto o descartado.
+- [ ] Seguridad revisada (o "No aplica").
+- [ ] No hay preguntas abiertas que bloqueen Diseño.
