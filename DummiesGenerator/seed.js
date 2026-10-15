@@ -1,25 +1,22 @@
 // ============================================================================
-// REFUGIO DE MASCOTAS - SCRIPT DE POBLADO DE DATOS (SEEDING)
+// QARIÑO ANIMAL - SCRIPT DE POBLADO DE DATOS (SEEDING)
 // ============================================================================
-// Este script automatiza la inserción de dummies con integridad referencial total.
+// Actualizado contra ScriptBD.sql (v1.1 - 15/Oct/2026).
+// Genera dummies con integridad referencial total, capa por capa.
 // Ejecución en terminal: node seed.js
-// Este script fue generado completamente por IA (Gemini) y adaptado a las necesidades del proyecto.
 // ============================================================================
 
 import { createClient } from '@supabase/supabase-js';
 import { fakerES_MX as faker } from '@faker-js/faker';
-import 'dotenv/config'; 
-
-// ==========================================================================
-// Sección de Borrado Inicial
-// =========================================================================
+import 'dotenv/config';
 
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { randomUUID } from 'node:crypto';
 
-
-// Pregunta si se deben limpiar los datos existentes en Supabase.
+// ============================================================================
+// Sección de Borrado Inicial (sin cambios respecto a tu versión)
+// ============================================================================
 async function preguntarLimpieza() {
   const terminal = readline.createInterface({ input, output });
 
@@ -44,13 +41,13 @@ async function preguntarLimpieza() {
 
     console.log('🧹 Limpiando tablas de prueba...');
 
-    const { error } = await supabase.rpc('limpiar_datos_prueba');
+    const { data, error } = await supabase.rpc('limpiar_datos_prueba');
 
     if (error) {
       throw new Error(`Error durante la limpieza: ${error.message}`);
     }
 
-    console.log('✅ Limpieza completada correctamente.');
+    console.log(`✅: ${data?.message || 'Limpieza completada con éxito.'}`);
   } finally {
     terminal.close();
   }
@@ -60,683 +57,748 @@ async function preguntarLimpieza() {
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 /**
- * UTILERÍA: Generador de Identificadores Personalizados (IDs con Prefijos)
- * Genera una cadena única compatible con VARCHAR(36) usando un prefijo elegido.
- * Ejemplo: generarIdConPrefijo('usr') -> 'usr_a1b2c3d4e5f6g7h8'
- * 
- * @param {string} prefijo - El prefijo corto de la tabla (ej: 'usr', 'dog', 'sol')
- * @returns {string} ID formateado de un máximo de 36 caracteres.
+ * UTILERÍA: Generador de IDs.
+ * En el modelo actual todas las PK son UUID (DEFAULT gen_random_uuid()), así que
+ * generamos el UUID en el cliente y lo mandamos explícito en el insert. Esto nos
+ * permite usar el mismo ID para amarrar las FK de capas siguientes sin tener que
+ * leer de vuelta lo que Postgres generó. El "prefijo" ya no se guarda en la BD,
+ * es solo para que el código/los logs sean legibles (ver tabla de prefijos al final).
+ *
+ * @param {string} prefijo - Prefijo corto solo para contexto en logs (ej: 'usr', 'dog').
+ * @returns {string} UUID v4 válido.
  */
-function generarIdConPrefijo(prefijo) { return crypto.randomUUID(); }
-
-// ============================================================================
-// FASE 1: FUNCIONES PARA POBLAR CATÁLOGOS MAESTROS (TABLAS INDEPENDIENTES)
-// ============================================================================
-
-/**
- * Puebla la tabla 'Rol'
- * Nota: Almacenamos el Nombre exacto ya que actúa como la Primary Key (PK).
- */
-async function poblarCatálogoRoles() {
-  console.log("🔹 Insertando catálogo de Roles...");
-  
-  const roles = [
-    { nombre: 'Administrador', descripcion: 'Control total del refugio y aprobaciones', activo: true },
-    { nombre: 'Cliente', descripcion: 'Usuario interesado en adoptar o donar', activo: true }
-  ];
-
-  const { error } = await supabase.from('rol').insert(roles);
-  if (error) console.error("❌ Error en Catálogo Roles:", error.message);
-  
-  // Devolvemos los nombres que usamos para tenerlos en memoria RAM mas adelante
-  return ['Administrador', 'Cliente'];
+function generarId(prefijo) {
+  return randomUUID();
 }
 
 /**
- * Puebla la tabla 'Privilegio'
+ * UTILERÍA: Insert con manejo de errores centralizado.
+ * Usa .select() para devolver las filas tal como quedaron en la BD, así las
+ * capas siguientes pueden encadenar FKs sin adivinar qué se insertó.
+ *
+ * @param {string} tabla - Nombre real de la tabla en Postgres (todo minúsculas).
+ * @param {object|object[]} filas - Fila o arreglo de filas a insertar.
+ * @param {string} [etiqueta] - Nombre amigable para el log de error.
+ * @returns {Promise<object[]>} Filas insertadas (arreglo vacío si falló).
  */
-async function poblarCatálogoPrivilegios() {
-  console.log("🔹 Insertando catálogo de Privilegios...");
+async function insertar(tabla, filas, etiqueta) {
+  const { data, error } = await supabase.from(tabla).insert(filas).select();
+  if (error) {
+    console.error(`❌ Error en ${etiqueta || tabla}:`, error.message);
+    return [];
+  }
+  return data ?? [];
+}
 
+/** Devuelve una fecha reciente/pasada ya formateada para columnas TIMESTAMP. */
+function fechaISO(date) {
+  return date.toISOString();
+}
+
+// ============================================================================
+// FASE 1: CATÁLOGOS MAESTROS (TABLAS INDEPENDIENTES)
+// ============================================================================
+
+/** Puebla 'rol'. PK = Nombre. */
+async function poblarRoles() {
+  console.log('🔹 Insertando catálogo de Roles...');
+  const roles = [
+    { nombre: 'Administrador', descripcion: 'Control total del refugio y aprobaciones', activo: true },
+    { nombre: 'Cliente', descripcion: 'Usuario interesado en adoptar o donar', activo: true },
+  ];
+  await insertar('rol', roles, 'Catálogo Roles');
+  return roles.map((r) => r.nombre);
+}
+
+/** Puebla 'privilegio'. PK = Privilegio. */
+async function poblarPrivilegios() {
+  console.log('🔹 Insertando catálogo de Privilegios...');
   const privilegios = [
     { privilegio: 'Puede subir fotos' },
     { privilegio: 'Puede aprobar solicitudes' },
     { privilegio: 'Puede registrar donativos' },
-    { privilegio: 'Inscripción a programas' }
+    { privilegio: 'Inscripción a programas' },
+    { privilegio: 'Puede gestionar usuarios' },
   ];
-
-  const { error } = await supabase.from('privilegio').insert(privilegios);
-  if (error) console.error("❌ Error en Catálogo Privilegios:", error.message);
-
-  return privilegios.map(p => p.privilegio);
+  await insertar('privilegio', privilegios, 'Catálogo Privilegios');
+  return privilegios.map((p) => p.privilegio);
 }
 
 /**
- * Puebla la tabla 'Raza'
- * Genera IDs únicos con prefijo 'raz_' y guarda los objetos completos para usarlos en el módulo canino.
+ * Puebla el pivote 'rol_tiene_privilegio' (TABLA NUEVA).
+ * Regla de negocio: el Administrador tiene todos los privilegios;
+ * el Cliente solo los que le aplican a su rol de autoservicio.
  */
-async function poblarCatálogoRazas() {
-  console.log("🔹 Insertando catálogo de Razas...");
+async function poblarRolTienePrivilegio(nombresRoles, nombresPrivilegios) {
+  console.log('🔹 Insertando catálogo de Rol_tiene_Privilegio...');
 
+  const privilegiosCliente = nombresPrivilegios.filter((p) =>
+    ['Puede registrar donativos', 'Inscripción a programas'].includes(p)
+  );
+
+  const filas = [
+    ...nombresPrivilegios.map((p) => ({ privilegio: p, nombre_rol: 'Administrador' })),
+    ...privilegiosCliente.map((p) => ({ privilegio: p, nombre_rol: 'Cliente' })),
+  ];
+
+  await insertar('rol_tiene_privilegio', filas, 'Rol_tiene_Privilegio');
+}
+
+/** Puebla 'raza'. */
+async function poblarRazas() {
+  console.log('🔹 Insertando catálogo de Razas...');
   const razasBase = [
     { nombre: 'Mestizo', descripcion: 'Cruza única e invaluable' },
     { nombre: 'Pastor Alemán', descripcion: 'Perro guardián, inteligente y leal' },
     { nombre: 'Golden Retriever', descripcion: 'Amigable, juguetón y excelente con niños' },
-    { nombre: 'Chihuahua', descripcion: 'Pequeño de tamano pero con gran personalidad' }
+    { nombre: 'Chihuahua', descripcion: 'Pequeño de tamaño pero con gran personalidad' },
+    { nombre: 'Labrador', descripcion: 'Activo, sociable y fácil de entrenar' },
+    { nombre: 'Schnauzer', descripcion: 'Enérgico, fiel y poco alérgeno' },
   ];
-
-  // Transformamos el array base para inyectarle nuestros IDs con prefijos personalizados
-  const registros = razasBase.map(raza => ({
-    id_raza: generarIdConPrefijo('raz'),
+  const registros = razasBase.map((raza) => ({
+    id_raza: generarId('raz'),
     nombre: raza.nombre,
-    descripcion: raza.descripcion // Sincronizado con tu Diccionario de Datos que usa acento
+    descripcion: raza.descripcion,
   }));
-
-  const { error } = await supabase.from('raza').insert(registros);
-  if (error) console.error("❌ Error en Catálogo Razas:", error.message);
-
-  // Retornamos el arreglo completo. Guardar el ID de estas filas en memoria evitará romper llaves foráneas.
-  return registros;
+  return insertar('raza', registros, 'Catálogo Razas');
 }
 
-/**
- * Puebla la tabla 'tamano'
- */
-async function poblarCatálogotamanos() {
-  console.log("🔹 Insertando catálogo de tamanos...");
-
+/** Puebla 'tamano'. */
+async function poblarTamanos() {
+  console.log('🔹 Insertando catálogo de Tamaños...');
   const tamanosBase = [
     { nombre: 'Chico', descripcion: 'Menor a 45cm de altura' },
     { nombre: 'Mediano', descripcion: 'De 45 a 75cm de altura' },
-    { nombre: 'Grande', descripcion: 'Mayor a 75cm de altura' }
+    { nombre: 'Grande', descripcion: 'Mayor a 75cm de altura' },
   ];
-
-  const registros = tamanosBase.map(tam => ({
-    id_tamano: generarIdConPrefijo('tam'),
+  const registros = tamanosBase.map((tam) => ({
+    id_tamano: generarId('tam'),
     nombre: tam.nombre,
-    descripcion: tam.descripcion
+    descripcion: tam.descripcion,
   }));
-
-  const { error } = await supabase.from('tamano').insert(registros);
-  if (error) console.error("❌ Error en Catálogo tamanos:", error.message);
-
-  return registros;
+  return insertar('tamano', registros, 'Catálogo Tamaños');
 }
 
-/**
- * Puebla la tabla 'Caracter'
- */
-async function poblarCatálogoCaracteres() {
-  console.log("🔹 Insertando catálogo de Caracteres...");
-
+/** Puebla 'caracter'. */
+async function poblarCaracteres() {
+  console.log('🔹 Insertando catálogo de Caracteres...');
   const caracteresBase = [
     { nombre: 'Juguetón', descripcion: 'Mucha energía, ideal para familias activas' },
     { nombre: 'Tranquilo', descripcion: 'Poco ruidoso, ideal para departamentos' },
     { nombre: 'Amigable con niños', descripcion: 'Súper paciente y dócil con infantes' },
-    { nombre: 'Protector', descripcion: 'Alerta a su entorno y territorial' }
+    { nombre: 'Protector', descripcion: 'Alerta a su entorno y territorial' },
+    { nombre: 'Independiente', descripcion: 'No requiere atención constante' },
   ];
-
-  const registros = caracteresBase.map(car => ({
-    id_caracter: generarIdConPrefijo('car'),
+  const registros = caracteresBase.map((car) => ({
+    id_caracter: generarId('car'),
     nombre: car.nombre,
-    descripcion: car.descripcion
+    descripcion: car.descripcion,
   }));
-
-  const { error } = await supabase.from('caracter').insert(registros);
-  if (error) console.error("❌ Error en Catálogo Caracteres:", error.message);
-
-  return registros;
+  return insertar('caracter', registros, 'Catálogo Caracteres');
 }
 
-/**
- * Puebla la tabla 'Cuidado_Especial'
- */
-async function poblarCatálogoCuidados() {
-  console.log("🔹 Insertando catálogo de Cuidados Especiales...");
-
+/** Puebla 'cuidado_especial'. */
+async function poblarCuidados() {
+  console.log('🔹 Insertando catálogo de Cuidados Especiales...');
   const cuidadosBase = [
     'Dieta estricta libre de pollo',
     'Medicamento diario para articulaciones',
     'Limpieza constante de orejas por propensión a otitis',
-    'Ninguno (Salud óptima)'
+    'Ninguno (Salud óptima)',
+    'Requiere control de peso',
   ];
-
-  const registros = cuidadosBase.map(desc => ({
-    id_cuidado: generarIdConPrefijo('cui'),
-    descripcion: desc
+  const registros = cuidadosBase.map((desc) => ({
+    id_cuidado: generarId('cui'),
+    descripcion: desc,
   }));
-
-  const { error } = await supabase.from('cuidado_especial').insert(registros);
-  if (error) console.error("❌ Error en Catálogo Cuidados:", error.message);
-
-  return registros;
+  return insertar('cuidado_especial', registros, 'Catálogo Cuidados');
 }
 
-/**
- * Puebla la tabla 'Estado_solicitud'
- */
-async function poblarCatálogoEstadosSolicitud() {
-  console.log("🔹 Insertando catálogo de Estados de Solicitud...");
-
+/** Puebla 'estado_solicitud'. */
+async function poblarEstadosSolicitud() {
+  console.log('🔹 Insertando catálogo de Estados de Solicitud...');
   const estados = ['Pendiente de Revisión', 'En Periodo de Prueba', 'Aprobada Definitiva', 'Rechazada'];
-
-  const registros = estados.map(desc => ({
-    id_estado: generarIdConPrefijo('est'),
-    descripcion: desc
+  const registros = estados.map((desc) => ({
+    id_estado: generarId('est'),
+    descripcion: desc,
   }));
-
-  const { error } = await supabase.from('estado_solicitud').insert(registros);
-  if (error) console.error("❌ Error en Catálogo Estados:", error.message);
-
-  return registros;
+  return insertar('estado_solicitud', registros, 'Catálogo Estados');
 }
 
-/**
- * Puebla la tabla 'Tipo de Programa'
- */
-async function poblarCatálogoTiposPrograma() {
-  console.log("🔹 Insertando catálogo de Tipos de Programa...");
-
+/** Puebla 'tipo_programa'. PK = Nombre. */
+async function poblarTiposPrograma() {
+  console.log('🔹 Insertando catálogo de Tipos de Programa...');
   const tipos = [
     { nombre: 'Recaudación Monetaria', descripcion: 'Eventos masivos para recolectar fondos de ayuda' },
     { nombre: 'Cuidado de Perros', descripcion: 'El voluntariado ayuda directamente con el baño y paseo' },
-    { nombre: 'Pasarela de Adopción', descripcion: 'Eventos públicos para mostrar perritos disponibles' }
+    { nombre: 'Pasarela de Adopción', descripcion: 'Eventos públicos para mostrar perritos disponibles' },
+    { nombre: 'Educación y Difusión', descripcion: 'Pláticas sobre tenencia responsable' },
   ];
+  await insertar('tipo_programa', tipos, 'Catálogo Tipos Programa');
+  return tipos.map((t) => t.nombre);
+}
 
-  // De acuerdo a tu Diccionario de Datos, la PK es la columna 'Nombre' (VARCHAR 36)
-  const registros = tipos.map(t => ({
-    nombre: t.nombre,
-    descripcion: t.descripcion
+/** Puebla 'catalogo_de_cps'. */
+async function poblarCPs() {
+  console.log('🔹 Insertando catálogo de Códigos Postales...');
+  const base = [
+    { codigo_postal: '76000', colonia: 'Centro Histórico', municipio: 'Querétaro', estado: 'Querétaro' },
+    { codigo_postal: '76130', colonia: 'Villas del Sol', municipio: 'Querétaro', estado: 'Querétaro' },
+    { codigo_postal: '01000', colonia: 'San Ángel', municipio: 'Álvaro Obregón', estado: 'CDMX' },
+    { codigo_postal: '06700', colonia: 'Roma Norte', municipio: 'Cuauhtémoc', estado: 'CDMX' },
+    { codigo_postal: '44100', colonia: 'Centro', municipio: 'Guadalajara', estado: 'Jalisco' },
+    { codigo_postal: '64000', colonia: 'Centro', municipio: 'Monterrey', estado: 'Nuevo León' },
+    { codigo_postal: '72000', colonia: 'Centro', municipio: 'Puebla', estado: 'Puebla' },
+    { codigo_postal: '20000', colonia: 'Centro', municipio: 'Aguascalientes', estado: 'Aguascalientes' },
+    { codigo_postal: '37000', colonia: 'Centro', municipio: 'León', estado: 'Guanajuato' },
+    { codigo_postal: '91000', colonia: 'Centro', municipio: 'Xalapa', estado: 'Veracruz' },
+  ];
+  const registros = base.map((cp) => ({
+    id_codigo_postal: generarId('cp'),
+    ...cp,
+    pais: 'México',
   }));
-
-  const { error } = await supabase.from('tipo_programa').insert(registros);
-  if (error) console.error("❌ Error en Catálogo Tipos Programa:", error.message);
-
-  return registros.map(r => r.nombre);
+  return insertar('catalogo_de_cps', registros, 'Catálogo CPs');
 }
 
-// ============================================================================
-// Fin FASE 1
-// ============================================================================
-
-
-// ============================================================================
-// FASE 2 Y 3: GENERACIÓN DE USUARIOS, ENTIDADES DERIVADAS Y RELACIONES
-// ============================================================================
-
-/**
- * UTILERÍA DE APOYO: Genera un Catálogo rápido de Códigos Postales en memoria.
- * Requerido para poder asignarle una dirección física válida a los usuarios.
- */
-async function poblarCatálogoCPs() {
-  console.log("🔹 Insertando catálogo de Códigos Postales...");
-  const registros = [
-    { id_codigo_postal: generarIdConPrefijo('cp'), codigo_postal: '76000', colonia: 'Centro Histórico', municipio: 'Querétaro', estado: 'Querétaro', pais: 'México' },
-    { id_codigo_postal: generarIdConPrefijo('cp'), codigo_postal: '01000', colonia: 'San Ángel', municipio: 'Álvaro Obregón', estado: 'CDMX', pais: 'México' }
+/** Puebla 'mensaje'. */
+async function poblarMensajes() {
+  console.log('🔹 Insertando catálogo de Mensajes del sistema...');
+  const base = [
+    { titulo: 'Cita de Adopción', texto: 'Le recordamos su cita mañana a las 10:00 AM.', tipo: 'Recordatorio' },
+    { titulo: 'Donativo Recibido', texto: 'Muchas gracias por tu apoyo monetario.', tipo: 'Agradecimiento' },
+    { titulo: 'Documentos Aprobados', texto: 'Tu documentación fue validada con éxito.', tipo: 'Notificación' },
+    { titulo: 'Solicitud en Revisión', texto: 'Tu solicitud de adopción está siendo revisada.', tipo: 'Notificación' },
+    { titulo: 'Periodo de Prueba Iniciado', texto: 'Ya puedes llevarte a tu nuevo compañero a casa.', tipo: 'Notificación' },
+    { titulo: 'Nuevo Programa Disponible', texto: 'Hay un nuevo programa de voluntariado abierto.', tipo: 'Difusión' },
+    { titulo: 'Recordatorio de Seguimiento', texto: 'Un admin te visitará esta semana.', tipo: 'Recordatorio' },
+    { titulo: 'Bienvenida', texto: 'Gracias por registrarte en Qariño Animal.', tipo: 'Notificación' },
   ];
-  await supabase.from('catálogo_de_cps').insert(registros);
-  return registros; // Retornamos para tener los IDs de los CPs disponibles
+  const registros = base.map((m) => ({ id_mensaje: generarId('msg'), ...m }));
+  return insertar('mensaje', registros, 'Catálogo Mensajes');
 }
 
-/**
- * UTILERÍA DE APOYO: Genera Mensajes base en el sistema.
- * Requerido para demostrar la relación Muchos a Muchos (M:N) de notificaciones.
- */
-async function poblarCatálogoMensajes() {
-  console.log("🔹 Insertando catálogo de Mensajes del sistema...");
-  const registros = [
-    { id_mensaje: generarIdConPrefijo('msg'), titulo: 'Cita de Adopción', texto: 'Le recordamos su cita mañana a las 10:00 AM.', tipo: 'Notificación' },
-    { id_mensaje: generarIdConPrefijo('msg'), titulo: 'Donativo Recibido', texto: 'Muchas gracias por tu apoyo monetario.', tipo: 'Agradecimiento' }
-  ];
-  await supabase.from('mensaje').insert(registros);
-  return registros;
-}
-
+// ============================================================================
+// FASE 2: USUARIOS, SUBTIPOS, DATOS CONFIDENCIALES Y DIRECCIONES
+// ============================================================================
 
 /**
- * FUNCIÓN CORE: Genera Usuarios (Admins y Clientes) y teje sus relaciones.
- * Aquí explicamos a fondo cómo automatizar la integridad referencial.
- * 
- * @param {Array} cpsDisponibles - Viene de la libreta de CPs de la Fase 1
- * @param {Array} mensajesDisponibles - Viene de la libreta de Mensajes de la Fase 1
+ * FUNCIÓN CORE: Genera Usuarios (Admins y Clientes) y sus entidades dependientes.
+ * - usuario -> admin | cliente (herencia 1:1, misma PK)
+ * - cliente -> datos_confidenciales (el correo y teléfono viven aquí, no en usuario)
+ * - usuario (cualquiera) -> direcciones_fisicas (1 a 2 por usuario)
+ *
+ * @param {Array} cpsDisponibles - Catálogo de CPs de la Fase 1.
  */
-async function generarUsuariosYRelaciones(cpsDisponibles, mensajesDisponibles) {
-  console.log("⚙️ Iniciando generación masiva de Usuarios y Relaciones...");
+async function generarUsuarios(cpsDisponibles) {
+  console.log('⚙️ Iniciando generación masiva de Usuarios y relaciones directas...');
 
-  // Creamos listas vacías para guardar los IDs de los actores que van a nacer en este ciclo
-  const listaClientesCreados = [];
-  const listaAdminsCreados = [];
+  const listaClientes = [];
+  const listaAdmins = [];
+  const listaTodosUsuarios = [];
 
-  // Decidimos generar 10 usuarios en total para esta prueba
-  for (let i = 0; i < 10; i++) {
-    
-    // Decisión de negocio lógica: Los primeros 2 serán Administradores, el resto Clientes.
-    const esAdmin = i < 2; 
+  const TOTAL_ADMINS = 5;
+  const TOTAL_CLIENTES = 20;
+  const total = TOTAL_ADMINS + TOTAL_CLIENTES;
+
+  for (let i = 0; i < total; i++) {
+    const esAdmin = i < TOTAL_ADMINS;
     const rolElegido = esAdmin ? 'Administrador' : 'Cliente';
+    const idUsuarioNuevo = generarId('usr');
 
-    // Generamos el ID primario del usuario de una vez en el script
-    const idUsuarioNuevo = generarIdConPrefijo('usr');
-
-    // 1. CREAMOS EL REGISTRO PADRE (Tabla: Usuario)
+    // 1. REGISTRO PADRE (Tabla: usuario) — ya no lleva correo/telefono, eso se fue a Datos_confidenciales
     const usuarioDummie = {
-      id_usuario: idUsuarioNuevo, // Le inyectamos nuestro ID con prefijo 'usr_'
-      nombre_rol: rolElegido,            // FK obligatoria hacia la tabla Rol (Fase 1)
+      id_usuario: idUsuarioNuevo,
+      rol: rolElegido, // FK -> rol(nombre)
       nombre: faker.person.firstName(),
       apellidos: faker.person.lastName(),
-      correo: faker.internet.email(),
-      telefono: faker.phone.number({ style: 'national' }), // String de 10 dígitos MX
-      contrasena: '\$2b\$12\$eImiTXuWVxfM37uY4JANje...',       // Hash estático simulado
-      fecha_nacimiento: faker.date.birthdate({ min: 18, max: 60, mode: 'age' }).toISOString().split('T')[0], // Solo YYYY-MM-DD
-      fecha_registro: faker.date.past({ years: 1 }) // Registrado en algún punto del último año
+      contrasena: '$2b$12$eImiTXuWVxfM37uY4JANje...', // Hash estático simulado
+      fecha_nacimiento: fechaISO(faker.date.birthdate({ min: 18, max: 65, mode: 'age' })),
+      fecha_registro: fechaISO(faker.date.past({ years: 1 })),
     };
 
-    const { error: errUser } = await supabase.from('usuario').insert(usuarioDummie);
-    if (errUser) {
-      console.error("❌ Error al insertar Usuario base:", errUser.message);
-      continue; // Si falla el padre, saltamos este ciclo para no generar huérfanos
-    }
+    const [insertado] = await insertar('usuario', usuarioDummie, 'Usuario base');
+    if (!insertado) continue; // Si falla el padre, no generamos huérfanos
 
-    // ------------------------------------------------------------------------
-    // ¿CÓMO GENERAR RELACIONES DUMMIE? - CASO 1: HERENCIA DIRECTA (1:1 / Subtipos)
-    // ------------------------------------------------------------------------
-    // Tu modelo indica que 'Cliente' y 'Admin' son extensiones de 'Usuario'.
-    // Comparten exactamente la misma llave primaria que funciona a la vez como llave foránea.
+    listaTodosUsuarios.push(idUsuarioNuevo);
+
+    // 2. HERENCIA 1:1 (CASO: Subtipos con la misma PK)
     if (esAdmin) {
-      await supabase.from('admin').insert({ id_usuario: idUsuarioNuevo });
-      listaAdminsCreados.push(idUsuarioNuevo); // Guardamos en memoria para futuras revisiones
+      await insertar('admin', { id_usuario: idUsuarioNuevo }, 'Admin');
+      listaAdmins.push(idUsuarioNuevo);
       console.log(`👤 Admin registrado: ${usuarioDummie.nombre} (${idUsuarioNuevo})`);
     } else {
-      await supabase.from('cliente').insert({ id_usuario: idUsuarioNuevo });
-      listaClientesCreados.push(idUsuarioNuevo); // Guardamos en memoria para adopciones/donativos
+      await insertar('cliente', { id_usuario: idUsuarioNuevo }, 'Cliente');
+      listaClientes.push(idUsuarioNuevo);
       console.log(`👥 Cliente registrado: ${usuarioDummie.nombre} (${idUsuarioNuevo})`);
 
-      // ------------------------------------------------------------------------
-      // ¿CÓMO GENERAR RELACIONES DUMMIE? - CASO 2: RELACIÓN 1 A MUCHOS (1:N)
-      // ------------------------------------------------------------------------
-      // Un Cliente puede tener direcciones físicas. La tabla 'Direcciones_fisicas' pide:
-      // a) Un ID_Usuario (FK del Cliente que acabamos de crear)
-      // b) Un ID_Codigo_postal (FK de un CP real creado previamente)
-      
-      // Pasos lógicos:
-      // Elegimos un CP al azar de nuestra libreta de la Fase 1 usando faker.helpers.arrayElement
+      // 3. DATOS CONFIDENCIALES (TABLA NUEVA) — FK apunta a Cliente, no a Usuario en general
+      const cpParaDatos = faker.helpers.arrayElement(cpsDisponibles);
+      const datosConfidencialesDummie = {
+        id_usuario: idUsuarioNuevo,
+        rfc: faker.string.alphanumeric(13).toUpperCase(),
+        razon_social: faker.company.name(),
+        regimen_fiscal: faker.helpers.arrayElement(['601', '603', '612', '621', '626']),
+        codigo_postal: cpParaDatos.codigo_postal,
+        correo: faker.internet.email({ firstName: usuarioDummie.nombre }),
+        correo_facturacion: faker.internet.email(),
+        telefono: faker.phone.number({ style: 'national' }),
+        constancia_url: `https://qarinoanimal.com/constancias/${faker.string.alphanumeric(10)}.pdf`,
+      };
+      await insertar('datos_confidenciales', datosConfidencialesDummie, 'Datos_confidenciales');
+    }
+
+    // 4. DIRECCIONES FÍSICAS (1:N) — ahora aplica a CUALQUIER usuario, no solo clientes
+    const cantidadDirecciones = faker.datatype.boolean({ probability: 0.25 }) ? 2 : 1;
+    for (let d = 0; d < cantidadDirecciones; d++) {
       const cpAleatorio = faker.helpers.arrayElement(cpsDisponibles);
-
       const direccionDummie = {
-        id_direccion: generarIdConPrefijo('dir'),
-        id_usuario: idUsuarioNuevo,               // Conexión legítima al Cliente actual (Integridad)
-        id_codigo_postal: cpAleatorio.id_codigo_postal, // Conexión legítima al CP seleccionado al azar
+        id_direccion: generarId('dir'),
+        id_usuario: idUsuarioNuevo,
+        id_codigo_postal: cpAleatorio.id_codigo_postal,
         calle: faker.location.street(),
-        numero_exterior: faker.number.int({ min: 1, max: 500 }),
-        numero_interior: faker.helpers.arrayElement([null, faker.number.int({ min: 1, max: 20 })]) // Puede no tener número interior
+        numero_exterior: faker.number.int({ min: 1, max: 999 }),
+        numero_interior: faker.datatype.boolean() ? faker.number.int({ min: 1, max: 20 }) : null,
       };
-
-      await supabase.from('direcciones_fisicas').insert(direccionDummie);
-
-
-      // ------------------------------------------------------------------------
-      // ¿CÓMO GENERAR RELACIONES DUMMIE? - CASO 3: RELACIÓN MUCHOS A MUCHOS (M:N)
-      // ------------------------------------------------------------------------
-      // Muchos clientes reciben muchos mensajes. Esto se resuelve con la tabla pivote 
-      // 'cliente_notifica_mensaje'. Para llenarla, necesitamos cruzar los dos mundos.
-      
-      // Pasos lógicos:
-      // Seleccionamos un mensaje al azar de la lista que nos pasaron por parámetro
-      const mensajeAleatorio = faker.helpers.arrayElement(mensajesDisponibles);
-
-      const notificacionPivoteDummie = {
-        id_usuario: idUsuarioNuevo,               // El ID del cliente actual
-        id_mensaje: mensajeAleatorio.id_mensaje,  // El ID del mensaje estático aleatorio
-        Fecha_envio: faker.date.recent({ days: 30 }), // Enviado en los últimos 30 días
-        Leido: faker.datatype.boolean()           // TRUE o FALSE aleatorio
-      };
-
-      // Al insertar en la pivote, Supabase une los cables sin romper restricciones
-      await supabase.from('notifica').insert(notificacionPivoteDummie);
+      await insertar('direcciones_fisicas', direccionDummie, 'Direcciones_Fisicas');
     }
   }
 
-  // Al terminar el bucle, le regresamos al orquestador los IDs de los clientes y admins reales
-  return { clientes: listaClientesCreados, admins: listaAdminsCreados };
+  return { clientes: listaClientes, admins: listaAdmins, todos: listaTodosUsuarios };
 }
 
 // ============================================================================
-// Fin FASE 2 Y 3
-// ============================================================================
-
-// ============================================================================
-// FASE 4: MÓDULO CANINO (PERROS, CARACTERES, CUIDADOS Y MULTIMEDIA)
+// FASE 3: NOTIFICACIONES (PIVOTE M:N Cliente <-> Mensaje)
 // ============================================================================
 
 /**
- * FUNCIÓN CORE: Genera un volumen masivo de Perros y amarra sus características.
- * 
- * @param {Array} razasDisponibles - Catálogo de Razas de la Fase 1
- * @param {Array} tamanosDisponibles - Catálogo de tamanos de la Fase 1
- * @param {Array} caracteresDisponibles - Catálogo de Caracteres de la Fase 1
- * @param {Array} cuidadosDisponibles - Catálogo de Cuidados de la Fase 1
+ * Puebla 'notifica'. Nota: la columna es id_cliente (no id_usuario), pero el
+ * valor es el mismo id_usuario del cliente porque comparten PK.
+ */
+async function generarNotificaciones(clientesIds, mensajesDisponibles) {
+  console.log('⚙️ Iniciando generación de Notificaciones...');
+
+  for (const idCliente of clientesIds) {
+    const cantidadMensajes = faker.number.int({ min: 1, max: 2 });
+    const mensajesElegidos = faker.helpers.arrayElements(mensajesDisponibles, cantidadMensajes);
+
+    for (const mensaje of mensajesElegidos) {
+      await insertar(
+        'notifica',
+        {
+          id_cliente: idCliente,
+          id_mensaje: mensaje.id_mensaje,
+          fecha_envio: fechaISO(faker.date.recent({ days: 30 })),
+          leido: faker.datatype.boolean(),
+        },
+        'Notifica'
+      );
+    }
+  }
+}
+
+// ============================================================================
+// FASE 4: MÓDULO CANINO (PERROS, MULTIMEDIA Y PIVOTES)
+// ============================================================================
+
+/**
+ * FUNCIÓN CORE: Genera Perros y su ecosistema.
+ * OJO: Perro ya NO tiene id_caracter propio — el carácter se amarra solo vía
+ * el pivote perro_tiene_caracter (puede tener varios).
  */
 async function generarPerrosYEcosistema(razasDisponibles, tamanosDisponibles, caracteresDisponibles, cuidadosDisponibles) {
-  console.log("⚙️ Iniciando generación masiva de Perritos y su ecosistema...");
+  console.log('⚙️ Iniciando generación masiva de Perritos y su ecosistema...');
 
-  // Lista en memoria para guardar los IDs de los perritos que van a nacer
   const listaPerrosCreados = [];
+  const TOTAL_PERROS = 20;
 
-  // URLs reales de perritos en Unsplash para que tu app en Kotlin renderice fotos reales y hermosas
-  const fotosDePerritos = [
-    "https://unsplash.com",
-    "https://unsplash.com",
-    "https://unsplash.com",
-    "https://unsplash.com",
-    "https://unsplash.com"
-  ];
-    
-  // Vamos a meter 15 perritos de prueba al refugio
-  for (let i = 0; i < 15; i++) {
-    const idPerroNuevo = generarIdConPrefijo('dog');
+  for (let i = 0; i < TOTAL_PERROS; i++) {
+    const idPerroNuevo = generarId('dog');
 
-    // Seleccionamos llaves foráneas legítimas de nuestros catálogos en memoria
     const razaAleatoria = faker.helpers.arrayElement(razasDisponibles);
     const tamanoAleatorio = faker.helpers.arrayElement(tamanosDisponibles);
-    const caracterPrincipalAleatorio = faker.helpers.arrayElement(caracteresDisponibles);
-    
 
-    // 1. CREAMOS EL REGISTRO PADRE (Tabla: Perro)
     const perroDummie = {
       id_perro: idPerroNuevo,
-      id_raza: razaAleatoria.id_raza,       // FK legítima a Raza
-      id_tamano: tamanoAleatorio.id_tamano, // FK legítima a tamano
-      id_caracter: caracterPrincipalAleatorio.id_caracter, // FK al Caracter principal
-      nombre: faker.person.firstName(),     // Faker no tiene "nombres de perro", pero los de persona quedan divertidos (ej. Bruno, Toby)
-      sexo: faker.helpers.arrayElement(['M', 'F']),
-      tamano_medida: faker.number.float({ min: 20, max: 90, fractionDigits: 1 }), // Medida en cm (FLOAT según DD)
-      edad_aprox: faker.number.int({ min: 1, max: 14 }), // INT según DD (ej: 4)
-      descripcion: "Un perrito rescatado, muy noble, ideal para llenar tu hogar de amor.",
+      id_raza: razaAleatoria.id_raza,
+      id_tamano: tamanoAleatorio.id_tamano,
+      nombre: faker.person.firstName(),
+      sexo: faker.helpers.arrayElement(['Macho', 'Hembra']),
+      edad_aprox: faker.number.int({ min: 1, max: 14 }),
+      tamano_medida: faker.number.float({ min: 20, max: 90, fractionDigits: 1 }),
+      descripcion: 'Un perrito rescatado, muy noble, ideal para llenar tu hogar de amor.',
       esterilizado: faker.datatype.boolean(),
       vacunado: faker.datatype.boolean(),
       estado: faker.helpers.arrayElement(['Disponible', 'En proceso de adopción', 'Adoptado']),
-      fecha_ingreso: faker.date.past({ years: 2 }), // Ingresó en los últimos 2 años
+      fecha_ingreso: fechaISO(faker.date.past({ years: 2 })),
     };
 
-    const { error: errDog } = await supabase.from('perro').insert(perroDummie);
-    if (errDog) {
-      console.error("❌ Error al insertar Perro:", errDog.message);
-      continue;
-    }
+    const [insertado] = await insertar('perro', perroDummie, 'Perro');
+    if (!insertado) continue;
 
     listaPerrosCreados.push(idPerroNuevo);
     console.log(`🐾 Perrito registrado: ${perroDummie.nombre} (${idPerroNuevo})`);
 
-    // ------------------------------------------------------------------------
-    // ¿CÓMO GENERAR RELACIONES DUMMIE? - CASO 4: PIVOTES M:N MASIVOS
-    // ------------------------------------------------------------------------
-    // Tu modelo tiene la tabla 'Perro Tiene Caracter' para sumarle MÁS ánimos al perro.
-    // Para simular que un perro tiene MÚLTIPLES caracteres, hacemos un pequeño bucle interno.
-    
-    // Elegimos 2 caracteres aleatorios y diferentes del catálogo
-    const caracteresAdicionales = faker.helpers.arrayElements(caracteresDisponibles, 2);
-    
-    for (const car of caracteresAdicionales) {
-      await supabase.from('perro_tiene_caracter').insert({
-        id_perro: idPerroNuevo,
-        id_caracter: car.id_caracter
-      });
+    // PIVOTE: perro_tiene_caracter — 2 caracteres distintos por perro
+    const caracteresElegidos = faker.helpers.arrayElements(caracteresDisponibles, 2);
+    for (const car of caracteresElegidos) {
+      await insertar(
+        'perro_tiene_caracter',
+        { id_perro: idPerroNuevo, id_caracter: car.id_caracter },
+        'Perro_tiene_Caracter'
+      );
     }
 
-    // Hacemos exactamente lo mismo para 'Perro Tiene Cuidado_Especial'
+    // PIVOTE: perro_tiene_cuidado_especial — 1 cuidado por perro
     const cuidadoAleatorio = faker.helpers.arrayElement(cuidadosDisponibles);
-    await supabase.from('perro_tiene_cuidado_especial').insert({
-      id_perro: idPerroNuevo,
-      id_cuidado: cuidadoAleatorio.id_cuidado
-    });
+    await insertar(
+      'perro_tiene_cuidado_especial',
+      { id_perro: idPerroNuevo, id_cuidado: cuidadoAleatorio.id_cuidado },
+      'Perro_tiene_Cuidado_Especial'
+    );
 
-    // ------------------------------------------------------------------------
-    // ¿CÓMO GENERAR RELACIONES DUMMIE? - CASO 5: GALERÍA DE IMÁGENES (1:N)
-    // ------------------------------------------------------------------------
-    // Un perro tiene muchas fotos en la tabla 'Multimedia'. 
-    // Insertamos 2 registros multimedia por cada perro usando su ID activo.
+    // GALERÍA: multimedia — 2 fotos reales por perro (picsum, cargan de verdad)
     for (let m = 0; m < 2; m++) {
       const multimediaDummie = {
-        id_multimedia: generarIdConPrefijo('mul'),
-        id_perro: idPerroNuevo, // Amarrado legítimamente al perro del ciclo
-        url: faker.helpers.arrayElement(fotosDePerritos),
-        fecha_subida: faker.date.recent({ days: 15 }), // Subida hace poco
-        tipo: faker.helpers.arrayElement(['Foto', 'Video']) // Sincronizado con CHAR(10) de tu DD
+        id_multimedia: generarId('mul'),
+        id_perro: idPerroNuevo,
+        url: `https://picsum.photos/seed/${faker.string.alphanumeric(8)}/640/480`,
+        tipo: 'Foto',
+        fecha_subida: fechaISO(faker.date.recent({ days: 15 })),
       };
-      await supabase.from('multimedia').insert(multimediaDummie);
+      await insertar('multimedia', multimediaDummie, 'Multimedia');
     }
   }
 
-  // Devolvemos la lista de perritos reales en memoria RAM para la fase de adopciones
   return listaPerrosCreados;
 }
 
-// ===========================================================================
-// Fin FASE 4
-// ===========================================================================
-
-
 // ============================================================================
-// FASE 5: OPERACIONES, TRANSACCIONES COMPLEJAS Y SEGUIMIENTOS CRONOLÓGICOS
+// FASE 5: DOCUMENTOS Y SOLICITUDES DE ADOPCIÓN
 // ============================================================================
 
-/**
- * FUNCIÓN CORE: Genera Solicitudes, Periodos de Prueba, Seguimientos y Donativos.
- * Cruza los IDs de Clientes, Admins y Perros asegurando consistencia en el tiempo.
- * 
- * @param {Array} clientesIds - Lista de IDs con prefijo 'cli_' de la Fase 2
- * @param {Array} adminsIds - Lista de IDs con prefijo 'adm_' de la Fase 2
- * @param {Array} perrosIds - Lista de IDs con prefijo 'dog_' de la Fase 4
- * @param {Array} estadosSolicitud - Catálogo de Estados de la Fase 1
- */
-async function generarOperacionesYTrámites(clientesIds, adminsIds, perrosIds, estadosSolicitud) {
-  console.log("⚙️ Iniciando generación de Solicitudes, Revisiones, Donativos y Periodos de Prueba...");
-
-  // Lista para almacenar documentos y asociarlos después a las solicitudes
+/** Genera 1-2 documentos por cliente. Devuelve [{idDoc, idCliente}]. */
+async function generarDocumentos(clientesIds) {
+  console.log('⚙️ Iniciando generación de Documentos...');
   const listaDocumentosCreados = [];
 
-  // ------------------------------------------------------------------------
-  // SUB-PROCESO PREVIO: Documentos del Cliente
-  // Cada cliente subirá de 1 a 2 documentos oficiales indispensables para adoptar
-  // ------------------------------------------------------------------------
   for (const idCliente of clientesIds) {
     const cantidadDocs = faker.number.int({ min: 1, max: 2 });
     for (let d = 0; d < cantidadDocs; d++) {
-      const idDocNuevo = generarIdConPrefijo('doc');
-      
+      const idDocNuevo = generarId('doc');
       const documentoDummie = {
         id_documento: idDocNuevo,
-        id_usuario: idCliente, // Vinculado directamente al cliente (Integridad)
-        tipo: faker.helpers.arrayElement(['pdf', 'jpg', 'png']),
-        url_archivo: `https://refugio.com{faker.string.alphanumeric(6)}.pdf`,
-        fecha_subida: faker.date.past({ years: 1 }), // Subido en el último año
-        estado_revision: faker.helpers.arrayElement(['Aprobado', 'Pendiente', 'Rechazado']),
-        comentario: 'Muchas gracias por mandar tu documentación completa.'
-      };
-
-      await supabase.from('documento').insert(documentoDummie);
-      listaDocumentosCreados.push({ idDoc: idDocNuevo, idCliente: idCliente });
-    }
-
-    // ------------------------------------------------------------------------
-    // SUB-PROCESO: Donativos Masivos (Muestra de 15 a 20 filas en total)
-    // ------------------------------------------------------------------------
-    if (faker.datatype.boolean()) { // El 50% de los clientes hacen un donativo
-      const docAsociado = listaDocumentosCreados.find(d => d.idCliente === idCliente);
-      
-      const donativoDummie = {
-        id_donativo: generarIdConPrefijo('don'),
         id_usuario: idCliente,
-        id_documento: docAsociado ? docAsociado.idDoc : null, // FK opcional al documento del cliente
-        folio_fiscal: faker.string.uuid().toUpperCase(), // Simula el UUID largo del SAT
-        tipo: faker.helpers.arrayElement(['monetario', 'especie']),
-        monto: faker.number.float({ min: 100, max: 5000, fractionDigits: 2 }), // DECIMAL funcional
-        fecha: '07-10-2026', // Formateado en string según tu Diccionario de Datos
-        comprobante: null // Campo BYTEA (binario), se deja nulo en dummies para optimizar
+        tipo: faker.helpers.arrayElement(['INE', 'Domicilio', 'Ingresos']), // CHAR(10)
+        url_archivo: `https://qarinoanimal.com/docs/${faker.string.alphanumeric(8)}.pdf`,
+        fecha_subida: fechaISO(faker.date.past({ years: 1 })),
+        estado_revision: faker.helpers.arrayElement(['Aprobado', 'Pendiente', 'Rechazado']), // CHAR(10)
+        comentario: 'Muchas gracias por mandar tu documentación completa.',
       };
-      await supabase.from('donativo').insert(donativoDummie);
+
+      const [insertado] = await insertar('documento', documentoDummie, 'Documento');
+      if (insertado) listaDocumentosCreados.push({ idDoc: idDocNuevo, idCliente });
     }
   }
 
-  // ------------------------------------------------------------------------
-  // PROCESO TRANSACCIONAL: Creación de 20 Solicitudes de Adopción
-  // ------------------------------------------------------------------------
-  for (let s = 0; s < 20; s++) {
-    const idSolicitudNueva = generarIdConPrefijo('sol');
-    
-    // Ruleta aleatoria para asignar actores de los arrays en memoria
+  return listaDocumentosCreados;
+}
+
+/**
+ * FUNCIÓN CORE: Genera Solicitudes de adopción y toda su cadena cronológica
+ * (admin_revisa_solicitud_adopcion, documento_tiene_solicitud_adopcion,
+ * periodo_prueba, seguimiento).
+ */
+async function generarSolicitudes(clientesIds, adminsIds, perrosIds, estadosSolicitud, documentosCreados) {
+  console.log('⚙️ Iniciando generación de Solicitudes, Revisiones, Seguimientos y Periodos de Prueba...');
+
+  const motivosCortos = [
+    'Quiero darle un hogar lleno de amor.',
+    'Busco un compañero fiel para mi familia.',
+    'Tengo espacio y cariño para darle.',
+    'Quiero adoptar por responsabilidad y amor.',
+    'Deseo brindarle una segunda oportunidad.',
+  ];
+
+  const TOTAL_SOLICITUDES = 20;
+
+  for (let s = 0; s < TOTAL_SOLICITUDES; s++) {
+    const idSolicitudNueva = generarId('sol');
+
     const clienteAleatorio = faker.helpers.arrayElement(clientesIds);
     const perroAleatorio = faker.helpers.arrayElement(perrosIds);
     const adminAleatorio = faker.helpers.arrayElement(adminsIds);
     const estadoAleatorio = faker.helpers.arrayElement(estadosSolicitud);
 
-    // CONTROL DEL RELOJ: Generamos una fecha base coherente para la solicitud
     const fechaSolicitudBase = faker.date.recent({ days: 60 });
+    const fechaResolucion = new Date(fechaSolicitudBase.getTime() + 10 * 24 * 60 * 60 * 1000);
 
     const solicitudDummie = {
       id_solicitud: idSolicitudNueva,
-      id_usuario: clienteAleatorio, // Debe ser un Cliente legítimo
-      id_perro: perroAleatorio,     // Debe ser un Perro legítimo
-      id_estado: estadoAleatorio.id_estado, // Estado del catálogo
-      fecha_solicitud: fechaSolicitudBase.toISOString().split('T')[0], // Mapeo DATE (YYYY-MM-DD)
-      motivo: 'Quiero adoptar un perro para que sea mi compañero de vida.',
-      tipo_vivienda: faker.helpers.arrayElement(['casa', 'departamento']),
-      otras_mascotas: faker.helpers.arrayElement(['no tengo', 'sí, dos chihuahuas', 'un gato']),
-      integrantes_hogar: faker.number.int({ min: 1, max: 6 }), // INT según DD
+      id_usuario: clienteAleatorio,
+      id_perro: perroAleatorio,
+      id_estado: estadoAleatorio.id_estado,
+      fecha_solicitud: fechaISO(fechaSolicitudBase),
+      motivo: faker.helpers.arrayElement(motivosCortos), // VARCHAR(50)
+      tipo_vivienda: faker.helpers.arrayElement(['Casa', 'Depto']), // CHAR(10)
+      otras_mascotas: faker.helpers.arrayElement(['No tengo', '1 gato', '2 perros', 'Un conejo']), // CHAR(20)
+      integrantes_hogar: faker.number.int({ min: 1, max: 6 }),
       comentario_admin: 'El perfil del solicitante se ve muy estable.',
-      fecha_resolucion: new Date(fechaSolicitudBase.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // Resuelta exactamente 10 días después
+      fecha_resolucion: fechaISO(fechaResolucion),
     };
 
-    const { error: errSol } = await supabase.from('solicitud_adopcion').insert(solicitudDummie);
-    if (errSol) {
-      console.error("❌ Error al crear Solicitud:", errSol.message);
-      continue;
-    }
+    const [solInsertada] = await insertar('solicitud_adopcion', solicitudDummie, 'Solicitud_adopcion');
+    if (!solInsertada) continue;
 
     console.log(`📩 Solicitud procesada: ${idSolicitudNueva} (Cliente: ${clienteAleatorio} -> Perro: ${perroAleatorio})`);
 
-    // ------------------------------------------------------------------------
-    // CONEXIONES CRONOLÓGICAS DE LA SOLICITUD (Tablas Hijas)
-    // ------------------------------------------------------------------------
-    
-    // 1. Historial de Auditoría (Admin Revisa Solicitud)
-    await supabase.from('admin_revisa').insert({
-      id_usuario: adminAleatorio, // El ID de un Admin real
-      id_solicitud: idSolicitudNueva,
-      fecha: solicitudDummie.fecha_resolucion // Ocurre el día de la resolución
-    });
+    // 1. Historial de Auditoría (admin_revisa_solicitud_adopcion)
+    await insertar(
+      'admin_revisa_solicitud_adopcion',
+      { id_usuario: adminAleatorio, id_solicitud: idSolicitudNueva, fecha: solicitudDummie.fecha_resolucion },
+      'Admin_Revisa_Solicitud_adopcion'
+    );
 
-    // 2. Vinculación de Documentos que se adjuntaron a esta solicitud específica
-    const docDelCliente = listaDocumentosCreados.find(d => d.idCliente === clienteAleatorio);
+    // 2. Vinculación de Documentos del cliente a esta solicitud
+    const docDelCliente = documentosCreados.find((d) => d.idCliente === clienteAleatorio);
     if (docDelCliente) {
-      await supabase.from('documento_tiene_solicitud_adopcion').insert({
-        id_documento: docDelCliente.idDoc,
-        id_solicitud: idSolicitudNueva,
-        Fecha_agregado: solicitudDummie.fecha_solicitud // Se adjuntó el día que se mandó la solicitud
-      });
+      await insertar(
+        'documento_tiene_solicitud_adopcion',
+        {
+          id_documento: docDelCliente.idDoc,
+          id_solicitud: idSolicitudNueva,
+          fecha_agregado: solicitudDummie.fecha_solicitud,
+        },
+        'Documento_Tiene_Solicitud_adopcion'
+      );
     }
 
-    // 3. Periodo de Prueba y Seguimiento (Regla de negocio lógica: Solo si el estado es aprobado/prueba)
-    // Para simplificar tus pruebas, generaremos registros para simular los flujos avanzados
+    // 3. Periodo de Prueba y Seguimiento
     const fechaInicioPrueba = new Date(solicitudDummie.fecha_resolucion);
-    
-    // Tabla: Periodo_Prueba
-    await supabase.from('periodo_prueba').insert({
-      id_prueba: generarIdConPrefijo('pru'),
-      id_solicitud: idSolicitudNueva, // Amarrado a la solicitud actual
-      fecha_inicio: fechaInicioPrueba.toISOString().split('T')[0],
-      fecha_fin_prevista: new Date(fechaInicioPrueba.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +7 días
-      fecha_fin_real: new Date(fechaInicioPrueba.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],     // +5 días
-      estatus_prueba: 'Aceptado',
-      observaciones_seguimiento: 'Falta que lo visiten en su casa para verificar espacio.'
-    });
 
-    // Tabla: Seguimiento
-    await supabase.from('seguimiento').insert({
-      id_seguimiento: generarIdConPrefijo('seg'),
-      id_solicitud: idSolicitudNueva,
-      fecha_inicio: fechaInicioPrueba.toISOString().split('T')[0],
-      Fecha_Fin: new Date(fechaInicioPrueba.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 día de duración de la visita
-      descripcion: 'Hay que dar seguimiento una vez a la semana de forma obligatoria.'
-    });
+    await insertar(
+      'periodo_prueba',
+      {
+        id_prueba: generarId('pru'),
+        id_solicitud: idSolicitudNueva,
+        fecha_inicio: fechaISO(fechaInicioPrueba),
+        fecha_fin_prevista: fechaISO(new Date(fechaInicioPrueba.getTime() + 7 * 24 * 60 * 60 * 1000)),
+        fecha_fin_real: fechaISO(new Date(fechaInicioPrueba.getTime() + 5 * 24 * 60 * 60 * 1000)),
+        estatus_prueba: faker.helpers.arrayElement(['Aceptado', 'En curso', 'Rechazado']), // CHAR(20)
+        observaciones_seguimiento: 'Falta que lo visiten en su casa para verificar espacio.',
+      },
+      'Periodo_Prueba'
+    );
+
+    await insertar(
+      'seguimiento',
+      {
+        id_seguimiento: generarId('seg'),
+        id_solicitud: idSolicitudNueva,
+        fecha_inicio: fechaISO(fechaInicioPrueba),
+        fecha_fin: fechaISO(new Date(fechaInicioPrueba.getTime() + 1 * 24 * 60 * 60 * 1000)),
+        descripcion: 'Hay que dar seguimiento una vez a la semana de forma obligatoria.',
+      },
+      'Seguimiento'
+    );
   }
 }
-// ===========================================================================
-// Fin FASE 5
-// ===========================================================================
-
-
-
 
 // ============================================================================
-// ORQUESTADOR PRINCIPAL ACTUALIZADO (FASE 1, 1.5, 2, 3 Y 4)
+// FASE 6: PROGRAMAS Y VOLUNTARIADO (TABLAS NUEVAS)
 // ============================================================================
-async function ejecutarSeeding() {
-  console.log("🚀 INICIANDO AUTOMATIZACIÓN DE DUMMIES (Línea de Ensamblaje) 🚀\n");
 
-   await preguntarLimpieza();
+/** Puebla 'programa'. Cada programa pertenece a un admin y a un tipo. */
+async function generarProgramas(tiposPrograma, adminsIds) {
+  console.log('⚙️ Iniciando generación de Programas de voluntariado...');
 
-  // ---- FASE 1: Catálogos Fijos ----
-  await poblarCatálogoRoles();
-  await poblarCatálogoPrivilegios();
-  const razasGuardadas = await poblarCatálogoRazas();
-  const tamanosGuardados = await poblarCatálogotamanos();
-  const caracteresGuardados = await poblarCatálogoCaracteres();
-  const cuidadosGuardados = await poblarCatálogoCuidados();
-  await poblarCatálogoEstadosSolicitud();
-  await poblarCatálogoTiposPrograma();
+  const listaProgramas = [];
+  const TOTAL_PROGRAMAS = 12;
 
-  // ---- FASE 1.5: Soporte ----
-  const cpsGuardados = await poblarCatálogoCPs();
-  const mensajesGuardados = await poblarCatálogoMensajes();
+  for (let i = 0; i < TOTAL_PROGRAMAS; i++) {
+    const idProgramaNuevo = generarId('prg');
+    const fechaInicio = faker.date.soon({ days: 60 });
+    const fechaFin = new Date(fechaInicio.getTime() + faker.number.int({ min: 1, max: 5 }) * 24 * 60 * 60 * 1000);
 
-  console.log("\n🛑 FASE 1 Y 1.5 COMPLETADA: Infraestructura base lista.");
+    const programaDummie = {
+      id_programa: idProgramaNuevo,
+      tipo: faker.helpers.arrayElement(tiposPrograma), // FK -> tipo_programa(nombre)
+      id_admin: faker.helpers.arrayElement(adminsIds),
+      nombre: faker.helpers.arrayElement([
+        'Jornada de Esterilización',
+        'Feria de Adopción Centro',
+        'Paseo Solidario',
+        'Campaña de Vacunación',
+        'Tarde de Voluntariado',
+        'Bazar de Donativos',
+      ]),
+      estado_del_programa: faker.helpers.arrayElement(['Disponible', 'Cerrado', 'Finalizado']), // CHAR(20)
+      descripcion: 'Actividad abierta a voluntarios registrados en la plataforma.',
+      fecha_inicio: fechaISO(fechaInicio),
+      fecha_fin: fechaISO(fechaFin),
+      ubicacion: faker.location.streetAddress(),
+      cupo_maximo: faker.number.int({ min: 10, max: 50 }),
+    };
 
-  // ---- FASE 2 Y 3: Usuarios, Clientes, Admins y Notificaciones ----
-  const usuariosEcosistema = await generarUsuariosYRelaciones(cpsGuardados, mensajesGuardados);
-  console.log("\n🛑 FASE 2 Y 3 COMPLETADA: Usuarios y relaciones iniciales tejidas.");
+    const [insertado] = await insertar('programa', programaDummie, 'Programa');
+    if (insertado) listaProgramas.push(programaDummie);
+  }
 
-  // ---- FASE 4: Módulo Canino ----
-  // Inyectamos las libretas de la Fase 1 para que el generador ensamble los perros
-  const perrosEcosistema = await generarPerrosYEcosistema(
-    razasGuardadas, 
-    tamanosGuardados, 
-    caracteresGuardados, 
-    cuidadosGuardados
-  );
-
-  console.log("\n🛑 FASE 4 COMPLETADA: Perros, galerías multimedia y pivotes médicos insertados.");
-  console.log(`Perros listos en memoria RAM para adopción: ${perrosEcosistema.length}`);
+  return listaProgramas;
 }
 
-ejecutarSeeding().catch(err => console.error("💥 Falla catastrófica en el script:", err));
+/** Puebla 'se_inscribe' (pivote M:N Usuario <-> Programa), evitando duplicados de PK. */
+async function generarInscripciones(todosUsuariosIds, programas) {
+  console.log('⚙️ Iniciando generación de Inscripciones a programas...');
 
+  const paresUsados = new Set();
 
+  for (const programa of programas) {
+    const cantidadInscritos = faker.number.int({ min: 2, max: 4 });
+    const usuariosElegidos = faker.helpers.arrayElements(todosUsuariosIds, cantidadInscritos);
 
-// ==== REGLAS DE PREFIJOS DE IDs =====
+    for (const idUsuario of usuariosElegidos) {
+      const llave = `${idUsuario}|${programa.id_programa}`;
+      if (paresUsados.has(llave)) continue; // Respeta la PK compuesta (id_usuario, id_programa)
+      paresUsados.add(llave);
+
+      await insertar(
+        'se_inscribe',
+        {
+          id_usuario: idUsuario,
+          id_programa: programa.id_programa,
+          fecha_inscripcion: fechaISO(faker.date.recent({ days: 20 })),
+          estado: faker.helpers.arrayElement(['Aceptado', 'Pendiente', 'Cancelado']), // CHAR(20)
+          asistencia: faker.datatype.boolean(),
+        },
+        'Se_inscribe'
+      );
+    }
+  }
+}
+
+// ============================================================================
+// FASE 7: DONATIVOS
+// ============================================================================
+
+/** Puebla 'donativo'. Ahora incluye id_admin, descripcion, estado y cfdi_solicitado. */
+async function generarDonativos(clientesIds, adminsIds, documentosCreados) {
+  console.log('⚙️ Iniciando generación de Donativos...');
+
+  for (const idCliente of clientesIds) {
+    const cantidadDonativos = faker.datatype.boolean({ probability: 0.8 })
+      ? faker.number.int({ min: 1, max: 2 })
+      : 0;
+
+    for (let d = 0; d < cantidadDonativos; d++) {
+      const docAsociado = documentosCreados.find((doc) => doc.idCliente === idCliente);
+
+      const donativoDummie = {
+        id_donativo: generarId('don'),
+        id_usuario: idCliente,
+        id_admin: faker.datatype.boolean() ? faker.helpers.arrayElement(adminsIds) : null,
+        id_documento: docAsociado ? docAsociado.idDoc : null,
+        folio_fiscal: faker.string.uuid().toUpperCase(), // CHAR(40)
+        tipo: faker.helpers.arrayElement(['Monetario', 'Especie']), // CHAR(20)
+        monto: faker.number.float({ min: 100, max: 5000, fractionDigits: 2 }),
+        descripcion: 'Donativo registrado durante campaña de apoyo al refugio.',
+        fecha: fechaISO(faker.date.recent({ days: 90 })),
+        comprobante: null, // BYTEA, se deja nulo en dummies para optimizar
+        estado: faker.helpers.arrayElement(['Pendiente de validación', 'Validado', 'Rechazado']),
+        cfdi_solicitado: faker.datatype.boolean(),
+        comentario_admin: faker.datatype.boolean() ? 'Comprobante verificado correctamente.' : null,
+      };
+
+      await insertar('donativo', donativoDummie, 'Donativo');
+    }
+  }
+}
+
+// ============================================================================
+// ORQUESTADOR PRINCIPAL
+// ============================================================================
+async function ejecutarSeeding() {
+  console.log('🚀 INICIANDO AUTOMATIZACIÓN DE DUMMIES (Línea de Ensamblaje) 🚀\n');
+
+  await preguntarLimpieza();
+
+  // ---- FASE 1: Catálogos ----
+  const nombresRoles = await poblarRoles();
+  const nombresPrivilegios = await poblarPrivilegios();
+  await poblarRolTienePrivilegio(nombresRoles, nombresPrivilegios);
+  const razasGuardadas = await poblarRazas();
+  const tamanosGuardados = await poblarTamanos();
+  const caracteresGuardados = await poblarCaracteres();
+  const cuidadosGuardados = await poblarCuidados();
+  const estadosSolicitudGuardados = await poblarEstadosSolicitud();
+  const tiposProgramaGuardados = await poblarTiposPrograma();
+  const cpsGuardados = await poblarCPs();
+  const mensajesGuardados = await poblarMensajes();
+  console.log('\n🛑 FASE 1 COMPLETADA: Catálogos maestros listos.');
+
+  // ---- FASE 2: Usuarios, subtipos, datos confidenciales y direcciones ----
+  const { clientes: clientesIds, admins: adminsIds, todos: todosUsuariosIds } =
+    await generarUsuarios(cpsGuardados);
+  console.log('\n🛑 FASE 2 COMPLETADA: Usuarios, direcciones y datos confidenciales listos.');
+
+  // ---- FASE 3: Notificaciones ----
+  await generarNotificaciones(clientesIds, mensajesGuardados);
+  console.log('\n🛑 FASE 3 COMPLETADA: Notificaciones tejidas.');
+
+  // ---- FASE 4: Módulo Canino ----
+  const perrosIds = await generarPerrosYEcosistema(
+    razasGuardadas,
+    tamanosGuardados,
+    caracteresGuardados,
+    cuidadosGuardados
+  );
+  console.log(`\n🛑 FASE 4 COMPLETADA: ${perrosIds.length} perros, galerías y pivotes médicos insertados.`);
+
+  // ---- FASE 5: Documentos y Solicitudes ----
+  const documentosCreados = await generarDocumentos(clientesIds);
+  await generarSolicitudes(clientesIds, adminsIds, perrosIds, estadosSolicitudGuardados, documentosCreados);
+  console.log('\n🛑 FASE 5 COMPLETADA: Documentos, solicitudes y seguimientos insertados.');
+
+  // ---- FASE 6: Programas y Voluntariado ----
+  const programasCreados = await generarProgramas(tiposProgramaGuardados, adminsIds);
+  await generarInscripciones(todosUsuariosIds, programasCreados);
+  console.log('\n🛑 FASE 6 COMPLETADA: Programas e inscripciones insertados.');
+
+  // ---- FASE 7: Donativos ----
+  await generarDonativos(clientesIds, adminsIds, documentosCreados);
+  console.log('\n🛑 FASE 7 COMPLETADA: Donativos insertados.');
+
+  console.log('\n✅ SEEDING TERMINADO. Todas las tablas de ScriptBD.sql fueron pobladas.');
+}
+
+ejecutarSeeding().catch((err) => console.error('💥 Falla catastrófica en el script:', err));
+
+// ==== REGLAS DE PREFIJOS DE IDs (solo para lectura de logs, no se guardan en BD) ====
 /*
+• Seguridad:
+	• (rol usa Nombre como PK, sin prefijo)
+	• (privilegio usa Privilegio como PK, sin prefijo)
 • Módulo Perfiles / Cuentas:
-	• usr_ (Tabla: Usuario)
-	• cli_ (Tabla: Cliente)
-	• adm_ (Tabla: Admin)
-	• dir_ (Tabla: Direcciones_físicas)
-	• cp_ (Tabla: Catálogo de CPs)
+	• usr_ (Usuario)
+	• dir_ (Direcciones_Fisicas)
+	• cp_  (Catalogo_de_CPs)
+	• (datos_confidenciales comparte PK con Cliente/Usuario)
 • Módulo Canino:
-	• dog_ (Tabla: Perro)
-	• raz_ (Tabla: Raza)
-	• tam_ (Tabla: tamano)
-	• car_ (Tabla: Caracter)
-	• cui_ (Tabla: Cuidado_Especial)
-	• mul_ (Tabla: Multimedia)
+	• dog_ (Perro)
+	• raz_ (Raza)
+	• tam_ (Tamano)
+	• car_ (Caracter)
+	• cui_ (Cuidado_Especial)
+	• mul_ (Multimedia)
 • Módulo Trámites y Operaciones:
-	• sol_ (Tabla: Solicitud_adopción)
-	• pru_ (Tabla: Periodo_Prueba)
-	• seg_ (Tabla: Seguimiento)
-	• doc_ (Tabla: Documento)
-	• don_ (Tabla: Donativo)
-	• cnf_ (Tabla: Datos_confidenciales)
+	• sol_ (Solicitud_adopcion)
+	• pru_ (Periodo_Prueba)
+	• seg_ (Seguimiento)
+	• doc_ (Documento)
+	• don_ (Donativo)
 • Módulo Comunicación y Voluntariado:
-	• msg_ (Tabla: Mensaje)
-	• prg_ (Tabla: Programa)
-	• tpr_ (Tabla: Tipo_programa)
-	• prv_ (Tabla: Privilegio)
+	• msg_ (Mensaje)
+	• prg_ (Programa)
+	• (tipo_programa usa Nombre como PK, sin prefijo)
+	• est_ (Estado_solicitud)
 */
