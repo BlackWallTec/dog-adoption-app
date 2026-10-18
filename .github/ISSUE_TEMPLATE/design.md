@@ -2,13 +2,13 @@
 name: Design
 about: Template para organizer la fase de diseño como sub-issue
 title: "[DISEÑO] HU00"
-labels: ''
-assignees: ''
+labels: ""
+assignees: ""
 type: Design
-
 ---
 
----
+***
+
 name: "Diseño de Historia de Usuario"
 about: "Diseño UI/UX y técnico de una Historia de Usuario"
 title: "[DISEÑO] [HU00] "

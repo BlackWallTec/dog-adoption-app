@@ -38,7 +38,7 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Android / Gradle (for apps/android later)
+# Android / Gradle
 .gradle/
 build/
 local.properties
