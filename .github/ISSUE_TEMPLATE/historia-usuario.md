@@ -3,13 +3,13 @@ name: Historia Usuario
 about: This Issue is for new HUs of the project. It covers from Analysis to Development
   and Implementation.
 title: HU00
-labels: ''
-assignees: ''
+labels: ""
+assignees: ""
 type: User Story
-
 ---
 
----
+***
+
 name: "Análisis de Historia de Usuario"
 about: "Análisis funcional, reglas de negocio, flujos y riesgos de una HU"
 title: "[ANÁLISIS] [HU00] "
@@ -96,10 +96,12 @@ falta de datos, problemas de conexión, estados previos, etc.
 -->
 
 ### Flujo alterno 1
+
 - **Condición:**
 - **Comportamiento esperado:**
 
 ### Flujo alterno 2
+
 - **Condición:**
 - **Comportamiento esperado:**
 
@@ -113,12 +115,15 @@ Identifica únicamente qué información necesita, consulta o modifica la HU.
 -->
 
 ### Entradas
+
 -
 
 ### Información consultada
+
 -
 
 ### Información generada o modificada
+
 -
 
 ---

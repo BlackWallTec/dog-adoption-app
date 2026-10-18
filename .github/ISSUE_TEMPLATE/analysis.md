@@ -3,13 +3,13 @@ name: Analysis
 about: Para la fase de analysis, aqui van todo el escrito y se ponen links para los
   artefactos necesarios
 title: "[ANÁLISIS] [HU00]"
-labels: ''
-assignees: ''
+labels: ""
+assignees: ""
 type: Analysis
-
 ---
 
----
+***
+
 name: "Análisis de Historia de Usuario"
 about: "Análisis funcional, reglas de negocio, flujos y riesgos de una HU"
 title: "[ANÁLISIS] [HU00] "
