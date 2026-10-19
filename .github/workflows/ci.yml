@@ -9,18 +9,23 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  changes:
+  ci:
     runs-on: ubuntu-latest
-    outputs:
-      javascript: ${{ steps.filter.outputs.javascript }}
     steps:
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
             javascript:
-              - 'apps/**'
+              - 'apps/web/**'
+              - 'apps/api/**'
               - 'packages/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
@@ -28,19 +33,18 @@ jobs:
               - 'vite.config.ts'
               - '.github/workflows/ci.yml'
 
-  javascript:
-    needs: changes
-    if: ${{ needs.changes.outputs.javascript == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
       - uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version: "24"
           cache: true
           run-install: true
 
+      # Format and lint everything always because of the .md files.
       - run: vp check
-      - run: vp test
-      - run: vp run -r build
+
+      # Run test and build (more expensive) only when necessary
+      - if: steps.filter.outputs.javascript == 'true'
+        run: vp test
+
+      - if: steps.filter.outputs.javascript == 'true'
+        run: vp run -r build
