@@ -1,1 +1,3 @@
 # testing pr checks
+## testing again but in a text file so the javascript check doesn't run
+just realized this is a .txt so the markdown notation doesn't even matter
