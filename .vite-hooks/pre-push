@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "DETACHED")
+
+case "$branch" in
+  main|master|develop|DETACHED) exit 0 ;;
+esac
+
+if ! printf '%s' "$branch" | grep -qE '^(feature|feat|bugfix|fix|hotfix|release|chore|ai|copilot|cursor|claude|codex)/[a-z0-9]+([.-][a-z0-9]+)*$'; then
+  echo ""
+  echo "ERROR: Refusing to push branch '$branch' with an invalid name."
+  echo "Rename with: git branch -m <type>/<short-description>"
+  echo ""
+  exit 1
+fi

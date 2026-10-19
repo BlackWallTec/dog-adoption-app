@@ -34,6 +34,9 @@ coverage/
 .env.*
 !.env.example
 
+# Vite
+.vite-hooks/_/
+
 # OS / editor
 .DS_Store
 Thumbs.db
