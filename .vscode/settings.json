@@ -2,7 +2,8 @@
   "npm.scriptRunner": "vp",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
