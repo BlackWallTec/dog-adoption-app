@@ -1,19 +1,18 @@
 #!/bin/sh
 set -e
+msg_file="$1"
+first_line=$(head -n1 "$msg_file")
 
-branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "DETACHED")
-
-case "$branch" in
-  main|master|develop) ;;
-  *)
-    if ! printf '%s' "$branch" | grep -qE '^(feature|feat|bugfix|fix|hotfix|release|chore|ai|copilot|cursor|claude|codex)/[a-z0-9]+([.-][a-z0-9]+)*$'; then
-      echo ""
-      echo "ERROR: Branch '$branch' does not match the naming convention."
-      echo "Rename with: git branch -m <type>/<short-description>"
-      echo ""
-      exit 1
-    fi
-    ;;
+# Allow merge/revert auto-generated messages
+case "$first_line" in
+  Merge*|Revert*|"") exit 0 ;;
 esac
 
-vp staged
+if ! echo "$first_line" | grep -qE '^(feat|fix|docs|style|refactor|test|build|ci|chore|revert)(\([a-z]+\))?!?: .+'; then
+  echo ""
+  echo "ERROR: Commit message must follow Conventional Commits."
+  echo "Format: type(scope): description"
+  echo "Example: feat(catalogo): add dog filters"
+  echo ""
+  exit 1
+fi
