@@ -1,7 +1,9 @@
 import { Router } from "express";
+import { getPerrosAdmin } from "./catalogo.controller.js";
 
-export const router = Router();
+const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ module: "catalogo", items: [] });
-});
+// GET /api/catalogo/admin/perros
+router.get("/admin/perros", getPerrosAdmin);
+
+export default router;
