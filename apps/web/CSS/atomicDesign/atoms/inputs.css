@@ -1,0 +1,9 @@
+.input-base {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--md-sys-color-on-surface);
+  width: 100%;
+  font-family: var(--font-body);
+}

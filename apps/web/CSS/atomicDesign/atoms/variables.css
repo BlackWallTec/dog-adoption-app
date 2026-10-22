@@ -1,0 +1,15 @@
+:root {
+  --md-sys-color-primary: #fdd254;
+  --md-sys-color-primary-container: #ffedad;
+  --md-sys-color-secondary: #2f6fb5;
+  --md-sys-color-secondary-container: #d8e8ff;
+  --md-sys-color-surface-container-low: #f8f2e6;
+  --md-sys-color-surface-container: #f1ebdd;
+  --md-sys-color-on-surface: #3a3a3a;
+  --md-sys-color-on-surface-variant: #696456;
+  --md-sys-color-outline-variant: #d2cabb;
+  --md-sys-color-error: #ba1a1a;
+
+  --font-headline: "Nunito", sans-serif;
+  --font-body: "Roboto", sans-serif;
+}

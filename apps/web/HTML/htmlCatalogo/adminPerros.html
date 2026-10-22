@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel de Administración | Perros</title>
+    <!-- Fuentes e Íconos -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+
+    <!-- CSS Atómico Global y Específico -->
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssCatalogo/adminPerros.css" />
+
+    <!-- Componentes reutilizables -->
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <!-- Organismo 1: Sidebar modular -->
+      <admin-sidebar></admin-sidebar>
+
+      <div class="main-wrapper">
+        <!-- Organismo 2: Topbar modular -->
+        <admin-topbar></admin-topbar>
+
+        <!-- Página / Feature exclusivo de tu HU -->
+        <main class="content-area">
+          <!-- Aquí continúa tu sección de "Nuestros perros" -->
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
