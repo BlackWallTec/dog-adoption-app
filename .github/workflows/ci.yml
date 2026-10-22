@@ -39,7 +39,7 @@ jobs:
           cache: true
           run-install: true
 
-      - run: vp check
+      - run: vp check --fix
 
       - if: steps.filter.outputs.javascript == 'true'
         run: vp test
