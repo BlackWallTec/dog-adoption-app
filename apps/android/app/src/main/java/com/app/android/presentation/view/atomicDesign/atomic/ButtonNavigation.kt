@@ -22,72 +22,74 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.android.presentation.view.ui.theme.InverseSurface
+import com.app.android.presentation.view.ui.theme.Primary
 
+@Suppress("ktlint:standard:function-naming")
 @Composable
-fun BotonNavegacion(
-    etiqueta: String, // el texto de abajo: Catalogo, Ayudar, etc
-    icono: ImageVector,
-    seleccionado: Boolean, // es el botón activo?
-    alHacerClick: () -> Unit, // que pasa al tocarlo
-    modifier: Modifier = Modifier, // para que quien lo use pueda ajustarlo desde afuera
+fun ButtonNavigation(
+    label: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    // Column = acomoda las cosas una debajo de otra (ícono arriba, texto abajo)
     Column(
         modifier =
             modifier
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = null, // sin efecto de toque
-                    onClick = alHacerClick,
-                )
-                .padding(vertical = 8.dp),
+                    indication = null,
+                    onClick = onClick,
+                ).padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Box = la "pastilla" amarilla que va detrás del ícono
         Box(
             modifier =
                 Modifier
                     .size(width = 64.dp, height = 32.dp)
                     .background(
-                        color = if (seleccionado) Primary else Color.Transparent,
+                        color = if (isSelected) Primary else Color.Transparent,
                         shape = CircleShape,
                     ),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = icono,
-                contentDescription = etiqueta,
+                imageVector = icon,
+                contentDescription = label,
                 tint = InverseSurface,
             )
         }
 
         Text(
-            text = etiqueta,
+            text = label,
             color = InverseSurface,
-            fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.padding(top = 4.dp),
         )
     }
 }
 
-@Preview (showBackground = true, name = "Botón Activo")
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true, name = "Active Button")
 @Composable
-fun BotonNavegacionActivoPreview() {
-    BotonNavegacion(
-        etiqueta = "Catálogo",
-        icono = Icons.Filled.Pets,
-        seleccionado = true,
-        alHacerClick = {},
+fun ButtonNavigationActivePreview() {
+    ButtonNavigation(
+        label = "Catálogo",
+        icon = Icons.Filled.Pets,
+        isSelected = true,
+        onClick = {},
     )
 }
 
-@Preview(showBackground = true, name = "Botón inactivo")
+@Suppress("ktlint:standard:function-naming")
+@Preview(showBackground = true, name = "Inactive Button")
 @Composable
-fun BotonNavegacionInactivoPreview() {
-    BotonNavegacion(
-        etiqueta = "Ajustes",
-        icono = Icons.Outlined.Settings,
-        seleccionado = false,
-        alHacerClick = {},
+fun ButtonNavigationInactivePreview() {
+    ButtonNavigation(
+        label = "Ajustes",
+        icon = Icons.Outlined.Settings,
+        isSelected = false,
+        onClick = {},
     )
 }

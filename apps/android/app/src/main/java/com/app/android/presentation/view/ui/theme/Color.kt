@@ -1,11 +1,17 @@
-package com.app.android.ui.theme
+package com.app.android.presentation.view.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Primary = Color(0xFFFDD254)
+val PrimaryContainer = Color(0xFFFFEDAD)
+val Secondary = Color(0xFF2F6FB5)
+val SecondaryContainer = Color(0xFFD8E8FF)
+val Error = Color(0xFFBA1A1A)
+val ErrorContainer = Color(0xFFFFDAD6)
+val Surface = Color(0xFFFFFBF2)
+val SurfaceContainerLow = Color(0xFFF8F2E6)
+val SurfaceContainer = Color(0xFFF1EBDD)
+val SurfaceContainerHigh = Color(0xFFEAE3D4)
+val InverseSurface = Color(0xFF34312B)
+
