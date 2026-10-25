@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import com.app.android.presentation.view.ui.theme.Primary
 import com.app.android.presentation.view.ui.theme.PrimaryContainer
 
-@Suppress("ktlint:standard:function-naming")
 @Composable
 fun WelcomeCard(
     name: String,
@@ -39,7 +38,6 @@ fun WelcomeCard(
     }
 }
 
-@Suppress("ktlint:standard:function-naming")
 @Preview(showBackground = true, name = "Welcome Card View")
 @Composable
 fun WelcomeCardPreview() {
