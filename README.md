@@ -116,3 +116,5 @@ apps/api/
 - Vite+ docs: https://viteplus.dev/guide/
 - Check existing PRs and issues for module-specific patterns.
 - Ask in the Discord discussion thread before inventing a new folder or layer.
+
+hola
