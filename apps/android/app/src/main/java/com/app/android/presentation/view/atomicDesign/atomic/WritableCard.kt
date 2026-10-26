@@ -33,7 +33,7 @@ import com.app.android.presentation.view.ui.theme.SurfaceContainerLow
 // Esto se utilizara luego para conectarlo en el viewmodel
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun WrittableCard(
+fun WritableCard(
     value: String,
     onValueChange: (String) -> Unit, // avisa si cambio el texto
     placeholder: String, // texto que se va a borrar cuando empiezas a escribir
@@ -89,7 +89,7 @@ private fun WritableCardPreview() {
             verticalArrangement = Arrangement.spacedBy(16.dp), // espacio entre tarjetas
         ) {
             // 1. Con icono y una sola linea (datos generales
-            WrittableCard(
+            WritableCard(
                 value = ocupacion,
                 onValueChange = { ocupacion = it }, // "it" es lo que el usuario acaba de escribir
                 placeholder = "Escribe tu ocupación",
@@ -98,7 +98,7 @@ private fun WritableCardPreview() {
             )
 
             // 2. Sin icono y más alta (como las preguntas largas)
-            WrittableCard(
+            WritableCard(
                 value = motivo,
                 onValueChange = { motivo = it },
                 placeholder = "Cuéntanos tus motivos",
