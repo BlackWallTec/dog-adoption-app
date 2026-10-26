@@ -27,7 +27,7 @@ import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Surface
 
 /*
-Molecule:
+Molecule: Label para las tarjetas de escrituras
 - Título arriba
 - WritableCard
 - Notas
