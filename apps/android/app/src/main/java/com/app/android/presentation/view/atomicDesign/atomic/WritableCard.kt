@@ -40,7 +40,7 @@ fun WritableCard(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null, // El icono es opcional ?
     singleLine: Boolean = false, // true se usara para campos de una linea (ex. edad)
-    minLines: Int = 1, // para campos multilineas
+    minLines: Int = 1, // que tan alta empieza la tarjeta
 ) {
     TextField(
         value = value,
