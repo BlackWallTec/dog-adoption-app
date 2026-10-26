@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel de Administración | Perros</title>
+    <!-- Fuentes e Íconos -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+
+    <!-- CSS Atómico Global y Específico -->
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssCatalogo/adminPerros.css" />
+
+    <!-- Componentes reutilizables -->
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <!-- Organismo 1: Sidebar -->
+      <admin-sidebar></admin-sidebar>
+
+      <div class="main-wrapper">
+        <!-- Organismo 2: Topbar -->
+        <admin-topbar></admin-topbar>
+
+        <main class="content-area">
+          <div class="section-header">
+            <div>
+              <h1 class="section-title">Nuestros Perros</h1>
+              <p id="perros-counter-subtitle" class="section-subtitle">
+                Cargando perfiles registrados...
+              </p>
+            </div>
+            <button type="button" class="button-registrar">
+              <span class="material-symbols-rounded">add</span>
+              Registrar perro
+            </button>
+          </div>
+
+          <!-- Barra de filtros -->
+          <div class="filters-bar">
+            <div class="search-input-wrapper">
+              <span class="material-symbols-rounded" search-icon>search</span>
+              <input
+                type="text"
+                id="input-busqueda"
+                placeholders="Buscar por nombre o raza"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="pill-filters">
+              <select id="filtro-estado" class="select-pill">
+                <option value="todos">Estado: Todos</option>
+                <option value="disponible">Estado: Disponible</option>
+                <option value="adoptado">Estado: Adoptado</option>
+                <option value="en tratamiento">Estado: En tratamiento</option>
+              </select>
+
+              <select id="filtro-tamano" class="select-pill">
+                <option value="todos">Tamaño: Todos</option>
+                <option value="pequeño">Tamaño: Pequeño</option>
+                <option value="mediano">Tamaño: Mediano</option>
+                <option value="grande">Tamaño: Grande</option>
+              </select>
+
+              <select id="filtro-edad" class="select-pill">
+                <option value="todos">Edad: Todas</option>
+                <option value="cachorro">Edad: &lt; 1 año</option>
+                <option value="joven">Edad: 1 a 3 años</option>
+                <option value="adulto">Edad: 4+ años</option>
+              </select>
+
+              <button type="button" id="btn-limpiar" class="btn-limpiar">Limpiar filtros</button>
+            </div>
+          </div>
+
+          <!-- Tabla de perros -->
+          <div class="table-card">
+            <table class="dogs-table">
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nombre</th>
+                  <th>Edad</th>
+                  <th>Tamaño</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-perros-body">
+                <!-- Filas renderizadas dinámicamente -->
+              </tbody>
+            </table>
+
+            <!-- Pie de tabla / Paginación -->
+            <div class="table-footer">
+              <span id="pagination-info" class="pagination-text"> Mostrando 0 de 0 perros </span>
+              <div class="pagination-controls">
+                <button type="button" class="page-arrow" disabled>
+                  <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <span class="page-number active">1</span>
+                <button type="button" class="page-arrow" disabled>
+                  <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="../../JS/jsCatalogo/adminPerros.view.js"></script>
+  </body>
+</html>
