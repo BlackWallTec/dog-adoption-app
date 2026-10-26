@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.app.android.core.ui.components.AppButton
 import com.app.android.core.ui.components.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
+import com.app.android.presentation.view.atomicDesign.organism.SearchBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +59,7 @@ class MainActivity : ComponentActivity() {
 fun App() {
     var filtro by remember { mutableIntStateOf(0) } //boton esta seleccionado
     var selected by remember { mutableIntStateOf(0) } //navbar
+    var query by remember { mutableStateOf("") }
 
     Column(
         modifier=Modifier.fillMaxSize().background(Color(0xFFFFFBF2)).statusBarsPadding()
@@ -81,9 +83,13 @@ fun App() {
             Text("Encuentra a tu nuevo mejor amigo.", fontSize = 16.sp)
             Spacer(Modifier.height(20.dp))
 
+            SearchBar(
+                query=query,
+                onQueryChange= { query = it},
+                onFilterClick = {}
+            )
+            Spacer(Modifier.height(20.dp))
 
-
-            //}
 
             Row(horizontalArrangement = Arrangement.spacedBy(0.5.dp)) {
                 AppButton(
