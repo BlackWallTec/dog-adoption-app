@@ -1,4 +1,4 @@
-package com.app.android.core.ui.components
+package com.app.android.presentation.view.atomicDesign.molecule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
