@@ -1,12 +1,14 @@
 .sidebar {
   width: 240px;
-  background-color: var(#ffffff);
+  height: 100%;
+  background-color: #ffffff;
   border-right: 1px solid var(--md-sys-color-outline-variant);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 24px 16px;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .sidebar-header {
