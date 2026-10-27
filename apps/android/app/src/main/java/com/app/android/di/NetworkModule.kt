@@ -20,7 +20,7 @@ object NetworkModule {
     fun provideRetrofit(): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("https://nwqfhcvlwntkqkraodoq.supabase.co/rest/v1") // Pon aquí tu URL de Supabase
+            .baseUrl("http://10.0.2/") // backend local en Express
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
 
