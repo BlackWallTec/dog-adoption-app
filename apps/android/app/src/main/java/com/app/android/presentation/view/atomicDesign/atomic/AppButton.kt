@@ -1,4 +1,4 @@
-package com.app.android.core.ui.components
+package com.app.android.presentation.view.atomicDesign.atomic
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -121,6 +121,34 @@ fun AppButton(
             }
         }
 
+        ButtonVariant.Danger -> {
+            // Rojo con outline para acciones destructivas (cancelar, eliminar)
+            OutlinedButton(
+                onClick = onClick,
+                modifier = buttonModifier,
+                enabled = isEnabled,
+                shape = shape,
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        containerColor = colors.surface,
+                        contentColor = colors.error,
+                        disabledContainerColor = colors.surface,
+                        disabledContentColor = colors.error.copy(alpha = DISABLED_CONTENT_ALPHA),
+                    ),
+                border =
+                    BorderStroke(
+                        width = 1.dp,
+                        color =
+                            if (isEnabled) {
+                                colors.error
+                            } else {
+                                colors.error.copy(alpha = DISABLED_CONTAINER_ALPHA)
+                            },
+                    ),
+            ) {
+                ButtonContent(text, isLoading, loadingDescription)
+            }
+        }
         ButtonVariant.Clear -> {
             // Transparente con solo texto azul claro
             TextButton(
@@ -168,7 +196,7 @@ private fun ButtonContent(
     }
 }
 
-@Preview(showBackground = true, name = "App Button Variants")
+@Preview(showBackground = true, widthDp = 360, name = "App Button Variants")
 @Composable
 private fun AppButtonVariantsPreview() {
     AndroidTheme {
@@ -180,6 +208,8 @@ private fun AppButtonVariantsPreview() {
             AppButton(text = "Ver Perfil (Secondary)", variant = ButtonVariant.Secondary, onClick = {})
             AppButton(text = "Filtros (Outlined)", variant = ButtonVariant.Outlined, onClick = {})
             AppButton(text = "Cancelar (Clear)", variant = ButtonVariant.Clear, onClick = {})
+            AppButton(text = "Cancelar inscripción (Danger)", variant = ButtonVariant.Danger, onClick = {})
+            AppButton(text = "Danger deshabilitado", enabled = false, variant = ButtonVariant.Danger, onClick = {})
             AppButton(text = "Cargando", isLoading = true, variant = ButtonVariant.Primary, onClick = {})
             AppButton(text = "Deshabilitado (Primary)", enabled = false, variant = ButtonVariant.Primary, onClick = {})
             AppButton(text = "Deshabilitado (Outlined)", enabled = false, variant = ButtonVariant.Outlined, onClick = {})

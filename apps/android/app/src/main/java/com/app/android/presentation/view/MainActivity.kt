@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,15 +28,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.android.core.ui.components.AppButton
-import com.app.android.core.ui.components.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.organism.SearchBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -53,7 +49,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun App() {
@@ -90,36 +85,8 @@ fun App() {
             )
             Spacer(Modifier.height(20.dp))
 
-/*
-            Row(horizontalArrangement = Arrangement.spacedBy(0.5.dp)) {
-                AppButton(
-                    text = "Todos",
-                    onClick = { filtro = 0 },
-                    variant = if (filtro == 0) ButtonVariant.Secondary else ButtonVariant.Outlined
-                )
-                AppButton(
-                    text = "Tamaño",
-                    onClick = { filtro = 1 },
-                    variant = if (filtro == 1) ButtonVariant.Secondary else ButtonVariant.Outlined
-                )
-                AppButton(
-                    text = "Sexo",
-                    onClick = { filtro = 2 },
-                    variant = if (filtro == 2) ButtonVariant.Secondary else ButtonVariant.Outlined
-                )
-                //AppButton(text="Raza", onClick={filtro=3}, variant=if(filtro==3)ButtonVariant.Secondary else ButtonVariant.Outlined)
-                AppButton(
-                    text = "Edad",
-                    onClick = { filtro = 4 },
-                    variant = if (filtro == 4) ButtonVariant.Secondary else ButtonVariant.Outlined
-                )
-
-            }
-            //poner spacer
-        }
- */
         NavBar(selected=selected, onSelect={selected=it})
-
+        }
 
     }
 }
