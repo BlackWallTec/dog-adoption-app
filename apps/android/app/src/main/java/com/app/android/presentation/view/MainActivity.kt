@@ -90,7 +90,7 @@ fun App() {
             )
             Spacer(Modifier.height(20.dp))
 
-
+/*
             Row(horizontalArrangement = Arrangement.spacedBy(0.5.dp)) {
                 AppButton(
                     text = "Todos",
@@ -117,6 +117,7 @@ fun App() {
             }
             //poner spacer
         }
+ */
         NavBar(selected=selected, onSelect={selected=it})
 
 
