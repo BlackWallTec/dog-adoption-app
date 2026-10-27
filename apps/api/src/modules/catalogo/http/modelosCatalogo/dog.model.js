@@ -1,7 +1,7 @@
 import { supabase } from "../../../../config/supabaseClient.js";
 
 class DogModel {
-  static async getPerrosAdminModel() {
+  static async getDogs() {
     const { data, error } = await supabase
       .from("perro")
       .select(`

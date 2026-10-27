@@ -2,7 +2,7 @@ import dogModel from "./modelosCatalogo/dog.model.js";
 
 export const getPerrosAdmin = async (req, res) => {
   try {
-    const perros = await dogModel.DogModel.getPerrosAdminModel();
+    const perros = await dogModel.getDogs();
     return res.status(200).json({
       success: true,
       data: perros,

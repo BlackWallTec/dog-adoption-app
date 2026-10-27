@@ -10,8 +10,7 @@ class MultimediaModel {
       tipo,
       fecha_subida
     `)
-      .eq("id_perro", id)
-      .single();
+      .eq("id_perro", id);
 
     if (error) {
       throw new Error(`Error en la consulta de multimedia: ${error.message}`);

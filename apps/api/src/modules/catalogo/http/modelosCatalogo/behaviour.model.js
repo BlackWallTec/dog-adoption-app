@@ -5,7 +5,7 @@ class BehaviourModel {
     const { data, error } = await supabase
       .from("perro")
       .select(`
-        id,
+        id_perro,
         perro_tiene_caracter (
           caracter (
             id_caracter,

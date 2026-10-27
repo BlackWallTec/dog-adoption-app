@@ -8,7 +8,7 @@ class SpecialModel {
       id_perro,
       perro_tiene_cuidado_especial(
       cuidado_especial(
-        id_cuidado_especial,
+        id_cuidado,
         descripcion
       )
     )
