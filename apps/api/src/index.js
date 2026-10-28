@@ -1,9 +1,9 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 
-// Import de rutas de los módulos
-import catalogoRoutes from "./modules/catalogo/http/routes.js";
+// Import de routers de los módulos
+import catalogoRoutes from "./modules/catalogo/http/catalog.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +14,7 @@ app.use(express.json());
 // Config del cors
 app.use(
   cors({
-    origin: true, // Permite el origen de vite
+    origin: "*", // Permite el origen de vite y otros dominios como android
     credentials: true, // Requerido para cookies y credenciales
   }),
 );
