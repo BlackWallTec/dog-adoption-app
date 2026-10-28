@@ -39,7 +39,7 @@ fun DatosGeneralesScreen(
     onBackClick: () -> Unit,
     onContinuarClick: () -> Unit,
     modifier: Modifier = Modifier,
-    navSeleccionado: Int = 3, // 3 = "Solicitudes"
+    navSeleccionado: Int = 3, // 3 = las solicitudes
     onNavSelect: (Int) -> Unit = {},
 ) {
     // ESTADO TEMPORAL: datos que  son inventados mientras no hay backend
