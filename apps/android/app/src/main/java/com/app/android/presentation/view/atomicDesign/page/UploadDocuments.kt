@@ -1,6 +1,7 @@
 package com.app.android.presentation.view.atomicDesign.page
 
 //Necessary libraries for the design part
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -44,17 +45,29 @@ fun UploadDocuments(
         },
         //We locate the bottom bar
         bottomBar = {
-            NavBar(
-                selected = 3,
-                onSelect = onNavSelect
-            )
+            Column {
+                AppButton(
+                    text = "Continuar",
+                    onClick = onContinuarClick,
+                    variant = ButtonVariant.Primary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                )
+
+                NavBar(
+                    selected = 3,
+                    onSelect = onNavSelect
+                )
+            }
         }
     ) { innerPadding ->
         Column(modifier = Modifier.
             fillMaxWidth()
             .padding(innerPadding)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp)) {
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)) {
             //More functions needed
             HeatherSection(
                 titulo = "Documentos",
@@ -68,12 +81,7 @@ fun UploadDocuments(
                 title = "Comprobante de domicilio",
                 onClick = {}
             )
-            AppButton (
-                text = "Continuar",
-                onClick = onContinuarClick,
-                variant = ButtonVariant.Primary,
-                modifier = Modifier.fillMaxWidth()
-            )
+
             HelperText(
                 text = "PDF, JPG o PNG · Máximo 5 MB por archivo. Asegúrate de que los datos sean legibles."
             )
@@ -85,7 +93,11 @@ fun UploadDocuments(
 }
 
 //To load the preview
-@Preview(showBackground = true, name = "Subir documentos")
+@Preview(
+    showBackground = true,
+    name = "Subir documentos",
+    device = "spec:width=411dp,height=891dp"
+)
 @Composable
 fun UploadDocumentsPreview() {
     AndroidTheme { UploadDocuments()
