@@ -4,10 +4,13 @@ package com.app.android.presentation.view.atomicDesign.page
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 //imports of atoms and molecules
@@ -47,7 +50,11 @@ fun UploadDocuments(
             )
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(modifier = Modifier.
+            fillMaxWidth()
+            .padding(innerPadding)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 16.dp)) {
             //More functions needed
             HeatherSection(
                 titulo = "Documentos",
