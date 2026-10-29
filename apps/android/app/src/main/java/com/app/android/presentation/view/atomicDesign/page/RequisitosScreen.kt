@@ -21,9 +21,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
-import com.app.android.presentation.view.atomicDesign.atomic.CheckBox
 import com.app.android.presentation.view.atomicDesign.molecule.ImportantInfoCard
 import com.app.android.presentation.view.atomicDesign.molecule.InfoCard
+import com.app.android.presentation.view.atomicDesign.molecule.LabeledCheckBox
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -105,7 +105,11 @@ fun RequisitosScreen(
                 descripcion = "Los adultos se entregan esterilizados; si es cachorro se firma una carta compromiso para esterilizarlo a los 4 meses.",
             )
 
-            CheckBox()
+            LabeledCheckBox(
+                text = "He leído y acepto los requisitos y las responsabilidades de una adopción responsable",
+                checked = false,
+                onCheckedChange = {},
+            )
 
             AppButton(
                 text = "Continuar",
