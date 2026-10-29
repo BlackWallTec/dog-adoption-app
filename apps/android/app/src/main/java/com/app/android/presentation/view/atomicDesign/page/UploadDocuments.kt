@@ -16,6 +16,7 @@ import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCardEmpty
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
+import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
 
 //Main function that calls the atoms and molecules
 @Composable
@@ -59,6 +60,9 @@ fun UploadDocuments(
                 onClick = onContinuarClick,
                 variant = ButtonVariant.Primary,
                 modifier = Modifier.fillMaxWidth()
+            )
+            InfoCard(
+                text = "Tus documentos están protegidos y solo los revisará el equipo de adopciones"
             )
         }
     }
