@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import com.app.android.R
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.DatoResumen
 import com.app.android.presentation.view.atomicDesign.atomic.DocumentoItem
+import com.app.android.presentation.view.atomicDesign.molecule.IconLabel
 import com.app.android.presentation.view.atomicDesign.molecule.TarjetaMascota
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
@@ -126,6 +129,10 @@ fun ConfirmarScreen(
                 DocumentoItem(nombreArchivo = "INE_Sofia_Garcia.pdf")
                 DocumentoItem(nombreArchivo = "Domicilio_Sofia_Garcia.pdf")
             }
+            IconLabel(
+                text = "Aceptaste los requisitos de adopción y el compromiso de cuidado y seguimiento",
+                icon = Icons.Outlined.Check,
+            )
             AppButton(
                 text = "Enviar solicitud",
                 onClick = onContinuarClick,
