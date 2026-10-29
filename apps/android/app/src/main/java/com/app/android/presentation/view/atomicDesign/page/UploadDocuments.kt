@@ -17,6 +17,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCardEmpty
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
+import com.app.android.presentation.view.atomicDesign.atomic.HeatherSection
 
 //Main function that calls the atoms and molecules
 @Composable
@@ -47,6 +48,10 @@ fun UploadDocuments(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             //More functions needed
+            HeatherSection(
+                titulo = "Documentos",
+                descripcion = "Adjunta tus documentos. La información se usará únicamente para tu proceso de adopción."
+            )
             FileUploadCardEmpty(
                 title = "Identificación Oficial",
                 onClick = {}
