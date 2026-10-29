@@ -23,7 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
-import com.app.android.presentation.view.atomicDesign.molecule.AppOptionPicker
+import com.app.android.presentation.view.atomicDesign.molecule.LabeledOptionPicker
 import com.app.android.presentation.view.atomicDesign.molecule.LabeledWritableCard
 import com.app.android.presentation.view.atomicDesign.molecule.SumRestButton
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
@@ -32,7 +32,7 @@ import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Surface
 
-private val opcionesSiNo = listOf("Si","No")
+private val opcionesSiNo = listOf("Si", "No")
 
 // PAGE: paso 3 de la solicitud de adopcion
 @Composable
@@ -61,7 +61,7 @@ fun TuHogarScreen(
         modifier = modifier,
         containerColor = Surface,
         topBar = { AppTopBar(titulo = "Solicitud de adopción", onBackClick = onBackClick) },
-        bottomBar = {NavBar(selected = navSeleccionado, onSelect = onNavSelect)},
+        bottomBar = { NavBar(selected = navSeleccionado, onSelect = onNavSelect) },
     ) { paddingInterno ->
         Column(
             modifier =
@@ -70,7 +70,7 @@ fun TuHogarScreen(
                     .padding(paddingInterno)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Text(
                 text = "Tu Hogar",
@@ -85,17 +85,17 @@ fun TuHogarScreen(
                 fontSize = 16.sp,
             )
 
-            PreguntaOpciones(
-                pregunta = "¿Has tenido mascotas antes?",
-                opciones = opcionesSiNo,
-                seleccionado = tuvoMascotas,
-                onSeleccion = { tuvoMascotas = it },
+            LabeledOptionPicker(
+                label = "¿Has tenido mascotas antes?",
+                options = opcionesSiNo,
+                selectedIndex = tuvoMascotas,
+                onOptionSelected = { tuvoMascotas = it },
             )
-            PreguntaOpciones(
-                pregunta = "¿Tienes otros animales en casa?",
-                opciones = opcionesSiNo,
-                seleccionado = otrosAnimales,
-                onSeleccion = { otrosAnimales = it },
+            LabeledOptionPicker(
+                label = "¿Tienes otros animales en casa?",
+                options = opcionesSiNo,
+                selectedIndex = otrosAnimales,
+                onOptionSelected = { otrosAnimales = it },
             )
 
             LabeledWritableCard(
@@ -123,7 +123,9 @@ fun TuHogarScreen(
                     fontWeight = FontWeight.Bold,
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -140,17 +142,17 @@ fun TuHogarScreen(
                 }
             }
 
-            PreguntaOpciones(
-                pregunta = "¿Todos están de acuerdo?",
-                opciones = opcionesSiNo,
-                seleccionado = todosDeAcuerdo,
-                onSeleccion = { todosDeAcuerdo = it },
+            LabeledOptionPicker(
+                label = "¿Todos están de acuerdo?",
+                options = opcionesSiNo,
+                selectedIndex = todosDeAcuerdo,
+                onOptionSelected = { todosDeAcuerdo = it },
             )
-            PreguntaOpciones(
-                pregunta = "Casa o Departamento",
-                opciones = listOf("Casa", "Departamento", "Otro"),
-                seleccionado = tipoVivienda,
-                onSeleccion = { tipoVivienda = it },
+            LabeledOptionPicker(
+                label = "Casa o Departamento",
+                options = listOf("Casa", "Departamento", "Otro"),
+                selectedIndex = tipoVivienda,
+                onOptionSelected = { tipoVivienda = it },
             )
 
             LabeledWritableCard(
@@ -161,11 +163,11 @@ fun TuHogarScreen(
                 minLines = 3,
             )
 
-            PreguntaOpciones(
-                pregunta = "Si rentas ¿Tu casero acepta mascotas?",
-                opciones = opcionesSiNo,
-                seleccionado = caseroAcepta,
-                onSeleccion = { caseroAcepta = it },
+            LabeledOptionPicker(
+                label = "Si rentas ¿Tu casero acepta mascotas?",
+                options = opcionesSiNo,
+                selectedIndex = caseroAcepta,
+                onOptionSelected = { caseroAcepta = it },
             )
 
             LabeledWritableCard(
@@ -179,33 +181,11 @@ fun TuHogarScreen(
             AppButton(
                 text = "Continuar a Compromiso",
                 onClick = onContinuarClick,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 24.dp),
             )
         }
-    }
-}
-
-// Pregunta + botones de opciones
-@Composable
-private fun PreguntaOpciones(
-    pregunta: String,
-    opciones: List<String>,
-    seleccionado: Int,
-    onSeleccion: (Int) -> Unit,
-) {
-    Column {
-        Text(
-            text = pregunta,
-            color = InverseSurface,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        AppOptionPicker(
-            options = opciones,
-            selectedIndex = seleccionado,
-            onOptionSelected = onSeleccion,
-            modifier = Modifier.padding(top = 8.dp),
-        )
     }
 }
 
