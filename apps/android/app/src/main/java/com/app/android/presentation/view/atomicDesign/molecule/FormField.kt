@@ -1,45 +1,64 @@
-package com.app.android.presentation.view.atomicDesign.molecules
+package com.app.android.presentation.view.atomicDesign.molecule
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.android.presentation.view.atomicDesign.atoms.ErrorMessage
-import com.app.android.presentation.view.atomicDesign.atoms.SupportingText
-import com.app.android.presentation.view.ui.theme.MyApplicationTheme
+import androidx.compose.ui.unit.dp
+import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
+import com.app.android.presentation.view.atomicDesign.atomic.FloatingLabelTextField
+import com.app.android.presentation.view.atomicDesign.atomic.SupportingText
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 @Composable
 fun FormField(
+    enabled: Boolean = true,
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
     supportingText: String? = null,
     isError: Boolean = false,
-    errorText: String = " ",
+    errorText: String? = null,
 ) {
     Column(modifier) {
         FloatingLabelTextField(
+            enabled = enabled,
             value = value,
             onValueChange = onValueChange,
             label = label,
             isError = isError,
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        if (isError && errorText != null) {
+                            error(errorText)
+                        }
+                    },
         )
         if (supportingText != null) {
             SupportingText(text = supportingText)
         }
-        if (isError) {
+        if (isError && errorText != null) {
             ErrorMessage(text = errorText)
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 private fun FormFieldPreview() {
-    MyApplicationTheme {
-        Column {
+    AndroidTheme {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
             FormField(
                 value = "correo@correo.com",
                 onValueChange = {},
@@ -58,7 +77,14 @@ private fun FormFieldPreview() {
                 isError = true,
                 errorText = "Completa los campos pendientes.",
             )
+            FormField(
+                enabled = false,
+                value = "Desactivado",
+                onValueChange = {},
+                label = "Correo electrónico",
+                isError = false,
+                errorText = "Completa los campos pendientes.",
+            )
         }
     }
 }
-

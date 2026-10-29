@@ -1,11 +1,11 @@
-package com.app.android.presentation.view.atomicDesign.atoms
+package com.app.android.presentation.view.atomicDesign.atomic
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.android.presentation.view.ui.theme.MyApplicationTheme
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 @Composable
 fun SupportingText(
@@ -22,7 +22,7 @@ fun SupportingText(
 @Preview(showBackground = true)
 @Composable
 private fun SupportingTextPreview() {
-    MyApplicationTheme {
+    AndroidTheme {
         SupportingText(text = "Usaremos este correo para tu solicitud.")
     }
 }

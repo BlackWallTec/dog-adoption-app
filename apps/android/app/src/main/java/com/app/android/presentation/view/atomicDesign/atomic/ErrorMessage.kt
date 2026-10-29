@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.atomicDesign.atoms
+package com.app.android.presentation.view.atomicDesign.atomic
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,8 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.android.presentation.view.ui.theme.MyApplicationTheme
-
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 @Composable
 fun ErrorMessage(
@@ -41,8 +40,7 @@ fun ErrorMessage(
 @Preview(showBackground = true)
 @Composable
 private fun ErrorMessagePreview() {
-    MyApplicationTheme {
+    AndroidTheme {
         ErrorMessage(text = "Completa los campos pendientes.")
     }
 }
-

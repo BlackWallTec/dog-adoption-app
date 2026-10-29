@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.atomicDesign.molecules
+package com.app.android.presentation.view.atomicDesign.atomic
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +15,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.android.presentation.view.ui.theme.MyApplicationTheme
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 @Composable
 fun FloatingLabelTextField(
@@ -23,10 +23,12 @@ fun FloatingLabelTextField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    isError: Boolean = false,
+    enabled: Boolean = true,
+    isError: Boolean,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     BasicTextField(
+        enabled = enabled,
         value = value,
         onValueChange = onValueChange,
         modifier = modifier,
@@ -35,9 +37,9 @@ fun FloatingLabelTextField(
         interactionSource = interactionSource,
         decorationBox = { innerTextField ->
             OutlinedTextFieldDefaults.DecorationBox(
-                value = value,
+                value = value.ifEmpty { " " },
                 innerTextField = innerTextField,
-                enabled = true,
+                enabled = enabled,
                 singleLine = true,
                 visualTransformation = VisualTransformation.None,
                 isError = isError,
@@ -49,24 +51,24 @@ fun FloatingLabelTextField(
                             if (isError) {
                                 MaterialTheme.colorScheme.error
                             } else {
-                                Color(0xFF34312B)
+                                MaterialTheme.colorScheme.inverseSurface
                             },
                     )
                 },
                 container = {
                     OutlinedTextFieldDefaults.Container(
-                        enabled = true,
-                        isError = false,
+                        enabled = enabled,
+                        isError = isError,
                         interactionSource = interactionSource,
                         shape = RoundedCornerShape(12.dp),
                         colors =
                             OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color(0xFFFFFBF2),
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
                                 unfocusedContainerColor = Color(0xFFFFFFFF),
-                                focusedBorderColor = Color(0xFF34312B),
-                                unfocusedBorderColor = Color(0xFF34312B),
+                                focusedBorderColor = MaterialTheme.colorScheme.inverseSurface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.inverseSurface,
                                 errorBorderColor = MaterialTheme.colorScheme.error,
-                                errorContainerColor = Color(0xFFFFFBF2),
+                                errorContainerColor = MaterialTheme.colorScheme.surface,
                             ),
                     )
                 },
@@ -78,11 +80,12 @@ fun FloatingLabelTextField(
 @Preview
 @Composable
 private fun FloatingLabelTextFieldPreview() {
-    MyApplicationTheme {
+    AndroidTheme {
         FloatingLabelTextField(
             value = "Correo electrónico",
             onValueChange = {},
             label = "Correo electrónico",
+            isError = false,
         )
     }
 }

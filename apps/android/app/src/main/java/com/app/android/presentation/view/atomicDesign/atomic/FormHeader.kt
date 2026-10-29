@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.atomicDesign.molecules
+package com.app.android.presentation.view.atomicDesign.atomic
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
@@ -6,7 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.android.presentation.view.ui.theme.MyApplicationTheme
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 @Composable
 fun FormHeader(
@@ -29,7 +29,7 @@ fun FormHeader(
 @Preview(showBackground = true)
 @Composable
 private fun FormHeaderPreview() {
-    MyApplicationTheme {
+    AndroidTheme {
         FormHeader(
             title = "Formulario",
             subtitle = "Ingresa para continuar",
