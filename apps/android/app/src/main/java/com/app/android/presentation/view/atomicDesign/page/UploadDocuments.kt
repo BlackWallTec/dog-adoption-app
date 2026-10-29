@@ -2,16 +2,20 @@ package com.app.android.presentation.view.atomicDesign.page
 
 //Necessary libraries for the design part
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 //imports of atoms and molecules
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
-
+import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCardEmpty
+import com.app.android.presentation.view.atomicDesign.atomic.AppButton
+import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 
 //Main function that calls the atoms and molecules
 @Composable
@@ -42,6 +46,20 @@ fun UploadDocuments(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             //More functions needed
+            FileUploadCardEmpty(
+                title = "Identificación Oficial",
+                onClick = {}
+            )
+            FileUploadCardEmpty(
+                title = "Comprobante de domicilio",
+                onClick = {}
+            )
+            AppButton (
+                text = "Continuar",
+                onClick = onContinuarClick,
+                variant = ButtonVariant.Primary,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -50,5 +68,6 @@ fun UploadDocuments(
 @Preview(showBackground = true, name = "Subir documentos")
 @Composable
 fun UploadDocumentsPreview() {
-    UploadDocuments()
+    AndroidTheme { UploadDocuments()
+    }
 }
