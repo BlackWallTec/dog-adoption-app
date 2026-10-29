@@ -18,6 +18,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
 import com.app.android.presentation.view.atomicDesign.atomic.HeatherSection
+import com.app.android.presentation.view.atomicDesign.atomic.HelperText
 
 //Main function that calls the atoms and molecules
 @Composable
@@ -65,6 +66,9 @@ fun UploadDocuments(
                 onClick = onContinuarClick,
                 variant = ButtonVariant.Primary,
                 modifier = Modifier.fillMaxWidth()
+            )
+            HelperText(
+                text = "PDF, JPG o PNG · Máximo 5 MB por archivo. Asegúrate de que los datos sean legibles."
             )
             InfoCard(
                 text = "Tus documentos están protegidos y solo los revisará el equipo de adopciones"
