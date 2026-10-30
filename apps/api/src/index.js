@@ -4,12 +4,14 @@ import "dotenv/config";
 
 // Import de rutas de los módulos
 import catalogoRoutes from "./modules/catalogo/http/routes.js";
+import voluntariosRoutes from "./modules/voluntarios/http/routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use("/api/voluntarios", voluntariosRoutes);
 
 // Config del cors
 app.use(
