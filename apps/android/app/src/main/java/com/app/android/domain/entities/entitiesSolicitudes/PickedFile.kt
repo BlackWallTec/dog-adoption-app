@@ -8,7 +8,7 @@ data class PickedFile(
     //the name of the file
     val name: String,
     //the size of the file in bytes
-    val sizeByte: Long,
+    val sizeBytes: Long,
     //the type of file
     val mimeType: String
 )
