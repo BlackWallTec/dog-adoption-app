@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
-import com.app.android.ui.theme.AndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
