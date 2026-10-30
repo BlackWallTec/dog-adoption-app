@@ -1,9 +1,9 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 
-// Import de rutas de los módulos
-import catalogoRoutes from "./modules/catalogo/http/routes.js";
+// Import de routers de los módulos
+import catalogoRoutes from "./modules/catalogo/http/catalog.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,10 +11,16 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
+// Middleware para ver qué rutas se piden
+app.use((req, res, next) => {
+  console.log(`Se solicitó: ${req.method} ${req.url}`);
+  next();
+});
+
 // Config del cors
 app.use(
   cors({
-    origin: true, // Permite el origen de vite
+    origin: "*", // Permite el origen de vite y otros dominios como android
     credentials: true, // Requerido para cookies y credenciales
   }),
 );
@@ -23,6 +29,7 @@ app.use(
 app.use("/api/catalogo", catalogoRoutes);
 
 // Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`API corriendo en http://localhost:${PORT}`);
+//Añadimos el 0.0.0.0 para que sea accesible desde cualquier IP, no solo localhost
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
