@@ -7,12 +7,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import com.app.android.ui.theme.AndroidTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,13 +29,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            // Dispara la prueba una sola vez al arrancar la pantalla
-            LaunchedEffect(Unit) {
-                viewModel.onLoadDogByID("131180a6-05c0-4e76-a125-175623a5c8db") // Pon un ID real de tu BD
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background,
+            ) {
+                // ¡Listo! El enrutador toma el control total de la app desde aquí
+                AppNavigation()
             }
-
-            // Texto temporal mientras no hay UI
-            androidx.compose.material3.Text("Probrando conexión en consola Logcat...")
         }
     }
 }
