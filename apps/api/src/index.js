@@ -5,12 +5,14 @@ import cors from "cors";
 // Import de routers de los módulos
 import catalogoRoutes from "./modules/catalogo/http/catalog.router.js";
 import solicitudesRoutes from "./modules/solicitudes/http/request.router.js";
+import voluntariosRoutes from "./modules/voluntarios/http/routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
+app.use("/api/voluntarios", voluntariosRoutes);
 
 // Middleware para ver qué rutas se piden
 app.use((req, res, next) => {

@@ -1,7 +1,9 @@
 import { Router } from "express";
+import { inscribirse } from "./voluntarios.controller.js";
 
-export const router = Router();
+const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ module: "voluntarios", items: [] });
-});
+router.post("/programas/:idPrograma/inscripciones", inscribirse);
+
+export { router };
+export default router;
