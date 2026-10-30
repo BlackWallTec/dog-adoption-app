@@ -1,33 +1,46 @@
 package com.app.android.presentation.view.viewsCatalogo
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 
 @Composable
-fun PerrosScreen(vm: perrosViewModel=viewmodel()){
+fun PerrosScreen(
+    modifier : Modifier = Modifier,
+    vm: PerrosViewModel =hiltViewModel()){
     LazyVerticalGrid(
         columns= GridCells.Fixed(2),
         contentPadding=PaddingValues(16.dp),
-        horizontalArrangement= Arrangement.spaceBy(12.dp),
-        verticalArrangement=Arrangement.spaceBy(12.dp)
+        horizontalArrangement= Arrangement.spacedBy(12.dp),
+        verticalArrangement=Arrangement.spacedBy(12.dp)
     ){
         items(vm.perros){perro->
             Card{
                 Column{
                     AsyncImage(
-                        modifier=Modifier.fillMaxWidth().height(150.dp)
                         model=perro.fotoUrl,
                         contentDescription=perro.nombre,
                         contentScale= ContentScale.Crop,
+                        modifier= Modifier.fillMaxWidth().height(150.dp)
                     )
                     Column(Modifier.padding(12.dp)){
-                        Text(perro.nombre, fontWeight=FontWeight.Bold)
+                        Text(perro.nombre, fontWeight= FontWeight.Bold)
                         Text("${perro.edad} años")
                     }
                 }

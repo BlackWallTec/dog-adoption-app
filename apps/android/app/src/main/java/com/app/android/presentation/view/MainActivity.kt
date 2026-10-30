@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -37,7 +35,10 @@ import androidx.compose.ui.unit.sp
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.organism.SearchBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.view.viewsCatalogo.PerrosScreen
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +53,6 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun App() {
-    var filtro by remember { mutableIntStateOf(0) } //boton esta seleccionado
     var selected by remember { mutableIntStateOf(0) } //navbar
     var query by remember { mutableStateOf("") }
 
@@ -60,7 +60,7 @@ fun App() {
         modifier=Modifier.fillMaxSize().background(Color(0xFFFFFBF2)).statusBarsPadding()
     ){
         Column( //esto es para que se pueda mover de arriba hacia abajo y viceversa
-            modifier=Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal=24.dp)
+            modifier=Modifier.weight(1f).padding(horizontal=24.dp)
         ) {
             Row( //esto es para las 3 rayitas y la campana
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -85,7 +85,9 @@ fun App() {
             )
             Spacer(Modifier.height(20.dp))
 
-        NavBar(selected=selected, onSelect={selected=it})
+        NavBar(selected=selected, onSelect={selected=it})       ///
+            Spacer(Modifier.height(12.dp))
+            PerrosScreen(modifier = Modifier.weight(1f))
         }
 
     }

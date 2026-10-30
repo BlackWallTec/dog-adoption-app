@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.ksp) //
 }
 
 android {
@@ -61,4 +61,10 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //para las imagenes
+    implementation("io.coil-kt.coil3:coil-compose:3.6.3") //
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3")  //
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0") //
+
 }
