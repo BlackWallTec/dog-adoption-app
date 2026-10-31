@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-// Definir después los estados del flow en el transcurso del proceso de adopción
+// Definir después en common (asi se llamaba en el lab, no se tenemos uno similar aqui) el result.kt
 class SubmitAdoptionRequestUseCase
     @Inject
     constructor(
