@@ -15,10 +15,14 @@ class SubmitAdoptionRequestUseCase
     ) {
         suspend operator fun invoke(request: AdoptionRequest): Flow<Result<Unit>> =
             flow {
+                // emit(Result.Loading())
                 try {
+                    // repository.submitRequest(request)
+                    // emit(Result.Success(Unit))
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
+                    // emit(Result.Error(e))
                 }
             }
     }
