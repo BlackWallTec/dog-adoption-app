@@ -45,36 +45,45 @@ fun TarjetaVoluntariado(
     ubicacion: String,
     textoCupo: String, // ya viene armado, ej. "8/15 lugares ocupados · 7 disponibles"
     progresoCupo: Float, // de 0f a 1f
-    alVerDetalle: () -> Unit,
-    alInscribirse: () -> Unit,
+    alVerDetalle: (() -> Unit)? = null,
+    alAccionBoton: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     textoBoton: String = "Inscribirme",
+    varianteBoton: ButtonVariant = ButtonVariant.Primary,
     botonHabilitado: Boolean = true,
 ) {
+    val modifierClickeable =
+        if (alVerDetalle != null) {
+            modifier.clickable(onClick = alVerDetalle)
+        } else {
+            modifier
+        }
+
     Column(
         modifier =
-            modifier
+            modifierClickeable
                 .fillMaxWidth()
                 .background(color = SurfaceContainer, shape = RoundedCornerShape(24.dp))
-                .clickable(onClick = alVerDetalle)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Header: chip del tipo a la izq, flecha a la derecha
+        // Header: chip del tipo a la izq, flecha a la derecha solo si es navegable
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             EtiquetaTipo(texto = tipo)
 
-            Spacer(modifier = Modifier.weight(1f)) // Empuja la flecha hasta la derecha
-
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Ver detalle",
-                tint = Secondary,
-                modifier = Modifier.size(18.dp),
-            )
+            // Flecha visible solo si se define alVerDetalle
+            if (alVerDetalle != null) {
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "Ver detalle",
+                    tint = Secondary,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
 
         Text(
@@ -90,13 +99,16 @@ fun TarjetaVoluntariado(
 
         CupoPrograma(texto = textoCupo, progreso = progresoCupo)
 
-        AppButton(
-            text = textoBoton,
-            onClick = alInscribirse,
-            variant = ButtonVariant.Primary,
-            enabled = botonHabilitado,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        // Renderizar botón SOLO si se pasa la función alAccionBoton
+        if (alAccionBoton != null) {
+            AppButton(
+                text = textoBoton,
+                onClick = alAccionBoton,
+                variant = varianteBoton,
+                enabled = botonHabilitado,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 
@@ -121,7 +133,7 @@ fun TarjetaVoluntariadoPreview() {
                 textoCupo = "8/15 lugares ocupados · 7 disponibles",
                 progresoCupo = 0.53f,
                 alVerDetalle = {},
-                alInscribirse = {},
+                alAccionBoton = {},
             )
             TarjetaVoluntariado(
                 tipo = "Limpieza",
@@ -132,7 +144,7 @@ fun TarjetaVoluntariadoPreview() {
                 textoCupo = "10/10 lugares ocupados · 0 disponibles",
                 progresoCupo = 1f,
                 alVerDetalle = {},
-                alInscribirse = {},
+                alAccionBoton = {},
                 botonHabilitado = false,
             )
         }

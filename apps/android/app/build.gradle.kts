@@ -62,4 +62,5 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.material.icons.extended)
 }
