@@ -50,5 +50,6 @@ class ValidateAdoptionFormUseCase
                 petNeeds = if (form.petNeeds.isBlank()) "Escribe tu respuesta" else null,
                 petSterilization = if (form.petSterilization.isBlank()) "Escribe tu respuesta" else null,
                 petFollowing = if (form.petFollowing.isBlank()) "Selecciona una opción" else null,
+                // Paso 5: el de andy, vi su estructura ahorita y creo que ya hizo estos pasos en su branch
             )
     }

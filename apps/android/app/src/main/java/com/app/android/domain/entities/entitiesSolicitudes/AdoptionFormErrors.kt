@@ -29,6 +29,7 @@ data class AdoptionFormErrors(
     val petNeeds: String? = null,
     val petSterilization: String? = null,
     val petFollowing: String? = null,
+    // Paso 5: el de andy, vi su estructura ahorita y creo que ya hizo estos pasos en su branch
 ) {
     // data | Valida si hay errores en el formulario
     fun hasErrors(): Boolean =

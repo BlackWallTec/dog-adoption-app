@@ -25,4 +25,5 @@ data class AdoptionForm(
     val petNeeds: String = "", // Pregunta: Menciona los cuidados básicos de una mascota
     val petSterilization: String = "", // Pregunta: ¿Que opinas de la esterilización?
     val petFollowing: String = "", // Opción (Si, No): ¿Nos permites dar seguimiento (visitas o fotos)?
+    // Paso 5: el de andy, vi su estructura ahorita y creo que ya hizo estos pasos en su branch
 )

@@ -1,4 +1,24 @@
 package com.app.android.domain.useCases.useCasesSolicitudes
 
-class SubmitAdoptionRequestUseCase {
-}
+import com.app.android.domain.entities.entitiesSolicitudes.AdoptionRequest
+import com.app.android.domain.repoInterface.repoIntSolicitudes.AdoptionRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
+
+// Definir después
+class SubmitAdoptionRequestUseCase
+    @Inject
+    constructor(
+        private val repository: AdoptionRepository,
+    ) {
+        suspend operator fun invoke(request: AdoptionRequest): Flow<Result<Unit>> =
+            flow {
+                try {
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                }
+            }
+    }
