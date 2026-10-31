@@ -14,16 +14,8 @@ Comunicarse con fuentes externas (Supabase, Retrofit, Room, DataStore) en su len
 
 ```kotlin
 package com.tuempresa.app.data.dataSource
-
-import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 import retrofit2.http.Path
-
-// 1. DTO (Data Transfer Object)
-data class NombreDto(
-    @SerializedName("id_externo") val id: String,
-    @SerializedName("nombre_servidor") val nombre: String
-)
 
 // 2. Interface de Servicio (API / Supabase)
 interface NombreApiService {
