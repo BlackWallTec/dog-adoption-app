@@ -52,11 +52,12 @@ fun TarjetaVoluntariado(
     varianteBoton: ButtonVariant = ButtonVariant.Primary,
     botonHabilitado: Boolean = true,
 ) {
-    val modifierClickeable = if (alVerDetalle != null) {
-        modifier.clickable(onClick = alVerDetalle)
-    } else {
-        modifier
-    }
+    val modifierClickeable =
+        if (alVerDetalle != null) {
+            modifier.clickable(onClick = alVerDetalle)
+        } else {
+            modifier
+        }
 
     Column(
         modifier =
@@ -73,7 +74,7 @@ fun TarjetaVoluntariado(
         ) {
             EtiquetaTipo(texto = tipo)
 
-            // <-- AJUSTE 3: Flecha visible solo si se define alVerDetalle
+            // Flecha visible solo si se define alVerDetalle
             if (alVerDetalle != null) {
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
@@ -125,7 +126,7 @@ fun TarjetaVoluntariadoPreview() {
                     .background(Surface)
                     .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
+        ) {
             TarjetaVoluntariado(
                 tipo = "Paseo",
                 titulo = "Paseos con cariño",
@@ -136,7 +137,7 @@ fun TarjetaVoluntariadoPreview() {
                 progresoCupo = 0.53f,
                 alVerDetalle = {},
                 alAccionBoton = {},
-                )
+            )
             TarjetaVoluntariado(
                 tipo = "Limpieza",
                 titulo = "Jornada de limpieza",
@@ -148,7 +149,7 @@ fun TarjetaVoluntariadoPreview() {
                 alVerDetalle = {},
                 alAccionBoton = {},
                 botonHabilitado = false,
-                )
+            )
         }
     }
 }

@@ -6,7 +6,7 @@ Estás en la capa **Data (Coordinador y Mapeador)**. Esta subcarpeta contiene la
 
 ### 🎯 Objetivo y Tarea
 
-Coordinar las llamadas al `DataSource`, recibir los `DTOs`, **mapearlos a Entities de Dominio** y retornar los datos limpios a la capa Domain.
+Coordinar las llamadas al `DataSource`, recibir los `dtos`, **mapearlos a Entities de Dominio** y retornar los datos limpios a la capa Domain.
 
 - **Regla estricta:** Debe implementar (`: NombreRepositorio`) el contrato de `Domain` e inyectar sus fuentes de datos con `@Inject`.
 

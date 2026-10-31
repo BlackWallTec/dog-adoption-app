@@ -57,14 +57,11 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-
-    // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.material.icons.extended)
 }
