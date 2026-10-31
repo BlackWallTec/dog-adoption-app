@@ -14,6 +14,9 @@ router.get("/admin/perros", adminController.getPerrosAdmin);
 
 //Rutas Cliente
 
+//obtener todos los perros
+router.get("/cliente/perros", clientController.getDogs);
+
 // Get /api/catalogo/cliente/perros/:id (¡nueva!)
 router.get("/cliente/perros/:id", clientController.getDogById);
 

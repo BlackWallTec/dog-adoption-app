@@ -42,3 +42,26 @@ export const getDogById = async (req, res) => {
     });
   }
 };
+
+export const getDogs = async (req, res) => {
+  try {
+    const perros = await dogModel.getDogs();
+    for (const perro of perros) {
+      const fotos = await multimediaModel.getDogMultimediaById(perro.id_perro);
+      if (fotos.lenght > 0) {
+        perro.foto_url = fotos[0].url;
+      } else {
+        perro.foto_url = "";
+      }
+    }
+    res.status(200).json({
+      syuccess: true,
+      data: perros,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
