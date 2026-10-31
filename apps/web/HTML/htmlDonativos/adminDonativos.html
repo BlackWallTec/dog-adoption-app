@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Administración | Donativos</title>
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
+    />
+
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssDonativos/adminDonativos.css" />
+
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
+
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
+
+        <main class="content-area">
+          <div class="selection-header">
+            <div>
+              <h1 class="section-title">Administración de Donativos</h1>
+              <p id="donativos-counter-subtitle" class="section-subtitle">Cargando donativos...</p>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <table class="donativos-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Donante</th>
+                  <th>Monto</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-donativos-body">
+                <tr>
+                  <td colspan="5">Cargando donativos...</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="table-footer">
+              <span id="pagination-info" class="pagination-text"> Mostrando 0 de 0 donativos </span>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="../../JS/jsDonativos/adminDonativos.view.js"></script>
+  </body>
+</html>
