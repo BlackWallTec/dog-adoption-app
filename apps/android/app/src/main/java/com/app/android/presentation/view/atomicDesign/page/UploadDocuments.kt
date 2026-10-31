@@ -1,6 +1,9 @@
 package com.app.android.presentation.view.atomicDesign.page
 
 //Necessary libraries for the design part
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,9 +12,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 
 //imports of atoms and molecules
@@ -23,6 +33,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
 import com.app.android.presentation.view.atomicDesign.atomic.HeatherSection
 import com.app.android.presentation.view.atomicDesign.atomic.HelperText
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsViewModel
 
 //Main function that calls the atoms and molecules
 @Composable
@@ -31,7 +42,7 @@ fun UploadDocuments(
     onBackClick: () -> Unit = {},
     onNotificacionesClick: () -> Unit = {},
     onContinuarClick: () -> Unit = {},
-    onNavSelect: (Int) -> Unit = {}
+    onNavSelect: (Int) -> Unit = {},
 ) {
     //We Use scaffold to make it according to the screen
     Scaffold(
