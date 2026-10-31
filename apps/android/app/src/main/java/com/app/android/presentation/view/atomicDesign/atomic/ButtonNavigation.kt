@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Primary
 
@@ -64,7 +65,9 @@ fun ButtonNavigation(
         Text(
             text = label,
             color = InverseSurface,
+            fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            maxLines = 1, // nunca partir en dos renglones
             modifier = Modifier.padding(top = 4.dp),
         )
     }
