@@ -15,15 +15,16 @@ data class AdoptionFormErrors(
     // Aunque hay unas partes del formulario que son incisos de los cuales
     // no estoy seguro si van a empezar sin una opción elegida
     // voy a agarrar todos los datos y ponerlos en la funcion hasErrors()
-    val hadPet: Boolean? = null,
-    val otherPets: Boolean? = null,
+    val hadPet: String? = null,
+    val otherPets: String? = null,
     val whyAdopt: String? = null,
     val whereLive: String? = null,
     val peopleInHouse: String? = null,
-    val allAgree: Boolean? = null,
+    val allAgree: String? = null,
     val houseType: String? = null,
     val hasGarden: String? = null,
-    val petAcept: Boolean? = null,
+    val petAcept: String? = null,
+    val aboutPets: String? = null,
     // Paso 4: del Formulario | "Compromiso"
     val petNeeds: String? = null,
     val petSterilization: String? = null,
@@ -33,6 +34,7 @@ data class AdoptionFormErrors(
     fun hasErrors(): Boolean =
         listOf(
             name,
+            age,
             occupation,
             address,
             municipio,
@@ -47,6 +49,7 @@ data class AdoptionFormErrors(
             houseType,
             hasGarden,
             petAcept,
+            aboutPets,
             petNeeds,
             petSterilization,
             petFollowing,
