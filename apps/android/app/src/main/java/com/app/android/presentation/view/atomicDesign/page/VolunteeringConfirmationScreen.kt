@@ -1,5 +1,6 @@
 package com.app.android.presentation.view.atomicDesign.page
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,8 @@ import com.app.android.presentation.view.atomicDesign.organism.ConfirmationActio
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.organism.TarjetaVoluntariado
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
+import com.app.android.presentation.view.ui.theme.Surface
 
 @Composable
 fun VolunteeringConfirmationScreen(
@@ -40,6 +43,13 @@ fun VolunteeringConfirmationScreen(
 ) {
     Scaffold(
         modifier = modifier,
+        topBar = {
+            AppTopBar(
+                titulo = "Voluntariado",
+                onBackClick = {},
+                modifier = Modifier.background(Surface),
+            )
+        },
         bottomBar = {
             NavBar(
                 selected = navSeleccionado,

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +31,7 @@ import com.app.android.presentation.view.ui.theme.SurfaceContainerHigh
 // 1. LA MOLÉCULA: tarjeta con icono, titulo y descripción
 @Composable
 fun InfoCard(
-    titulo: String? = null,
+    titulo: String,
     descripcion: String,
     icono: ImageVector,
     modifier: Modifier = Modifier,
@@ -46,7 +45,6 @@ fun InfoCard(
                 .fillMaxWidth()
                 .background(color = SurfaceContainerHigh, shape = forma)
                 .padding(16.dp),
-        verticalAlignment = if (titulo.isNullOrBlank()) Alignment.CenterVertically else Alignment.Top,
     ) {
         Icon(
             imageVector = icono,
@@ -58,20 +56,18 @@ fun InfoCard(
 
         // Column = titulo arriba, descripción abajo
         Column {
-            if (!titulo.isNullOrBlank()) {
-                Text(
-                    text = titulo,
-                    color = InverseSurface,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-                Text(
-                    text = descripcion,
-                    color = InverseSurface.copy(alpha = 0.7f), // mismo color pero mas claro
-                    fontSize = 15.sp,
-                    modifier = Modifier.padding(top = if (titulo.isNullOrBlank()) 0.dp else 6.dp),
-                )
+            Text(
+                text = titulo,
+                color = InverseSurface,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = descripcion,
+                color = InverseSurface.copy(alpha = 0.7f), // mismo color pero mas claro
+                fontSize = 15.sp,
+                modifier = Modifier.padding(top = 6.dp),
+            )
         }
     }
 }
