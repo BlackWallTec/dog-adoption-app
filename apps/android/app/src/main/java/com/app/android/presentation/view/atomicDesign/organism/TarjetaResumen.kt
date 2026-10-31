@@ -24,6 +24,8 @@ import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Surface
 import com.app.android.presentation.view.ui.theme.SurfaceContainerHigh
 
+// DetailBox: Organismo para el despliegue de información.
+
 // 1. El ORGANISMO: tarjeta con titulo, boton "Editar" y un espacio para el contenido
 @Composable
 fun TarjetaResumen(
@@ -38,7 +40,7 @@ fun TarjetaResumen(
                 .fillMaxWidth()
                 .background(color = SurfaceContainerHigh, shape = RoundedCornerShape(16.dp))
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp), // espacio enttre los datos
+        verticalArrangement = Arrangement.spacedBy(12.dp), // espacio enttre los datos
     ) {
         // Header: Titulo a la izq, editar a la derecha
         Row(
@@ -107,9 +109,18 @@ fun TarjetaResumenHogarPreview() {
             alEditar = {},
         ) {
             DatoResumen(etiqueta = "¿Has tenido mascotas antes?", valor = "Si")
-            DatoResumen(etiqueta = "¿Tienes otros animales en casa?", valor = "Mia, gata de 3 años, esteralizada y vacunada. Tranquila; Convive con perros")
-            DatoResumen(etiqueta = "¿Por qué deseas adoptar?", valor = "Queremos darle a Bruno un hogar lleno de cariño. Tenemos tiempo para pasearlo cada día y acompañarlo en su adaptación.")
-            DatoResumen(etiqueta = "¿Dondé vivirá y dormira el perrito?", valor = "Casa con patio cerrado y espacios seguros para Bruno. Lugar para dormir: pendiente.")
+            DatoResumen(
+                etiqueta = "¿Tienes otros animales en casa?",
+                valor = "Mia, gata de 3 años, esteralizada y vacunada. Tranquila; Convive con perros",
+            )
+            DatoResumen(
+                etiqueta = "¿Por qué deseas adoptar?",
+                valor = "Queremos darle a Bruno un hogar lleno de cariño. Tenemos tiempo para pasearlo cada día y acompañarlo en su adaptación.",
+            )
+            DatoResumen(
+                etiqueta = "¿Dondé vivirá y dormira el perrito?",
+                valor = "Casa con patio cerrado y espacios seguros para Bruno. Lugar para dormir: pendiente.",
+            )
             DatoResumen(etiqueta = "¿Cuantas personas viven contigo?", valor = "3 adultos")
             DatoResumen(etiqueta = "¿Todos estan de acuerdo?", valor = "Si, todos estamso de acuerod en adoptar")
             DatoResumen(etiqueta = "Haus o depa", valor = "Casa")
