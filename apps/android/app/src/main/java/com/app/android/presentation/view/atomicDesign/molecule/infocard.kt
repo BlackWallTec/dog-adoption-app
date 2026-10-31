@@ -17,6 +17,10 @@ import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+<<<<<<< HEAD
+=======
+import androidx.compose.ui.Alignment
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -31,7 +35,11 @@ import com.app.android.presentation.view.ui.theme.SurfaceContainerHigh
 // 1. LA MOLÉCULA: tarjeta con icono, titulo y descripción
 @Composable
 fun InfoCard(
+<<<<<<< HEAD
     titulo: String,
+=======
+    titulo: String? = null,
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
     descripcion: String,
     icono: ImageVector,
     modifier: Modifier = Modifier,
@@ -45,6 +53,10 @@ fun InfoCard(
                 .fillMaxWidth()
                 .background(color = SurfaceContainerHigh, shape = forma)
                 .padding(16.dp),
+<<<<<<< HEAD
+=======
+        verticalAlignment = if (titulo.isNullOrBlank()) Alignment.CenterVertically else Alignment.Top,
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
     ) {
         Icon(
             imageVector = icono,
@@ -56,6 +68,7 @@ fun InfoCard(
 
         // Column = titulo arriba, descripción abajo
         Column {
+<<<<<<< HEAD
             Text(
                 text = titulo,
                 color = InverseSurface,
@@ -68,6 +81,22 @@ fun InfoCard(
                 fontSize = 15.sp,
                 modifier = Modifier.padding(top = 6.dp),
             )
+=======
+            if (!titulo.isNullOrBlank()) {
+                Text(
+                    text = titulo,
+                    color = InverseSurface,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+                Text(
+                    text = descripcion,
+                    color = InverseSurface.copy(alpha = 0.7f), // mismo color pero mas claro
+                    fontSize = 15.sp,
+                    modifier = Modifier.padding(top = if (titulo.isNullOrBlank()) 0.dp else 6.dp),
+                )
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
         }
     }
 }

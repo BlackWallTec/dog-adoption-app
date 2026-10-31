@@ -65,9 +65,13 @@ fun ButtonNavigation(
         Text(
             text = label,
             color = InverseSurface,
+<<<<<<< HEAD
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             maxLines = 1, // nunca partir en dos renglones
+=======
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
             modifier = Modifier.padding(top = 4.dp),
         )
     }

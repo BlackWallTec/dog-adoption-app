@@ -57,13 +57,25 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+<<<<<<< HEAD
     implementation(libs.androidx.material.icons.extended)
+=======
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+<<<<<<< HEAD
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
 
+=======
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
+    implementation(libs.androidx.material.icons.extended)
+>>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
 }
