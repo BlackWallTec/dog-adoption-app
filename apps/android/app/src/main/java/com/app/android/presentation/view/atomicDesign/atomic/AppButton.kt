@@ -34,6 +34,7 @@ enum class ButtonVariant {
     Primary,
     Secondary,
     Outlined,
+    Danger,
     Clear,
 }
 
@@ -149,6 +150,7 @@ fun AppButton(
                 ButtonContent(text, isLoading, loadingDescription)
             }
         }
+
         ButtonVariant.Clear -> {
             // Transparente con solo texto azul claro
             TextButton(

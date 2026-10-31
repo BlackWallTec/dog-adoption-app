@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -85,10 +86,11 @@ fun App() {
             )
             Spacer(Modifier.height(20.dp))
 
-        NavBar(selected=selected, onSelect={selected=it})       ///
-            Spacer(Modifier.height(12.dp))
-            PerrosScreen(modifier = Modifier.weight(1f))
+            Box(modifier=Modifier.weight(1f)){
+                PerrosScreen(modifier=Modifier.fillMaxSize())
+            }
         }
+        NavBar(selected=selected, onSelect={selected= it})
 
     }
 }

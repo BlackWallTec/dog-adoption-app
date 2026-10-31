@@ -6,9 +6,9 @@ import jakarta.inject.Inject
 
 class PerroDataSource @Inject constructor() {
     private val api=Retrofit.Builder()
-        .baseUrl("https://10.0.2.2:5555/") ///
+        .baseUrl("http://10.0.2.2:5555/") ///
         .addConverterFactory(GsonConverterFactory.create())     //
         .build()
         .create(PerroApi::class.java)       //
-    suspend fun getPerros(): List<PerroDto> = api.getPerros()
+    suspend fun getPerros(): List<PerroDto> = api.getPerros().data
 }
