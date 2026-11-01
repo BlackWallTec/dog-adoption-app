@@ -71,6 +71,7 @@ export const postLogin = async (req, res) => {
       process.env.JWT_SECRET,
       {
         // Aquí también se especifica el algoritmo a usar
+        algorithm: "HS256",
         expiresIn: vida,
       },
     );
@@ -96,7 +97,7 @@ export const postLogin = async (req, res) => {
     return res.status(200).json({
       user: {
         id: usuario.id_usuario,
-        email: usuario.correo_electronico,
+        email: usuario.email,
         rol: usuario.rol,
       },
     });

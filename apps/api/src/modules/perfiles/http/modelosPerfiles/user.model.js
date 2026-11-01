@@ -17,7 +17,7 @@ export default class Usuario {
       datos_confidenciales!inner ( id_usuario )
       `,
       )
-      .eq("correo_electronico", email)
+      .eq("datos_confidenciales.correo_electronico", email)
       .maybeSingle();
 
     // La IA me recomendó uso de maybeSingle() para garantizar
