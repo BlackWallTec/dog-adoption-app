@@ -1,10 +1,10 @@
-import { getPerrosAdminModel } from "../../../Modelos/modelosCatalogo/perro.model.js";
+import dogModel from "./modelosCatalogo/dog.model.js";
 
 export const getPerrosAdmin = async (req, res) => {
   try {
-    const perros = await getPerrosAdminModel();
+    const perros = await dogModel.getDogs();
     return res.status(200).json({
-      sucess: true,
+      success: true,
       data: perros,
     });
   } catch (error) {
