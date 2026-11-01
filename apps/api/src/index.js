@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 // Config del cors
 app.use(
   cors({
-    origin: "*", // Permite el origen de vite y otros dominios como android
+    origin: "http://localhost:5173", // Permite el origen de vite y otros dominios como android
     credentials: true, // Requerido para cookies y credenciales
   }),
 );
