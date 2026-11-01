@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import { router as perfiles } from "./modules/perfiles/index.js";
@@ -18,7 +19,7 @@ export function createApp() {
   );
 
   app.use(express.json());
-  app.use(cookieParser);
+  app.use(cookieParser());
 
   app.get("/health", (req, res) => res.json({ status: "ok" }));
 
