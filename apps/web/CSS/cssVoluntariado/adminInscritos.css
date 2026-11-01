@@ -1,0 +1,190 @@
+/* ==================== MÓDULO VOLUNTARIADO: LISTA DE INSCRITOS ==================== */
+
+/* El atributo hidden debe ganarle a cualquier display de las clases */
+[hidden] {
+  display: none !important;
+}
+
+.content-area {
+  padding: 36px 40px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--md-sys-color-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* ==================== ENCABEZADO (usa el mismo estilo que Catalogo) ==================== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-family: var(--font-headline);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 4px;
+}
+
+.section-subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Badges del estado del programa */
+.badge-estado {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-disponible {
+  background-color: #e6f4ea;
+  color: #1e4620;
+}
+
+.badge-lleno {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+}
+
+.badge-finalizado {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.badge-cancelado {
+  background-color: #ffdad6;
+  color: var(--md-sys-color-error);
+}
+
+/* Aviso para programas cancelados o finalizados */
+.aviso-estado {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: var(--md-sys-primary-container);
+  color: var(--md-sys-color-on-surface);
+  font-size: 14px;
+}
+
+/* ==================== RESUMEN DEL PROGRAMA ==================== */
+.resume-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.resume-dato {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resume-dato .material-symbols-rounded {
+  color: var(--md-sys-color-secondary);
+}
+
+.resume-label {
+  display: block;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.resume-valor {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* ==================== TABLA DE INSCRITOS mismo estilo que Catalogo ==================== */
+.table-card {
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.inscritos-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.inscritos-table thead {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.inscritos-table th {
+  padding: 14px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: 0.3px;
+}
+
+.inscritos-table td {
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var (--md-sys-color-on-surface);
+  border-bottom: 1px solid var(--md-sys-color-surface-container-low);
+}
+
+.inscritos-table .sin-dato,
+.inscritos-table .fila-vacia {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.inscritos-table .fila-vacia {
+  padding: 32px;
+  text-align: center;
+}
+
+/* Asistencia */
+.asistencia-si {
+  color: #1e4620;
+  font-weight: 500;
+}
+
+.asistencia-no {
+  color: var(--md-sys-color-error);
+  font-weight: 500;
+}
+
+/* ==================== ERROR DE CARGA ==================== */
+.estado-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--md-sys-color-error);
+}
+
+.estado-error .btn-primary {
+  color: #ffffff;
+}
