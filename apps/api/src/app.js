@@ -1,4 +1,6 @@
 import express from "express";
+import cookieParser from "cookie-parser";
+
 import { router as perfiles } from "./modules/perfiles/index.js";
 import { router as donativos } from "./modules/donativos/index.js";
 import { router as solicitudes } from "./modules/solicitudes/index.js";
@@ -8,6 +10,7 @@ import { router as voluntarios } from "./modules/voluntarios/index.js";
 export function createApp() {
   const app = express();
   app.use(express.json());
+  app.use(cookieParser);
 
   app.get("/health", (req, res) => res.json({ status: "ok" }));
 
