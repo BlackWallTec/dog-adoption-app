@@ -1,4 +1,4 @@
-import db from "../../../../config/supabaseClient.js";
+import { supabase } from "../../../../config/supabaseClient.js";
 
 // Se parametrizan las consultas, para que se traten como dato y no
 // como instrucción.
