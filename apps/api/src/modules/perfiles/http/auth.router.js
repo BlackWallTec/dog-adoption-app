@@ -1,12 +1,13 @@
 import express from "express";
-const router = express.Router();
-
-// Importar los controladores
+import verificarToken from "../../../middleware/is-auth.js";
 import * as authController from "./auth.controller.js";
 
-// Rutas Login
-router.get("/login", authController.getLogin);
+const router = express.Router();
 
+// Rutas Login
 router.post("/login", authController.postLogin);
+router.post("/logout", authController.postLogout);
+//    Notar cómo aquí sí verifica al token
+router.post("/me", verificarToken, authController.getMe);
 
 export default router;
