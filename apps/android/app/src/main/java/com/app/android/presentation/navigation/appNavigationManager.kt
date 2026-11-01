@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.presentation.view.viewsCatalogo.dogDetailScreen
+import com.app.android.presentation.view.atomicDesign.page.DonarDineroScreen
+import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 
 @Composable
 fun AppNavigation() {
@@ -31,6 +33,34 @@ fun AppNavigation() {
 
             // Llamamos a tu pantalla pasándole el ID extraído
             dogDetailScreen(dogId = dogId)
+        }
+        // Donativos - HU46: registrar donativo económico
+        composable(route = Screen.DonarDinero.ruta) {
+            DonarDineroScreen(
+                onBackClick = { navController.popBackStack() },
+                onEnviarClick = { monto ->
+                    navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
+                        // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
+                        popUpTo(Screen.DonarDinero.ruta) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable(
+            route = Screen.DonativoEnviado.ruta,
+            arguments =
+                listOf(
+                    navArgument("monto") { type = NavType.StringType },
+                ),
+        ) { backStackEntry ->
+            val monto = backStackEntry.arguments?.getString("monto") ?: ""
+            DonativoEnviadoScreen(
+                monto = "\$$monto MXN",
+                onBackClick = { navController.popBackStack() },
+                onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
+                onVerMisDonativosClick = {}, // Mis donativos todavía no existe
+            )
         }
 
         // Pantilla para nueva pantalla
