@@ -4,6 +4,7 @@ import com.app.android.domain.entities.entitiesSolicitudes.AdoptionForm
 import com.app.android.domain.entities.entitiesSolicitudes.AdoptionFormErrors
 import com.app.android.domain.useCases.useCasesSolicitudes.SubmitAdoptionRequestUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.ValidateAdoptionFormUseCase
+import javax.inject.Inject
 
 // Maquina de estados de ViewModel para AdoptionFormScreen
 
@@ -17,7 +18,7 @@ data class AdoptionFormUiState(
 )
 
 class AdoptionFormViewModel
-    @inject
+    @Inject
     constructor(
         private val validateForm: ValidateAdoptionFormUseCase,
         private val submitRequest: SubmitAdoptionRequestUseCase,
