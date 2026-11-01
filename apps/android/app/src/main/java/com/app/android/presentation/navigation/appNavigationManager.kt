@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.app.android.presentation.view.viewsCatalogo.dogDetailScreen
+import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 
 @Composable
 fun AppNavigation() {
@@ -29,8 +29,8 @@ fun AppNavigation() {
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
 
-            // Llamamos a tu pantalla pasándole el ID extraído
-            dogDetailScreen(dogId = dogId)
+            // Llamamos a la función composable de la pantalla pasándole el ID extraído
+            DogDetailScreenView(dogId = dogId)
         }
 
         // Pantilla para nueva pantalla

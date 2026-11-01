@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.atomicDesign.atomic
+package com.app.android.presentation.view.atomicDesign.atomic.basicAtomics
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text

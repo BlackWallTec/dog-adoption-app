@@ -26,12 +26,14 @@ import com.app.android.presentation.view.ui.theme.AndroidTheme
 @Composable
 fun ChipSuperficie(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     colorFondo: Color = MaterialTheme.colorScheme.surfaceVariant,
     forma: Shape = RoundedCornerShape(16.dp),
     paddingHorizontal: Dp = 12.dp,
     paddingVertical: Dp = 6.dp,
     content: @Composable () -> Unit,
 ) {
+    if (!enabled) return
     Box(
         modifier =
             modifier
