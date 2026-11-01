@@ -3,6 +3,8 @@ package com.app.android.di
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
+import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,4 +64,11 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
+    // 4. Repositorio de Solicitudes.
+    // TEMPORAL: usa el Fake (dato sque le di)  mientras no existe el backend de solicitudes.
+    // Cuando exista, se tiene que cambiar por: SolicitudRepositoryImpl(apiService)
+    @Provides
+    @Singleton
+    fun provideSolicitudRepository(): SolicitudRepositoryInt = SolicitudRepositoryFake()
 }
