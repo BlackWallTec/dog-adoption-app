@@ -65,7 +65,6 @@ fun VolunteeringConfirmationScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-
             ConfirmationHeader(
                 titulo = "¡Te inscribiste!",
                 subtitulo = "Gracias por sumar tu cariño. Tu lugar está confirmado.",
