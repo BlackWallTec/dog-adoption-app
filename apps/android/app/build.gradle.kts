@@ -1,8 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
 }
@@ -51,31 +49,24 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.material.icons.extended)
+
+    // Hilt (Inyección de dependencias)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
+
+    // Testing & Debug
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-<<<<<<< HEAD
-    implementation(libs.androidx.material.icons.extended)
-=======
->>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-<<<<<<< HEAD
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
-
-=======
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
-    implementation(libs.androidx.material.icons.extended)
->>>>>>> 37eab7179fd3454dcc4d5d18cfd34eadd87444ac
 }
