@@ -7,11 +7,11 @@ import ROLES from "./modelosPerfiles/roles.model.js";
 /*
 IMPORTANTE
 Considerar que desde el cliente, se declara el x-client. Si esto no se
-mandara desde android, la búsqueda de la cookie será infructuosa y
-resultará en 401.
+mandara desde android, se le enviaría como respuesta la cookie en
+lugar del token
 
 También, no se especificó un algoritmo ni aquí ni en el
-auth.controller.js, por defecto está usando HS256.
+is-auth.js, por defecto está usando HS256.
 
 En el middleware también debe usarse el mismo header.
 */
@@ -38,7 +38,7 @@ export const postLogin = async (req, res) => {
     const email = req.body.email;
     const passwd = req.body.passwd;
 
-    if (!email || !passwd) {
+    if (typeof email !== "string" || typeof passwd !== "string" || !email || !passwd) {
       return res.status(400).json({
         error: "Correo y contraseña son requeridos",
       });
@@ -64,7 +64,7 @@ export const postLogin = async (req, res) => {
 
     const token = jwt.sign(
       {
-        uuid: usuario.usuario_id,
+        uuid: usuario.id_usuario,
         email: usuario.email,
         rol: usuario.rol,
       },
@@ -81,7 +81,7 @@ export const postLogin = async (req, res) => {
       return res.status(200).json({
         user: {
           id: usuario.id_usuario,
-          email: usuario.correo_electronico,
+          email: usuario.email,
           rol: usuario.rol,
         },
         token,

@@ -1,7 +1,7 @@
 const ROLES = {
-  ROOT: "root",
-  ADMIN: "admin",
-  CLIENT: "client",
+  ROOT: "Root",
+  ADMIN: "Administrador",
+  CLIENT: "Cliente",
 };
 
 export default ROLES;
