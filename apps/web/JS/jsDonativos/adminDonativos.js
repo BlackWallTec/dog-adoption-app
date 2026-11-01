@@ -1,30 +1,23 @@
-export const donativosDemo = [
-  {
-    id: 1,
-    donante: "Ana López",
-    monto: 500,
-    fecha: "2026-10-15",
-    estado: "Confirmado",
-  },
-  {
-    id: 2,
-    donante: "Carlos Ruiz",
-    monto: 250,
-    fecha: "2026-10-18",
-    estado: "Pendiente",
-  },
-  {
-    id: 3,
-    donante: "María García",
-    monto: 1000,
-    fecha: "2026-10-20",
-    estado: "Confirmado",
-  },
-  {
-    id: 4,
-    donante: "Luis Torres",
-    monto: 300,
-    fecha: "2026-10-22",
-    estado: "Confirmado",
-  },
-];
+const API_URL = "http://localhost:3000/api/donativos/admin/pendientes";
+
+export async function obtenerDonativosPendientes() {
+  const respuesta = await fetch(API_URL, {
+    credentials: "include",
+  });
+
+  if (!respuesta.ok) {
+    throw new Error(`No se pudieron cargar los donativos: ${respuesta.status}`);
+  }
+
+  const datos = await respuesta.json();
+
+  return datos.map((donativo) => ({
+    id: donativo.id_donativo,
+    donante:
+      [donativo.usuario?.nombre, donativo.usuario?.apellidos].filter(Boolean).join(" ") ||
+      "Sin nombre",
+    monto: donativo.monto,
+    fecha: donativo.fecha,
+    estado: donativo.estado,
+  }));
+}

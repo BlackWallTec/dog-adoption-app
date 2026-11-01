@@ -1,8 +1,32 @@
-import { donativosDemo } from "./adminDonativos.js";
+import { obtenerDonativosPendientes } from "./adminDonativos.js";
 
 const tablaBody = document.getElementById("tabla-donativos-body");
 const counterSubtitle = document.getElementById("donativos-counter-subtitle");
 const paginationInfo = document.getElementById("pagination-info");
+
+function actualizarContador(total) {
+  const mensaje = `Mostrando ${total} donativos pendientes`;
+
+  if (counterSubtitle) {
+    counterSubtitle.textContent = mensaje;
+  }
+  if (paginationInfo) {
+    paginationInfo.textContent = mensaje;
+  }
+}
+
+function mostrarMensaje(mensaje) {
+  if (!tablaBody) return;
+
+  tablaBody.replaceChildren();
+
+  const fila = document.createElement("tr");
+  const celda = document.createElement("td");
+  celda.colSpan = 5;
+  celda.textContent = mensaje;
+  fila.append(celda);
+  tablaBody.append(fila);
+}
 
 function formatearMonto(monto) {
   return new Intl.NumberFormat("es-MX", {
@@ -12,58 +36,75 @@ function formatearMonto(monto) {
 }
 
 function formatearFecha(fecha) {
+  const fechaValida = new Date(fecha);
+
+  if (Number.isNaN(fechaValida.getTime())) {
+    return "Sin fecha";
+  }
+
   return new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "medium",
-    timeZone: "UTC",
-  }).format(new Date(`${fecha}T12:00:00Z`));
+    dataStyle: "medium",
+  }).format(fechaValida);
 }
 
 function renderizarTabla(donativos) {
   if (!tablaBody) return;
 
+  tablaBody.replaceChildren();
+
   if (donativos.length === 0) {
-    tablaBody.innerHTML = `
-            <tr>
-                <td colspan="5">No se encontraron donativos.</td>
-            </tr>
-        `;
+    mostrarMensaje("No hay donativos pendientes.");
     return;
   }
 
-  tablaBody.innerHTML = donativos
-    .map((donativo) => {
-      const estado = donativo.estado;
-      const claseEstado = estado === "Confirmado" ? "badge-confirmado" : "badge-pendiente";
+  for (const donativo of donativos) {
+    const fila = document.createElement("tr");
 
-      return `
-                <tr>
-                    <td>${donativo.id}</td>
-                    <td>${donativo.donante}</td>
-                    <td>${formatearMonto(donativo.monto)}</td>
-                    <td>${formatearFecha(donativo.fecha)}</td>
-                    <td>
-                        <span class="badge-estado ${claseEstado}">
-                            ${estado}
-                        </span>
-                    </td>
-                </tr>
-            `;
-    })
-    .join("");
+    const valores = [
+      donativo.id,
+      donativo.donante,
+      formatearMonto(donativo.monto),
+      formatearFecha(donativo.fecha),
+    ];
+
+    for (const valor of valores) {
+      const celda = document.createElement("td");
+      celda.textContent = valor ?? "";
+      fila.append(celda);
+    }
+
+    const celdaEstado = document.createElement("td");
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "badge-estado badge-pendiente";
+    etiqueta.textContent = donativo.estado;
+    celdaEstado.append(etiqueta);
+    fila.append(celdaEstado);
+
+    tablaBody.append(fila);
+  }
 }
 
-function cargarDonativos() {
-  const total = donativosDemo.length;
+async function cargarDonativos() {
+  mostrarMensaje("Cargando donativos pendientes...");
+  actualizarContador(0);
 
-  if (counterSubtitle) {
-    counterSubtitle.textContent = `Mostrando ${total} de ${total} donativos`;
+  try {
+    const donativos = await obtenerDonativosPendientes();
+    renderizarTabla(donativos);
+    actualizarContador(donativos.length);
+  } catch (error) {
+    console.error("Error al cargar los donativos:", error);
+    mostrarMensaje("No fue posible cargar los donativos pendientes.");
   }
-
-  if (paginationInfo) {
-    paginationInfo.textContent = `Mostrando ${total} de ${total} donativos`;
-  }
-
-  renderizarTabla(donativosDemo);
 }
 
-document.addEventListener("DOMContentLoaded", cargarDonativos);
+document.addEventListener("DOMContentLoaded", () => {
+  const topbar = document.querySelector("admin-topbar");
+  const titulo = topbar?.querySelector(".topbar-title");
+
+  if (titulo) {
+    titulo.textContent = "Donativos";
+  }
+
+  void cargarDonativos();
+});
