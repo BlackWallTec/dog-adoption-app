@@ -28,7 +28,7 @@ export async function obtenerInscritos(idPrograma) {
   if (!respuesta.ok || !cuerpo?.success) {
     throw new ErrorApi(
       respuesta.status,
-      cuepor?.code ?? "ERROR_INTERNO",
+      cuerpo?.code ?? "ERROR_INTERNO",
       cuerpo?.message ?? "Error al consultar los inscritos",
     );
   }
