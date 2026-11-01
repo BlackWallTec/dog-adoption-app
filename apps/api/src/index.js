@@ -4,32 +4,32 @@ import cors from "cors";
 
 // Import de routers de los módulos
 import catalogoRoutes from "./modules/catalogo/http/catalog.router.js";
+import { router as solicitudesRoutes } from "./modules/solicitudes/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+//Middleware
 app.use(express.json());
 
-// Middleware para ver qué rutas se piden
+// Middleware to see what routes are asking
 app.use((req, res, next) => {
   console.log(`Se solicitó: ${req.method} ${req.url}`);
   next();
 });
 
-// Config del cors
 app.use(
   cors({
-    origin: "*", // Permite el origen de vite y otros dominios como android
-    credentials: true, // Requerido para cookies y credenciales
+    origin: "*", //Allows de domain of android
+    credentials: true, //Requiered for cookies and credentials
   }),
 );
 
-// Rutas
+//Routes
 app.use("/api/catalogo", catalogoRoutes);
+app.use("/api/solicitudes", solicitudesRoutes);
 
-// Iniciar el servidor
-//Añadimos el 0.0.0.0 para que sea accesible desde cualquier IP, no solo localhost
+//Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
