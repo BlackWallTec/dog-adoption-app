@@ -79,16 +79,8 @@ constructor(
         }
     }
 
-    // CUANDO EL USUARIO ESCRIBE
-    // Cada uno cambia solo su campo y borra solo su error
-    fun onNombreChange(valor: String) {
-        val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
-        _uiState.value =
-            actual.copy(
-                datos = actual.datos.copy(nombreCompleto = valor),
-                errores = actual.errores.copy(nombre = null),
-            )
-    }
+    // CUANDO EL USUARIO ESCRIBE, que solo escribe en ocupacion
+    // cambia solo su campo y borra solo su error
 
     fun onOcupacionChange(valor: String) {
         val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
@@ -96,42 +88,6 @@ constructor(
             actual.copy(
                 datos = actual.datos.copy(ocupacion = valor),
                 errores = actual.errores.copy(ocupacion = null),
-            )
-    }
-
-    fun onDomicilioChange(valor: String) {
-        val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
-        _uiState.value =
-            actual.copy(
-                datos = actual.datos.copy(domicilio = valor),
-                errores = actual.errores.copy(domicilio = null),
-            )
-    }
-
-    fun onMunicipioChange(valor: String) {
-        val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
-        _uiState.value =
-            actual.copy(
-                datos = actual.datos.copy(municipio = valor),
-                errores = actual.errores.copy(municipio = null),
-            )
-    }
-
-    fun onTelefonoChange(valor: String) {
-        val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
-        _uiState.value =
-            actual.copy(
-                datos = actual.datos.copy(telefono = valor),
-                errores = actual.errores.copy(telefono = null),
-            )
-    }
-
-    fun onCorreoChange(valor: String) {
-        val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
-        _uiState.value =
-            actual.copy(
-                datos = actual.datos.copy(correo = valor),
-                errores = actual.errores.copy(correo = null),
             )
     }
 
