@@ -1,17 +1,33 @@
 package com.app.android.data.dtos.dtosPerfiles
 
-import com.app.android.domain.entities.entitiesPerfil.Usuario
+import com.app.android.domain.entities.entitiesPerfiles.Sesion
+import com.app.android.domain.entities.entitiesPerfiles.Usuario
 import com.google.gson.annotations.SerializedName
 
-// 1. Envoltorio Global de la API
-data class ApiResponseUsuarioDTO(
-    @SerializedName("user") val success: List<UserDTO>?,
-    @SerializedName("token") val data: String?,
+data class LoginRequestDTO(
+    @SerializedName("email") val email: String,
+    @SerializedName("passwd") val passwd: String,
 )
 
-// 2. Info del usuario
+data class LoginResponseDTO(
+    @SerializedName("user") val user: UserDTO?,
+    @SerializedName("token") val token: String?,
+)
+
 data class UserDTO(
-    @SerializedName("id_usuario") val idUsuario: String?,
+    @SerializedName("id") val id: String?,
     @SerializedName("email") val email: String?,
     @SerializedName("rol") val rol: String?,
 )
+
+fun LoginResponseDTO.toDomain(): Sesion {
+    val u = user ?: error("Respuesta sin usuario")
+    return Sesion(
+        usuario = Usuario(
+            id = u.id ?: error("Respuesta sin id"),
+            email = u.email.orEmpty(),
+            rol = u.rol.orEmpty(),
+        ),
+        token = token ?: error("Respuesta sin token"),
+    )
+}

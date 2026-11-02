@@ -1,8 +1,11 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+import com.app.android.data.dataSource.dataSourcesPerfiles.UsuarioAPIservice
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.data.repoImp.repoImpPerfiles.UsuarioRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,6 +38,12 @@ object NetworkModule {
             .connectTimeout(30, TimeUnit.SECONDS) // 30 segundos de margen para conectar
             .readTimeout(30, TimeUnit.SECONDS) // 30 segundos para leer datos
             .writeTimeout(30, TimeUnit.SECONDS) // 30 segundos para enviar
+            // ====== Inicio de código de Luis Gtz. =====
+            // Este es el interceptor de registro fue añadido por Luis Gtz.
+            .addInterceptor { chain ->
+                chain.proceed(chain.request().newBuilder().header("x-client", "mobile").build())
+            }
+            // ====== Fin de código de Luis Gtz. =====
             .addInterceptor(loggingInterceptor)
             .build()
     // ====== Fin Codigo agregado con IA =====
@@ -62,4 +71,17 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
+
+    // Providers de Perfiles
+    @Provides @Singleton
+    fun provideUsuarioApiService(retrofit: Retrofit): UsuarioAPIservice =
+        retrofit.create(UsuarioAPIservice::class.java)
+
+    @Provides @Singleton
+    fun providePerfilesRepository(api: UsuarioAPIservice): PerfilesRepositoryInt =
+        UsuarioRepositoryImpl(api)
 }
+
+
+

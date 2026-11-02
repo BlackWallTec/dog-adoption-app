@@ -1,11 +1,17 @@
-package com.app.android.domain.entities.entitiesPerfil
+package com.app.android.domain.entities.entitiesPerfiles
 
+// Para el arreglo de usuario
 data class Usuario(
-    val id_usuario: String,
-    val rol: String,
-    val nombre: String,
-    val apellidos: String,
-    val contrasena: String,
-    val fecha_nacimiento: String,
-    val fecha_registro: String,
+    val id: String,
+    val email: String,
+    val rol: String
 )
+
+// Para el token
+data class Sesion(
+    val usuario: Usuario,
+    val token: String
+)
+
+// ESTO ÚLTIMO ME LO RECOMENDÓ LA IA
+class CredencialesInvalidasException : Exception("Credenciales inválidas")

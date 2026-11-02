@@ -2,8 +2,8 @@ package com.app.android.domain.repoInterface.repoIntPerfiles
 
 import com.app.android.data.dtos.dtosPerfiles.ApiResponseUsuarioDTO
 
-interface PerfilesRepositoryInt {
-    // Con "?" devuelve null si no hay Usuario para tal email
-    suspend fun fetchByEmail(email: String): ApiResponseUsuarioDTO?
-}
+import com.app.android.domain.entities.entitiesPerfiles.Sesion
 
+interface PerfilesRepositoryInt {
+    suspend fun login(email: String, passwd: String): Sesion
+}
