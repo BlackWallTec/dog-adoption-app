@@ -4,7 +4,7 @@ import cors from "cors";
 
 // Import de routers de los módulos
 import catalogoRoutes from "./modules/catalogo/http/catalog.router.js";
-import solicitudesRoutes from "./modules/solicitudes/http/request.router.js";
+import { router as solicitudesRoutes } from "./modules/solicitudes/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,6 +28,7 @@ app.use(
 
 // Rutas
 app.use("/api/catalogo", catalogoRoutes);
+app.use("/api/solicitudes", solicitudesRoutes);
 app.use("/api/solicitudes", solicitudesRoutes);
 
 // Iniciar el servidor
