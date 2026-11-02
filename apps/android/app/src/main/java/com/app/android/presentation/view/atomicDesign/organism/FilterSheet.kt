@@ -15,20 +15,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -36,17 +32,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.android.presentation.view.atomicDesign.atomic.FilterDropdown
 import com.app.android.presentation.view.atomicDesign.molecule.FilterActionBar
 import com.app.android.presentation.view.atomicDesign.molecule.FilterMultiChoiceFlow
 import com.app.android.presentation.view.atomicDesign.molecule.FilterSingleChoiceRow
-import com.app.android.presentation.view.atomicDesign.atomic.FilterDropdown
 import com.app.android.presentation.viewmodel.viewModelCatalogo.FilterOptions
 import com.app.android.presentation.viewmodel.viewModelCatalogo.FilterSelection
 
 private val ColorSurface = Color(0xFFFFFBF2)
 private val ColorTextMain = Color(0xFF3A3A3A)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSheetContent(
     filters: FilterSelection,
@@ -57,149 +52,144 @@ fun FilterSheetContent(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    CompositionLocalProvider(
-        LocalMinimumInteractiveComponentEnforcement provides false
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(ColorSurface)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp)
     ) {
-        Column(
-            modifier = modifier
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
-                .background(ColorSurface)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+                .semantics { contentDescription = "Encabezado de filtros" },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = "Encabezado de filtros" },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Text(
+                text = "Filtrar",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = ColorTextMain
+            )
+            IconButton(
+                onClick = onClose,
+                modifier = Modifier.semantics { contentDescription = "Cerrar filtros" }
             ) {
-                Text(
-                    text = "Filtrar",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorTextMain
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = ColorTextMain
                 )
-                IconButton(
-                    onClick = onClose,
-                    modifier = Modifier.semantics { contentDescription = "Cerrar filtros" }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Cerrar filtros",
-                        tint = ColorTextMain,
-                        modifier = Modifier.fillMaxWidth(0.1f)
-                    )
-                }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Tamaño
-            Text(
-                text = "Tamaño",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
-                color = ColorTextMain,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            FilterSingleChoiceRow(
-                options = options.tamanos,
-                selectedIndex = filters.tamanoIndex,
-                onSelected = { index ->
-                    onFiltersChange(filters.copy(tamanoIndex = index))
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Edad
-            Text(
-                text = "Edad",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
-                color = ColorTextMain,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            FilterSingleChoiceRow(
-                options = options.edades,
-                selectedIndex = filters.edadIndex,
-                onSelected = { index ->
-                    onFiltersChange(filters.copy(edadIndex = index))
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sexo
-            Text(
-                text = "Sexo",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
-                color = ColorTextMain,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            FilterSingleChoiceRow(
-                options = options.sexos,
-                selectedIndex = filters.sexoIndex,
-                onSelected = { index ->
-                    onFiltersChange(filters.copy(sexoIndex = index))
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Raza
-            Text(
-                text = "Raza",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
-                color = ColorTextMain,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            FilterDropdown(
-                options = options.razas,
-                selectedIndex = filters.razaIndex,
-                onSelected = { index ->
-                    onFiltersChange(filters.copy(razaIndex = index))
-                },
-                placeholder = "Todas las razas",
-                contentDescriptionLabel = "Raza"
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Características especiales
-            if (options.caracteristicas.isNotEmpty()) {
-                Text(
-                    text = "Características especiales",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = ColorTextMain,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                FilterMultiChoiceFlow(
-                    options = options.caracteristicas,
-                    selectedIndices = filters.caracteristicas,
-                    onToggled = { index ->
-                        val newSet = filters.caracteristicas.toMutableSet()
-                        if (index in newSet) newSet.remove(index) else newSet.add(index)
-                        onFiltersChange(filters.copy(caracteristicas = newSet))
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            FilterActionBar(
-                onClear = onClear,
-                onApply = onApply,
-                clearEnabled = !filters.isEmpty,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Tamaño
+        Text(
+            text = "Tamaño",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            color = ColorTextMain,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        FilterSingleChoiceRow(
+            options = options.tamanos,
+            selectedIndex = filters.tamanoIndex,
+            onSelected = { index ->
+                onFiltersChange(filters.copy(tamanoIndex = index))
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Edad
+        Text(
+            text = "Edad",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            color = ColorTextMain,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        FilterSingleChoiceRow(
+            options = options.edades,
+            selectedIndex = filters.edadIndex,
+            onSelected = { index ->
+                onFiltersChange(filters.copy(edadIndex = index))
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Sexo
+        Text(
+            text = "Sexo",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            color = ColorTextMain,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        FilterSingleChoiceRow(
+            options = options.sexos,
+            selectedIndex = filters.sexoIndex,
+            onSelected = { index ->
+                onFiltersChange(filters.copy(sexoIndex = index))
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Raza
+        Text(
+            text = "Raza",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            color = ColorTextMain,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        FilterDropdown(
+            options = options.razas,
+            selectedIndex = filters.razaIndex,
+            onSelected = { index ->
+                onFiltersChange(filters.copy(razaIndex = index))
+            },
+            placeholder = "Todas las razas",
+            contentDescriptionLabel = "Raza"
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Características especiales
+        if (options.caracteristicas.isNotEmpty()) {
+            Text(
+                text = "Características especiales",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = ColorTextMain,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            FilterMultiChoiceFlow(
+                options = options.caracteristicas,
+                selectedIndices = filters.caracteristicas,
+                onToggled = { index ->
+                    val newSet = filters.caracteristicas.toMutableSet()
+                    if (index in newSet) newSet.remove(index) else newSet.add(index)
+                    onFiltersChange(filters.copy(caracteristicas = newSet))
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        FilterActionBar(
+            onClear = onClear,
+            onApply = onApply,
+            clearEnabled = !filters.isEmpty,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
     }
 }
 

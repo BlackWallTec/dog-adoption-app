@@ -22,8 +22,8 @@ data class FilterOptions(
     val tamanos: List<String> = listOf("Chico", "Mediano", "Grande"),
     val edades: List<String> = listOf("Cachorro", "Adulto", "Senior"),
     val sexos: List<String> = listOf("Macho", "Hembra"),
-    val razas: List<String> = listOf("Mestizo", "Labrador", "Pastor alemán"),
-    val caracteristicas: List<String> = listOf("Convive con gatos", "Cuidados especiales")
+    val razas: List<String> = emptyList(),
+    val caracteristicas: List<String> = emptyList()
 )
 
 data class DogCardUi(
