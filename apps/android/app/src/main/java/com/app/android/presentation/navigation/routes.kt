@@ -13,6 +13,9 @@ sealed class Screen(
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
 
+    // HU39A: catálogo de programas de voluntariado
+    object Programas : Screen("programas_screen")
+
     // Patrón para nueva pantalla
     // Object nombrePantalla: Screen("ruta_pantalla"){
     // fun crearRuta(dogId: String, categoria: String) = "editar_perro_screen/$dogId/$categoria"

@@ -1,8 +1,11 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,4 +65,13 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
+    // ====== HU39A: Voluntariado (programas) =====
+    @Provides
+    @Singleton
+    fun provideProgramaApiService(retrofit: Retrofit): ProgramaApiService = retrofit.create(ProgramaApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProgramaRepository(apiService: ProgramaApiService): ProgramaRepository = ProgramaRepositoryImpl(apiService)
 }

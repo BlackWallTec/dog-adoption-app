@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.presentation.view.viewsCatalogo.dogDetailScreen
+import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 
 @Composable
 fun AppNavigation() {
@@ -16,7 +17,9 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        startDestination = Screen.DetallePerro.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024"),
+        // TEMPORAL (HU39A): para probar la pantalla de programas.
+        // startDestination = Screen.DetallePerro.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024"),
+        startDestination = Screen.Programas.ruta,
     ) {
         // PANTALLA 2: El detalle del perro (La pantalla que ya hiciste)
         composable(
@@ -31,6 +34,11 @@ fun AppNavigation() {
 
             // Llamamos a tu pantalla pasándole el ID extraído
             dogDetailScreen(dogId = dogId)
+        }
+
+        // HU39A: catálogo de programas de voluntariado
+        composable(route = Screen.Programas.ruta) {
+            ProgramasScreen(onBackClick = { navController.popBackStack() })
         }
 
         // Pantilla para nueva pantalla

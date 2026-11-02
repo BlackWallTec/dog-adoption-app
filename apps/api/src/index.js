@@ -4,6 +4,7 @@ import cors from "cors";
 
 // Import de routers de los módulos
 import catalogoRoutes from "./modules/catalogo/http/catalog.router.js";
+import { router as voluntariosRoutes } from "./modules/voluntarios/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use(
 
 // Rutas
 app.use("/api/catalogo", catalogoRoutes);
+app.use("/api/voluntarios", voluntariosRoutes);
 
 // Iniciar el servidor
 //Añadimos el 0.0.0.0 para que sea accesible desde cualquier IP, no solo localhost

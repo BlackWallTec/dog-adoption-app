@@ -12,6 +12,7 @@ kotlin = "2.2.10"
 composeBom = "2026.02.01"
 hilt = "2.60.1"
 loggingInterceptor = "5.5.1"
+navigationCompose = "2.9.8"
 
 foundationLayout = "1.12.1"
 
@@ -39,7 +40,7 @@ logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", ver
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
