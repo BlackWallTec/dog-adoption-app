@@ -63,7 +63,7 @@ fun TarjetaPrograma(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextoSecundario(texto = estado)
+            TextoSecundario(texto = estado, modifier = Modifier.padding(start = 10.dp))
             TextoSecundario(texto = fechaFin)
         }
     }
@@ -71,9 +71,13 @@ fun TarjetaPrograma(
 
 // Texto simple y pequeño para los datos secundarios
 @Composable
-private fun TextoSecundario(texto: String) {
+private fun TextoSecundario(
+    texto: String,
+    modifier: Modifier = Modifier,
+) {
     Text(
         text = texto,
+        modifier = modifier,
         color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.7f),
         fontSize = 14.sp,
     )
