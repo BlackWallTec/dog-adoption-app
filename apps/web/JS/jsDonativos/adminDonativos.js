@@ -1,8 +1,19 @@
+import { obtenerTokenDonativos } from "./adminDonativos.auth.js";
+
 const API_URL = "http://localhost:3000/api/donativos/admin/pendientes";
 
 export async function obtenerDonativosPendientes() {
+  const token = await obtenerTokenDonativos();
+
+  if (!token) {
+    throw new Error("Debes iniciar sesión para consultar los donativos.");
+  }
+
   const respuesta = await fetch(API_URL, {
     credentials: "include",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!respuesta.ok) {

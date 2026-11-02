@@ -29,6 +29,28 @@
         <admin-topbar></admin-topbar>
 
         <main class="content-area">
+          <section id="donativos-login" class="table-card">
+            <h2>Acceso administrativo de prueba</h2>
+            <p>Inicia sesión para consultar los donativos pendientes.</p>
+
+            <form id="donativos-login-form">
+              <label for="donativos-email">Correo electrónico</label>
+              <input id="donativos-email" type="email" autocomplete="username" required />
+
+              <label for="donativos-password">Contraseña</label>
+              <input
+                id="donativos-password"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+
+              <button type="submit">Iniciar sesión</button>
+            </form>
+
+            <p id="donativos-login-error" role="alert"></p>
+          </section>
+
           <div class="section-header">
             <div>
               <h1 class="section-title">Administración de Donativos</h1>
@@ -47,6 +69,7 @@
                   <th>Estado</th>
                 </tr>
               </thead>
+
               <tbody id="tabla-donativos-body">
                 <tr>
                   <td colspan="5">Cargando donativos...</td>
@@ -61,6 +84,9 @@
         </main>
       </div>
     </div>
+
+    <script type="module" src="../../JS/jsDonativos/adminDonativos.login.js"></script>
+
     <script type="module" src="../../JS/jsDonativos/adminDonativos.view.js"></script>
   </body>
 </html>

@@ -2,7 +2,7 @@ import DonativoModel from "./modelosDonativos/donativo.model.js";
 
 export async function obtenerDonativosPendientes(req, res) {
   try {
-    const donativos = await DonativoModel.getPendientes();
+    const donativos = await DonativoModel.getPendientes(req.supabaseAccessToken);
 
     return res.status(200).json(donativos);
   } catch (error) {
