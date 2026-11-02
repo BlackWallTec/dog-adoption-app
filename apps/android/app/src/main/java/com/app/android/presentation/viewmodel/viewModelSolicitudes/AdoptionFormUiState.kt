@@ -11,5 +11,5 @@ data class AdoptionFormUiState(
     val triedToSubmit: Boolean = false, // si ya presiono enviar
     val isSubmitting: Boolean = false,
     val isSubmitted: Boolean = false,
-    val submitError: Boolean = false,
+    val submitError: String? = null,
 )

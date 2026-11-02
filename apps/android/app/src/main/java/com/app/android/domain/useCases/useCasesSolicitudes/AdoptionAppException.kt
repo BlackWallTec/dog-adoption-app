@@ -1,12 +1,26 @@
 package com.app.android.domain.useCases.useCasesSolicitudes
 
-// Definir los errores que la aplicación entiende (no el backend)
-// Este se diferencia de result y de uiState porque
-// Result (emit) dice en qué va la operación | Lo crea el UseCase
-// UiState Lo que la pantalla necesita | Lo crea el view model
-// Exception (throw) Dice que salio mal | Lo crea el repositorio
-// No tenemos common entonces lo pongo aqui ya que se usara para el viewmodel
-// Estos casos igual pueden llegar a ser de uso para todos
+// Generado por IA, el AdoptionAppException nos sirve para saber que tipo
+// de error nuestra app (no la BD) entiende
+// Seria como definir la "causa"  de un fallo
+// Se utiliza tanto en el Repository como en el ViewModel
+// Este creo que servira mejor hacerlo compartido para que todos pongan sus tipos de errores en el mismo lugar
+
+// El repositorio lanza los errores y el viewmodel los ve para elegir
+// el mensaje.
+
 sealed class AdoptionAppException(
     message: String? = null,
-) : Exception(message)
+) : Exception(message) {
+    object NoConnection : AdoptionAppException() // Error de conexión
+
+    object UnAuthorized : AdoptionAppException() // Error de autenticación
+
+    class Rejected(
+        message: String?,
+    ) : AdoptionAppException(message) // Error tipo 400/402
+
+    class Server(
+        val code: Int,
+    ) : AdoptionAppException()
+}

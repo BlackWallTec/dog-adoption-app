@@ -13,16 +13,16 @@ class SubmitAdoptionRequestUseCase
     constructor(
         private val repository: AdoptionRepository,
     ) {
-        suspend operator fun invoke(request: AdoptionRequest): Flow<Result<Unit>> =
+        operator fun invoke(request: AdoptionRequest): Flow<Result<Unit>> =
             flow {
-                // emit(Result.Loading())
+                emit(Result.Loading) //  Emite estado de carga
                 try {
-                    // repository.submitRequest(request)
-                    // emit(Result.Success(Unit))
+                    repository.submitRequest(request)
+                    emit(Result.Success(Unit)) // éxito
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    // emit(Result.Error(e))
+                    emit(Result.Error(e))
                 }
             }
     }

@@ -3,13 +3,15 @@ package com.app.android.presentation.viewmodel.viewModelSolicitudes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.android.domain.entities.entitiesSolicitudes.AdoptionAppException
 import com.app.android.domain.entities.entitiesSolicitudes.AdoptionForm
 import com.app.android.domain.entities.entitiesSolicitudes.AdoptionRequest
+import com.app.android.domain.useCases.useCasesSolicitudes.AdoptionAppException
+import com.app.android.domain.useCases.useCasesSolicitudes.Result
 import com.app.android.domain.useCases.useCasesSolicitudes.SubmitAdoptionRequestUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.ValidateAdoptionFormUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,7 +28,7 @@ class AdoptionFormViewModel
         // El id del perro que se va a adoptar
         private val dogId: String = checkNotNull(savedStateHandle["dogId"])
         private val _uiState = MutableStateFlow(AdoptionFormUiState())
-        private val uiState: StateFlow<AdoptionFormUiState> = _uiState
+        val uiState: StateFlow<AdoptionFormUiState> = _uiState.asStateFlow()
 
         // Evento: el usuario escribió algo en un campo
         fun onFormChange(newForm: AdoptionForm) {
@@ -84,15 +86,15 @@ class AdoptionFormViewModel
                     }
                 }
             }
-
-            // El mensaje técnico va al log; el mensaje humano a la pantalla
-            private fun mensajeDeError(e: Throwable): String =
-                when (e) {
-                    is AdoptionAppException.NoConnection -> "Sin conexión. Revisa tu internet e intentalo de nuevo."
-                    is AdoptionAppException.UnAuthorized -> "Tu sesión expiró. Inicia sesión de nuevo."
-                    is AdoptionAppException.Rejected -> "Revisa los datos de tu formulario"
-                    is AdoptionAppException.Server -> "Hubo un problema con el servidor. Intentelo más tarde."
-                    else -> "No pudimos enviar tu solicitud."
-                }
         }
+
+        // El mensaje técnico va al log; el mensaje humano a la pantalla
+        private fun mensajeDeError(e: Throwable): String =
+            when (e) {
+                is AdoptionAppException.NoConnection -> "Sin conexión. Revisa tu internet e intentalo de nuevo."
+                is AdoptionAppException.UnAuthorized -> "Tu sesión expiró. Inicia sesión de nuevo."
+                is AdoptionAppException.Rejected -> "Revisa los datos de tu formulario"
+                is AdoptionAppException.Server -> "Hubo un problema con el servidor. Intentelo más tarde."
+                else -> "No pudimos enviar tu solicitud."
+            }
     }
