@@ -16,7 +16,7 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        startDestination = Screen.DetallePerro.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024"),
+        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
     ) {
         // PANTALLA 2: El detalle del perro (La pantalla que ya hiciste)
         composable(

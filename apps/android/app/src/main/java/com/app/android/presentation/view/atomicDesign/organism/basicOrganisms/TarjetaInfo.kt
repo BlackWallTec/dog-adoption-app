@@ -121,7 +121,12 @@ fun TarjetaInfo(
                     SeccionInfoTarjeta.SALUD_Y_CUIDADOS -> {
                         if (dogState.salud.isNotEmpty()) {
                             SectionBlock(titulo = "Salud y cuidados") {
-                                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                // 💡 CAMBIO: Cambiamos Row por FlowRow y manejamos tanto espacio horizontal como vertical
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
                                     dogState.salud.forEach { item ->
                                         ChipTag(
                                             texto = item,

@@ -66,7 +66,7 @@ fun DogDetailScreenView(
 
                 // Instanciamos nuestro Template, mapeamos Entity y enviamos parámetros
                 val dogState = dog.toUiState()
-                val mediaItems = listOf(dog).toMediaItems()
+                val mediaItems = dog.toMediaItems()
                 // Variable para el contexto de la aplicación (necesario para el Toast)
                 val context = LocalContext.current
 

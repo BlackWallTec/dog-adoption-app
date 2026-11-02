@@ -145,12 +145,12 @@ fun EstadoError() {
 
 // funciones auxiliares
 // Función para leer entity Dog y mapear a MediaItem
-fun List<Dog>.toMediaItems(): List<MediaItem> =
-    this.map { dog ->
-        if (dog.tipo.equals("video", ignoreCase = true)) {
-            MediaItem.Video(videoUrl = dog.url)
+fun Dog.toMediaItems(): List<MediaItem> =
+    this.multimedia.map { media ->
+        if (media.tipo.equals("video", ignoreCase = true)) {
+            MediaItem.Video(videoUrl = media.url)
         } else {
-            MediaItem.Imagen(url = dog.url)
+            MediaItem.Imagen(url = media.url)
         }
     }
 

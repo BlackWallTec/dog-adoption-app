@@ -33,14 +33,17 @@ fun ChipSuperficie(
     paddingVertical: Dp = 6.dp,
     content: @Composable () -> Unit,
 ) {
-    if (!enabled) return
-    Box(
-        modifier =
+    val contenedorModifier =
+        if (enabled) {
             modifier
                 .background(color = colorFondo, shape = forma)
-                .padding(horizontal = paddingHorizontal, vertical = paddingVertical),
-    ) {
-        content()
+                .padding(horizontal = paddingHorizontal, vertical = paddingVertical)
+        } else {
+            modifier // Si está deshabilitado, actúa como un contenedor invisible sin paddings
+        }
+
+    Box(modifier = contenedorModifier) {
+        content() // El contenido SIEMPRE se renderiza ahora
     }
 }
 
