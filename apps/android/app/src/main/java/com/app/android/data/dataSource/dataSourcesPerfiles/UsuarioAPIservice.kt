@@ -1,10 +1,11 @@
 package com.app.android.data.dataSource.dataSourcesPerfiles
 
-import retrofit2.http.GET
-import retrofit2.http.Path
+import com.app.android.data.dtos.dtosPerfiles.LoginRequestDTO
+import com.app.android.data.dtos.dtosPerfiles.LoginResponseDTO
+import retrofit2.http.Body
+import retrofit2.http.POST
 
-// 2. Interface de Servicio (API / Supabase)
 interface UsuarioAPIservice {
-    @POST("api/perfiles/login/")
-    suspend fun fetchByEmail(@Body email: String): ApiResponseUsuarioDTO
+    @POST("api/perfiles/login")
+    suspend fun login(@Body body: LoginRequestDTO): LoginResponseDTO
 }
