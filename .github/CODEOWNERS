@@ -1,2 +1,2 @@
 # Ensures everyone checks PRs, if you approve it you're responsible too
-.github/CODEOWNERS
+* @BlackWallTec/Reviewers
