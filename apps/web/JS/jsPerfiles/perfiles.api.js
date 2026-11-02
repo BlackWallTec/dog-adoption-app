@@ -25,7 +25,11 @@ export function createPerfilesApi({
         await pause();
 
         if (normalizedEmail === "credenciales@example.test") {
-          throw new PerfilesApiError("Correo o contraseña incorrectos.", 401, "INVALID_CREDENTIALS");
+          throw new PerfilesApiError(
+            "Correo o contraseña incorrectos.",
+            401,
+            "INVALID_CREDENTIALS",
+          );
         }
         if (normalizedEmail === "pendiente@example.test") {
           throw new PerfilesApiError(

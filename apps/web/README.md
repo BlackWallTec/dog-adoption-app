@@ -53,13 +53,13 @@ El modo real debe probarse con Vite, cuyo proxy `/api` apunta al backend local.
 
 ## Archivos de perfiles
 
-| Archivo | Responsabilidad |
-| --- | --- |
-| `HTML/htmlPerfiles/login.html` | HTML del login y recuperación de acceso. |
-| `CSS/cssPerfiles/perfiles.css` | Diseño del módulo. |
-| `JS/jsPerfiles/login.js` | Formularios, errores, carga y mostrar contraseña. |
-| `JS/jsPerfiles/perfiles.api.js` | Datos simulados y adaptación al backend. |
-| `public/brand-placeholder.svg` | Marca provisional; reemplazar por el logotipo original. |
+| Archivo                         | Responsabilidad                                         |
+| ------------------------------- | ------------------------------------------------------- |
+| `HTML/htmlPerfiles/login.html`  | HTML del login y recuperación de acceso.                |
+| `CSS/cssPerfiles/perfiles.css`  | Diseño del módulo.                                      |
+| `JS/jsPerfiles/login.js`        | Formularios, errores, carga y mostrar contraseña.       |
+| `JS/jsPerfiles/perfiles.api.js` | Datos simulados y adaptación al backend.                |
+| `public/brand-placeholder.svg`  | Marca provisional; reemplazar por el logotipo original. |
 
 El registro público de clientes y su confirmación son pantallas posteriores. No se
 incluye registro abierto en este acceso exclusivo del equipo administrativo.
@@ -70,12 +70,12 @@ El modo predeterminado es `mock`, visible mediante la etiqueta **Demostración**
 No crea cuentas, sesiones ni correos reales; tampoco guarda contraseñas ni tokens.
 La contraseña es obligatoria; el login no impone una longitud nueva a cuentas existentes.
 
-| Correo de prueba | Resultado con cualquier contraseña no vacía |
-| --- | --- |
-| Cualquier correo válido distinto de los siguientes | Login simulado exitoso. |
-| `credenciales@example.test` | Credenciales incorrectas, HTTP 401 simulado. |
-| `pendiente@example.test` | Cuenta pendiente de confirmación, HTTP 403 simulado. |
-| `bloqueado@example.test` | Límite de intentos, HTTP 429 simulado. |
+| Correo de prueba                                   | Resultado con cualquier contraseña no vacía          |
+| -------------------------------------------------- | ---------------------------------------------------- |
+| Cualquier correo válido distinto de los siguientes | Login simulado exitoso.                              |
+| `credenciales@example.test`                        | Credenciales incorrectas, HTTP 401 simulado.         |
+| `pendiente@example.test`                           | Cuenta pendiente de confirmación, HTTP 403 simulado. |
+| `bloqueado@example.test`                           | Límite de intentos, HTTP 429 simulado.               |
 
 La recuperación permite revisar el formulario y su confirmación. Indica explícitamente
 que no se envió un correo. No hay almacenamiento de intentos ni bloqueo real.
