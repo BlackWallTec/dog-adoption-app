@@ -32,7 +32,9 @@ export default function verificarToken(req, res, next) {
 
   // JWT verifica validez del token
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
     next();
   } catch {
     return res.status(401).json({
