@@ -1,1 +1,1 @@
-document.querySelector("#app").innerHTML = "<h1>Dog Adoption App</h1>";
+window.location.replace(new URL("./HTML/htmlPerfiles/login.html", document.baseURI));

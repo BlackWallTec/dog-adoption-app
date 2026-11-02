@@ -1,0 +1,75 @@
+/* Base compartida: cargar después de Bootstrap y antes del CSS de cada módulo. */
+:root {
+  --qa-primary: #2f6fb5;
+  --qa-primary-hover: #255b96;
+  --qa-text: #3a3a3a;
+  --qa-muted: #767676;
+  --qa-background: #f8f9fa;
+  --qa-border: #e0e3e7;
+  --qa-font-heading: "Nunito", sans-serif;
+  --bs-primary: var(--qa-primary);
+  --bs-primary-rgb: 47, 111, 181;
+  --bs-body-font-family: "Roboto", system-ui, sans-serif;
+  --bs-body-color: var(--qa-text);
+  --bs-body-bg: var(--qa-background);
+  --bs-link-color: var(--qa-primary);
+  --bs-link-color-rgb: 47, 111, 181;
+  --bs-link-hover-color: var(--qa-primary-hover);
+  --bs-link-hover-color-rgb: 37, 91, 150;
+  --bs-border-color: var(--qa-border);
+  --bs-focus-ring-color: rgb(47 111 181 / 22%);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--qa-font-heading);
+  font-weight: 800;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--qa-primary);
+  --bs-btn-border-color: var(--qa-primary);
+  --bs-btn-hover-bg: var(--qa-primary-hover);
+  --bs-btn-hover-border-color: var(--qa-primary-hover);
+  --bs-btn-active-bg: #204f82;
+  --bs-btn-active-border-color: #204f82;
+  --bs-btn-disabled-bg: var(--qa-primary);
+  --bs-btn-disabled-border-color: var(--qa-primary);
+  --bs-btn-font-weight: 600;
+  --bs-btn-focus-shadow-rgb: 47, 111, 181;
+}
+
+.form-control {
+  background-color: #fff;
+  border-color: var(--qa-border);
+}
+
+.form-control:focus {
+  background-color: #fff;
+  border-color: var(--qa-primary);
+  box-shadow: 0 0 0 0.2rem var(--bs-focus-ring-color);
+}
+
+:focus-visible {
+  outline: 3px solid var(--qa-primary);
+  outline-offset: 4px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
