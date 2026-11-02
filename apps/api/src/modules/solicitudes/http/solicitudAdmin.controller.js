@@ -26,7 +26,7 @@ function mapSolicitud(solicitud) {
     adoptante: {
       nombre: solicitud.usuario?.nombre || "",
       apellidos: solicitud.usuario?.apellidos || "",
-      email: solicitud.usuario?.datos_confidenciales?.correo || "",
+      email: solicitud.usuario?.cliente?.datos_confidenciales?.correo || "",
     },
     perro: {
       id: solicitud.perro?.id_perro || solicitud.id_perro,
