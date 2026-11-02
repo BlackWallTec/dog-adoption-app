@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel de Administración | Solicitudes</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssSolicitudes/adminSolicitudes.css" />
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+  <body>
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
+        <main class="content-area solicitudes-content">
+          <div class="section-header">
+            <div>
+              <h1 class="section-title">Solicitudes de adopción</h1>
+              <p class="section-subtitle">Acompaña cada proceso hacia una adopción responsable.</p>
+            </div>
+            <button type="button" class="outline-button" disabled>
+              <span class="material-symbols-rounded">download</span>
+              Exportar listado
+            </button>
+          </div>
+
+          <div class="status-chips" id="status-chips" aria-label="Resumen de solicitudes"></div>
+
+          <div class="pill-filters">
+            <select id="filtro-estado" class="select-pill" aria-label="Filtrar por estado">
+              <option value="todos">Estado: Todos</option>
+              <option value="pendientes">Estado: Pendientes</option>
+              <option value="por_revisar">Estado: Por revisar</option>
+              <option value="en_revision">Estado: En revisión</option>
+              <option value="aprobada">Estado: Aprobada</option>
+              <option value="rechazada">Estado: Rechazada</option>
+            </select>
+            <select id="filtro-fecha" class="select-pill" aria-label="Filtrar por fecha">
+              <option value="todas">Fecha: Todas</option>
+            </select>
+            <select id="filtro-perro" class="select-pill" aria-label="Filtrar por perro">
+              <option value="todos">Perro: Todos</option>
+            </select>
+          </div>
+
+          <div class="table-card solicitudes-card">
+            <table class="solicitudes-table" aria-describedby="status-message">
+              <thead>
+                <tr>
+                  <th scope="col">Solicitud</th>
+                  <th scope="col">Adoptante</th>
+                  <th scope="col">Perro</th>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col"><span class="sr-only">Acción</span></th>
+                </tr>
+              </thead>
+              <tbody id="tabla-solicitudes-body"></tbody>
+            </table>
+            <div class="table-footer">
+              <span id="pagination-info" class="pagination-text"></span>
+              <div class="pagination-controls">
+                <button
+                  type="button"
+                  id="pagina-anterior"
+                  class="page-arrow"
+                  aria-label="Página anterior"
+                >
+                  <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <span id="pagina-actual" class="page-number active">1</span>
+                <button
+                  type="button"
+                  id="pagina-siguiente"
+                  class="page-arrow"
+                  aria-label="Página siguiente"
+                >
+                  <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="status-message" class="status-message" aria-live="polite"></div>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="../../JS/jsSolicitudes/adminSolicitudes.view.js"></script>
+  </body>
+</html>
