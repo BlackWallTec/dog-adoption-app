@@ -18,10 +18,11 @@ class DonativoModel {
       .order("fecha", { ascending: false });
 
     if (error) {
-      throw new Error(`Error al consultar donativos: ${error.message}`);
+      console.error("Error de Supabase en HU44:", error);
+      throw error;
     }
 
-    return data;
+    return data ?? [];
   }
 }
 
