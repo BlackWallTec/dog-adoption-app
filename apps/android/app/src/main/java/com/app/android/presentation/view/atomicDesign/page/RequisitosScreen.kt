@@ -12,9 +12,14 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Verified
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +38,10 @@ import com.app.android.presentation.view.ui.theme.Surface
 // PAGE: Paso 1 de la solicitud de adopción
 @Composable
 fun RequisitosScreen(
+    aceptado: Boolean, // ¿el checkbox está palomeado?
+    onAceptadoChange: (Boolean) -> Unit, // avisa cuando lo tocan
+    cargando: Boolean, // ¿se está creando la solicitud?
+    errorMensaje: String?, // mensaje de error, o null si no hay
     onBackClick: () -> Unit,
     onContinuarClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -105,11 +114,26 @@ fun RequisitosScreen(
                 descripcion = "Los adultos se entregan esterilizados; si es cachorro se firma una carta compromiso para esterilizarlo a los 4 meses.",
             )
 
-            CheckBox()
+            CheckBox(
+                checked = aceptado,
+                onCheckedChange = onAceptadoChange,
+                text = "He leído y acepto los requisitos y las responsabilidades de una adopción responsable.",
+            )
+
+            // Solo aparece si hubo error (ej. sin internet)
+            if (errorMensaje != null) {
+                Text(
+                    text = errorMensaje,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                )
+            }
 
             AppButton(
                 text = "Continuar",
                 onClick = onContinuarClick,
+                enabled = aceptado, // gris hasta que palomeen
+                isLoading = cargando, // muestra el circulito mientras crea la solicitud
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -122,8 +146,13 @@ fun RequisitosScreen(
 @Preview(showBackground = true, name = "Paso 1 - Requisitos")
 @Composable
 fun RequisitosScreenPreview() {
+    var aceptado by remember { mutableStateOf(false) }
     AndroidTheme {
         RequisitosScreen(
+            aceptado = aceptado,
+            onAceptadoChange = { aceptado = it },
+            cargando = false,
+            errorMensaje = null,
             onBackClick = {},
             onContinuarClick = {},
         )
