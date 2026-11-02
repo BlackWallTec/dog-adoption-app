@@ -41,6 +41,7 @@ fun WritableCard(
     leadingIcon: ImageVector? = null, // El icono es opcional ?
     singleLine: Boolean = false, // true se usara para campos de una linea (ex. edad)
     minLines: Int = 1, // que tan alta empieza la tarjeta
+    readOnly: Boolean = false, // true = se ve pero no se puede escribir
 ) {
     TextField(
         value = value,
@@ -55,6 +56,7 @@ fun WritableCard(
             },
         singleLine = singleLine,
         minLines = minLines,
+        readOnly = readOnly,
         shape = RoundedCornerShape(16.dp), // esquinas iguales que la infocard
         // Los colores se dividen por los diferentes estados de escritura
         colors =
