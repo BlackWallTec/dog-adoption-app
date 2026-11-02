@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
+    implementation("androidx.compose.remote:remote-creation-core:1.0.0-alpha22")
     implementation("androidx.compose.runtime:runtime:1.12.1")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.foundation.layout)

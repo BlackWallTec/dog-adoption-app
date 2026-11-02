@@ -12,4 +12,6 @@ data class AdoptionFormUiState(
     val isSubmitting: Boolean = false,
     val isSubmitted: Boolean = false,
     val submitError: String? = null,
-)
+) {
+    val step: Any
+}
