@@ -12,7 +12,9 @@ class SolicitudModel {
         usuario:usuario!solicitud_adopcion_id_usuario_fkey (
           nombre,
           apellidos,
-          datos_confidenciales ( correo )
+          cliente (
+            datos_confidenciales ( correo )
+          )
         ),
         perro:perro!solicitud_adopcion_id_perro_fkey (
           id_perro,

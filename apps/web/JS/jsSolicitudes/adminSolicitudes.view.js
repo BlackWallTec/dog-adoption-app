@@ -238,6 +238,8 @@ async function load() {
   abortController = new AbortController();
   const currentRequest = ++requestId;
   lastLoad = load;
+  elements.previous.disabled = true;
+  elements.next.disabled = true;
   elements.body.setAttribute("aria-busy", "true");
   setTableMessage("Cargando solicitudes...");
   setMessage("");

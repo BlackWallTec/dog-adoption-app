@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+
 // Middleware para ver qué rutas se piden
 app.use((req, res, next) => {
   console.log(`Se solicitó: ${req.method} ${req.url}`);

@@ -99,7 +99,10 @@
 }
 
 .solicitudes-card {
+  background-color: #fff;
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 16px;
+  overflow: hidden;
 }
 
 .solicitudes-table {
@@ -114,21 +117,22 @@
 }
 
 .solicitudes-table th {
-  padding: 13px 13px;
+  padding: 14px 20px;
   color: var(--md-sys-color-on-surface-variant);
-  font: 700 11px var(--font-body);
+  font: 700 12px var(--font-body);
+  letter-spacing: 0.3px;
 }
 
 .solicitudes-table td {
-  padding: 12px 13px;
-  border-bottom: 1px solid var(--md-sys-color-surface-container);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--md-sys-color-surface-container-low);
   color: var(--md-sys-color-on-surface);
-  font: 400 12px var(--font-body);
+  font: 400 14px var(--font-body);
   vertical-align: middle;
 }
 
 .solicitudes-table tbody tr:hover {
-  background: #edf5fd;
+  background: var(--md-sys-color-surface);
 }
 
 .folio,
@@ -152,12 +156,12 @@
   display: block;
   margin-top: 3px;
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .dog-photo {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -165,14 +169,63 @@
 .badge-estado {
   display: inline-block;
   border-radius: 15px;
-  padding: 5px 10px;
-  font-size: 10px;
-  font-weight: 700;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .detail-button {
   padding: 7px 12px;
   white-space: nowrap;
+}
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+.pagination-text {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12.5px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-arrow {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: none;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+
+.page-arrow:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.page-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.page-number.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+  font-weight: 700;
 }
 
 .status-message {
