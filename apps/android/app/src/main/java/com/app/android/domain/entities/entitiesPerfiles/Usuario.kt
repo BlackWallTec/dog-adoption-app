@@ -6,12 +6,3 @@ data class Usuario(
     val email: String,
     val rol: String
 )
-
-// Para el token
-data class Sesion(
-    val usuario: Usuario,
-    val token: String
-)
-
-// ESTO ÚLTIMO ME LO RECOMENDÓ LA IA
-class CredencialesInvalidasException : Exception("Credenciales inválidas")
