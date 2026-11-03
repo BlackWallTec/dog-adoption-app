@@ -10,6 +10,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.CompromisoUiS
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.CompromisoViewModel
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.GuardarUiState
 
+// ROUTE: Conecta el CompromisoViewModel con la page CompromisoScreen
 @Composable
 fun CompromisoRoute(
     idSolicitud: String,
@@ -17,7 +18,6 @@ fun CompromisoRoute(
     onIrADocumentos: () -> Unit, // Navegar a Compromisos
     // 1. Hilt inyecta el ViewModel
     viewModel: CompromisoViewModel = hiltViewModel(),
-    collectAsState: Any.() -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val guardarState by viewModel.guardarState.collectAsState()
