@@ -65,7 +65,7 @@ export const postLogin = async (req, res) => {
     const token = jwt.sign(
       {
         uuid: usuario.id_usuario,
-        email: usuario.email,
+        email: email,
         rol: usuario.rol,
       },
       process.env.JWT_SECRET,
@@ -82,7 +82,7 @@ export const postLogin = async (req, res) => {
       return res.status(200).json({
         user: {
           id: usuario.id_usuario,
-          email: usuario.email,
+          email: email,
           rol: usuario.rol,
         },
         token,
@@ -97,7 +97,7 @@ export const postLogin = async (req, res) => {
     return res.status(200).json({
       user: {
         id: usuario.id_usuario,
-        email: usuario.email,
+        email: email,
         rol: usuario.rol,
       },
     });
