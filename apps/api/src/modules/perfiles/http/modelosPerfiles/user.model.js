@@ -26,7 +26,7 @@ export default class Usuario {
     // asociada a un email)
 
     if (error) {
-      throw new Error(`Error (${error.code}), al consultar usuario: ${error.messafe}`);
+      throw new Error(`Error (${error.code}), al consultar usuario: ${error.message}`);
     }
 
     if (!data) {
