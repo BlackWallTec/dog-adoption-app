@@ -9,23 +9,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
 @Suppress("ktlint:standard:function-naming")
 @Composable
-fun CheckBox() {
-    var checked by remember { mutableStateOf(false) }
-
+fun CheckBox(
+    checked: Boolean, // ¿está palomeado? (lo decide quien lo usa)
+    onCheckedChange: (Boolean) -> Unit, // avisa cuando lo tocan
+    text: String,
+    modifier: Modifier = Modifier,
+) {
     Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = { isChecked ->
-                checked = isChecked
-            },
+            onCheckedChange = onCheckedChange,
         )
-        Text(text = "He leído y acepto los requisitos y las responsabilidades de una adopción responsable.")
+        Text(text = text)
     }
 }
 
@@ -33,5 +36,10 @@ fun CheckBox() {
 @Preview
 @Composable
 fun CheckBoxPreview() {
-    CheckBox()
+    var checked by remember { mutableStateOf(false) }
+    CheckBox(
+        checked = checked,
+        onCheckedChange = { checked = it },
+        text = "He leído y acepto los requisitos y las responsabilidades de una adopción responsable.",
+    )
 }
