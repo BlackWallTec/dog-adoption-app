@@ -58,11 +58,9 @@ class GuardarTuHogarUseCase
                     otherPets = if (hasPets && limpios.otherPets == null) "Selecciona una opción" else null,
                     whyAdopt = if (limpios.whyAdopt.isBlank()) "Cuéntanos por qué quieres adoptar" else null,
                     whereLive = if (limpios.whereLive.isBlank()) "Cuéntanos dónde vivirá y dormirá" else null,
-                    peopleInHouse = if (limpios.peopleInHouse == 0) "Debe de haber al menos 1 persona" else null,
+                    peopleInHouse = if (limpios.peopleInHouse < 1) "Debe de haber al menos 1 persona" else null,
                     allAgree = if (limpios.allAgree == null) "Selecciona una opción" else null,
-                    houseType = if (limpios.houseType.isBlank()) "Selecciona una opción" else null,
                     hasGarden = if (limpios.hasGarden.isBlank()) "Cuéntanos si tienes jardin o patio" else null,
-                    petAcept = if (limpios.petAcept == null) "Selecciona una opción" else null,
                     aboutPets = if (hasPets && limpios.aboutPets.isBlank()) "Cuéntanos sobre tus mascotas" else null,
                 )
             if (!errores.hasErrors) {

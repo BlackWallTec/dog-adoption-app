@@ -19,8 +19,8 @@ fun RequisitosRoute(
     viewModel: RequisitosViewModel = hiltViewModel(),
 ) {
     // 1 se observan los dos estados del ViewModel
+    val aceptado by viewModel.aceptado.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
-    val guardarState by viewModel.guardarState.collectAsState()
 
     // 2 Si se creo la solicitud se navega y avisa que ya navego
     LaunchedEffect(uiState) {

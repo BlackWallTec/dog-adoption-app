@@ -33,7 +33,7 @@ class GuardarCompromisoUseCase
                 CompromisoErrors(
                     petNeeds = if (limpios.petNeeds.isBlank()) "Escribe tu respuesta" else null,
                     petSterilization = if (limpios.petSterilization.isBlank()) "Escribe tu respuesta" else null,
-                    petFollowing = if (limpios.petFollowing.isBlank()) "Selecciona una opción" else null,
+                    petFollowing = if (limpios.petFollowing == null) "Selecciona una opción" else null,
                 )
             if (!errores.hasErrors) {
                 repository.guardarCompromiso(idSolicitud, limpios)

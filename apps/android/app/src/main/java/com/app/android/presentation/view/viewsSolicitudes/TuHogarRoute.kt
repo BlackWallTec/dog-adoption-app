@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.GuardarUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewModel
 
@@ -19,7 +20,7 @@ fun TuHogarRoute(
     viewModel: TuHogarViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val state by viewModel.guardarState.collectAsState()
+    val guardarState by viewModel.guardarState.collectAsState()
 
     // Cuando se entra se cargan las respuestas ya guardadas
     LaunchedEffect(idSolicitud) {

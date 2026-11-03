@@ -84,6 +84,32 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
         datosGeneralesPorSolicitud[idSolicitud] = datos // guarda o reemplaza
     }
 
+    override suspend fun getTuHogar(idSolicitud: String): TuHogar? {
+        simularRed()
+        return tuHogarPorSolicitud[idSolicitud] // null si no hay
+    }
+
+    override suspend fun guardarTuHogar(
+        idSolicitud: String,
+        datos: TuHogar,
+    ) {
+        simularRed()
+        tuHogarPorSolicitud[idSolicitud] = datos // guarda o reemplaza
+    }
+
+    override suspend fun getCompromiso(idSolicitud: String): Compromiso? {
+        simularRed()
+        return compromisoPorSolicitud[idSolicitud] // null si no hay
+    }
+
+    override suspend fun guardarCompromiso(
+        idSolicitud: String,
+        datos: Compromiso,
+    ) {
+        simularRed()
+        compromisoPorSolicitud[idSolicitud] = datos // guarda o reemplaza
+    }
+
     // Espera medio segundo para que se vea el "cargando" como si fuera internet
     private suspend fun simularRed() = delay(500)
 }
