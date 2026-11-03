@@ -2,15 +2,19 @@ import jwt from "jsonwebtoken";
 
 /*
 IMPORTANTE
-Considerar que desde el cliente, se declara el x-client. Si esto no se
-mandara desde android, la búsqueda de la cookie será infructuosa y
+Considerar que desde el cliente, android, se declara el x-client.
+
+Se refiere a un header personalizado que el middleware interpreta como
+proveniencia desde android.
+
+Si esto no se mandara, la búsqueda de la cookie será infructuosa y
 resultará en 401.
 
-También, no se especificó un algoritmo ni aquí ni en el
-auth.controller.js, por defecto está usando HS256.
+Ejemplo de una ruta:
+router.post("/logout", authController.postLogout);
 
-En el postLogin del auth.controller.js también debe usarse el mismo
-header.
+Ahora un ruta que verifica el token:
+router.post("/me", verificarToken, authController.getMe);
 */
 
 export default function verificarToken(req, res, next) {
