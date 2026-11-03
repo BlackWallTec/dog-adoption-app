@@ -104,6 +104,27 @@ data class GuardarDatosGeneralesRequestDto(
     @SerializedName("ocupacion") val ocupacion: String,
 )
 
+// Body del PUT /api/solicitudes/cliente/:id/tu-hogar
+data class GuardarTuHogarRequestDto(
+    @SerializedName("had_pet") val hadPet: Boolean,
+    @SerializedName("other_pets") val otherPets: Boolean,
+    @SerializedName("why_adopt") val whyAdopt: String,
+    @SerializedName("where_live") val whereLive: String,
+    @SerializedName("people_in_house") val peopleInHouse: Int,
+    @SerializedName("all_agree") val allAgree: Boolean,
+    @SerializedName("house_type") val houseType: String,
+    @SerializedName("has_garden") val hasGarden: String,
+    @SerializedName("pet_acept") val petAcept: Boolean,
+    @SerializedName("about_pets") val aboutPets: String,
+)
+
+// Body del PUT /api/solicitudes/cliente/:id/compromiso
+data class GuardarCompromisoRequestDto(
+    @SerializedName("pet_needs") val petNeeds: String,
+    @SerializedName("pet_sterilization") val petSterilization: String,
+    @SerializedName("pet_following") val petFollowing: Boolean,
+)
+
 // ===== MAPPERS: DTO → Entity =====
 
 fun SolicitudDto.toDomain(): Solicitud =
