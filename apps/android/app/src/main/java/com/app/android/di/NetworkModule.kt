@@ -3,9 +3,9 @@ package com.app.android.di
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
-import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import dagger.Module
 import dagger.Provides
@@ -49,7 +49,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://localhost:3000/") // backend local en Express
+            .baseUrl("http://10.25.99.191:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -69,13 +69,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideSolicitudApiService(retrofit: Retrofit): SolicitudApiService =
-        retrofit.create(SolicitudApiService::class.java)
+    fun provideSolicitudApiService(retrofit: Retrofit): SolicitudApiService = retrofit.create(SolicitudApiService::class.java)
 
     // 4. Repositorio de Solicitudes.
     // Para volver al fake (sin backend): return SolicitudRepositoryFake()
     @Provides
     @Singleton
-    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt =
-        SolicitudRepositoryImpl(apiService)
+    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)
 }
