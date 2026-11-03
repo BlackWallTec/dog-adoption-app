@@ -9,7 +9,13 @@ const CP_REGEX = /^\d{5}$/;
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Regresa los campos que están mal, vacío si todo bien
-function validarDatosFiscales({ rfc, razonSocial, regimenFiscal, codigoPostal, correoFacturacion }) {
+function validarDatosFiscales({
+  rfc,
+  razonSocial,
+  regimenFiscal,
+  codigoPostal,
+  correoFacturacion,
+}) {
   const errores = {};
   if (typeof rfc !== "string" || !RFC_REGEX.test(rfc.trim().toUpperCase())) {
     errores.rfc = "RFC inválido";
@@ -109,7 +115,9 @@ export const putConstancia = async (req, res) => {
 
     const ruta = await DatosFiscalesModel.guardarConstancia(idUsuario, tipo, req.body);
 
-    return res.status(200).json({ success: true, message: "Constancia guardada.", data: { constancia_url: ruta } });
+    return res
+      .status(200)
+      .json({ success: true, message: "Constancia guardada.", data: { constancia_url: ruta } });
   } catch (error) {
     console.error("Error al guardar la constancia:", error);
     return res.status(500).json({
