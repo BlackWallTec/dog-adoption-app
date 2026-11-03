@@ -9,6 +9,7 @@ import com.app.android.presentation.view.atomicDesign.page.DonarDineroScreen
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
+import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 
@@ -132,6 +133,14 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
                 onVerMisDonativosClick = {}, // Mis donativos todavía no existe
+            )
+        }
+
+        // DONATIVOS - HU45: datos fiscales del donante
+        composable(route = Screen.DatosFiscales.ruta) {
+            DatosFiscalesRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.navigateUp() },
             )
         }
 

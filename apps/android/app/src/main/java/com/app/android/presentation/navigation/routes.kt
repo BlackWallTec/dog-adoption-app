@@ -19,6 +19,9 @@ sealed class Screen(
         fun crearRuta(monto: String) = "donativo_enviado_screen/$monto"
     }
 
+    // Donativos - HU45
+    object DatosFiscales : Screen("datos_fiscales_screen")
+
     // ===== Solicitudes de adopción =====
 
     // llega desde el detalle del perro (Catálogo) con el id del perro
