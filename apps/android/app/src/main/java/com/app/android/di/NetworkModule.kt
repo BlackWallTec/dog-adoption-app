@@ -17,6 +17,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import com.google.gson.Gson
+import java.time.Clock
+
 
 @Module
 @InstallIn(SingletonComponent::class) // Le dice a Hilt: "Estas dependencias viven tanto como la App"
@@ -29,6 +32,15 @@ object NetworkModule {
             // El nivel BODY imprime: URL, cabeceras, códigos de error y el JSON CRUDO completo
             level = HttpLoggingInterceptor.Level.BODY
         }
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
+    @Provides
+    @Singleton
+    fun provideClock(): Clock = Clock.systemUTC()
+
 
     // Dificultad para conectar backend con Android en iOS
     @Provides
