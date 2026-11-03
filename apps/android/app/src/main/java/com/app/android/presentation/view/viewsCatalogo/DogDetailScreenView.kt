@@ -35,6 +35,8 @@ fun DogDetailScreenView(
     viewModel: DogDetailViewModel = hiltViewModel(),
     // 2. Parámetros
     dogId: String = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
+    // 3. Acciones al hacer clic
+    onAdoptClick: (String) -> Unit,
 ) {
     // 2. Nos suscribimos al UiState (conectamos a la señal como en Godot)
     val uiState by viewModel.uiState.collectAsState()
@@ -67,7 +69,7 @@ fun DogDetailScreenView(
                 // Instanciamos nuestro Template, mapeamos Entity y enviamos parámetros
                 val dogState = dog.toUiState()
                 val mediaItems = dog.toMediaItems()
-                // Variable para el contexto de la aplicación (necesario para el Toast)
+                // Variable para el contexto de la aplicación (necesario para el Toast)(debug)
                 val context = LocalContext.current
 
                 Scaffold(
@@ -84,8 +86,10 @@ fun DogDetailScreenView(
                     DogDetailTemplate(
                         mediaList = mediaItems,
                         dogState = dogState,
-                        // onAdoptClick = { onNavigateToAdoptionForm(dog.id) },
-                        onAdoptClick = { Toast.makeText(context, "Adoptando a: ${dog.id}", Toast.LENGTH_SHORT).show() },
+                        dogId = dog.id,
+                        onAdoptClick = { idDelPerro ->
+                            onAdoptClick(idDelPerro)
+                        },
                         modifier = Modifier.padding(paddingValues),
                     )
                 }
@@ -104,7 +108,7 @@ fun DogDetailScreenView(
                 }
             }
 
-            // 3.4 Error case
+            // 3.4 Error
             is DogDetailUiState.Error -> {
                 // Muestra un mensaje de error y opción de reintento
                 Column(

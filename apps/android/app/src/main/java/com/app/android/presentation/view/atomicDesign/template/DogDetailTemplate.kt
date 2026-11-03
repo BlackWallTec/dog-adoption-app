@@ -27,10 +27,11 @@ import com.app.android.presentation.view.ui.theme.AndroidTheme
 fun DogDetailTemplate(
     mediaList: List<MediaItem>,
     dogState: DogDetailState,
-    onAdoptClick: () -> Unit,
+    onAdoptClick: (String) -> Unit, // Acciones al hacer clic en el botón de adopción
     modifier: Modifier = Modifier,
     ordenSecciones: List<SeccionInfoTarjeta> = SeccionInfoTarjeta.entries,
     onVideoClick: (MediaItem.Video) -> Unit = {},
+    dogId: String,
 ) {
     val scrollState = rememberScrollState()
 
@@ -61,7 +62,7 @@ fun DogDetailTemplate(
         // 2. ELEMENTO FLOTANTE ANCLADO (Molécula StickyButton)
         StickyButton(
             text = "¡Quiero Adoptar!",
-            onClick = onAdoptClick,
+            onClick = { onAdoptClick(dogId) },
             anchor = StickyAnchor.BOTTOM_FILL,
             conDegradadoFondo = false,
         )
@@ -89,6 +90,7 @@ fun DogDetailTemplatePreview() {
                     sobreMi = "¡Hola, soy Bruno! Me encantan los paseos y jugar.",
                 ),
             onAdoptClick = {},
+            dogId = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
         )
     }
 }

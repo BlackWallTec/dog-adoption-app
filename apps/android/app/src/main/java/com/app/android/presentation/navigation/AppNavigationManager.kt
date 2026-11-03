@@ -1,5 +1,4 @@
 package com.app.android.presentation.navigation
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,7 +24,9 @@ fun AppNavigation() {
         navController = navController,
         startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
     ) {
-        // PANTALLA 2: El detalle del perro (La pantalla que ya hiciste)
+        // ========= Pantallas Catalogo ========
+
+        // PANTALLA 2: El detalle del perro
         composable(
             route = Screen.DetallePerro.ruta,
             arguments =
@@ -37,8 +38,15 @@ fun AppNavigation() {
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
 
             // Llamamos a la función composable de la pantalla pasándole el ID extraído
-            DogDetailScreenView(dogId = dogId)
+            DogDetailScreenView(
+                dogId = dogId,
+                onAdoptClick = { dogId ->
+                    navController.navigate(Screen.Requisitos.crearRuta(dogId))
+                },
+            )
         }
+
+        // ========= Pantallas Solicitudes ========
 
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
@@ -80,7 +88,7 @@ fun AppNavigation() {
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (metqnlo team)
+        // SOLICITUDES: Paso 3 - Tu hogar (metanlo team)
         composable(
             route = Screen.TuHogar.ruta,
             arguments =
@@ -94,7 +102,7 @@ fun AppNavigation() {
             )
         }
 
-        // Pantilla para nueva pantalla
+        // Plantilla para nueva pantalla
         // composable(
         //     route = Screen.EditarPerro.ruta,
         //     arguments =
@@ -105,7 +113,7 @@ fun AppNavigation() {
         // ) { backStackEntry ->
         // val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
         // val categoria = backStackEntry.arguments?.getString("categoria") ?: ""
-        // editDogScreen(dogId = dogId, categoria = categoria)
+        // editDogScreen(dogId = dogId, categoria = categoria) // <- Page/View Composable
         // }
     }
 }
