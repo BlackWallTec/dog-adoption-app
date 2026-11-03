@@ -7,3 +7,6 @@ router.post("/programas/:idPrograma/inscripciones", inscribirse);
 
 export { router };
 export default router;
+
+// GET /api/voluntarios/cliente/programas
+router.get("/cliente/programas", clientController.getProgramasVigentes);
