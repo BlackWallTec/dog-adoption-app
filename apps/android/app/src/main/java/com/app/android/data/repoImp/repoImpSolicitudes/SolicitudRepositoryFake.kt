@@ -1,8 +1,10 @@
 package com.app.android.data.repoImp.repoImpSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
+import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import kotlinx.coroutines.delay
 import java.util.UUID
@@ -13,8 +15,15 @@ import java.util.UUID
 class SolicitudRepositoryFake : SolicitudRepositoryInt {
     // "Tablas" en memoria
     private val solicitudes = mutableListOf<Solicitud>()
+
     // este mutable map of es como un diccionario (le pasas el string aqui (id) y te da datos)
     private val datosGeneralesPorSolicitud = mutableMapOf<String, DatosGenerales>()
+
+    // Paso 3
+    private val tuHogarPorSolicitud = mutableMapOf<String, TuHogar>()
+
+    // Paso 4
+    private val compromisoPorSolicitud = mutableMapOf<String, Compromiso>()
 
     // Perfil inventado (lo que regresaría la tabla usuario)
     private val perfilFake =
@@ -35,8 +44,8 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
         simularRed()
         return solicitudes.find {
             it.idUsuario == idUsuario &&
-                    it.idPerro == idPerro &&
-                    it.estado == EstadoSolicitud.BORRADOR
+                it.idPerro == idPerro &&
+                it.estado == EstadoSolicitud.BORRADOR
         }
     }
 

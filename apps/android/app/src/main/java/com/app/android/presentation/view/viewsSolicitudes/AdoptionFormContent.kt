@@ -2,18 +2,13 @@ package com.app.android.presentation.view.viewsSolicitudes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.app.android.domain.entities.entitiesSolicitudes.AdoptionForm
-import com.app.android.presentation.view.atomicDesign.page.CompromisoScreen
-import com.app.android.presentation.view.atomicDesign.page.ConfirmarScreen
-import com.app.android.presentation.view.atomicDesign.page.DatosGeneralesScreen
-import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
-import com.app.android.presentation.viewmodel.viewModelSolicitudes.AdoptionFormUiState
 
 // Declarar que screen se va a ver
 
-// Las diferentes páginas que tienen que enviar o recibir información
+// Las diferentes páginas que tienen que enviar o recibir información ROUTES
 
-// Añadir Documentos al enlazar
-enum class AdoptionStep { DatosGenerales, TuHogar, Compromiso, Confirmar }
+// Añadir lo de los demás al enlazar
+enum class AdoptionStep { TuHogar, Compromiso, Confirmar }
 
 @Composable
 fun AdoptionFormContent(
@@ -21,29 +16,19 @@ fun AdoptionFormContent(
     onFormChange: (AdoptionForm) -> Unit,
     onNextClick: () -> Unit,
     onSubmitClick: () -> Unit,
-    onBackClick: () -> Unit,
+    onBackClick: () -> Unit, // regresar al anterior
     modifier: Modifier = Modifier,
 ) {
     // Guardamos las views en el estado step
     when (state.step) {
-        AdoptionStep.DatosGenerales -> {
-            DatosGeneralesScreen(
-                form = state.form,
-                errors = state.errors,
-                onFormChange = onFormChange,
-                onNextClick = onNextClick,
-                onBackClick = onBackClick,
-                modifier = modifier,
-            )
-        }
-
         AdoptionStep.TuHogar -> {
-            TuHogarScreen(
+            TuHogarRoute(
+                onBackClick = onBackClick,
+                onSubmitted = onNextClick,
                 form = state.form,
                 errors = state.errors,
                 onFormChange = onFormChange,
                 onNextClick = onNextClick,
-                onBackClick = onBackClick,
                 modifier = modifier,
             )
         }
@@ -61,12 +46,6 @@ fun AdoptionFormContent(
 
         /* AdoptionStep.Documentos -> {
             DocumentosScreen(
-                form = state.form,
-                errors = state.errors,
-                onFormChange = onFormChange,
-                onNextClick = onNextClick,
-                onBackClick = onBackClick,
-                modifier = modifier,
             )
         }
          */
