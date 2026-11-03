@@ -43,7 +43,7 @@ fun PerrosScreen(
                 items(resultado.perros) { perro ->
                     Card {
                         Column {
-                            Text("URL: ${perro.fotoUrl}")
+                            //Text("URL: ${perro.fotoUrl}")
                             AsyncImage(
                                 model = perro.fotoUrl,
                                 contentDescription = perro.nombre,

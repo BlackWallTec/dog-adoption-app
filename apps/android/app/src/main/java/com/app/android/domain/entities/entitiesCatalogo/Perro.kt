@@ -3,5 +3,5 @@ import com.app.android.data.dtos.dtosCatalogo.DogDTO
 data class Perro(
     val nombre: String,
     val edad: Int?,
-    val fotoUrl: String,
+    val fotoUrl: String = ""
 )

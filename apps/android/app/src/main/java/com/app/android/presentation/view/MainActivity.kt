@@ -63,34 +63,45 @@ fun App() {
         Column( //esto es para que se pueda mover de arriba hacia abajo y viceversa
             modifier=Modifier.weight(1f).padding(horizontal=24.dp)
         ) {
-            Row( //esto es para las 3 rayitas y la campana
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.Menu, contentDescription = "Menú")
-                }
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
-                }
-            }
-            Text("Catálogo", fontSize = 32.sp, fontWeight = FontWeight.Bold)//hacer letras negritas
-            Spacer(Modifier.height(12.dp))
-            Text("Encuentra a tu nuevo mejor amigo.", fontSize = 16.sp)
-            Spacer(Modifier.height(20.dp))
+            when (selected) {
+                0 -> {
+                    Row( //esto es para las 3 rayitas y la campana
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        IconButton(onClick = { }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                        IconButton(onClick = { }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                        }
+                    }
+                    Text(
+                        "Catálogo",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )//hacer letras negritas
+                    Spacer(Modifier.height(12.dp))
+                    Text("Encuentra a tu nuevo mejor amigo.", fontSize = 16.sp)
+                    Spacer(Modifier.height(20.dp))
 
-            SearchBar(
-                query=query,
-                onQueryChange= { query = it},
-                onFilterClick = {}
-            )
-            Spacer(Modifier.height(20.dp))
+                    SearchBar(
+                        query = query,
+                        onQueryChange = { query = it },
+                        onFilterClick = {}
+                    )
 
-            Box(modifier=Modifier.weight(1f)){
-                PerrosScreen(modifier=Modifier.fillMaxSize())
+                    Box(modifier = Modifier.weight(1f)) {
+                        PerrosScreen(modifier = Modifier.fillMaxSize())
+                    }
+                }
+
+                1 -> Text("Ayudar")
+                2 -> Text("Perfil")
+                3 -> Text("Solicitudes")
+                4 -> Text("Ajustes")
             }
         }
         NavBar(selected=selected, onSelect={selected= it})
-
     }
 }
