@@ -1,3 +1,4 @@
+import AdoptionRequestModel from "./modelosSolicitudes/adoptionRequest.model.js";
 import adoptionRequestModel from "./modelosSolicitudes/adoptionRequest.model.js";
 import profileModel from "./modelosSolicitudes/profile.model.js";
 
@@ -156,6 +157,122 @@ export const updateGeneralData = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Error interno al guardar los datos generales.",
+    });
+  }
+};
+
+
+// Configuración para el paso 3 del formulario (Tu-Hogar)
+
+// GET /api/solicitudes/cliente/:idSolicitud/tu-hogar 
+
+export const getHome = async (req, res) => {
+  try {
+    const hogar = await adoptionRequestModel.getHome(req.params.idSolicitud);
+
+    // Si todavia no llena este paso, las columnas vienen en null (Android ya lo maneja)
+    return res.status(200).json({
+      success: true,
+      data: hogar,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar Tu hogar.",
+    });
+  }
+};
+
+// PUT /api/solicitudes/cliente/:idSolicitud/tu-hogar   
+// body: { motivo, tipo_vivienda, otras_mascotas, integrantes_hogar, sobre_mascotas, ... }
+export const updateHome = async (req, res) => {
+  try {
+    const { motivo, tipo_vivienda, otras_mascotas, integrantes_hogar, sobre_mascotas } = req.body;
+
+    // Validación mínima. La validación completa (por campo) la hace Android
+    if (
+      !motivo?.trim() || 
+      !tipo_vivienda || 
+      !(integrantes_hogar >= 1)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan datos de Tu Hogar.",
+      });
+    }
+    await adoptionRequestModel.updateHome(req.params.idSolicitud, {
+      motivo: motivo.trim(),
+      tipo_vivienda,
+      otras_mascotas,
+      integrantes_hogar,
+      sobre_mascotas: sobre_mascotas?.trim() ?? "",
+      ha_tenido_mascotas: req.body.ha_tenido_mascotas,
+      donde_vivira: req.body.donde_vivira?.trim(),
+      todos_de_acuerdo: req.body.todos_de_acuerdo,
+      jardin_o_patio: req.body.jardin_o_patio?.trim(),
+      casero_acepta: req.body.casero_acepta,
+    });
+    return res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json ({
+      success: false,
+      message: error.message || "Error interno al guardar Tu Hogar.",
+    });
+  }
+};
+
+// Configuración para el paso 4 del formulario "Compromiso"
+
+// GET /api/solicitudes/cliente/:idSolicitud/compromiso
+
+export const getCommitment = async (req, res) => {
+  try {
+    const compromiso = await adoptionRequestModel.getCommitment(req.params.idSolicitud);
+
+    // Si todavia no llena este paso, las columnas vienen en null (Android ya lo maneja)
+    return res.status(200).json({
+      success: true,
+      data: compromiso,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar Compromiso.",
+    });
+  }
+};
+
+
+// PUT /api/solicitudes/cliente/:idSolicitud/compromiso
+// body: { cuidados_basicos, opinion_esterilizacion, permite_seguimiento }
+export const updateCommitment = async (req, res) => {
+  try {
+    const { cuidados_basicos, opinion_esterilizacion, permite_seguimiento } = req.body;
+
+    if (
+      !cuidados_basicos?.trim() || 
+      !opinion_esterilizacion?.trim() || 
+      typeof permite_seguimiento !== "boolean"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan datos del compromiso.",
+      });
+    }
+    await adoptionRequestModel.updateCommitment(req.params.idSolicitud, {
+      cuidados_basicos: cuidados_basicos.trim(),
+      opinion_esterilizacion: opinion_esterilizacion.trim(),
+      permite_seguimiento,
+    });
+    return res.status(200).json({
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json ({
+      success: false,
+      message: error.message || "Error interno al guardar el compromiso.",
     });
   }
 };
