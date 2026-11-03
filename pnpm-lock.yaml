@@ -198,6 +198,13 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      cookie-parser:
+        specifier: 'catalog:'
+        version: 1.4.7
+      jsonwebtoken:
+        specifier: 'catalog:'
+        version: 9.0.3
     devDependencies:
       '@vitest/coverage-v8':
         specifier: 'catalog:'

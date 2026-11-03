@@ -21,6 +21,12 @@ export function createApp() {
   app.use(express.json());
   app.use(cookieParser());
 
+  // Para ver qué rutas se piden
+  app.use((req, res, next) => {
+    console.log(`Se solicitó: ${req.method} ${req.url}`);
+    next();
+  });
+
   app.get("/health", (req, res) => res.json({ status: "ok" }));
 
   app.use("/api/perfiles", perfiles);
