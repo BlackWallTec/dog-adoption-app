@@ -47,6 +47,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumen
 @Composable
 fun UploadDocumentsRoute(
     //Paramters that we are going to recieve
+    solicitudId: String,
     onBackClick: () -> Unit = {},
     onNotificacionesClick: () -> Unit = {},
     onContinuarClick: () -> Unit = {},
@@ -78,7 +79,12 @@ fun UploadDocumentsRoute(
         onErrorShown = viewModel::onErrorShown,
         onBackClick = onBackClick,
         onNotificacionesClick = onNotificacionesClick,
-        onContinuarClick = onContinuarClick,
+        onContinuarClick = {
+            viewModel.onContinuarClicked(
+                solicitudId = solicitudId,
+                onSuccess = onContinuarClick
+            )
+        },
         onNavSelect = onNavSelect
 
 
@@ -203,15 +209,23 @@ private fun DocumentCard(
 )
 @Composable
 fun UploadDocumentsPreview() {
-    AndroidTheme { UploadDocuments(
-        uiState = UploadDocumentsUiState (
-            slots = mapOf (
-                DocumentType.INE to DocumentSlot ("INE_Sofia_Garcia.pdf", "1.2 MB · Carga completa"),
-                DocumentType.DOMICILIO to DocumentSlot()
-            )
-        ),
-        onPickFile = {},
-        onErrorShown = {}
-    )
+    AndroidTheme {
+        UploadDocuments(
+            uiState = UploadDocumentsUiState(
+                slots = mapOf(
+                    DocumentType.INE to DocumentSlot(
+                        fileName = "INE_Sofia_Garcia.pdf",
+                        fileInfo = "1.2 MB · Listo para subir"
+                    ),
+                    DocumentType.DOMICILIO to DocumentSlot()
+                )
+            ),
+            onPickFile = {},
+            onErrorShown = {},
+            onBackClick = {},
+            onNotificacionesClick = {},
+            onContinuarClick = {},
+            onNavSelect = {}
+        )
     }
 }

@@ -1,4 +1,4 @@
-package com.app.android.data.repoImp
+package com.app.android.data.repoImp.repoImpSolicitudes
 
 import android.content.Context
 import android.net.Uri
@@ -17,23 +17,34 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
+import android.util.Log
 
+//This file prepares the the local information to send it to the backend
+//It implements the interface from domain and works a little bit with the errors
+//With context & dispatcher.io manages the asynchronous execution of the graphic interface 
+//main function
 class DocumentRepositoryImpl @Inject constructor(
+    //we want to get the api
     private val api: DocumentApi,
+    //we want to get the context to open photos
     @ApplicationContext private val context: Context,
 ) : DocumentRepository {
-
+    //we have a function to send the data that we recieved from the user
     override suspend fun uploadDocument(
+        //we send the id
         solicitudId: String,
+        //type od document
         type: DocumentType,
+        //and the file
         file: PickedFile,
+        //Calls the auxiliary function to convert the file into bytes
     ): Result<UploadedDocument> = withContext(Dispatchers.IO) {
         val bytes = leerBytes(file.uri)
             ?: return@withContext Result.failure(
                 IllegalStateException("No se pudo leer el archivo seleccionado."),
             )
 
-        // "INE" o "DOMICILIO": coincide con lo que valida el backend
+        // Opens the channel of lecture of the bytes of the docuemnt so that it can be processed
         val tipo = type.name.toRequestBody("text/plain".toMediaType())
         val archivo = MultipartBody.Part.createFormData(
             "archivo",
@@ -47,10 +58,12 @@ class DocumentRepositoryImpl @Inject constructor(
         } catch (e: HttpException) {
             Result.failure(IllegalStateException(e.mensajeDelServidor()))
         } catch (e: IOException) {
+            Log.e("DocumentRepo", "Fallo de red", e)
             Result.failure(IllegalStateException("No se pudo conectar con el servidor."))
         }
     }
 
+    //Function to read the bytes of the document
     private fun leerBytes(uri: String): ByteArray? = try {
         context.contentResolver.openInputStream(Uri.parse(uri))?.use { it.readBytes() }
     } catch (e: IOException) {
@@ -59,7 +72,7 @@ class DocumentRepositoryImpl @Inject constructor(
         null
     }
 
-    // La API responde errores como {"message": "..."}; ese texto llega al Snackbar
+    //We send the message of mistake if it is the case that everything is not connected
     private fun HttpException.mensajeDelServidor(): String {
         val cuerpo = response()?.errorBody()?.string()
         val mensaje = runCatching {

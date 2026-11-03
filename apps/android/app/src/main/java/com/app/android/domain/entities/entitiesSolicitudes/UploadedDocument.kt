@@ -6,7 +6,7 @@ data class UploadedDocument(
     //type of document
     val type: DocumentType,
     //name of file
-    val fileName: String,
+    val fileName: String? = null,
     //size of file
     val sizeBytes: Long
 )

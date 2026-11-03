@@ -1,11 +1,16 @@
 package com.app.android.di
 
+import android.content.Context
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+import com.app.android.data.dataSource.dataSourcesSolicitudes.DocumentApi
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.data.repoImp.repoImpSolicitudes.DocumentRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntSolicitudes.DocumentRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -45,7 +50,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://192.168.0.161:3000/") // backend local en Express
+            .baseUrl("http://10.25.81.185:3000/") // backend local en Express 192.168.1.115
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -61,5 +66,22 @@ object NetworkModule {
     fun provideDogRepository(apiService: DogApiService): DogRepositoryInt {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
+    }
+    @Provides
+    @Singleton
+    fun provideDocumentApi(retrofit: Retrofit): DocumentApi {
+        return retrofit.create(DocumentApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDocumentRepository(
+        //we get the api
+        apiService: DocumentApi,
+        //we also get the context of the hardware to open: photos
+        @ApplicationContext context: Context
+    ): DocumentRepository {
+        //we call the repository implementation with the api service and context
+        return DocumentRepositoryImpl(apiService, context)
     }
 }

@@ -8,6 +8,8 @@ import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
 //suspend: freezes the screen while the file is being uploaded
 interface DocumentRepository {
     suspend fun uploadDocument(
+        //all the data that we are going to send
+        solicituId: String,
         type: DocumentType,
         file: PickedFile
         //instead of throwig exception, it returns a box with exit or fail

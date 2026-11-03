@@ -1,8 +1,8 @@
-package com.app.android.data.dataSource.dataSourcesSolicitudes
+package com.app.android.data.dtos
 
 import com.google.gson.annotations.SerializedName
 
-data class DocumentoDto(
+data class documentoDto(
     @SerializedName("tipo") val tipo: String,
     @SerializedName("nombreArchivo") val nombreArchivo: String,
     @SerializedName("tamanoBytes") val tamanoBytes: Long,
