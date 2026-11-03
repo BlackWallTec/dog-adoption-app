@@ -1,8 +1,10 @@
 package com.app.android.data.dtos.dtosSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
+import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.google.gson.annotations.SerializedName
 
 // RESPUESTAS (lo que el backend manda)
@@ -23,6 +25,8 @@ data class SolicitudDto(
     @SerializedName("fecha_solicitud") val fechaSolicitud: String?,
 )
 
+// Paso 2 de la solicitud de adopcion
+
 // Envoltorio de datos generales { success, data: { ... } }
 data class ApiResponseDatosGeneralesDto(
     @SerializedName("success") val success: Boolean?,
@@ -40,6 +44,45 @@ data class DatosGeneralesDto(
     @SerializedName("municipio") val municipio: String?,
     @SerializedName("telefono") val telefono: String?,
     @SerializedName("correo") val correo: String?,
+)
+
+// Paso 2 de la solicitud de adopcion
+
+//  Envoltorio de tu hogar { success, data: { ... } }
+data class ApiResponseTuHogarDto(
+    @SerializedName("success") val success: Boolean?,
+    @SerializedName("data") val data: TuHogarDto?,
+    @SerializedName("message") val message: String?,
+)
+
+// DTO de tu hogar
+data class TuHogarDto(
+    @SerializedName("had_pet") val hadPet: Boolean?,
+    @SerializedName("other_pets") val otherPets: Boolean?,
+    @SerializedName("why_adopt") val whyAdopt: String?,
+    @SerializedName("where_live") val whereLive: String?,
+    @SerializedName("people_in_house") val peopleInHouse: Int?,
+    @SerializedName("all_agree") val allAgree: Boolean?,
+    @SerializedName("house_type") val houseType: String?,
+    @SerializedName("has_garden") val hasGarden: String?,
+    @SerializedName("pet_acept") val petAcept: Boolean?,
+    @SerializedName("about_pets") val aboutPets: String?,
+)
+
+// Paso 3 de la solicitud de adopcion
+
+// Envoltorio de compromiso { success, data: { ... } }
+data class ApiResponseCompromisoDto(
+    @SerializedName("success") val success: Boolean?,
+    @SerializedName("data") val data: CompromisoDto?,
+    @SerializedName("message") val message: String?,
+)
+
+// DTO de compromiso
+data class CompromisoDto(
+    @SerializedName("pet_needs") val petNeeds: String?,
+    @SerializedName("pet_sterilization") val petSterilization: String?,
+    @SerializedName("pet_following") val petFollowing: Boolean?,
 )
 
 // Respuesta sin datos { success, message }
@@ -83,4 +126,19 @@ fun DatosGeneralesDto.toDomain(): DatosGenerales =
         municipio = municipio ?: "",
         telefono = telefono ?: "",
         correo = correo ?: "",
+    )
+
+// DTO de tu hogar
+fun TuHogarDto.toDomain(): TuHogar =
+    TuHogar(
+        hadPet = hadPet ?: false,
+        otherPets = otherPets ?: false,
+    )
+
+// DTO de compromiso
+fun CompromisoDto.toDomain(): Compromiso =
+    Compromiso(
+        petNeeds = petNeeds ?: "",
+        petSterilization = petSterilization ?: "",
+        petFollowing = petFollowing ?: false,
     )
