@@ -4,6 +4,7 @@ import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiServic
 import com.app.android.data.dtos.dtosSolicitudes.CrearSolicitudRequestDto
 import com.app.android.data.dtos.dtosSolicitudes.GuardarDatosGeneralesRequestDto
 import com.app.android.data.dtos.dtosSolicitudes.toDomain
+import com.app.android.data.dtos.dtosSolicitudes.toRequestDto
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
@@ -61,7 +62,32 @@ class SolicitudRepositoryImpl
         }
 
         override suspend fun getTuHogar(idSolicitud: String): TuHogar? {
-            val respuesta = api.fetchHouseDataRemote(idSolicitud)
+            val respuesta = api.fetchHomeRemote(idSolicitud)
             return respuesta.data?.toDomain()
+        }
+
+        override suspend fun guardarTuHogar(
+            idSolicitud: String,
+            datos: TuHogar,
+        ) {
+            val respuesta = api.updateHomeRemote(idSolicitud, datos.toRequestDto())
+            if (respuesta.success != true) {
+                throw Exception(respuesta.message ?: "No se pudo guardar Tu Hogar")
+            }
+        }
+
+        override suspend fun getCompromiso(idSolicitud: String): Compromiso? {
+            val respuesta = api.fetchCommitmentRemote(idSolicitud)
+            return respuesta.data?.toDomain()
+        }
+
+        override suspend fun guardarCompromiso(
+            idSolicitud: String,
+            datos: Compromiso,
+        ) {
+            val respuesta = api.updateCommitmentRemote(idSolicitud, datos.toRequestDto())
+            if (respuesta.success != true) {
+                throw Exception(respuesta.message ?: "No se pudo guardar Compromiso")
+            }
         }
     }

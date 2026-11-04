@@ -1,6 +1,7 @@
 package com.app.android.presentation.navigation
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -91,12 +92,21 @@ fun AppNavigation() {
                 ),
         ) {
             TuHogarScreen(
+                cargando = false,
+                errorCarga = null,
+                datos = null,
+                errores = null,
+                onDatosChange = {},
+                guardando = false,
+                errorGuardar = null,
+                onReintentar = {},
                 onBackClick = { navController.navigateUp() },
                 onContinuarClick = {},
+                modifier = Modifier.fillMaxSize(),
             )
         }
 
-        // Pantilla para nueva pantalla
+        // Plantilla para nueva pantalla
         // composable(
         //     route = Screen.EditarPerro.ruta,
         //     arguments =

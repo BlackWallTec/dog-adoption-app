@@ -58,16 +58,16 @@ data class ApiResponseTuHogarDto(
 
 // DTO de tu hogar
 data class TuHogarDto(
-    @SerializedName("had_pet") val hadPet: Boolean?,
-    @SerializedName("other_pets") val otherPets: Boolean?,
-    @SerializedName("why_adopt") val whyAdopt: String?,
-    @SerializedName("where_live") val whereLive: String?,
-    @SerializedName("people_in_house") val peopleInHouse: Int?,
-    @SerializedName("all_agree") val allAgree: Boolean?,
-    @SerializedName("house_type") val houseType: String?,
-    @SerializedName("has_garden") val hasGarden: String?,
-    @SerializedName("pet_accept") val petAccept: Boolean?,
-    @SerializedName("about_pets") val aboutPets: String?,
+    @SerializedName("ha_tenido_mascotas") val hadPet: Boolean?,
+    @SerializedName("otras_mascotas") val otherPets: Boolean?,
+    @SerializedName("motivo") val whyAdopt: String?,
+    @SerializedName("donde_vivira") val whereLive: String?,
+    @SerializedName("integrantes_hogar") val peopleInHouse: Int?,
+    @SerializedName("todos_de_acuerdo") val allAgree: Boolean?,
+    @SerializedName("tipo_vivienda") val houseType: String?,
+    @SerializedName("jardin_o_patio") val hasGarden: String?,
+    @SerializedName("casero_acepta") val petAccept: Boolean?,
+    @SerializedName("sobre_mascotas") val aboutPets: String?,
 )
 
 // Paso 3 de la solicitud de adopcion
@@ -81,9 +81,9 @@ data class ApiResponseCompromisoDto(
 
 // DTO de compromiso
 data class CompromisoDto(
-    @SerializedName("pet_needs") val petNeeds: String?,
-    @SerializedName("pet_sterilization") val petSterilization: String?,
-    @SerializedName("pet_following") val petFollowing: Boolean?,
+    @SerializedName("cuidados_basicos") val petNeeds: String?,
+    @SerializedName("opinion_esterilizacion") val petSterilization: String?,
+    @SerializedName("permite_seguimiento") val petFollowing: Boolean?,
 )
 
 // Respuesta sin datos { success, message }
@@ -107,23 +107,23 @@ data class GuardarDatosGeneralesRequestDto(
 
 // Body del PUT /api/solicitudes/cliente/:id/tu-hogar
 data class GuardarTuHogarRequestDto(
-    @SerializedName("had_pet") val hadPet: Boolean,
-    @SerializedName("other_pets") val otherPets: Boolean,
-    @SerializedName("why_adopt") val whyAdopt: String,
-    @SerializedName("where_live") val whereLive: String,
-    @SerializedName("people_in_house") val peopleInHouse: Int,
-    @SerializedName("all_agree") val allAgree: Boolean,
-    @SerializedName("house_type") val houseType: String,
-    @SerializedName("has_garden") val hasGarden: String,
-    @SerializedName("pet_accept") val petAccept: Boolean,
-    @SerializedName("about_pets") val aboutPets: String,
+    @SerializedName("ha_tenido_mascotas") val hadPet: Boolean,
+    @SerializedName("otras_mascotas") val otherPets: Boolean,
+    @SerializedName("motivo") val whyAdopt: String,
+    @SerializedName("donde_vivira") val whereLive: String,
+    @SerializedName("integrantes_hogar") val peopleInHouse: Int,
+    @SerializedName("todos_de_acuerdo") val allAgree: Boolean,
+    @SerializedName("tipo_vivienda") val houseType: String,
+    @SerializedName("jardin_o_patio") val hasGarden: String,
+    @SerializedName("casero_acepta") val petAccept: Boolean,
+    @SerializedName("sobre_mascotas") val aboutPets: String,
 )
 
 // Body del PUT /api/solicitudes/cliente/:id/compromiso
 data class GuardarCompromisoRequestDto(
-    @SerializedName("pet_needs") val petNeeds: String,
-    @SerializedName("pet_sterilization") val petSterilization: String,
-    @SerializedName("pet_following") val petFollowing: Boolean,
+    @SerializedName("cuidados_basicos") val petNeeds: String,
+    @SerializedName("opinion_esterilizacion") val petSterilization: String,
+    @SerializedName("permite_seguimiento") val petFollowing: Boolean,
 )
 
 // ===== MAPPERS: DTO → Entity (Recibir información =====

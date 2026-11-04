@@ -1,10 +1,14 @@
 package com.app.android.data.dataSource.dataSourcesSolicitudes
 
+import com.app.android.data.dtos.dtosSolicitudes.ApiResponseCompromisoDto
 import com.app.android.data.dtos.dtosSolicitudes.ApiResponseDatosGeneralesDto
 import com.app.android.data.dtos.dtosSolicitudes.ApiResponseSimpleDto
 import com.app.android.data.dtos.dtosSolicitudes.ApiResponseSolicitudDto
+import com.app.android.data.dtos.dtosSolicitudes.ApiResponseTuHogarDto
 import com.app.android.data.dtos.dtosSolicitudes.CrearSolicitudRequestDto
+import com.app.android.data.dtos.dtosSolicitudes.GuardarCompromisoRequestDto
 import com.app.android.data.dtos.dtosSolicitudes.GuardarDatosGeneralesRequestDto
+import com.app.android.data.dtos.dtosSolicitudes.GuardarTuHogarRequestDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -43,5 +47,31 @@ interface SolicitudApiService {
     suspend fun updateGeneralDataRemote(
         @Path("idSolicitud") idSolicitud: String,
         @Body body: GuardarDatosGeneralesRequestDto,
+    ): ApiResponseSimpleDto
+
+    // GET /api/solicitudes/cliente/:idSolicitud/tu-hogar
+    @GET("api/solicitudes/cliente/{idSolicitud}/tu-hogar")
+    suspend fun fetchHomeRemote(
+        @Path("idSolicitud") idSolicitud: String,
+    ): ApiResponseTuHogarDto
+
+    // PUT /api/solicitudes/cliente/:idSolicitud/tu-hogar
+    @PUT("api/solicitudes/cliente/{idSolicitud}/tu-hogar")
+    suspend fun updateHomeRemote(
+        @Path("idSolicitud") idSolicitud: String,
+        @Body body: GuardarTuHogarRequestDto,
+    ): ApiResponseSimpleDto
+
+    // GET /api/solicitudes/cliente/:idSolicitud/compromiso
+    @GET("api/solicitudes/cliente/{idSolicitud}/compromiso")
+    suspend fun fetchCommitmentRemote(
+        @Path("idSolicitud") idSolicitud: String,
+    ): ApiResponseCompromisoDto
+
+    // PUT /api/solicitudes/cliente/:idSolicitud/compromiso
+    @PUT("api/solicitudes/cliente/{idSolicitud}/compromiso")
+    suspend fun updateCommitmentRemote(
+        @Path("idSolicitud") idSolicitud: String,
+        @Body body: GuardarCompromisoRequestDto,
     ): ApiResponseSimpleDto
 }
