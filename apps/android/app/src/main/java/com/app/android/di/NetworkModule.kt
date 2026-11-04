@@ -2,11 +2,14 @@ package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
+import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
+import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -90,4 +93,15 @@ object NetworkModule {
     @Singleton
     fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt =
         SolicitudRepositoryImpl(apiService)
+
+    @Provides
+    @Singleton
+    fun provideProgramaApiService(retrofit: Retrofit): ProgramaApiService =
+        retrofit.create(ProgramaApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProgramaRepository(apiService: ProgramaApiService): ProgramaRepository =
+        ProgramaRepositoryImpl(apiService)
+
 }

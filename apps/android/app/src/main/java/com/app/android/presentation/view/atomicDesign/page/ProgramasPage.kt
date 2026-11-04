@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
@@ -30,6 +31,8 @@ import com.app.android.presentation.view.atomicDesign.organism.ListaProgramas
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiState
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 // PAGE: catálogo de programas de voluntariado (HU39A)
 @Composable
@@ -112,8 +115,8 @@ private fun ProgramasPageSuccessPreview() {
             uiState =
                 ProgramasUiState.Success(
                     listOf(
-                        Programa("1", "Cuidado de Perros", "Bazar de Donativos", "Disponible", "2026-12-11T12:17:08.611", "2026-12-16T12:17:08.611"),
-                        Programa("2", "Limpieza", "Jornada de limpieza", "Disponible", "2026-12-20T09:00:00", "2026-12-20T13:00:00"),
+                        programaDePrueba("1", "Bazar de Donativos", "Cuidado de Perros", "2026-12-11T12:17:08", "2026-12-16T12:17:08"),
+                        programaDePrueba("2", "Jornada de limpieza", "Limpieza", "2026-12-20T09:00:00", "2026-12-20T13:00:00"),
                     ),
                 ),
             onReintentar = {},
@@ -141,3 +144,24 @@ private fun ProgramasPageErrorPreview() {
         )
     }
 }
+
+// Datos de ejemplo solo para las previsualizaciones
+private fun programaDePrueba(
+    id: String,
+    nombre: String,
+    tipo: String,
+    inicio: String,
+    fin: String,
+) = Programa(
+    id = id,
+    nombre = nombre,
+    tipo = tipo,
+    descripcion = null,
+    fechaInicio = LocalDateTime.parse(inicio).toInstant(ZoneOffset.UTC),
+    fechaFin = LocalDateTime.parse(fin).toInstant(ZoneOffset.UTC),
+    ubicacion = null,
+    cupoMaximo = null,
+    cupoDisponible = null,
+    estado = EstadoPrograma.DISPONIBLE,
+    usuarioInscrito = false,
+)

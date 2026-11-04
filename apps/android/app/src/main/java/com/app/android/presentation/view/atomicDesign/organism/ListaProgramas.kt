@@ -9,10 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.presentation.view.atomicDesign.molecule.TarjetaPrograma
 import com.app.android.presentation.view.ui.theme.AndroidTheme
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // 1. EL ORGANISMO: la lista de programas vigentes
@@ -31,21 +35,43 @@ fun ListaProgramas(
                 nombre = programa.nombre,
                 tipo = programa.tipo,
                 fechaInicio = "Inicio: ${formatearFecha(programa.fechaInicio)}",
-                estado = programa.estadoDelPrograma.trim(),
+                estado = textoEstado(programa.estado),
                 fechaFin = "Fin: ${formatearFecha(programa.fechaFin)}",
             )
         }
     }
 }
 
-// "2026-12-11T12:17:08.611" -> "11 dic 2026" (si falla, muestra el texto original)
-private fun formatearFecha(fecha: String): String =
-    runCatching {
-        val entrada = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(fecha.take(10))!!
-        SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(entrada)
-    }.getOrDefault(fecha)
+// Se formatea en UTC para mostrar la fecha tal como está guardada (sin correrla por zona horaria)
+private val formatoFecha: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-MX")).withZone(ZoneOffset.UTC)
+
+private fun formatearFecha(fecha: Instant): String = formatoFecha.format(fecha)
+
+private fun textoEstado(estado: EstadoPrograma): String =
+    if (estado == EstadoPrograma.DISPONIBLE) "Disponible" else "No disponible"
 
 // 2. PREVISUALIZACIÓN
+private fun programaDePrueba(
+    id: String,
+    nombre: String,
+    tipo: String,
+    inicio: String,
+    fin: String,
+) = Programa(
+    id = id,
+    nombre = nombre,
+    tipo = tipo,
+    descripcion = null,
+    fechaInicio = LocalDateTime.parse(inicio).toInstant(ZoneOffset.UTC),
+    fechaFin = LocalDateTime.parse(fin).toInstant(ZoneOffset.UTC),
+    ubicacion = null,
+    cupoMaximo = null,
+    cupoDisponible = null,
+    estado = EstadoPrograma.DISPONIBLE,
+    usuarioInscrito = false,
+)
+
 @Preview(showBackground = true, widthDp = 360, name = "Lista de programas")
 @Composable
 private fun ListaProgramasPreview() {
@@ -53,8 +79,8 @@ private fun ListaProgramasPreview() {
         ListaProgramas(
             programas =
                 listOf(
-                    Programa("1", "Cuidado de Perros", "Bazar de Donativos", "Disponible", "2026-12-11T12:17:08.611", "2026-12-16T12:17:08.611"),
-                    Programa("2", "Limpieza", "Jornada de limpieza", "Disponible", "2026-12-20T09:00:00", "2026-12-20T13:00:00"),
+                    programaDePrueba("1", "Bazar de Donativos", "Cuidado de Perros", "2026-12-11T12:17:08", "2026-12-16T12:17:08"),
+                    programaDePrueba("2", "Jornada de limpieza", "Limpieza", "2026-12-20T09:00:00", "2026-12-20T13:00:00"),
                 ),
             modifier = Modifier.padding(16.dp),
         )
