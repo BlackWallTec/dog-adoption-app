@@ -73,4 +73,5 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.coil)
+    implementation("androidx.hilt:hilt-lifecycle-viewmodel-compose:1.3.0")
 }
