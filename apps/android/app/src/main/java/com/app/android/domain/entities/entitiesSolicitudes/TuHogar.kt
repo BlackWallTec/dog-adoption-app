@@ -10,7 +10,7 @@ data class TuHogar(
     val allAgree: Boolean? = null, // Pregunta: ¿Todos están de acuerdo?
     val houseType: HouseType = HouseType.CASA, // Opción (Casa, Departamento, Otro): Casa o Departamento
     val hasGarden: String = "", // Pregunta: ¿Tienes jardin o patio?
-    val petAcept: Boolean? = null, // Opción (Si, No): Si rentas, ¿tu casero acepta mascotas?
+    val petAccept: Boolean? = null, // Opción (Si, No): Si rentas, ¿tu casero acepta mascotas?
     val aboutPets: String = "", // Pregunta: Cuéntanos sobre tus mascotas
 ) {
     constructor(houseType: Any) : this()

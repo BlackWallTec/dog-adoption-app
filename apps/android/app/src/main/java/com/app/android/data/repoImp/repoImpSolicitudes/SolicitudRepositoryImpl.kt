@@ -60,19 +60,8 @@ class SolicitudRepositoryImpl
             }
         }
 
-        // Respuestas del paso 3. null = todavía no guarda este paso
-        suspend fun getTuHogar(idSolicitud: String): TuHogar?
-
-        suspend fun guardarTuHogar(
-            idSolicitud: String,
-            datos: TuHogar,
-        )
-
-        // Respuestas del paso 4. null = todavía no guarda este paso
-        suspend fun getCompromiso(idSolicitud: String): Compromiso?
-
-        suspend fun guardarCompromiso(
-            idSolicitud: String,
-            datos: Compromiso,
-        )
+        override suspend fun getTuHogar(idSolicitud: String): TuHogar? {
+            val respuesta = api.fetchHouseDataRemote(idSolicitud)
+            return respuesta.data?.toDomain()
+        }
     }

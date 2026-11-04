@@ -3,6 +3,7 @@ package com.app.android.data.dtos.dtosSolicitudes
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
+import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
 import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.google.gson.annotations.SerializedName
@@ -65,7 +66,7 @@ data class TuHogarDto(
     @SerializedName("all_agree") val allAgree: Boolean?,
     @SerializedName("house_type") val houseType: String?,
     @SerializedName("has_garden") val hasGarden: String?,
-    @SerializedName("pet_acept") val petAcept: Boolean?,
+    @SerializedName("pet_accept") val petAccept: Boolean?,
     @SerializedName("about_pets") val aboutPets: String?,
 )
 
@@ -114,7 +115,7 @@ data class GuardarTuHogarRequestDto(
     @SerializedName("all_agree") val allAgree: Boolean,
     @SerializedName("house_type") val houseType: String,
     @SerializedName("has_garden") val hasGarden: String,
-    @SerializedName("pet_acept") val petAcept: Boolean,
+    @SerializedName("pet_accept") val petAccept: Boolean,
     @SerializedName("about_pets") val aboutPets: String,
 )
 
@@ -125,7 +126,7 @@ data class GuardarCompromisoRequestDto(
     @SerializedName("pet_following") val petFollowing: Boolean,
 )
 
-// ===== MAPPERS: DTO → Entity =====
+// ===== MAPPERS: DTO → Entity (Recibir información =====
 
 fun SolicitudDto.toDomain(): Solicitud =
     Solicitud(
@@ -152,8 +153,18 @@ fun DatosGeneralesDto.toDomain(): DatosGenerales =
 // DTO de tu hogar
 fun TuHogarDto.toDomain(): TuHogar =
     TuHogar(
-        hadPet = hadPet ?: false,
-        otherPets = otherPets ?: false,
+        hadPet = hadPet,
+        otherPets = otherPets,
+        whyAdopt = whyAdopt ?: "",
+        whereLive = whereLive ?: "",
+        peopleInHouse = peopleInHouse ?: 1,
+        allAgree = allAgree ?: false,
+        houseType =
+            HouseType.entries.find { it.name.equals(houseType, ignoreCase = true) }
+                ?: HouseType.CASA,
+        hasGarden = hasGarden ?: "",
+        petAccept = petAccept,
+        aboutPets = aboutPets ?: "",
     )
 
 // DTO de compromiso
@@ -161,5 +172,30 @@ fun CompromisoDto.toDomain(): Compromiso =
     Compromiso(
         petNeeds = petNeeds ?: "",
         petSterilization = petSterilization ?: "",
-        petFollowing = petFollowing ?: false,
+        petFollowing = petFollowing,
+    )
+
+// Mappers: Entity -> DTO
+
+// Guardar de tuHogar
+fun TuHogar.toRequestDto(): GuardarTuHogarRequestDto =
+    GuardarTuHogarRequestDto(
+        hadPet = hadPet == true,
+        otherPets = otherPets == true,
+        whyAdopt = whyAdopt,
+        whereLive = whereLive,
+        peopleInHouse = peopleInHouse,
+        allAgree = allAgree == true,
+        houseType = houseType.name.lowercase(),
+        hasGarden = hasGarden,
+        petAccept = petAccept == true,
+        aboutPets = aboutPets,
+    )
+
+// Guardar de compromiso
+fun Compromiso.toRequestDto(): GuardarCompromisoRequestDto =
+    GuardarCompromisoRequestDto(
+        petNeeds = petNeeds,
+        petSterilization = petSterilization,
+        petFollowing = petFollowing == true,
     )

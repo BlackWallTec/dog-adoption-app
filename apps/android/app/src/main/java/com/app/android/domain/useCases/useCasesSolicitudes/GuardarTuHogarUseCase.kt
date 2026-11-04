@@ -13,7 +13,7 @@ data class TuHogarErrors(
     val allAgree: String? = null,
     val houseType: String? = null,
     val hasGarden: String? = null,
-    val petAcept: String? = null,
+    val petAccept: String? = null,
     val aboutPets: String? = null,
 ) {
     val hasErrors: Boolean
@@ -27,7 +27,7 @@ data class TuHogarErrors(
                 allAgree,
                 houseType,
                 hasGarden,
-                petAcept,
+                petAccept,
                 aboutPets,
             ).any { it != null }
 }

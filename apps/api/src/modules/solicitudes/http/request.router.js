@@ -33,7 +33,6 @@ router.put("/cliente/:idSolicitud/tu-hogar", clientController.updateHome);
 router.get("/cliente/:idSolicitud/compromiso", clientController.getCommitment);
 
 // PUT /api/solicitudes/cliente/:idSolicitud/compromiso
-router.put("/cliente/:idSolicitud/compromiso", clienteController.updateCommitment)
-
+router.put("/cliente/:idSolicitud/compromiso", clientController.updateCommitment);
 
 export default router;

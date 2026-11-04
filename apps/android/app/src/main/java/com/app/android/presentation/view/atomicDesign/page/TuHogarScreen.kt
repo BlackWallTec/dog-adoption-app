@@ -277,8 +277,8 @@ private fun FormularioTuHogar(
         LabeledOptionPicker(
             label = "Si rentas ¿Tu casero acepta mascotas?",
             options = opcionesSiNo,
-            selectedIndex = datos.petAcept.aIndice(),
-            onOptionSelected = { onDatosChange(datos.copy(petAcept = it == 0)) },
+            selectedIndex = datos.petAccept.aIndice(),
+            onOptionSelected = { onDatosChange(datos.copy(petAccept = it == 0)) },
         )
 
         Column {
