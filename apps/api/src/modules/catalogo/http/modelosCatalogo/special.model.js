@@ -1,6 +1,20 @@
 import { supabase } from "../../../../config/supabaseClient.js";
 
 class SpecialModel {
+  // get all special conditions
+  static async getSpecialConditions() {
+    const { data, error } = await supabase
+      .from("cuidado_especial")
+      .select(`*`)
+      .order("descripcion", { ascending: true });
+
+    if (error) {
+      throw new Error(`Error en la consulta de cuidados especiales: ${error.message}`);
+    }
+
+    return data;
+  }
+
   static async getDogSpecialConditionById(id) {
     const { data, error } = await supabase
       .from("perro")

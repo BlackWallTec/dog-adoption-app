@@ -1,6 +1,19 @@
 import { supabase } from "../../../../config/supabaseClient.js";
 
 class BehaviourModel {
+  static async getBehaviours() {
+    const { data, error } = await supabase
+      .from("caracter")
+      .select(`*`)
+      .order("nombre", { ascending: true });
+
+    if (error) {
+      throw new Error(`Error en la consulta de comportamientos: ${error.message}`);
+    }
+
+    return data;
+  }
+
   static async getDogBehaviourById(id) {
     const { data, error } = await supabase
       .from("perro")

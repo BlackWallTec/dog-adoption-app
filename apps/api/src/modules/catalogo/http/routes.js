@@ -22,6 +22,18 @@ router.get("/admin/perros", adminController.getPerrosAdmin);
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
 
+// GET /api/catalogo/admin/tamanos
+router.get("/admin/tamanos", adminController.getTamanos);
+
+// GET /api/catalogo/admin/caracteristicas
+router.get("/admin/caracteristicas", adminController.getCaracteristicas);
+
+// GET /api/catalogo/admin/cuidado_especial
+router.get("/admin/cuidado_especial", adminController.getCuidadoEspecial);
+
+// Get /api/catalogo/admin/admin/razas
+router.get("/admin/razas", adminController.getRazas);
+
 // ==== Fin Rutas Admin ======
 
 // ===== Rutas Cliente ====

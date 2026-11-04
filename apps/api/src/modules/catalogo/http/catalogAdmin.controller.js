@@ -44,6 +44,8 @@ export const obtenerUrlSubidaMultimedia = async (req, res) => {
 
 // ===== FIN Funciones de Subida de Documentos SUPEROPTIMIZADOS ====
 
+// ===== Funciones GET Admin =====
+
 export const getPerrosAdmin = async (req, res) => {
   try {
     const perros = await dogModel.getDogs();
@@ -58,6 +60,74 @@ export const getPerrosAdmin = async (req, res) => {
     });
   }
 };
+
+// Get Tamaños
+export const getTamanos = async (req, res) => {
+  try {
+    const tamanos = await dogModel.getSizes();
+    return res.status(200).json({
+      success: true,
+      data: tamanos,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar los tamaños.",
+    });
+  }
+};
+
+// Get Características
+export const getCaracteristicas = async (req, res) => {
+  try {
+    const caracteristicas = await behaviourrModel.getBehaviours();
+    return res.status(200).json({
+      success: true,
+      data: caracteristicas,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar las características.",
+    });
+  }
+};
+
+// Get Cuidado Especial
+export const getCuidadoEspecial = async (req, res) => {
+  try {
+    const cuidados = await cuidadoEspecialModel.getSpecialCare();
+    return res.status(200).json({
+      success: true,
+      data: cuidados,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar los cuidados especiales.",
+    });
+  }
+};
+
+//Get getRazas
+export const getRazas = async (req, res) => {
+  try {
+    const razas = await dogModel.getBreeds();
+    return res.status(200).json({
+      success: true,
+      data: razas,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar las razas.",
+    });
+  }
+};
+
+// ===== Fin Funciones GET Admin =====
+
+// ===== Funciónes POST ====
 
 // ===== Función POST Nuevo Perro (HU19)====
 
