@@ -1,9 +1,7 @@
 package com.app.android.presentation.viewmodel.viewModelCatalogo
 
-<<<<<<< HEAD
-=======
+
 import android.util.Log
->>>>>>> develop
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesCatalogo.Dog
@@ -46,15 +44,11 @@ class DogDetailViewModel
                 _uiState.value = DogDetailUiState.Loading
                 try {
                     val resultado: Dog? = getDogByIdUseCase(id)
-<<<<<<< HEAD
-=======
-
                     // Debug
                     // 🟢 IMPRIMIMOS LA ENTITY RECIBIDA EN CONSOLA
                     Log.d("TEST_CLEAN", "✅ 2. ¡Éxito! Entity recibida: $resultado")
                     Log.d("TEST_CLEAN", "🐶 Nombre: ${resultado?.nombre}, Raza: ${resultado?.razaNombre}")
 
->>>>>>> develop
                     if (resultado == null) {
                         // Caso 1: BD vacía
                         _uiState.value = DogDetailUiState.Empty
@@ -64,10 +58,8 @@ class DogDetailViewModel
                     }
                 } catch (e: Exception) {
                     _uiState.value = DogDetailUiState.Error("Ocurrió un error al cargar datos")
-<<<<<<< HEAD
-=======
+
                     Log.e("TEST_CLEAN", "❌ 3. Error al conectar con el backend: ${e.message}", e)
->>>>>>> develop
                 }
             }
         }

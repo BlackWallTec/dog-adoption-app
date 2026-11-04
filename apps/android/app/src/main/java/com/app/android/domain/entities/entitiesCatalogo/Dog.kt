@@ -1,11 +1,7 @@
 package com.app.android.domain.entities.entitiesCatalogo
-
-<<<<<<< HEAD
-=======
 import android.util.Log
 import com.app.android.presentation.view.atomicDesign.organism.basicOrganisms.DogDetailState
 
->>>>>>> develop
 data class Dog(
     val id: String,
     val nombre: String,
@@ -33,20 +29,15 @@ data class Dog(
     val perroCuidadosId: String,
     val perroCuidadosDescripcion: String,
     // Tabla Multimedia
-<<<<<<< HEAD
-=======
     val multimedia: List<MultimediaDog>,
 )
 
 // Una clase simple para el dominio
 data class MultimediaDog(
->>>>>>> develop
     val url: String,
     val tipo: String,
     val fechaSubida: String,
 )
-<<<<<<< HEAD
-=======
 
 // Función de extensión para mapear Dog a DogDetailState para la vista
 fun Dog.toUiState(): DogDetailState {
@@ -96,4 +87,3 @@ fun Dog.toUiState(): DogDetailState {
         descripcionTamano = tamanoDescripcion,
     )
 }
->>>>>>> develop
