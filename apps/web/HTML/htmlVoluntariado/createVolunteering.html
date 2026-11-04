@@ -118,8 +118,7 @@
                       rows="5"
                       maxlength="1000"
                       required
-                      placeholder="Explicar la actividad, 
-                            que ropa usar y que deben llevar los voluntarios."
+                      placeholder="Explicar la actividad; que ropa usar y que deben llevar los voluntarios."
                     ></textarea>
                     <small><span id="descCount">0</span>/1000 caracteres</small>
                   </div>
@@ -138,22 +137,24 @@
 
                 <div class="field-grid">
                   <div class="form-field">
-                    <label for="fechaInicio">Fecha de inicio *</label>
+                    <label for="fechaInicio"
+                      >Fecha de inicio <span aria-hidden="true">*</span></label
+                    >
                     <input type="date" id="fechaInicio" required />
                   </div>
 
                   <div class="form-field">
-                    <label for="horaInicio">Hora de inicio *</label>
+                    <label for="horaInicio">Hora de inicio <span aria-hidden="true">*</span></label>
                     <input type="time" id="horaInicio" required />
                   </div>
 
                   <div class="form-field">
-                    <label for="fechaFin">Fecha de fin *</label>
+                    <label for="fechaFin">Fecha de fin <span aria-hidden="true">*</span></label>
                     <input type="date" id="fechaFin" required />
                   </div>
 
                   <div class="form-field">
-                    <label for="horaFin">Hora de fin *</label>
+                    <label for="horaFin">Hora de fin <span aria-hidden="true">*</span></label>
                     <input type="time" id="horaFin" required />
                   </div>
                 </div>
@@ -171,12 +172,12 @@
 
                 <div class="field-grid">
                   <div class="form-field">
-                    <label for="ubicacion">Ubicación *</label>
+                    <label for="ubicacion">Ubicación <span aria-hidden="true">*</span></label>
                     <input type="text" id="ubicacion" maxlength="100" required />
                   </div>
 
                   <div class="form-field">
-                    <label for="cupoMaximo">Cupo máximo *</label>
+                    <label for="cupoMaximo">Cupo máximo <span aria-hidden="true">*</span></label>
                     <input type="number" id="cupoMaximo" min="1" step="1" required />
                   </div>
                 </div>

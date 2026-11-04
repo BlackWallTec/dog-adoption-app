@@ -5,6 +5,7 @@ import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 import { inscribirse } from "./voluntarios.controller.js";
 import * as clientController from "./voluntariadoClient.controller.js";
 import { getInscritos } from "./inscritosAdmin.controller.js";
+import { router as programas } from "./programas.routes.js";
 
 export const router = Router();
 
@@ -26,5 +27,8 @@ router.get(
   requireRole(ROLES.ADMIN, ROLES.ROOT),
   getInscritos,
 );
+
+// Rutas de creación de programas (HU31)
+router.use("/programas", programas);
 
 export default router;

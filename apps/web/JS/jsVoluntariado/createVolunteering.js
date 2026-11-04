@@ -18,32 +18,35 @@ document.getElementById("cancelarBtn").href = URL_VOLUNTARIADO;
 async function solicitarAPI(ruta, opciones = {}) {
   const { metodo = "GET", datos } = opciones;
 
-  const token = null;
+  // Prepara los encabezados de la petición.
+  const headers = {
+    "Content-Type": "application/json",
+  };
 
-  if (window.QarinoAuth && typeof window.QarinoAuth.getAccessToken === "function") {
-    token = await window.QarinoAuth.getAccessToken();
-  }
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = "Bearer ${token}";
-
+  // Configura el método y el envío de cookies.
   const configuracion = {
     method: metodo,
     credentials: "same-origin",
     headers: headers,
   };
+
+  // Agrega los datos cuando sea una petición de escritura.
   if (datos !== undefined) {
     configuracion.body = JSON.stringify(datos);
   }
 
-  const resultado = await respuesta.json().catch(() => ({}));
+  // Primero ejecuta la petición al backend.
   const respuesta = await fetch(`${API}${ruta}`, configuracion);
 
+  const resultado = await respuesta.json();
+
   if (!respuesta.ok) {
-    const error = new Error(resultado.message || "No se pudo completar la solicitud.");
+    const error = new Error(resultado.message || "Error en la solicitud");
     error.code = resultado.code;
     error.empalmes = resultado.empalmes;
     throw error;
   }
+
   return resultado;
 }
 
@@ -107,17 +110,12 @@ function validarPrograma(datos) {
     return "Completa las fechas y los horarios.";
   }
 
-  if (
-    !Number.isFinite(datos.cupoMaximo) ||
-    datos.cupoMaximo % 1 !== 0 ||
-    datos.cupoMaximo <= 0 ||
-    datos.cupoMaximo > 2147483647
-  ) {
+  if (!Number.isFinite(datos.cupoMaximo) || datos.cupoMaximo % 1 !== 0 || datos.cupoMaximo <= 0) {
     return "El cupo máximo debe ser un número entero mayor que cero.";
   }
 
-  const inicio = new Date(`${datos.fechaInicio}T${datos.horaInicio}:00`);
-  const fin = new Date(`${datos.fechaFin}T${datos.horaFin}:00`);
+  const inicio = new Date(`${datos.fechaInicio} ${datos.horaInicio}:00`);
+  const fin = new Date(`${datos.fechaFin} ${datos.horaFin}:00`);
   if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
     return "Fecha u hora inválida.";
   }
