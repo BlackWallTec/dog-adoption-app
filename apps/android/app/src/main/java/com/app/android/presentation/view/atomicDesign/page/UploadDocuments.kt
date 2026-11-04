@@ -9,12 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,25 +70,25 @@ fun UploadDocumentsRoute(
         }
         pendingType = null
     }
-    UploadDocuments(
-        uiState = uiState,
-        onPickFile = { type ->
-            pendingType = type
-            filePicker.launch(arrayOf("application/pdf", "image/jpeg", "image/png"))
-        },
-        onErrorShown = viewModel::onErrorShown,
-        onBackClick = onBackClick,
-        onNotificacionesClick = onNotificacionesClick,
-        onContinuarClick = {
-            viewModel.onContinuarClicked(
-                solicitudId = solicitudId,
-                onSuccess = onContinuarClick
-            )
-        },
-        onNavSelect = onNavSelect
-
-
-    )
+    AndroidTheme {
+        UploadDocuments(
+            uiState = uiState,
+            onPickFile = { type ->
+                pendingType = type
+                filePicker.launch(arrayOf("application/pdf", "image/jpeg", "image/png"))
+            },
+            onErrorShown = viewModel::onErrorShown,
+            onBackClick = onBackClick,
+            onNotificacionesClick = onNotificacionesClick,
+            onContinuarClick = {
+                viewModel.onContinuarClicked(
+                    solicitudId = solicitudId,
+                    onSuccess = onContinuarClick
+                )
+            },
+            onNavSelect = onNavSelect
+        )
+    }
 }
 //Main function that calls the atoms and molecules
 @Composable
@@ -114,6 +114,7 @@ fun UploadDocuments(
     }
     //We Use scaffold to make it according to the screen
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             //We use the top bar and give different values
             AppTopBar(
