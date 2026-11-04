@@ -1,141 +1,124 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Modal Resumen Perro</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
-    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
-    <link rel="stylesheet" href="../../CSS/cssCatalogo/adminPerros.css" />
-  </head>
-  <body>
-    <div class="modal-overlay active" id="modalResumenPerro">
-      <div class="modal-card modal-large">
-        <!-- Encabezado -->
-        <header class="modal-header">
-          <h2 class="modal-title">Confirmar Datos del Perro</h2>
-          <button
-            type="button"
-            class="icon-btn"
-            aria-label="Cerrar modal"
-            onclick="cerrarResumen()"
-          >
-            <span class="material-icons-round">close</span>
-          </button>
-        </header>
+<!-- Modal Summary Dog -->
+<div class="modal-overlay" id="modalResumenPerro">
+  <div class="modal-card modal-large">
+    <!-- Encabezado -->
+    <header class="modal-header">
+      <h2 class="modal-title">Confirmar Datos del Perro</h2>
+      <button type="button" class="icon-btn" aria-label="Cerrar modal" onclick="cerrarResumen()">
+        <span class="material-icons-round">close</span>
+      </button>
+    </header>
 
-        <!-- Cuerpo: Grid 2 Columnas -->
-        <div class="modal-body summary-body">
-          <!-- Columna 1: Galería Multimedia -->
-          <div class="summary-gallery">
-            <!-- Imagen Principal -->
-            <div class="gallery-main">
-              <img
-                src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800"
-                alt="Foto principal"
-                id="resImagenPrincipal"
-              />
-              <!-- Si es video, JS puede mostrar este badge -->
-              <div class="video-badge" id="resVideoBadge" style="display: none">
-                <span class="material-icons-round" style="font-size: 16px">play_circle</span> Video
-              </div>
-            </div>
-
-            <!-- Carrusel de Miniaturas (Llenado por JS) -->
-            <div class="gallery-thumbs" id="resMiniaturas">
-              <img
-                src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=150"
-                class="active"
-                alt="thumb"
-              />
-              <img
-                src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=150"
-                alt="thumb"
-              />
-              <img
-                src="https://images.unsplash.com/photo-1537151608804-ea2f1ea29ebf?auto=format&fit=crop&q=80&w=150"
-                alt="thumb"
-              />
-            </div>
-          </div>
-
-          <!-- Columna 2: Resumen de Datos -->
-          <div class="summary-details">
-            <!-- Título y Meta -->
-            <div class="summary-header">
-              <div>
-                <h3 class="summary-name" id="resNombre">Firulais</h3>
-                <p class="summary-meta">
-                  <span id="resRaza">Mestizo</span> • <span id="resSexo">Macho</span> •
-                  <span id="resEdad">3</span> años •
-                  <span id="resTamano">45.5 cm</span>
-                </p>
-              </div>
-              <!-- Reutilizamos tu badge de estado -->
-              <span class="badge-estado badge-disponible" id="resEstado">Disponible</span>
-            </div>
-
-            <!-- Descripción -->
-            <div class="summary-description" id="resDescripcion">
-              Un perro muy amigable y juguetón. Le encanta correr por el patio y se lleva excelente
-              con otros animales. Ideal para familias activas.
-            </div>
-
-            <!-- Salud -->
-            <div>
-              <h4 class="summary-subtitle">Estado de Salud</h4>
-              <ul class="health-list">
-                <li>
-                  <span class="material-icons-round icon-check">check_circle</span>
-                  <span id="resEsterilizado">Esterilizado</span>
-                </li>
-                <li>
-                  <span class="material-icons-round icon-check">check_circle</span>
-                  <span id="resVacunado">Vacunado</span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Etiquetas / Badges -->
-            <div style="display: flex; flex-direction: column; gap: 16px">
-              <div>
-                <h4 class="summary-subtitle">Características</h4>
-                <div class="badge-selector" id="resCaracteristicas">
-                  <span class="badge-item active">Juguetón</span>
-                  <span class="badge-item active">Sociable con Niños</span>
-                </div>
-              </div>
-
-              <div>
-                <h4 class="summary-subtitle">Cuidados Especiales</h4>
-                <div class="badge-selector" id="resCuidados">
-                  <span class="badge-item active">Medicación Diaria</span>
-                </div>
-              </div>
-            </div>
+    <!-- Cuerpo: Grid 2 Columnas -->
+    <div class="modal-body summary-body">
+      <!-- Columna 1: Galería Multimedia -->
+      <div class="summary-gallery">
+        <!-- Imagen Principal -->
+        <div class="gallery-main">
+          <img
+            src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800"
+            alt="Foto principal"
+            id="resImagenPrincipal"
+          />
+          <!-- Si es video, JS puede mostrar este badge -->
+          <div class="video-badge" id="resVideoBadge" style="display: none">
+            <span class="material-icons-round" style="font-size: 16px">play_circle</span> Video
           </div>
         </div>
 
-        <!-- Pie del Modal: Botón Llamativo -->
-        <footer class="modal-footer footer-spaced">
-          <button
-            type="button"
-            id="back-2-register"
-            class="btn-text"
-            style="display: flex; align-items: center; gap: 6px"
-            onclick="volverAlFormulario()"
-          >
-            <span class="material-icons-round" style="font-size: 18px">arrow_back</span>
-            Editar Datos
-          </button>
+        <!-- Carrusel de Miniaturas (Llenado por JS) -->
+        <div class="gallery-thumbs" id="resMiniaturas">
+          <img
+            src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=150"
+            class="active"
+            alt="thumb"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=150"
+            alt="thumb"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1537151608804-ea2f1ea29ebf?auto=format&fit=crop&q=80&w=150"
+            alt="thumb"
+          />
+        </div>
+      </div>
 
-          <!-- BOTÓN FETCH -->
-          <button type="button" class="btn-primary btn-submit-glow" id="btnConfirmarBD">
-            <span class="material-icons-round">cloud_upload</span>
-            Confirmar y Registrar
-          </button>
-        </footer>
+      <!-- Columna 2: Resumen de Datos -->
+      <div class="summary-details">
+        <!-- Título y Meta -->
+        <div class="summary-header">
+          <div>
+            <h3 class="summary-name" id="resNombre">Firulais</h3>
+            <p class="summary-meta">
+              <span id="resRaza">Mestizo</span> • <span id="resSexo">Macho</span> •
+              <span id="resEdad">3</span> años •
+              <span id="resTamano">45.5 cm</span>
+            </p>
+          </div>
+          <!-- Reutilizamos tu badge de estado -->
+          <span class="badge-estado badge-disponible" id="resEstado">Disponible</span>
+        </div>
+
+        <!-- Descripción -->
+        <div class="summary-description" id="resDescripcion">
+          Un perro muy amigable y juguetón. Le encanta correr por el patio y se lleva excelente con
+          otros animales. Ideal para familias activas.
+        </div>
+
+        <!-- Salud -->
+        <div>
+          <h4 class="summary-subtitle">Estado de Salud</h4>
+          <ul class="health-list">
+            <li>
+              <span class="material-icons-round icon-check">check_circle</span>
+              <span id="resEsterilizado">Esterilizado</span>
+            </li>
+            <li>
+              <span class="material-icons-round icon-check">check_circle</span>
+              <span id="resVacunado">Vacunado</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Etiquetas / Badges -->
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div>
+            <h4 class="summary-subtitle">Características</h4>
+            <div class="badge-selector" id="resCaracteristicas">
+              <span class="badge-item active">Juguetón</span>
+              <span class="badge-item active">Sociable con Niños</span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="summary-subtitle">Cuidados Especiales</h4>
+            <div class="badge-selector" id="resCuidados">
+              <span class="badge-item active">Medicación Diaria</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </body>
-</html>
+
+    <!-- Pie del Modal: Botón Llamativo -->
+    <footer class="modal-footer footer-spaced">
+      <button
+        type="button"
+        id="back-2-register"
+        class="btn-text"
+        style="display: flex; align-items: center; gap: 6px"
+        onclick="volverAlFormulario()"
+      >
+        <span class="material-icons-round" style="font-size: 18px">arrow_back</span>
+        Editar Datos
+      </button>
+
+      <!-- BOTÓN FETCH -->
+      <button type="button" class="btn-primary btn-submit-glow" id="btnConfirmarBD">
+        <span class="material-icons-round">cloud_upload</span>
+        Confirmar y Registrar
+      </button>
+    </footer>
+  </div>
+</div>

@@ -2,28 +2,46 @@
 // Carga de modales de manera dinámica en el DOM
 import { loadModal } from "../utils/modalLoader.js";
 import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
+import { initDogSummaryModal } from "./ModalsJS/summaryModal.controller.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Elementos UI de la vista principal (Godot @export)
-  const btnRegistrar = document.querySelector(".button-registrar");
+  // 1. Cargar los modales de manera dinámica
+  await Promise.all([
+    loadModal("/HTML/htmlCatalogo/registerDogModal.html", "#modal-container1"),
+    loadModal("/HTML/htmlCatalogo/dogSummaryModal.html", "#modal-container2"),
+  ]);
 
-  try {
-    // 2. Cargamos el HTML del modal inmediatamente al arrancar la app
-    await loadModal("../../HTML/htmlCatalogo/registerDogModal.html");
+  //2. Inicializar controladores de modales
+  let registerModalController = null;
+  let summaryModalController = null;
 
-    // 3. Con el modal ya inyectado en el DOM, inicializamos su controlador:
-    //    - Captura referencias del DOM
-    //    - Mapea listeners de eventos
-    //    - Carga los catálogos AJAX (Razas, Tamaños, etc.)
-    const modalController = initDogRegisterModal();
+  // 1. Inicializamos el Modal de Resumen
+  summaryModalController = initDogSummaryModal({
+    // SIGNAL: Cuando el usuario le da a "Atrás" en el Resumen:
+    onBack: () => {
+      registerModalController.open(); // Reabrimos el formulario intacto
+    },
+    // SIGNAL: Cuando se guardó con éxito:
+    onSuccess: () => {
+      // Limpiamos el formulario de registro y refrescamos la tabla
+      registerModalController.ui.form.reset();
+      console.log("Recargando tabla de perros...");
+    },
+  });
 
-    // 4. Conectamos el botón de la vista principal con el método de apertura del modal
-    btnRegistrar.addEventListener("click", () => {
-      modalController.open();
-    });
-  } catch (error) {
-    console.error("Error al inicializar el módulo de administración:", error);
-  }
+  // 2. Inicializamos el Modal de Registro
+  registerModalController = initDogRegisterModal({
+    // SIGNAL: Cuando le dan a "Continuar" en el Formulario:
+    onContinue: (datosRecolectados) => {
+      // Le pasamos los datos al Resumen y lo abrimos
+      summaryModalController.openWithData(datosRecolectados);
+    },
+  });
+
+  // 3. Botón "Registrar Perro" de la pantalla principal
+  document.querySelector(".button-registrar")?.addEventListener("click", () => {
+    registerModalController.open();
+  });
 });
 // ==== Fin de Codigo generado con Inteligencia Artificial (IA) ====
 
