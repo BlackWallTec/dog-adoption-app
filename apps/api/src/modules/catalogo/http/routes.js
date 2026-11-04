@@ -6,20 +6,30 @@ const router = Router();
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
 
-// Rutas del catálogo
+// ===== Rutas Especiales =======
 
-//Rutas Admin
+//POST api/catalogo/admin/solicitar-subida
+//Esta ruta permite a un administrador solicitar una URL de subida para un archivo multimedia (imagen o video) que se asociará a un perro en el catálogo.
+//Es necesario llamar despues a la ruta POST /api/catalogo/admin/perros para registrar el perro y asociar la URL de subida generada.
+router.post("/admin/solicitar-subida", adminController.obtenerUrlSubidaMultimedia);
 
+// ====== Fin Rutas Especiales =======
+
+// ==== Rutas Admin ======
 // GET /api/catalogo/admin/perros
 router.get("/admin/perros", adminController.getPerrosAdmin);
 
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
 
-//Rutas Cliente
+// ==== Fin Rutas Admin ======
+
+// ===== Rutas Cliente ====
 
 // Get /api/catalogo/cliente/perros/:id (¡nueva!)
 router.get("/cliente/perros/:id", clientController.getDogById);
 
 // La forma correcta si usaste export default:
 export default router;
+
+// ===== Fin Rutas Cliente =====
