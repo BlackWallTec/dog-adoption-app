@@ -40,6 +40,7 @@ class PerrosViewModel @Inject constructor(
             _uiState.value=PerrosUiState.Loading
             try{
                 val resultado=getPerros()
+                Log.d("TEST_CLEAN", "Exito con la visualizacion de los perros: $resultado")
                 if(resultado.isEmpty()) {
                     _uiState.value = PerrosUiState.Empty
                 }else {
