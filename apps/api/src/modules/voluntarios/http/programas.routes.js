@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { randomUUID } from "node:crypto";
-import * as ProgramaModel from "../modelosVoluntariado/programaCreacion.model.js";
-import * as TipoProgramaModel from "../modelosVoluntariado/TipoPrograma.model.js";
+import * as ProgramaModel from "./modelosVoluntariado/programaCreacion.model.js";
+import * as TipoProgramaModel from "./modelosVoluntariado/TipoPrograma.model.js";
 
 export const router = Router();
 
