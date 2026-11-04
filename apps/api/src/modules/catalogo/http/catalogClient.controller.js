@@ -48,7 +48,7 @@ export const getDogs = async (req, res) => {
     const perros = await dogModel.getDogs();
     for (const perro of perros) {
       const fotos = await multimediaModel.getDogMultimediaById(perro.id_perro);
-      if (fotos.lenght > 0) {
+      if (fotos.length > 0) {
         perro.foto_url = fotos[0].url;
       } else {
         perro.foto_url = "";
