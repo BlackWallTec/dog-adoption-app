@@ -13,6 +13,9 @@ import * as clientController from "./catalogClient.controller.js";
 // GET /api/catalogo/admin/perros
 router.get("/admin/perros", adminController.getPerrosAdmin);
 
+// POST /api/catalogo/admin/perros
+router.post("/admin/perros", adminController.postNuevoPerro);
+
 //Rutas Cliente
 
 // Get /api/catalogo/cliente/perros/:id (¡nueva!)
