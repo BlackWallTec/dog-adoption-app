@@ -3,24 +3,54 @@ package com.app.android.di
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class) // Le dice a Hilt: "Estas dependencias viven tanto como la App"
 object NetworkModule {
+    // ====== Codigo agregado con IA =====
+    @Provides
+    @Singleton
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply {
+            // El nivel BODY imprime: URL, cabeceras, códigos de error y el JSON CRUDO completo
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+    // Dificultad para conectar backend con Android en iOS
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+        OkHttpClient
+            .Builder()
+            .connectTimeout(30, TimeUnit.SECONDS) // 30 segundos de margen para conectar
+            .readTimeout(30, TimeUnit.SECONDS) // 30 segundos para leer datos
+            .writeTimeout(30, TimeUnit.SECONDS) // 30 segundos para enviar
+            .addInterceptor(loggingInterceptor)
+            .build()
+    // ====== Fin Codigo agregado con IA =====
+
     // Excepción 1: Fabrica el motor de Retrofit configurado con la URL de Supabase
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit =
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://10.0.2.2:3000/") // backend local en Express
+            .baseUrl("http://192.168.0.143:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
 
@@ -36,4 +66,14 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
+    @Provides
+    @Singleton
+    fun provideSolicitudApiService(retrofit: Retrofit): SolicitudApiService = retrofit.create(SolicitudApiService::class.java)
+
+    // 4. Repositorio de Solicitudes.
+    // Para volver al fake (sin backend): return SolicitudRepositoryFake()
+    @Provides
+    @Singleton
+    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)
 }

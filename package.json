@@ -8,6 +8,10 @@
     "dev": "vp run --filter api --filter web --parallel dev",
     "prepare": "vp config --no-agent"
   },
+  "dependencies": {
+    "cookie-parser": "catalog:",
+    "jsonwebtoken": "catalog:"
+  },
   "devDependencies": {
     "@vitest/coverage-v8": "catalog:",
     "vite-plus": "catalog:"

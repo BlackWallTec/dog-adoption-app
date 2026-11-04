@@ -1,5 +1,11 @@
 package com.app.android.domain.entities.entitiesCatalogo
 
+<<<<<<< HEAD
+=======
+import android.util.Log
+import com.app.android.presentation.view.atomicDesign.organism.basicOrganisms.DogDetailState
+
+>>>>>>> develop
 data class Dog(
     val id: String,
     val nombre: String,
@@ -27,7 +33,67 @@ data class Dog(
     val perroCuidadosId: String,
     val perroCuidadosDescripcion: String,
     // Tabla Multimedia
+<<<<<<< HEAD
+=======
+    val multimedia: List<MultimediaDog>,
+)
+
+// Una clase simple para el dominio
+data class MultimediaDog(
+>>>>>>> develop
     val url: String,
     val tipo: String,
     val fechaSubida: String,
 )
+<<<<<<< HEAD
+=======
+
+// Función de extensión para mapear Dog a DogDetailState para la vista
+fun Dog.toUiState(): DogDetailState {
+    // 1. FASE ENTIDAD: Ver qué valores tiene el objeto Dog de Dominio antes de mapear a UI
+    Log.d("DOG_DEBUG", "=== FASE 3: MAPEO A UI (ENTIDAD DOG) ===")
+    Log.d("DOG_DEBUG", "Entidad - Nombre: $nombre")
+    Log.d("DOG_DEBUG", "Entidad - esterilizado: $esterilizado")
+    Log.d("DOG_DEBUG", "Entidad - vacunado: $vacunado")
+
+    // Mapeo dinámico de Salud y Cuidados (Booleanos + Colecciones)
+    val saludList =
+        mutableListOf<String>().apply {
+            if (vacunado) add("Vacunado")
+            if (esterilizado) add("Esterilizado")
+            if (perroCuidadosDescripcion.isNotBlank()) add(perroCuidadosDescripcion)
+        }
+
+    // 2. FASE RESULTADO UI: Ver si los textos se añadieron correctamente a la lista
+    Log.d("DOG_DEBUG", "=== FASE 4: RESULTADO EN LISTA DE SALUD ===")
+    Log.d("DOG_DEBUG", "Lista saludList generada: $saludList")
+    Log.d("DOG_DEBUG", "==========================================")
+
+    // Mapeo de Características Especiales
+    val caracteristicasList =
+        mutableListOf<String>().apply {
+            if (perroCaracterNombre.isNotBlank()) add(perroCaracterNombre)
+        }
+
+    // Mapeo de Métricas Principales (Edad, Sexo, Tamaño, Raza)
+    val metricasMap =
+        mapOf(
+            "Edad" to "$edad años",
+            "Sexo" to sexo,
+            "Tamaño" to tamanoNombre,
+            "Raza" to razaNombre,
+        )
+
+    return DogDetailState(
+        nombre = nombre,
+        estado = estado,
+        ubicacion = "Refugio Principal",
+        metricas = metricasMap,
+        salud = saludList,
+        caracteristicas = caracteristicasList,
+        sobreMi = descripcion,
+        descripcionRaza = razaDescripcion,
+        descripcionTamano = tamanoDescripcion,
+    )
+}
+>>>>>>> develop
