@@ -1,9 +1,38 @@
+// ==== Codigo generado con Inteligencia Artificial (IA) ====
+// Carga de modales de manera dinámica en el DOM
+import { loadModal } from "../utils/modalLoader.js";
+import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Elementos UI de la vista principal (Godot @export)
+  const btnRegistrar = document.querySelector(".button-registrar");
+
+  try {
+    // 2. Cargamos el HTML del modal inmediatamente al arrancar la app
+    await loadModal("../../HTML/htmlCatalogo/registerDogModal.html");
+
+    // 3. Con el modal ya inyectado en el DOM, inicializamos su controlador:
+    //    - Captura referencias del DOM
+    //    - Mapea listeners de eventos
+    //    - Carga los catálogos AJAX (Razas, Tamaños, etc.)
+    const modalController = initDogRegisterModal();
+
+    // 4. Conectamos el botón de la vista principal con el método de apertura del modal
+    btnRegistrar.addEventListener("click", () => {
+      modalController.open();
+    });
+  } catch (error) {
+    console.error("Error al inicializar el módulo de administración:", error);
+  }
+});
+// ==== Fin de Codigo generado con Inteligencia Artificial (IA) ====
+
 // Referencias a elementos del DOM
 const tablaBody = document.getElementById("tabla-perros-body");
 const counterSubtitle = document.getElementById("perros-counter-subtitle");
 const paginationInfo = document.getElementById("pagination-info");
 
-// Estado ocal de la vista
+// Estado local de la vista
 let catalogoPerros = [];
 
 // Función para obtener la clase de badge según el estado

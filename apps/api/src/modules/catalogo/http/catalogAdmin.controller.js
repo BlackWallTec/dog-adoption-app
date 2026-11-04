@@ -228,8 +228,8 @@ function mapRequestToDogData(reqBody) {
   "multimedia": [
     { "url": "https://storage.com", "tipo": "imagen" }
   ],
-  "caracteres": [1, 3], 
-  "cuidados": [2, 4]      
+  "caracteres": [id_caracter1: 1, id_caracter2: 3], 
+  "cuidados": [id_cuidado1: 2, id_cuidado2: 4]      
 }
   */
 }
