@@ -22,6 +22,12 @@ class DogModel {
         tamano (
             id_tamano,
             nombre
+        ),
+        multimedia(
+            id_multimedia,
+            url,
+            tipo,
+            fecha_subida
         )
     `)
       .order("fecha_ingreso", { ascending: false });
