@@ -208,7 +208,7 @@ textarea {
 .new-type-panel {
   grid-column: 1/-1;
   padding: 20px;
-  background: var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-low);
   border-radius: 14px;
   border: 1px solid var(--md-sys-color-surface-container);
 }
