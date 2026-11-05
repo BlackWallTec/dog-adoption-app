@@ -2,6 +2,7 @@
 
 package com.app.android.presentation.view.viewsCatalogo
 // 1. Estados y ciclos de vida de JetPack Compose
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,19 +16,27 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.app.android.domain.entities.entitiesCatalogo.Dog
+import com.app.android.domain.entities.entitiesCatalogo.toUiState
+import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.toMediaItems
+import com.app.android.presentation.view.atomicDesign.organism.NavBar
 
 // 4. Clases de VMStates y el VM
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailUiState
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 
+import com.app.android.presentation.view.atomicDesign.template.DogDetailTemplate
+
 @Composable
-fun dogDetailScreen(
+fun DogDetailScreenView(
     // 1. Hilt inyecta el ViewModel
     viewModel: DogDetailViewModel = hiltViewModel(),
     // 2. Parámetros
     dogId: String = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
+    // 3. Acciones al hacer clic
+    onAdoptClick: (String) -> Unit,
 ) {
     // 2. Nos suscribimos al UiState (conectamos a la señal como en Godot)
     val uiState by viewModel.uiState.collectAsState()
@@ -56,34 +65,37 @@ fun dogDetailScreen(
             is DogDetailUiState.Success -> {
                 // Muestra los datos mapeados desde tu Entity
                 val dog: Dog = state.datos
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                ) {
-                    Text(
-                        text = dog.nombre,
-                        style = MaterialTheme.typography.headlineLarge,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Raza: ${dog.razaNombre}",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = "Edad: ${dog.edad} años | Sexo: ${dog.sexo}",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = dog.descripcion,
-                        style = MaterialTheme.typography.bodyLarge,
+
+                // Instanciamos nuestro Template, mapeamos Entity y enviamos parámetros
+                val dogState = dog.toUiState()
+                val mediaItems = dog.toMediaItems()
+                // Variable para el contexto de la aplicación (necesario para el Toast)(debug)
+                val context = LocalContext.current
+
+                Scaffold(
+                    // NavBar
+                    bottomBar = {
+                        // Asignamos NavBar al slot inferior del Scaffold
+                        NavBar(
+                            selected = 0,
+                            onSelect = {},
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    },
+                ) { paddingValues ->
+                    DogDetailTemplate(
+                        mediaList = mediaItems,
+                        dogState = dogState,
+                        dogId = dog.id,
+                        onAdoptClick = { idDelPerro ->
+                            onAdoptClick(idDelPerro)
+                        },
+                        modifier = Modifier.padding(paddingValues),
                     )
                 }
             }
 
-            // 3.3 Empty case
+            // 3.3 Empty
             is DogDetailUiState.Empty -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -96,7 +108,7 @@ fun dogDetailScreen(
                 }
             }
 
-            // 3.4 Error case
+            // 3.4 Error
             is DogDetailUiState.Error -> {
                 // Muestra un mensaje de error y opción de reintento
                 Column(

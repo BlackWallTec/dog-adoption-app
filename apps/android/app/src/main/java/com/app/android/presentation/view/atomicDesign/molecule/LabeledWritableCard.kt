@@ -44,6 +44,7 @@ fun LabeledWritableCard(
     helperText: String? = null, // texto auxiliar | si es null no se muestra
     singleLine: Boolean = false, // true se usara para campos de una linea (ex. edad)
     minLines: Int = 1, // que tan alta empieza la tarjeta
+    readOnly: Boolean = false, // true = se ve pero no se puede escribir
 ) {
     // Column = título arriba, tarjeta en medio, ayuda abajo
     Column(modifier = modifier.fillMaxWidth()) {
@@ -63,6 +64,7 @@ fun LabeledWritableCard(
             leadingIcon = leadingIcon,
             singleLine = singleLine,
             minLines = minLines,
+            readOnly = readOnly,
         )
 
         // texto de ayuda aparece si se habilita
@@ -109,6 +111,7 @@ private fun LabeledWritableCardPreview() {
                 onValueChange = { motivo = it },
                 placeholder = "Cuéntanos tus motivos",
                 minLines = 3, // respuesta larga | más lineas
+                readOnly = true,
             )
         }
     }
