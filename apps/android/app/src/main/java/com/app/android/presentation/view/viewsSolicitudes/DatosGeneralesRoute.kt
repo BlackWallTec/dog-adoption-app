@@ -8,34 +8,30 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.app.android.presentation.view.atomicDesign.page.DatosGeneralesScreen
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.DatosGeneralesUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.DatosGeneralesViewModel
-import com.app.android.presentation.viewmodel.viewModelSolicitudes.GuardarUiState
 
 // ROUTE: conecta el DatosGeneralesViewModel con la page DatosGeneralesScreen
 @Composable
 fun DatosGeneralesRoute(
-    idSolicitud: String,
-    idUsuario: String,
     onBack: () -> Unit, // regresar a Requisitos
     onIrATuHogar: () -> Unit, // navegar al paso 3
     viewModel: DatosGeneralesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val guardarState by viewModel.guardarState.collectAsState()
+    val listo by viewModel.listo.collectAsState()
 
-    // 1 cuando se entra se cargan los datos
-    LaunchedEffect(idSolicitud) {
-        viewModel.onLoadDatosGenerales(idSolicitud, idUsuario)
+    // Al entrar: carga del borrador (si ya lleno este paso) o del perfil
+    LaunchedEffect(Unit) {
+        viewModel.onLoadDatosGenerales()
     }
 
-    // 2 Si se guardo bien se navega y avisa
-    LaunchedEffect(guardarState) {
-        if (guardarState is GuardarUiState.Success) {
+    // Guardado en el borrador → navegamos y avisamos
+    LaunchedEffect(listo) {
+        if (listo) {
             onIrATuHogar()
             viewModel.onNavegacionRealizada()
         }
     }
 
-    // 3 Traduccion los dos estados a parametros para la page
     val success = uiState as? DatosGeneralesUiState.Success
 
     DatosGeneralesScreen(
@@ -45,10 +41,10 @@ fun DatosGeneralesRoute(
         edad = success?.edad,
         errorOcupacion = success?.errores?.ocupacion,
         onOcupacionChange = viewModel::onOcupacionChange,
-        guardando = guardarState is GuardarUiState.Loading,
-        errorGuardar = (guardarState as? GuardarUiState.Error)?.mensaje,
-        onReintentar = { viewModel.onLoadDatosGenerales(idSolicitud, idUsuario) },
+        guardando = false, // guardar es instanttt (memoria)
+        errorGuardar = null, // y no puede fallar por red
+        onReintentar = { viewModel.onLoadDatosGenerales() },
         onBackClick = onBack,
-        onContinuarClick = { viewModel.onContinuar(idSolicitud) },
+        onContinuarClick = { viewModel.onContinuar() },
     )
 }
