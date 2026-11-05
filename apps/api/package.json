@@ -10,10 +10,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "catalog:",
+    "bcryptjs": "catalog:",
+    "cookie-parser": "catalog:",
     "cors": "catalog:",
     "dotenv": "catalog:",
     "express": "^5.3.0",
-    "multer": "catalog:"
+    "multer": "catalog:",
+    "jsonwebtoken": "catalog:"
   },
   "devDependencies": {
     "vite-plus": "catalog:"
