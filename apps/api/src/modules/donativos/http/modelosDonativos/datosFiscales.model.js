@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "./supabaseAdmin.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 // Bucket privado para las constancias (no deben ser públicas, traen RFC y domicilio)
 const BUCKET_CONSTANCIAS = "constancias-fiscales";

@@ -1,0 +1,222 @@
+<!-- registerDogModal.html -->
+<div class="modal-overlay" id="modalAltaPerro">
+  <div class="modal-card">
+    <!-- Encabezado del Modal -->
+    <header class="modal-header">
+      <h2 class="modal-title">Dar de Alta Nuevo Perro</h2>
+      <button
+        type="button"
+        id="btn-cerrar-modal"
+        class="icon-btn"
+        aria-label="Cerrar modal"
+        onclick="cerrarModal()"
+      >
+        <span class="material-icons-round">close</span>
+      </button>
+    </header>
+
+    <!-- Cuerpo del Modal (Contenedor plano sin <form>) -->
+    <div class="modal-body" id="contenedorRegistroPerro">
+      <!-- Sección 1: Datos Generales -->
+      <fieldset class="form-section">
+        <legend class="form-legend">Información General</legend>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="nombre" class="form-label">Nombre *</label>
+            <div class="field-wrapper">
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                class="input-base"
+                placeholder="Ej. Firulais"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sexo" class="form-label">Sexo *</label>
+            <div class="field-wrapper">
+              <select
+                id="sexo"
+                name="sexo"
+                class="select-pill input-base"
+                style="border: none; padding: 0"
+                required
+              >
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option value="Macho">Macho</option>
+                <option value="Hembra">Hembra</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="edad_aprox" class="form-label">Edad Aprox. (Años)</label>
+            <div class="field-wrapper">
+              <input
+                type="number"
+                id="edad_aprox"
+                name="edad_aprox"
+                class="input-base"
+                min="0"
+                placeholder="Ej. 3"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="tamano_medida" class="form-label">Medida (cm)</label>
+            <div class="field-wrapper">
+              <input
+                type="number"
+                id="tamano_medida"
+                name="tamano_medida"
+                step="0.1"
+                class="input-base"
+                placeholder="Ej. 45.5"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="estado" class="form-label">Estado Inicial *</label>
+            <div class="field-wrapper">
+              <select
+                id="estado"
+                name="estado"
+                class="select-pill input-base"
+                style="border: none; padding: 0"
+                required
+              >
+                <option value="Disponible" selected>Disponible</option>
+                <option value="En Tratamiento">En Tratamiento</option>
+                <option value="Adoptado">Adoptado</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion" class="form-label">Descripción</label>
+          <div class="field-wrapper">
+            <textarea
+              id="descripcion"
+              name="descripcion"
+              class="textarea-base"
+              placeholder="Describe la personalidad y comportamiento del perrito..."
+            ></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Sección 2: Clasificación y Salud -->
+      <fieldset class="form-section">
+        <legend class="form-legend">Clasificación y Salud (BD)</legend>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="id_raza" class="form-label">Raza *</label>
+            <div class="field-wrapper">
+              <select
+                id="id_raza"
+                name="id_raza"
+                class="select-pill input-base"
+                style="border: none; padding: 0"
+                required
+              >
+                <option value="" disabled selected>Cargando razas...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="id_tamano" class="form-label">Tamaño Categoría *</label>
+            <div class="field-wrapper">
+              <select
+                id="id_tamano"
+                name="id_tamano"
+                class="select-pill input-base"
+                style="border: none; padding: 0"
+                required
+              >
+                <option value="" disabled selected>Cargando tamaños...</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Switches de Salud -->
+        <div class="form-grid-2" style="margin-top: 8px">
+          <label
+            class="form-label"
+            style="display: flex; align-items: center; gap: 8px; cursor: pointer"
+          >
+            <input type="checkbox" id="esterilizado" name="esterilizado" />
+            Esterilizado
+          </label>
+          <label
+            class="form-label"
+            style="display: flex; align-items: center; gap: 8px; cursor: pointer"
+          >
+            <input type="checkbox" id="vacunado" name="vacunado" />
+            Vacunación Completa
+          </label>
+        </div>
+
+        <!-- Badges Dinámicos -->
+        <div class="form-group">
+          <label class="form-label">Características (Selección múltiple)</label>
+          <div class="badge-selector" id="caracteristicasContainer">
+            <span class="badge-item active" data-id="1">Juguetón</span>
+            <span class="badge-item" data-id="2">Tranquilo</span>
+            <span class="badge-item active" data-id="3">Sociable con Niños</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cuidados Especiales</label>
+          <div class="badge-selector" id="cuidadosContainer">
+            <span class="badge-item" data-id="1">Dieta Especial</span>
+            <span class="badge-item active" data-id="2">Medicación Diaria</span>
+            <span class="badge-item" data-id="3">Rehabilitación</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Sección 3: Multimedia -->
+      <fieldset class="form-section">
+        <legend class="form-legend">Galería de Imágenes</legend>
+
+        <div class="dropzone" id="imageDropzone">
+          <span class="material-icons-round dropzone-icon">cloud_upload</span>
+          <p class="dropzone-text">
+            Arrastra y suelta tus fotos aquí o <strong>haz clic para explorar</strong>
+          </p>
+          <input
+            type="file"
+            id="multimediaInput"
+            name="multimedia"
+            multiple
+            accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime"
+            style="display: none"
+          />
+        </div>
+
+        <div class="upload-list" id="uploadProgressList"></div>
+      </fieldset>
+
+      <!-- Botón de acción local para pasar los datos al otro JS -->
+      <div class="form-actions" style="margin-top: 20px; display: flex; justify-content: flex-end">
+        <button type="button" class="btn-text" id="btn-cancelar-modal">Cancelar</button>
+        <button type="button" id="btn-continuar-modal" class="btn-primary">
+          Continuar al Envío
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
