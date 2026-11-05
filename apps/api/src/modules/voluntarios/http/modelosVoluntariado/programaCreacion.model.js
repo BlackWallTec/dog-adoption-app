@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseAdmin.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const TABLA = "programa";
 
