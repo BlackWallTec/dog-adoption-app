@@ -15,15 +15,6 @@
   font-weight: 900;
 }
 
-.demo-badge {
-  padding: 7px 11px;
-  color: #5c6470;
-  background: #f3f5f7;
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
 .skip-link {
   position: absolute;
   z-index: 10;

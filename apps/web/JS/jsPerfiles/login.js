@@ -1,4 +1,4 @@
-import { API_MODE, PerfilesApiError, perfilesApi } from "./perfiles.api.js";
+import { PerfilesApiError, perfilesApi } from "./perfiles.api.js";
 
 const byId = (id) => document.getElementById(id);
 const loginForm = byId("login-form");
@@ -8,8 +8,6 @@ const loginPassword = byId("login-password");
 const recoveryEmail = byId("recovery-email");
 const passwordToggle = byId("toggle-password");
 let activeRequest = 0;
-
-byId("demo-badge").hidden = API_MODE !== "mock";
 
 function setFieldError(input, message = "") {
   input.classList.toggle("is-invalid", Boolean(message));
@@ -111,9 +109,7 @@ loginForm.addEventListener("submit", async (event) => {
     passwordToggle.setAttribute("aria-label", "Mostrar contraseña");
     feedback(
       "login-feedback",
-      result.simulated
-        ? "Inicio de sesión simulado correctamente. No se creó una sesión real."
-        : "Sesión iniciada correctamente.",
+      "Sesión iniciada correctamente.",
       "success",
     );
   } catch (error) {
