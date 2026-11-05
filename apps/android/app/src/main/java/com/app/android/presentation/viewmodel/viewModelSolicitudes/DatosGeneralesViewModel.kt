@@ -12,11 +12,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.security.Guard
 import javax.inject.Inject
 
-
-// Maquina de estados 1: Carga los datos al abrir la pantalla
+// Maquina de estados: CARGAR al abrir (del borrador o del perfil)
 sealed interface DatosGeneralesUiState {
     data object Loading : DatosGeneralesUiState
 
@@ -31,19 +29,6 @@ sealed interface DatosGeneralesUiState {
     ) : DatosGeneralesUiState
 }
 
-// Maquina de estados 2: GUARDA al picar "Continuar"
-sealed interface GuardarUiState {
-    data object Idle : GuardarUiState // No se ha picado Continuar
-
-    data object Loading : GuardarUiState // Guardando
-
-    data object Success : GuardarUiState // Guardado = la pantalla navega
-
-    data class Error(
-        val mensaje: String,
-    ) : GuardarUiState
-}
-
 @HiltViewModel
 class DatosGeneralesViewModel
 @Inject
@@ -55,22 +40,20 @@ constructor(
     private val _uiState = MutableStateFlow<DatosGeneralesUiState>(DatosGeneralesUiState.Loading)
     val uiState: StateFlow<DatosGeneralesUiState> = _uiState
 
-    private val _guardarState = MutableStateFlow<GuardarUiState>(GuardarUiState.Idle)
-    val guardarState: StateFlow<GuardarUiState> = _guardarState
+    // El "papelito": true = ya se guardo en el borrador, la pantalla debe navegar
+    private val _listo = MutableStateFlow(false)
+    val listo: StateFlow<Boolean> = _listo
 
-    // Cargar
-    fun onLoadDatosGenerales(
-        idSolicitud: String,
-        idUsuario: String,
-    ) {
+    // ===== CARGAR =====
+    fun onLoadDatosGenerales() {
         viewModelScope.launch {
             _uiState.value = DatosGeneralesUiState.Loading
             try {
-                val datos: DatosGenerales = getDatosGeneralesUseCase(idSolicitud, idUsuario)
+                val datos = getDatosGeneralesUseCase() // del borrador o del perfil
                 _uiState.value =
                     DatosGeneralesUiState.Success(
                         datos = datos,
-                        edad = calcularEdadUseCase(datos.fechaNacimiento)
+                        edad = calcularEdadUseCase(datos.fechaNacimiento),
                     )
             } catch (e: Exception) {
                 _uiState.value = DatosGeneralesUiState.Error("No se pudieron cargar tus datos.")
@@ -79,9 +62,7 @@ constructor(
         }
     }
 
-    // CUANDO EL USUARIO ESCRIBE, que solo escribe en ocupacion
-    // cambia solo su campo y borra solo su error
-
+    // ===== EL USUARIO ESCRIBE =====
     fun onOcupacionChange(valor: String) {
         val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
         _uiState.value =
@@ -91,31 +72,19 @@ constructor(
             )
     }
 
-    // GUARDAR
-    fun onContinuar(idSolicitud: String) {
+    // ===== GUARDAR (en el borrador, sin red) =====
+    fun onContinuar() {
         val actual = _uiState.value as? DatosGeneralesUiState.Success ?: return
-        if (_guardarState.value is GuardarUiState.Loading) return
-
-        viewModelScope.launch {
-            _guardarState.value = GuardarUiState.Loading
-            try {
-                val errores = guardarDatosGeneralesUseCase(idSolicitud, actual.datos)
-                if (errores.hayErrores) {
-                    // Se muestan los errores en los campos y no se navega (notpossible nuhuh)
-                    _uiState.value = actual.copy(errores = errores)
-                    _guardarState.value = GuardarUiState.Idle
-                } else {
-                    _guardarState.value = GuardarUiState.Success
-                }
-            } catch (e: Exception) {
-                _guardarState.value = GuardarUiState.Error("No se pudo guardar. Intenta de nuevo.")
-                Log.e("SOLICITUDES", "Error al guardar datos generales: ${e.message}", e)
-            }
+        val errores = guardarDatosGeneralesUseCase(actual.datos)
+        if (errores.hayErrores) {
+            _uiState.value = actual.copy(errores = errores) // se muestran en el campo
+        } else {
+            _listo.value = true // → la pantalla navega
         }
     }
 
     // La pantalla ya navego
     fun onNavegacionRealizada() {
-        _guardarState.value = GuardarUiState.Idle
+        _listo.value = false
     }
 }

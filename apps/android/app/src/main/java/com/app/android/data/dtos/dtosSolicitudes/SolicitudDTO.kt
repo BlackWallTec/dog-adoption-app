@@ -2,35 +2,32 @@ package com.app.android.data.dtos.dtosSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
-import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.google.gson.annotations.SerializedName
 
-// RESPUESTAS (lo que el backend manda)
+// ===== GET /api/solicitudes/cliente/activa =====
 
-// Envoltorio de una solicitud { success, data: { ... } }
-data class ApiResponseSolicitudDto(
+// { success, data: { id_solicitud, estado } }  — data = null si no tiene solicitud activa
+data class ApiResponseSolicitudActivaDto(
     @SerializedName("success") val success: Boolean?,
-    @SerializedName("data") val data: SolicitudDto?, // null si no hay borrador
+    @SerializedName("data") val data: SolicitudActivaDto?,
     @SerializedName("message") val message: String?,
 )
 
-// La solicitud tal como viene de la tabla solicitud_adopcion
-data class SolicitudDto(
+data class SolicitudActivaDto(
     @SerializedName("id_solicitud") val idSolicitud: String?,
-    @SerializedName("id_usuario") val idUsuario: String?,
-    @SerializedName("id_perro") val idPerro: String?,
-    @SerializedName("id_estado") val idEstado: String?,
-    @SerializedName("fecha_solicitud") val fechaSolicitud: String?,
+    @SerializedName("estado") val estado: String?, // la descripción: "Pendiente de Revisión", etc.
 )
 
-// Envoltorio de datos generales { success, data: { ... } }
+// ===== GET /api/solicitudes/cliente/perfil/:idUsuario =====
+
+// { success, data: { ...perfil plano... } }
 data class ApiResponseDatosGeneralesDto(
     @SerializedName("success") val success: Boolean?,
     @SerializedName("data") val data: DatosGeneralesDto?,
     @SerializedName("message") val message: String?,
 )
 
-// Los datos generales ya hechos buenos bonitos hermosos por formatProfile del backend
 data class DatosGeneralesDto(
     @SerializedName("id_usuario") val idUsuario: String?,
     @SerializedName("nombre_completo") val nombreCompleto: String?,
@@ -42,37 +39,23 @@ data class DatosGeneralesDto(
     @SerializedName("correo") val correo: String?,
 )
 
-// Respuesta sin datos { success, message }
-data class ApiResponseSimpleDto(
-    @SerializedName("success") val success: Boolean?,
-    @SerializedName("message") val message: String?,
-)
-
-// PETICIONES (lo que se le manda  en el body)
-
-// Body del POST /api/solicitudes/cliente
-data class CrearSolicitudRequestDto(
-    @SerializedName("id_usuario") val idUsuario: String,
-    @SerializedName("id_perro") val idPerro: String,
-)
-
-// Body del PUT /api/solicitudes/cliente/:id/datos-generales
-data class GuardarDatosGeneralesRequestDto(
-    @SerializedName("ocupacion") val ocupacion: String,
-)
-
 // ===== MAPPERS: DTO → Entity =====
 
-fun SolicitudDto.toDomain(): Solicitud =
-    Solicitud(
-        id = idSolicitud ?: "",
-        idUsuario = idUsuario ?: "",
-        idPerro = idPerro ?: "",
-        // Por ahora estos endpoints solo manejan borradores.
-        // Cuando haya más, el backend debería mandar la descripción del estado para traducirla
-        estado = EstadoSolicitud.BORRADOR,
-        aceptoRequisitos = true,
+fun SolicitudActivaDto.toDomain(): SolicitudResumen =
+    SolicitudResumen(
+        idSolicitud = idSolicitud ?: "",
+        estado = estado.toEstadoSolicitud(),
     )
+
+// Traduce el texto de la tabla estado_solicitud al enum de la app
+fun String?.toEstadoSolicitud(): EstadoSolicitud =
+    when (this) {
+        "Pendiente de Revisión" -> EstadoSolicitud.PENDIENTE_REVISION
+        "En Periodo de Prueba" -> EstadoSolicitud.EN_PERIODO_PRUEBA
+        "Aprobada Definitiva" -> EstadoSolicitud.APROBADA
+        "Rechazada" -> EstadoSolicitud.RECHAZADA
+        else -> EstadoSolicitud.DESCONOCIDO
+    }
 
 fun DatosGeneralesDto.toDomain(): DatosGenerales =
     DatosGenerales(
