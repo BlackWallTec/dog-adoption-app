@@ -1,124 +1,74 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
-import ROLES from "./modelosPerfiles/roles.model.js";
+import { validateRegistration } from "../../../../../shared/perfiles/registro.validation.js";
+import { cookieBase, respondWithSession } from "./auth.session.js";
 
-/*
-IMPORTANTE
-Considerar que desde el cliente, se declara el x-client. Si esto no se
-mandara desde android, se le enviaría como respuesta la cookie en
-lugar del token
-
-También, no se especificó un algoritmo ni aquí ni en el
-is-auth.js, por defecto está usando HS256.
-
-En el middleware también debe usarse el mismo header.
-*/
-
-const vidaSeconds = (rol) =>
-  rol === ROLES.ROOT ? 60 * 60 : rol === ROLES.ADMIN ? 6 * 60 * 60 : 72 * 60 * 60;
-
-const cookieBase = {
-  httpOnly: true, // Impide que JS lea la cookie
-  // HTTPS en producción
-  // Asegurar que la aplicación se sirva vía HTTPS
-  // o la cookie no funcionará
-  secure: process.env.NODE_ENV === "production",
-  // Rigor p/adjuntar cookie en solctd. iniciada
-  // desde otros sitios
-  sameSite: "lax",
-  // Rutas del sitio a las que se envía la cookie
-  path: "/",
+const internalError = (res, error) => {
+  console.error("Error de autenticación:", error.code || "INTERNAL_ERROR");
+  return res.status(500).json({ error: "No pudimos completar la solicitud. Inténtalo más tarde." });
 };
 
-// Inicio de sesión
 export const postLogin = async (req, res) => {
   try {
-    const email = req.body.email;
-    const passwd = req.body.passwd;
-
-    if (typeof email !== "string" || typeof passwd !== "string" || !email || !passwd) {
-      return res.status(400).json({
-        error: "Correo y contraseña son requeridos",
-      });
+    const { email, passwd } = req.body ?? {};
+    if (
+      typeof email !== "string" ||
+      typeof passwd !== "string" ||
+      !email.trim() ||
+      email.length > 254 ||
+      !passwd ||
+      passwd.length > 1024
+    ) {
+      return res.status(400).json({ error: "Correo y contraseña son requeridos" });
     }
-
-    const usuario = await Usuario.fetchByEmail(email.trim());
-
-    if (!usuario?.contrasena) {
-      return res.status(401).json({
-        error: "Credenciales inválidas",
-      });
+    const correo = email.trim().toLowerCase();
+    const usuario = await Usuario.fetchByEmail(correo);
+    if (!usuario?.contrasena || !(await bcrypt.compare(passwd, usuario.contrasena))) {
+      return res.status(401).json({ error: "Credenciales inválidas" });
     }
-
-    // Se compara lo ingresado con el hash obtenido de la DB
-    const coincide = await bcrypt.compare(passwd, usuario.contrasena);
-    if (!coincide) {
-      return res.status(401).json({
-        error: "Credenciales inválidas",
-      });
-    }
-
-    const vida = vidaSeconds(usuario.rol);
-
-    const token = jwt.sign(
-      {
-        uuid: usuario.id_usuario,
-        email: email,
-        rol: usuario.rol,
-      },
-      process.env.JWT_SECRET,
-      {
-        // Aquí también se especifica el algoritmo a usar
-        algorithm: "HS256",
-        expiresIn: vida,
-      },
-    );
-
-    const esMovil = req.get("x-client") === "mobile";
-
-    if (esMovil) {
-      return res.status(200).json({
-        user: {
-          id: usuario.id_usuario,
-          email: email,
-          rol: usuario.rol,
-        },
-        token,
-      });
-    }
-
-    res.cookie("token", token, {
-      ...cookieBase, // ... copia las propiedades del objeto
-      maxAge: vida * 1000, // Express usa milisegundos
-    });
-
-    return res.status(200).json({
-      user: {
-        id: usuario.id_usuario,
-        email: email,
-        rol: usuario.rol,
-      },
-    });
+    return respondWithSession(req, res, usuario, correo);
   } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: "Error interno del servidor",
-    });
+    return internalError(res, error);
   }
 };
 
-// Cerrar sesión
-export const postLogout = (req, res) => {
+export const postRegister = async (req, res) => {
+  const { value, errors } = validateRegistration(req.body);
+  if (Object.keys(errors).length) {
+    return res.status(400).json({ error: "Revisa los campos indicados.", fields: errors });
+  }
+  try {
+    const passwordHash = await bcrypt.hash(value.passwd, 12);
+    const usuario = await Usuario.register(value, passwordHash);
+    return respondWithSession(req, res, usuario, value.email, 201);
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(409).json({
+        error: "Este correo ya está registrado.",
+        fields: { email: "Este correo ya está registrado." },
+      });
+    }
+    return internalError(res, error);
+  }
+};
+
+export const postLogout = (_req, res) => {
   res.clearCookie("token", cookieBase);
   return res.status(200).json({ ok: true });
 };
 
-// Para corroborar info. de la sesión
 export const getMe = (req, res) => {
-  // req.user lo puso verificarToken
   const { uuid, email, rol } = req.user;
   return res.status(200).json({ user: { id: uuid, email, rol } });
+};
+
+export const getProfile = async (req, res) => {
+  try {
+    const profile = await Usuario.fetchProfile(req.user.uuid);
+    if (!profile) return res.status(404).json({ error: "No encontramos tu perfil." });
+    return res.json({ profile });
+  } catch (error) {
+    return internalError(res, error);
+  }
 };

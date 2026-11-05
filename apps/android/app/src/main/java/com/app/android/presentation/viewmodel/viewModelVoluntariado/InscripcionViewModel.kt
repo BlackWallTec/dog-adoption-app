@@ -30,7 +30,7 @@ class InscripcionViewModel @Inject constructor(
 
     private val _eventos = Channel<InscripcionEvento>(Channel.BUFFERED)
     val eventos: Flow<InscripcionEvento> = _eventos.receiveAsFlow()
-    
+
     fun motivoBloqueo(programa: Programa): String? =
         programa.validarInscripcion(Instant.now(clock))?.toMensaje()
 

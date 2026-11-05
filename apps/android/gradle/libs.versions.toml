@@ -14,10 +14,12 @@ composeBom = "2026.02.01"
 hilt = "2.60.1"
 loggingInterceptor = "5.5.1"
 navigationCompose = "2.9.8"
+desugarJdkLibs = "2.1.5"
 
 foundationLayout = "1.12.1"
 
 [libraries]
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 coil = { module = "io.coil-kt:coil", version.ref = "coilCompose" }

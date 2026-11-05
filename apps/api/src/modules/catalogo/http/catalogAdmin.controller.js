@@ -247,7 +247,7 @@ function mapRequestToDogData(reqBody) {
   }
 
   return { isValid, dogData, errorMessages };
-  /* Formato de respues del POST 
+  /* Formato de respues del POST
 {
   "nombre": "Firulais",
   "sexo": "Macho",

@@ -1,7 +1,14 @@
 package com.app.android.di
 
+import com.app.android.BuildConfig
+import com.app.android.data.session.PerfilesAuthInterceptor
+import com.app.android.domain.repoInterface.repoIntPerfiles.AlmacenSesion
+
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
+import com.app.android.data.dataSource.dataSourcesPerfiles.UsuarioAPIservice
+import com.app.android.data.repoImp.repoImpPerfiles.UsuarioRepositoryImpl
 import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
@@ -9,6 +16,7 @@ import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
@@ -34,8 +42,8 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            // El nivel BODY imprime: URL, cabeceras, códigos de error y el JSON CRUDO completo
-            level = HttpLoggingInterceptor.Level.BODY
+            redactHeader("Authorization")
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
         }
 
     @Provides
@@ -50,12 +58,13 @@ object NetworkModule {
     // Dificultad para conectar backend con Android en iOS
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor, authInterceptor: PerfilesAuthInterceptor): OkHttpClient =
         OkHttpClient
             .Builder()
             .connectTimeout(30, TimeUnit.SECONDS) // 30 segundos de margen para conectar
             .readTimeout(30, TimeUnit.SECONDS) // 30 segundos para leer datos
             .writeTimeout(30, TimeUnit.SECONDS) // 30 segundos para enviar
+            .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     // ====== Fin Codigo agregado con IA =====
@@ -66,7 +75,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://localhost:3000/") // backend local en Express
+            .baseUrl(BuildConfig.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -83,6 +92,15 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
+    // Providers de Perfiles
+    @Provides @Singleton
+    fun provideUsuarioApiService(retrofit: Retrofit): UsuarioAPIservice =
+        retrofit.create(UsuarioAPIservice::class.java)
+
+    @Provides @Singleton
+    fun providePerfilesRepository(api: UsuarioAPIservice, almacen: AlmacenSesion): PerfilesRepositoryInt =
+        UsuarioRepositoryImpl(api, almacen)
 
     @Provides
     @Singleton

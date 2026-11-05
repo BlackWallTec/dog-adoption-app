@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Marca vectorial provisional. Reemplazar por el archivo original de Qariño Animal. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="66dp"
+    android:viewportWidth="100"
+    android:viewportHeight="66">
+    <group android:rotation="-12" android:pivotX="30" android:pivotY="32">
+        <path android:fillColor="#30302F" android:pathData="M5,22a6,10 0,1 0,12 0a6,10 0,1 0,-12 0M20,11a6,11 0,1 0,12 0a6,11 0,1 0,-12 0M36,13a6,10 0,1 0,12 0a6,10 0,1 0,-12 0M49,27a5,9 0,1 0,10 0a5,9 0,1 0,-10 0M13,51C9,41 18,25 30,25C43,25 57,41 52,51C48,60 40,54 32,54C25,54 16,61 13,51Z" />
+    </group>
+    <group android:rotation="12" android:pivotX="73" android:pivotY="32">
+        <path android:fillColor="#30302F" android:pathData="M59,9C59,5 65,5 65,9L65,30L68,30L68,4C68,0 74,0 74,4L74,30L77,30L77,7C77,3 83,3 83,7L83,31L86,31L86,16C86,12 92,12 92,16L92,40C92,54 84,62 73,62C62,62 57,52 53,47L46,37C43,31 48,28 52,32L59,40Z" />
+    </group>
+    <path android:fillColor="#C56464" android:pathData="M52,13C47,7 41,13 48,19L52,23L56,19C63,13 57,7 52,13Z" />
+</vector>

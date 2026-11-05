@@ -1,10 +1,16 @@
 import { Router } from "express";
+import verificarToken from "../../../middleware/is-auth.js";
+import requireRole from "../../../middleware/require-role.js";
+import { ROLES } from "../../perfiles/index.js";
 
 const router = Router();
 
 // Importar los controladores
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
+
+// Todas las funciones administrativas comparten el acceso del login de perfiles.
+router.use("/admin", verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT));
 
 // ===== Rutas Especiales =======
 

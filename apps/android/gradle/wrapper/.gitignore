@@ -1,0 +1,2 @@
+# Excepción al *.jar de la raíz: el wrapper es necesario para compilar el proyecto.
+!gradle-wrapper.jar

@@ -1,3 +1,4 @@
+import java.net.URI
 import java.util.Properties
 
 plugins {
@@ -6,10 +7,24 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
 }
-val localProps = Properties().apply {
-    val f = rootProject.file("local.properties")
-    if (f.exists()) f.inputStream().use { load(it) }
+
+val localApiProperties = Properties().apply {
+    val contents = providers.fileContents(layout.projectDirectory.file("../local.properties")).asText.orNull
+    if (contents != null) load(contents.reader())
 }
+val configuredApiUrl = providers.gradleProperty("apiBaseUrl")
+    .orElse(providers.environmentVariable("ANDROID_API_BASE_URL"))
+    .getOrElse(localApiProperties.getProperty("api.baseUrl", "http://10.0.2.2:3000/"))
+    .let { if (it.endsWith('/')) it else "$it/" }
+val apiUri = URI(configuredApiUrl)
+require(apiUri.scheme in listOf("http", "https") && !apiUri.host.isNullOrBlank() && apiUri.userInfo == null && apiUri.query == null && apiUri.fragment == null) {
+    "apiBaseUrl debe ser una URL HTTP(S) sin credenciales ni parámetros"
+}
+val validateReleaseApiUrl = tasks.register("validateReleaseApiUrl") {
+    val targetUrl = configuredApiUrl
+    doLast { check(URI(targetUrl).scheme == "https") { "Configura apiBaseUrl con HTTPS para compilar release" } }
+}
+tasks.configureEach { if (name == "preReleaseBuild") dependsOn(validateReleaseApiUrl) }
 
 android {
     namespace = "com.app.android"
@@ -23,10 +38,11 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "API_BASE_URL", "\"${configuredApiUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", "")}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${localApiProperties.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localApiProperties.getProperty("SUPABASE_ANON_KEY", "")}\"")
     }
 
     buildTypes {
@@ -38,6 +54,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -75,15 +92,8 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.coil)
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation(libs.androidx.material.icons.extended)
-    //Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    //Lifecycle + Navigation
+    // Lifecycle + Navigation
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
-    //Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
