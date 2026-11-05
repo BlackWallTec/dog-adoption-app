@@ -2,10 +2,8 @@ import { PerfilesApiError, perfilesApi } from "./perfiles.api.js";
 
 const byId = (id) => document.getElementById(id);
 const loginForm = byId("login-form");
-const recoveryForm = byId("recovery-form");
 const loginEmail = byId("login-email");
 const loginPassword = byId("login-password");
-const recoveryEmail = byId("recovery-email");
 const passwordToggle = byId("toggle-password");
 let activeRequest = 0;
 
@@ -41,33 +39,16 @@ function setBusy(buttonId, busy, label) {
   button.closest("form").setAttribute("aria-busy", String(busy));
 }
 
-function showPanel(recovery) {
-  activeRequest++;
-  byId("login-panel").hidden = recovery;
-  byId("recovery-panel").hidden = !recovery;
-  feedback("login-feedback");
-  feedback("recovery-feedback");
-  setBusy("login-submit", false, "Iniciar sesión");
-  setBusy("recovery-submit", false, "Enviar enlace");
-  if (recovery) {
-    recoveryEmail.value = loginEmail.value.trim();
-    setFieldError(recoveryEmail);
-    byId("recovery-title").focus();
-  } else {
-    byId("login-title").focus();
-  }
-}
-
 function errorMessage(error) {
   return error instanceof PerfilesApiError
     ? error.message
     : "Ocurrió un problema. Inténtalo de nuevo.";
 }
 
-for (const input of [loginEmail, loginPassword, recoveryEmail]) {
+for (const input of [loginEmail, loginPassword]) {
   input.addEventListener("input", () => {
     setFieldError(input);
-    feedback(input === recoveryEmail ? "recovery-feedback" : "login-feedback");
+    feedback("login-feedback");
   });
 }
 
@@ -77,9 +58,6 @@ passwordToggle.addEventListener("click", () => {
   passwordToggle.setAttribute("aria-pressed", String(show));
   passwordToggle.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
 });
-
-byId("show-recovery").addEventListener("click", () => showPanel(true));
-byId("cancel-recovery").addEventListener("click", () => showPanel(false));
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -120,29 +98,3 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
-recoveryForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (byId("recovery-submit").disabled) return;
-  feedback("recovery-feedback");
-  if (!validateEmail(recoveryEmail)) {
-    recoveryEmail.focus();
-    return;
-  }
-
-  const request = ++activeRequest;
-  setBusy("recovery-submit", true, "Enviando…");
-  try {
-    await perfilesApi.requestPasswordReset({ email: recoveryEmail.value });
-    if (request !== activeRequest) return;
-    feedback(
-      "recovery-feedback",
-      "Solicitud de recuperación simulada correctamente. No se ha enviado ningún correo.",
-      "success",
-    );
-  } catch (error) {
-    if (request !== activeRequest) return;
-    feedback("recovery-feedback", errorMessage(error));
-  } finally {
-    if (request === activeRequest) setBusy("recovery-submit", false, "Enviar enlace");
-  }
-});

@@ -46,13 +46,6 @@ export function createPerfilesApi({
       return { user: data.user };
     },
 
-    async requestPasswordReset() {
-        throw new PerfilesApiError(
-          "La recuperación de contraseña todavía no está disponible. Contacta al refugio.",
-          501,
-          "NOT_IMPLEMENTED",
-        );
-    },
   };
 }
 
