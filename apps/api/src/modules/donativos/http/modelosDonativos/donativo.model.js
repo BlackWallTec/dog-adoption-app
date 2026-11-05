@@ -1,20 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 class DonativoModel {
-  static async getPendientes(accessToken) {
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-
-    const { data, error } = await supabase
+  static async getPendientes() {
+    const { data, error } = await supabaseAdmin
       .from("donativo")
       .select(`
         id_donativo,

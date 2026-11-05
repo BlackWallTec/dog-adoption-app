@@ -43,7 +43,7 @@ function formatearFecha(fecha) {
   }
 
   return new Intl.DateTimeFormat("es-MX", {
-    dataStyle: "medium",
+    dateStyle: "medium",
   }).format(fechaValida);
 }
 
@@ -94,7 +94,14 @@ async function cargarDonativos() {
     actualizarContador(donativos.length);
   } catch (error) {
     console.error("Error al cargar los donativos:", error);
-    mostrarMensaje("No fue posible cargar los donativos pendientes.");
+
+    if (error.message === "NO_AUTENTICADO") {
+      mostrarMensaje("Necesitas una sesión administrativa para consultar los donativos.");
+    } else if (error.message === "SIN_PERMISOS") {
+      mostrarMensaje("Tu cuenta no tiene permisos para consultar los donativos.");
+    } else {
+      mostrarMensaje("No fue posible cargar los donativos pendientes.");
+    }
   }
 }
 
