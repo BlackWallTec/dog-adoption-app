@@ -39,6 +39,7 @@ afterAll(async () => {
 });
 
 export const request = (path, options) => fetch(baseUrl + path, options);
+export const apiOrigin = () => baseUrl;
 export const post = (path, body, headers = {}) =>
   request(path, {
     method: "POST",
