@@ -1,4 +1,19 @@
 import { describe, test, expect, beforeEach, vi } from "vite-plus/test";
+
+// 1. Mock de Supabase Client para evitar que pida variables .env en CI
+vi.mock("../../src/config/supabaseClient.js", () => ({
+  supabase: {
+    from: vi.fn(),
+    rpc: vi.fn(),
+    storage: {
+      from: vi.fn(() => ({
+        createSignedUploadUrl: vi.fn(),
+        getPublicUrl: vi.fn(),
+      })),
+    },
+  },
+}));
+
 import { postNuevoPerro } from "../../src/modules/catalogo/http/catalogAdmin.controller.js";
 import dogModel from "../../src/modules/catalogo/http/modelosCatalogo/dog.model.js";
 
