@@ -29,6 +29,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.CheckBox
 import com.app.android.presentation.view.atomicDesign.molecule.ImportantInfoCard
 import com.app.android.presentation.view.atomicDesign.molecule.InfoCard
+import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -75,6 +76,10 @@ fun RequisitosScreen(
                     .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            IndicadorPasos(
+                pasoActual = 0,
+                modifier = Modifier.padding(top = 16.dp),
+            )
             Text(
                 text = "Requisitos",
                 color = InverseSurface,

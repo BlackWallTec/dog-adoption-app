@@ -9,6 +9,8 @@ import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
+import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
+
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
@@ -100,6 +102,11 @@ fun AppNavigation() {
                 onBackClick = { navController.navigateUp() },
                 onContinuarClick = {},
             )
+        }
+
+        // ========= Pantallas Voluntariado ========
+        composable(route = Screen.Programas.ruta) {
+            ProgramasScreen(onBackClick = { navController.popBackStack() })
         }
 
         // Plantilla para nueva pantalla
