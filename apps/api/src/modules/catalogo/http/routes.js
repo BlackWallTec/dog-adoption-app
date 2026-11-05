@@ -1,7 +1,7 @@
 import { Router } from "express";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
-import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
+import { ROLES } from "../../perfiles/index.js";
 
 const router = Router();
 
