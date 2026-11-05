@@ -30,14 +30,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AndroidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding),
-                    )
-                }
+                UploadDocumentsRoute(
+                    solicitudId = "ff028456-acf9-4781-a560-98dd168a5516",
+                    onNavSelect = { index -> 3 }
+                )
             }
-            UploadDocumentsRoute(solicitudId = "ff028456-acf9-4781-a560-98dd168a5516", onNavSelect = {index -> 3})
         }
     }
 }

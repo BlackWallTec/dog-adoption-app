@@ -17,7 +17,7 @@ import com.app.android.presentation.view.atomicDesign.molecule.ConfirmationHeade
 import com.app.android.presentation.view.atomicDesign.molecule.InfoMessageCard
 import com.app.android.presentation.view.atomicDesign.organism.ConfirmationActionsGroup
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
-import com.app.android.presentation.view.atomicDesign.organism.TarjetaVoluntariado
+import com.app.android.presentation.view.atomicDesign.molecule.TarjetaVoluntariado
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.ui.theme.Surface

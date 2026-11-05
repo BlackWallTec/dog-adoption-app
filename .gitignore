@@ -41,6 +41,7 @@ coverage/
 # OS / editor
 .DS_Store
 Thumbs.db
+Icon?
 
 # Android / Gradle
 .gradle/

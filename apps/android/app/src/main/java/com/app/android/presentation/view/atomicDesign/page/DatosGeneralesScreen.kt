@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.molecule.LabeledWritableCard
+import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -140,6 +141,10 @@ private fun FormularioDatosGenerales(
                 .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        IndicadorPasos(
+            pasoActual = 1,
+            modifier = Modifier.padding(top = 16.dp),
+        )
         Text(
             text = "Datos generales",
             color = InverseSurface,
