@@ -50,7 +50,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://192.168.1.115:3000/") // backend local en Express 192.168.1.115
+            .baseUrl("http://10.25.81.185:3000/") // backend local en Express 192.168.1.115
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
