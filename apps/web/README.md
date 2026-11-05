@@ -29,18 +29,7 @@ específicos del módulo bajo una clase contenedora para evitar afectar otras pa
 Conservar etiquetas visibles, estados de error con texto, foco de teclado y botones
 con `type` explícito. No mezclar otro framework de estilos.
 
-## Vista previa sin backend ni dependencias
-
-Desde la raíz del repositorio:
-
-```powershell
-node apps/web/scripts/preview.mjs
-```
-
-Abrir http://127.0.0.1:5173. Para detener el servidor, pulsar `Ctrl+C`.
-La URL directa es http://127.0.0.1:5173/HTML/htmlPerfiles/login.html.
-Este servidor sólo permite revisar archivos estáticos y **no reenvía peticiones a la API**.
-
+## Desarrollo
 Con las dependencias del proyecto instaladas, se puede usar el flujo habitual:
 
 ```powershell
