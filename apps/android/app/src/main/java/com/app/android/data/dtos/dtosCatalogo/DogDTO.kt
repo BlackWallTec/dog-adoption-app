@@ -1,6 +1,8 @@
 package com.app.android.data.dtos.dtosCatalogo
 
+import android.util.Log
 import com.app.android.domain.entities.entitiesCatalogo.Dog
+import com.app.android.domain.entities.entitiesCatalogo.MultimediaDog
 import com.google.gson.annotations.SerializedName
 
 // 1. Envoltorio Global de la API
@@ -81,18 +83,21 @@ data class MultimediaDto(
 )
 
 fun ApiResponseDetailDogDto.toDomain(): Dog {
-    // Extraemos el primer elemento del array "dog"
+    // 1. FASE DTO: Ver qué llegó directamente de la API / Gson
     val mainDog = this.data?.dogList?.firstOrNull()
 
-    // Extraemos la lista de nombres de caracteres/comportamiento
+    Log.d("DOG_DEBUG", "=== FASE 1: DATOS CRUDOS DEL DTO ===")
+    Log.d("DOG_DEBUG", "Nombre del perro: ${mainDog?.nombre}")
+    Log.d("DOG_DEBUG", "DTO esterilizado (crudo): ${mainDog?.esterilizado}")
+    Log.d("DOG_DEBUG", "DTO vacunado (crudo): ${mainDog?.vacunado}")
+
+    // Extraemos el comportamiento y cuidados
     val primerCaracter =
         this.data
             ?.behavior
             ?.caracteresList
             ?.firstOrNull()
             ?.caracter
-
-    // Extraemos el primer cuidado especial
     val primerCuidado =
         this.data
             ?.specialCondition
@@ -100,36 +105,48 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
             ?.firstOrNull()
             ?.cuidadoEspecial
 
-    // Extraemos la primera foto o URL de multimedia
-    val primeraFoto = this.data?.multimedia?.firstOrNull()
+    // Mapeamos la lista completa de multimedia
+    val listaMultimedia =
+        this.data?.multimedia?.map { dto ->
+            MultimediaDog(
+                url = dto.url ?: "",
+                tipo = dto.tipo?.trim() ?: "",
+                fechaSubida = dto.fechaSubida ?: "",
+            )
+        } ?: emptyList()
 
-    return Dog(
-        id = mainDog?.idPerro ?: "",
-        nombre = mainDog?.nombre?.trim() ?: "Sin nombre",
-        sexo = mainDog?.sexo?.trim() ?: "No especificado",
-        edad = mainDog?.edadAprox ?: 0,
-        tamanoNum = mainDog?.tamanoMedida ?: 0f,
-        descripcion = mainDog?.descripcion ?: "",
-        esterilizado = mainDog?.esterilizado ?: false,
-        vacunado = mainDog?.vacunado ?: false,
-        estado = mainDog?.estado ?: "",
-        fechaIngreso = mainDog?.fechaIngreso ?: "",
-        // Datos de Raza y Tamaño
-        razaId = mainDog?.raza?.idRaza ?: "",
-        razaNombre = mainDog?.raza?.nombre ?: "Desconocida",
-        razaDescripcion = mainDog?.raza?.descripcion ?: "",
-        tamanoId = mainDog?.tamano?.idTamano ?: "",
-        tamanoNombre = mainDog?.tamano?.nombre ?: "",
-        tamanoDescripcion = mainDog?.tamano?.descripcion ?: "",
-        // Datos de Comportamiento y Cuidados
-        perroCaracterId = primerCaracter?.idCaracter ?: "",
-        perroCaracterNombre = primerCaracter?.nombre ?: "",
-        perroCaracterDescripcion = primerCaracter?.descripcion ?: "",
-        perroCuidadosId = primerCuidado?.idCuidado ?: "",
-        perroCuidadosDescripcion = primerCuidado?.descripcion ?: "",
-        // Multimedia
-        url = primeraFoto?.url ?: "",
-        tipo = primeraFoto?.tipo?.trim() ?: "",
-        fechaSubida = primeraFoto?.fechaSubida ?: "",
-    )
+    // Creamos el objeto de dominio final
+    val dogDomain =
+        Dog(
+            id = mainDog?.idPerro ?: "",
+            nombre = mainDog?.nombre?.trim() ?: "Sin nombre",
+            sexo = mainDog?.sexo?.trim() ?: "No especificado",
+            edad = mainDog?.edadAprox ?: 0,
+            tamanoNum = mainDog?.tamanoMedida ?: 0f,
+            descripcion = mainDog?.descripcion ?: "",
+            esterilizado = mainDog?.esterilizado ?: false, // 🔍 Si arriba es null, aquí caerá en false
+            vacunado = mainDog?.vacunado ?: false, // 🔍 Si arriba es null, aquí caerá en false
+            estado = mainDog?.estado ?: "",
+            fechaIngreso = mainDog?.fechaIngreso ?: "",
+            razaId = mainDog?.raza?.idRaza ?: "",
+            razaNombre = mainDog?.raza?.nombre ?: "Desconocida",
+            razaDescripcion = mainDog?.raza?.descripcion ?: "",
+            tamanoId = mainDog?.tamano?.idTamano ?: "",
+            tamanoNombre = mainDog?.tamano?.nombre ?: "",
+            tamanoDescripcion = mainDog?.tamano?.descripcion ?: "",
+            perroCaracterId = primerCaracter?.idCaracter ?: "",
+            perroCaracterNombre = primerCaracter?.nombre ?: "",
+            perroCaracterDescripcion = primerCaracter?.descripcion ?: "",
+            perroCuidadosId = primerCuidado?.idCuidado ?: "",
+            perroCuidadosDescripcion = primerCuidado?.descripcion ?: "",
+            multimedia = listaMultimedia,
+        )
+
+    // 2. FASE DOMINIO: Ver cómo quedó construido tu objeto final
+    Log.d("DOG_DEBUG", "=== FASE 2: OBJETO DOMINIO GENERADO ===")
+    Log.d("DOG_DEBUG", "Dominio esterilizado: ${dogDomain.esterilizado}")
+    Log.d("DOG_DEBUG", "Dominio vacunado: ${dogDomain.vacunado}")
+    Log.d("DOG_DEBUG", "======================================")
+
+    return dogDomain
 }
