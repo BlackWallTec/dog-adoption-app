@@ -66,28 +66,18 @@ fun AppNavigation() {
                 idUsuario = ID_USUARIO_PRUEBA,
                 idPerro = idPerro,
                 onBack = { navController.navigateUp() },
-                onIrADatosGenerales = { idSolicitud ->
-                    navController.navigate(Screen.DatosGenerales.crearRuta(idSolicitud))
+                onIrADatosGenerales = {
+                    navController.navigate(Screen.DatosGenerales.ruta)
                 },
             )
         }
 
         // SOLICITUDES: Paso 2 - Datos generales
-        composable(
-            route = Screen.DatosGenerales.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
-        ) { backStackEntry ->
-            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
-
+        composable(route = Screen.DatosGenerales.ruta) {
             DatosGeneralesRoute(
-                idSolicitud = idSolicitud,
-                idUsuario = ID_USUARIO_PRUEBA,
                 onBack = { navController.navigateUp() },
                 onIrATuHogar = {
-                    navController.navigate(Screen.TuHogar.crearRuta(idSolicitud))
+                    navController.navigate(Screen.TuHogar.ruta)
                 },
             )
         }
@@ -95,18 +85,20 @@ fun AppNavigation() {
         // SOLICITUDES: Paso 3 - Tu Hogar
         composable(
             route = Screen.TuHogar.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
+            arguments = listOf(
+                navArgument("desdeConfirmar") { type = NavType.BoolType; defaultValue = false },
+            ),
         ) { backStackEntry ->
-            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
-
+            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
             TuHogarRoute(
-                idSolicitud = idSolicitud,
+                desdeConfirmar = desdeConfirmar,
                 onBack = { navController.navigateUp() },
                 onIrACompromiso = {
-                    navController.navigate(Screen.Compromiso.crearRuta(idSolicitud))
+                    if (desdeConfirmar) {
+                        navController.popBackStack(Screen.Confirmar.ruta, inclusive = false)
+                    } else {
+                        navController.navigate(Screen.Compromiso.crearRuta())
+                    }
                 },
             )
         }
@@ -114,18 +106,20 @@ fun AppNavigation() {
         // Paso 4 - Compromiso
         composable(
             route = Screen.Compromiso.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
+            arguments = listOf(
+                navArgument("desdeConfirmar") { type = NavType.BoolType; defaultValue = false },
+            ),
         ) { backStackEntry ->
-            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
-
+            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
             CompromisoRoute(
-                idSolicitud = idSolicitud,
-                onBack = { navController.navigateUp() }, // Regresa a Tu Hogar
+                desdeConfirmar = desdeConfirmar,
+                onBack = { navController.navigateUp() },
                 onIrADocumentos = {
-                    // Navegar a la siguiente pantalla cuando esté lista
+                    if (desdeConfirmar) {
+                        navController.popBackStack(Screen.Confirmar.ruta, inclusive = false)
+                    } else {
+                        // navController.navigate(Screen.Documentos.ruta)  // descomenta cuando Andy suba su composable
+                    }
                 },
             )
         }

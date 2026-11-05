@@ -23,15 +23,11 @@ sealed class Screen(
         fun crearRuta(idPerro: String) = "solicitud_requisitos/$idPerro"
     }
 
-    // ya con la solicitud creada
-    object DatosGenerales : Screen("solicitud_datos_generales/{idSolicitud}") {
-        fun crearRuta(idSolicitud: String) = "solicitud_datos_generales/$idSolicitud"
-    }
+    // Paso 2 · Datos generales (todo sale del borrador, no lleva parámetros)
+    object DatosGenerales : Screen("solicitud_datos_generales")
 
-    // solo la page con datos de prueba
-    object TuHogar : Screen("solicitud_tu_hogar/{idSolicitud}") {
-        fun crearRuta(idSolicitud: String) = "solicitud_tu_hogar/$idSolicitud"
-    }
+    // Paso 3 · Tu hogar
+    object TuHogar : Screen("solicitud_tu_hogar")
 
     // Paso 4 · Compromiso (todo sale del borrador, no lleva parámetros)
     // object Compromiso : Screen("solicitud_compromiso")

@@ -3,62 +3,22 @@ package com.app.android.domain.repoInterface.repoIntSolicitudes
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
-import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
-import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 
-// CONTRATO: que se puede hacer con las solicitudes, sin decir como
-// Lo implementa SolicitudRepositoryFake (ahorita que no esta la BD) o SolicitudRepositoryImpl (cuando este el  backend).
-
+// CONTRATO: lo que se le pide al servidor sobre solicitudes.
+// Antes de "Enviar solicitud" solo hay readOnlys; nada escribe en la BD.
+// (El borrador en memoria es otro contrato: BorradorRepositoryInt)
 interface SolicitudRepositoryInt {
-    // Busca si el usuario ya tiene una solicitud en borrador para ese perro si no = null
-    suspend fun buscarBorrador(
-        idUsuario: String,
-        idPerro: String,
-    ): Solicitud?
-
+    // ¿Ya tiene este usuario una solicitud activa (no rechazada) para este perro?
+    // null = no tiene, puede empezar
     suspend fun getSolicitudActiva(
         idUsuario: String,
         idPerro: String,
     ): SolicitudResumen?
 
-    // Crea una solicitud nueva (estado BORRADOR)
-    suspend fun crearSolicitud(
-        idUsuario: String,
-        idPerro: String,
-    ): Solicitud
-
-    // Consigue datos del perfil del usuario (para precargar la pantalla con los datos)
+    // Datos del perfil, para precargar Datos generales
     suspend fun getPerfil(idUsuario: String): DatosGenerales
 
-    // Datos generales ya guardados en esa solicitud.
-    // null = todavía no ha guardado este paso
-    suspend fun getDatosGenerales(idSolicitud: String): DatosGenerales?
-
-    // Guarda los datos generales de esa solicitud
-    suspend fun guardarDatosGenerales(
-        idSolicitud: String,
-        datos: DatosGenerales,
-    )
-
-    // Paso 3: TuHogar - Respuestas
-    // null = todavía no ha guardado este paso
-    suspend fun getTuHogar(idSolicitud: String): TuHogar?
-
-    // Guarda las respuestas de tu hogar
-    suspend fun guardarTuHogar(
-        idSolicitud: String,
-        datos: TuHogar,
-    )
-
-    // Respuestas del paso 4: Compromiso
-    // null = todavía no ha guardado este paso
-    suspend fun getCompromiso(idSolicitud: String): Compromiso?
-
-    // Guarda las respuestas del paso 4: Compromiso
-    suspend fun guardarCompromiso(
-        idSolicitud: String,
-        datos: Compromiso,
-    )
-
-    suspend fun enviarSolicitud(borrador: BorradorSolicitud): SolicitudResumen
+    // Andy: suspend fun getDocumentosUsuario(idUsuario: String): List<DocumentoSubido>
+    // Lucca: suspend fun enviarSolicitud(borrador: BorradorSolicitud): SolicitudResumen
 }
