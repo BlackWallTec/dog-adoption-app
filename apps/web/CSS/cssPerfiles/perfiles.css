@@ -101,6 +101,7 @@
 }
 
 .auth-card .form-control {
+  scroll-margin-block: 100px;
   min-height: 45px;
   padding: 10px 13px;
   border-radius: 11px;
@@ -120,8 +121,34 @@
   padding-right: 48px;
 }
 
-.password-field:has(.is-invalid) + .invalid-feedback {
+.password-field:has(.is-invalid) ~ .invalid-feedback {
   display: block;
+}
+
+.password-toggle-text {
+  width: 60px;
+  font-size: 0.75rem;
+}
+
+.registration-page .password-field .form-control {
+  padding-right: 70px;
+}
+
+.auth-switch,
+.privacy-notice,
+.registration-page .form-text,
+.registration-page .form-check-label,
+.profile-details {
+  font-size: 0.85rem;
+}
+
+.privacy-notice summary {
+  color: var(--qa-primary);
+  cursor: pointer;
+}
+
+.profile-details dt {
+  font-size: 0.78rem;
 }
 
 .password-field .is-invalid {

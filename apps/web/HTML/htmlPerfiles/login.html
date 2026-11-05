@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Acceso al panel administrativo de Qariño Animal." />
+    <meta name="description" content="Inicia sesión en tu cuenta de Qariño Animal." />
     <title>Iniciar sesión | Qariño Animal</title>
     <link rel="icon" href="data:," />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -44,19 +44,19 @@
                   <path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6l-7-3Z" />
                   <path d="m9 12 2 2 4-5" />
                 </svg>
-                <span>Uso exclusivo del equipo Qariño Animal</span>
+                <span>Tu cuenta, tus datos y tus trámites</span>
               </p>
             </div>
           </aside>
 
-          <section class="col-lg-7 offset-lg-1" aria-label="Acceso administrativo">
+          <section class="col-lg-7 offset-lg-1" aria-label="Acceso a tu cuenta">
             <div class="card auth-card">
               <div class="card-body">
-                <p class="auth-eyebrow">Acceso administrativo</p>
+                <p class="auth-eyebrow">Qariño Animal</p>
 
                 <div id="login-panel">
-                  <h1 id="login-title" tabindex="-1">¡Bienvenida de nuevo!</h1>
-                  <p class="auth-description">Inicia sesión para administrar el refugio.</p>
+                  <h1 id="login-title" tabindex="-1">¡Qué gusto verte de nuevo!</h1>
+                  <p class="auth-description">Inicia sesión para acceder a tu cuenta.</p>
 
                   <form id="login-form" novalidate>
                     <div class="mb-4">
@@ -68,7 +68,7 @@
                         type="email"
                         autocomplete="username"
                         inputmode="email"
-                        placeholder="ana@qarinoanimal.org"
+                        placeholder="tu@correo.com"
                         aria-describedby="login-email-error"
                         maxlength="254"
                         required
@@ -131,6 +131,9 @@
                       </button>
                     </div>
                   </form>
+                  <p class="auth-switch mb-0 mt-4">
+                    ¿Aún no tienes cuenta? <a href="registro.html">Crear cuenta</a>
+                  </p>
                 </div>
                 <div id="session-panel" hidden>
                   <h1 id="session-title" tabindex="-1">Sesión iniciada</h1>
@@ -141,6 +144,31 @@
                     <dt class="small">Rol</dt>
                     <dd id="session-role"></dd>
                   </dl>
+                  <section aria-labelledby="profile-title" class="profile-details">
+                    <h2 id="profile-title" class="h5">Mis datos</h2>
+                    <p id="profile-loading" class="small text-secondary" role="status" hidden>
+                      Consultando tus datos…
+                    </p>
+                    <dl class="mb-4">
+                      <dt>Nombre</dt>
+                      <dd id="profile-name"></dd>
+                      <dt>Teléfono</dt>
+                      <dd id="profile-phone"></dd>
+                      <dt>Fecha de nacimiento</dt>
+                      <dd id="profile-birth"></dd>
+                      <dt>Dirección</dt>
+                      <dd id="profile-address" class="text-break"></dd>
+                    </dl>
+                    <p id="profile-feedback" class="alert alert-danger" role="alert" hidden></p>
+                    <button
+                      id="profile-retry"
+                      class="btn btn-outline-primary mb-3"
+                      type="button"
+                      hidden
+                    >
+                      Volver a consultar mis datos
+                    </button>
+                  </section>
                   <p id="session-feedback" class="alert alert-danger" role="alert" hidden></p>
                   <button id="session-logout" class="btn btn-primary rounded-pill" type="button">
                     Cerrar sesión

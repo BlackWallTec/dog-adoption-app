@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
         input: {
           main: fileURLToPath(new URL("./index.html", import.meta.url)),
           login: fileURLToPath(new URL("./HTML/htmlPerfiles/login.html", import.meta.url)),
+          registro: fileURLToPath(new URL("./HTML/htmlPerfiles/registro.html", import.meta.url)),
         },
       },
     },

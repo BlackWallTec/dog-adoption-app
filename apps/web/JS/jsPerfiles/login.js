@@ -88,7 +88,7 @@ loginForm.addEventListener("submit", async (event) => {
     loginPassword.type = "password";
     passwordToggle.setAttribute("aria-pressed", "false");
     passwordToggle.setAttribute("aria-label", "Mostrar contraseña");
-    sessionView.show(result);
+    await sessionView.show(result);
   } catch (error) {
     if (request !== activeRequest) return;
     if (error.status === 401) {
@@ -104,11 +104,11 @@ loginForm.addEventListener("submit", async (event) => {
 async function restoreSession() {
   setBusy("login-submit", true, "Comprobando sesión…");
   try {
-    sessionView.show(await perfilesApi.getSession());
+    await sessionView.show(await perfilesApi.getSession());
   } catch (error) {
     if (error.status !== 401) feedback("login-feedback", errorMessage(error));
   } finally {
     setBusy("login-submit", false, "Iniciar sesión");
   }
 }
-restoreSession();
+void restoreSession();
