@@ -49,7 +49,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://192.168.1.75:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
+            .baseUrl("http://10.25.90.151:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
