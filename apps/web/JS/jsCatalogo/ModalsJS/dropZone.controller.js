@@ -6,26 +6,26 @@
 export function initDropzone({ onFilesChanged }) {
   const dropzone = document.getElementById("imageDropzone");
   const fileInput = document.getElementById("multimediaInput");
-  const progressList = document.getElementById("uploadProgressList"); // Aquí mostraremos las miniaturas/lista
+  const progressList = document.getElementById("uploadProgressList");
 
-  if (!dropzone || !fileInput) return;
+  if (!dropzone || !fileInput || !progressList) return null;
 
-  // 📦 EL CAMBIO CLAVE: Guardamos los objetos File físicos en memoria local, NO subimos nada aún.
+  fileInput.accept = ".jpg,.jpeg,.mp4,.mov,image/jpeg,video/mp4,video/quicktime";
+
   let archivosEnMemoria = [];
   const urlsTemporales = new Map();
 
-  // 1. Abrir explorador de archivos al hacer clic (Evitar disparar si hacen clic en un botón interno)
   dropzone.addEventListener("click", (e) => {
-    if (e.target.closest(".btn-eliminar")) return; // No abrir buscador si se clickea en eliminar
+    if (e.target.closest(".btn-eliminar") || e.target === fileInput) return;
     fileInput.click();
   });
 
   fileInput.addEventListener("change", (e) => {
     const files = Array.from(e.target.files);
     acumularArchivos(files);
+    fileInput.value = "";
   });
 
-  // 2. Eventos Drag and Drop (Arrastrar y Soltar)
   ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     dropzone.addEventListener(eventName, (e) => {
       e.preventDefault();
@@ -43,41 +43,47 @@ export function initDropzone({ onFilesChanged }) {
 
   dropzone.addEventListener("drop", (e) => {
     const files = Array.from(e.dataTransfer.files);
-    // Filtrar imágenes y videos según tu necesidad de catálogo
-    const multimediaValida = files.filter(
-      (file) => file.type.startsWith("image/") || file.type.startsWith("video/"),
-    );
-    if (multimediaValida.length === 0) {
-      alert("Por favor, sube solo imágenes o videos válidos.");
-      return;
-    }
-    acumularArchivos(multimediaValida);
+    acumularArchivos(files);
   });
 
-  // ==========================================
-  // 3. Procesamiento en Local (Sin llamadas de red)
-  // ==========================================
   function acumularArchivos(files) {
+    const archivosInvalidos = [];
+    const archivosValidos = [];
+
     files.forEach((file) => {
-      // Generamos un ID único local para controlar su elemento en la UI
-      const localId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+      const extension = obtenerExtension(file.name);
+      const tipoMime = obtenerTipoMime(extension);
 
-      // Guardamos el archivo binario real junto con su ID en nuestro arreglo
-      archivosEnMemoria.push({ id: localId, file: file });
+      if (!tipoMime || !esTipoMimeCompatible(file.type, tipoMime)) {
+        archivosInvalidos.push(file.name);
+        return;
+      }
 
-      // Generar una URL local temporal (Object URL) para la miniatura de la SummaryView
-      const urlMiniaturaTemporal = URL.createObjectURL(file);
-      urlsTemporales.set(localId, urlMiniaturaTemporal);
-
-      renderVistaPreviaUI(localId, file.name, urlMiniaturaTemporal, file.type);
+      const archivoNormalizado =
+        file.type === tipoMime
+          ? file
+          : new File([file], file.name, { type: tipoMime, lastModified: file.lastModified });
+      archivosValidos.push(archivoNormalizado);
     });
 
-    // Notificar al componente padre que la lista de archivos cambió
+    if (archivosInvalidos.length > 0) {
+      alert(
+        `Formato no compatible: ${archivosInvalidos.join(", ")}. Solo se permiten JPG, MOV y MP4.`,
+      );
+    }
+
+    archivosValidos.forEach((file) => {
+      const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const urlMiniaturaTemporal = URL.createObjectURL(file);
+      archivosEnMemoria.push({ id: localId, file });
+      urlsTemporales.set(localId, urlMiniaturaTemporal);
+      renderVistaPreviaUI(localId, file, urlMiniaturaTemporal);
+    });
+
     notificarCambios();
   }
 
   function eliminarArchivo(localId) {
-    // 💡 El administrador se arrepintió: Removemos el archivo de la memoria sin haber tocado Supabase
     archivosEnMemoria = archivosEnMemoria.filter((item) => item.id !== localId);
 
     const elementoUI = document.getElementById(localId);
@@ -93,49 +99,59 @@ export function initDropzone({ onFilesChanged }) {
 
   function notificarCambios() {
     if (typeof onFilesChanged === "function") {
-      // Pasamos solo los archivos puros para que el formulario sepa qué hay acumulado
       onFilesChanged(archivosEnMemoria.map((item) => item.file));
     }
   }
 
-  // ==========================================
-  // Renderizado de Miniaturas y Botón Eliminar
-  // ==========================================
-  function renderVistaPreviaUI(id, filename, srcTemporal, tipo) {
-    let previewElement = `<img src="${srcTemporal}" alt="Preview" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">`;
-
-    if (tipo.startsWith("video/")) {
-      previewElement = `<video src="${srcTemporal}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;"></video>`;
+  function renderVistaPreviaUI(id, file, srcTemporal) {
+    const esVideo = file.type.startsWith("video/");
+    const preview = document.createElement(esVideo ? "video" : "img");
+    preview.src = srcTemporal;
+    preview.alt = esVideo ? `Vista previa de ${file.name}` : `Vista previa de ${file.name}`;
+    preview.style.cssText =
+      "width:60px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0;";
+    if (esVideo) {
+      preview.muted = true;
+      preview.playsInline = true;
+      preview.preload = "metadata";
     }
 
-    const html = `
-      <div class="upload-item" id="${id}" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 10px; border: 1px solid #eee;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-          ${previewElement}
-          <span style="font-size: 14px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${filename}</span>
-        </div>
-        <!-- El botón mágico de arrepentimiento -->
-        <button class="btn-eliminar" data-id="${id}" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 16px;">🗑️ Quitar</button>
-      </div>
-    `;
+    const details = document.createElement("div");
+    details.style.cssText = "display:flex;align-items:center;gap:15px;min-width:0;";
 
-    progressList.insertAdjacentHTML("beforeend", html);
+    const filename = document.createElement("span");
+    filename.textContent = file.name;
+    filename.title = file.name;
+    filename.style.cssText =
+      "font-size:14px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
 
-    // Escuchar el clic de eliminación para esta miniatura específica
-    document
-      .getElementById(id)
-      .querySelector(".btn-eliminar")
-      .addEventListener("click", (e) => {
-        e.stopPropagation();
-        eliminarArchivo(id);
-      });
+    const extension = document.createElement("span");
+    extension.textContent = `.${obtenerExtension(file.name).toUpperCase()}`;
+    extension.style.cssText = "font-size:12px;font-weight:700;color:#555;";
+
+    details.append(preview, filename, extension);
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "btn-eliminar";
+    removeButton.textContent = "Quitar";
+    removeButton.style.cssText =
+      "background:none;border:none;color:#d32f2f;cursor:pointer;font-size:14px;";
+    removeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      eliminarArchivo(id);
+    });
+
+    const item = document.createElement("div");
+    item.id = id;
+    item.className = "upload-item";
+    item.style.cssText =
+      "display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:10px;border:1px solid #eee;";
+    item.append(details, removeButton);
+    progressList.append(item);
   }
 
-  // ==========================================
-  // Métodos Públicos que usará tu formulario final
-  // ==========================================
   return {
-    // Cuando el admin le dé a "GUARDAR PERRO" definitivo, este método entregará los archivos reales a subir
     obtenerArchivosAEnviar: () => archivosEnMemoria.map((item) => item.file),
     limpiar: () => {
       archivosEnMemoria = [];
@@ -147,4 +163,22 @@ export function initDropzone({ onFilesChanged }) {
   };
 }
 
-// ===== Fin Controlador generado con IA =====
+function obtenerExtension(nombreArchivo) {
+  return nombreArchivo.split(".").pop()?.toLowerCase() || "";
+}
+
+function obtenerTipoMime(extension) {
+  if (extension === "jpg" || extension === "jpeg") return "image/jpeg";
+  if (extension === "mp4") return "video/mp4";
+  if (extension === "mov") return "video/quicktime";
+  return null;
+}
+
+function esTipoMimeCompatible(tipoRecibido, tipoEsperado) {
+  return (
+    !tipoRecibido ||
+    tipoRecibido === tipoEsperado ||
+    tipoRecibido === "application/octet-stream" ||
+    (tipoEsperado === "video/quicktime" && tipoRecibido === "video/x-quicktime")
+  );
+}

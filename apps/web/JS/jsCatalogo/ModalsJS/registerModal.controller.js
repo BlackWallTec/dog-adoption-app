@@ -66,6 +66,14 @@ export function initDogRegisterModal({ onContinue }) {
         valor: Array.isArray(valor) ? JSON.stringify(valor) : valor,
       })),
     );
+    console.table(
+      datosPerro.archivos_multimedia.map((archivo) => ({
+        nombre: archivo.name,
+        extension: `.${archivo.name.split(".").pop().toUpperCase()}`,
+        tipoMime: archivo.type,
+        bytes: archivo.size,
+      })),
+    );
     console.groupEnd();
 
     //3. Emitir la "Signal" al Padre con los datos recolectados
