@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseAdmin.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const lanzarError = (contexto, error) => {
   const err = new Error(`${contexto}: ${error.message}`);
