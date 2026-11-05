@@ -1,5 +1,4 @@
-// Usamos el cliente admin del equipo (salta RLS; solo vive en el servidor)
-import { supabaseAdmin as supabase } from "../../../../config/supabaseAdmin.js";
+import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
 
 // Estados que NO cuentan como solicitud activa
 const ESTADOS_INACTIVOS = ["Rechazada", "Borrador"];
