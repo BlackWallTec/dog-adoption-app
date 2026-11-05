@@ -1,5 +1,6 @@
 package com.app.android.data.repoImp.repoImpSolicitudes
 
+import com.app.android.data.dataSource.dataSourcesSolicitudes.BorradorLocalDataSource
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.dtos.dtosSolicitudes.CrearSolicitudRequestDto
 import com.app.android.data.dtos.dtosSolicitudes.GuardarDatosGeneralesRequestDto
@@ -17,6 +18,7 @@ class SolicitudRepositoryImpl
     @Inject
     constructor(
         private val api: SolicitudApiService,
+        private val borrador: BorradorLocalDataSource,
     ) : SolicitudRepositoryInt {
         override suspend fun buscarBorrador(
             idUsuario: String,
@@ -61,33 +63,24 @@ class SolicitudRepositoryImpl
             }
         }
 
-        override suspend fun getTuHogar(idSolicitud: String): TuHogar? {
-            val respuesta = api.fetchHomeRemote(idSolicitud)
-            return respuesta.data?.toDomain()
-        }
+        // Paso 3
+        // Llamada al borrador local para recibir la información
+        override suspend fun getTuHogar(idSolicitud: String): TuHogar? = borrador.getTuHogar(idSolicitud)
 
         override suspend fun guardarTuHogar(
             idSolicitud: String,
             datos: TuHogar,
         ) {
-            val respuesta = api.updateHomeRemote(idSolicitud, datos.toRequestDto())
-            if (respuesta.success != true) {
-                throw Exception(respuesta.message ?: "No se pudo guardar Tu Hogar")
-            }
+            borrador.guardarTuHogar(idSolicitud, datos)
         }
 
-        override suspend fun getCompromiso(idSolicitud: String): Compromiso? {
-            val respuesta = api.fetchCommitmentRemote(idSolicitud)
-            return respuesta.data?.toDomain()
-        }
+        // Paso 4
+        override suspend fun getCompromiso(idSolicitud: String): Compromiso? = borrador.getCompromiso(idSolicitud)
 
         override suspend fun guardarCompromiso(
             idSolicitud: String,
             datos: Compromiso,
         ) {
-            val respuesta = api.updateCommitmentRemote(idSolicitud, datos.toRequestDto())
-            if (respuesta.success != true) {
-                throw Exception(respuesta.message ?: "No se pudo guardar Compromiso")
-            }
+            borrador.guardarCompromiso(idSolicitud, datos)
         }
     }

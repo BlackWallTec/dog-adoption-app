@@ -1,16 +1,15 @@
 package com.app.android.presentation.navigation
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.dogDetailScreen
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
+import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
@@ -90,34 +89,49 @@ fun AppNavigation() {
                 listOf(
                     navArgument("idSolicitud") { type = NavType.StringType },
                 ),
-        ) {
-            TuHogarScreen(
-                cargando = false,
-                errorCarga = null,
-                datos = null,
-                errores = null,
-                onDatosChange = {},
-                guardando = false,
-                errorGuardar = null,
-                onReintentar = {},
-                onBackClick = { navController.navigateUp() },
-                onContinuarClick = {},
-                modifier = Modifier.fillMaxSize(),
+        ) { backStackEntry ->
+            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
+
+            TuHogarRoute(
+                idSolicitud = idSolicitud,
+                onBack = { navController.navigateUp() },
+                onIrACompromiso = {
+                    navController.navigate(Screen.Compromiso.crearRuta(idSolicitud))
+                },
             )
         }
 
-        // Plantilla para nueva pantalla
-        // composable(
-        //     route = Screen.EditarPerro.ruta,
-        //     arguments =
-        //         listOf(
-        //             navArgument("dogId") { type = NavType.StringType },
-        //             navArgument("categoria") { type = NavType.StringType },
-        //         ),
-        // ) { backStackEntry ->
-        // val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
-        // val categoria = backStackEntry.arguments?.getString("categoria") ?: ""
-        // editDogScreen(dogId = dogId, categoria = categoria)
-        // }
+        // Paso 4 - Compromiso
+        composable(
+            route = Screen.Compromiso.ruta,
+            arguments =
+                listOf(
+                    navArgument("idSolicitud") { type = NavType.StringType },
+                ),
+        ) { backStackEntry ->
+            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
+
+            CompromisoRoute(
+                idSolicitud = idSolicitud,
+                onBack = { navController.navigateUp() }, // Regresa a Tu Hogar
+                onIrADocumentos = {
+                    // Navegar a la siguiente pantalla cuando esté lista
+                },
+            )
+        }
     }
 }
+
+// Plantilla para nueva pantalla
+// composable(
+//     route = Screen.EditarPerro.ruta,
+//     arguments =
+//         listOf(
+//             navArgument("dogId") { type = NavType.StringType },
+//             navArgument("categoria") { type = NavType.StringType },
+//         ),
+// ) { backStackEntry ->
+// val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
+// val categoria = backStackEntry.arguments?.getString("categoria") ?: ""
+// editDogScreen(dogId = dogId, categoria = categoria)
+// }

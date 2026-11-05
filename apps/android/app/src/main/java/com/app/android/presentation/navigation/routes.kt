@@ -25,9 +25,12 @@ sealed class Screen(
         fun crearRuta(idSolicitud: String) = "solicitud_datos_generales/$idSolicitud"
     }
 
-    // solo la page con datos de prueba
     object TuHogar : Screen("solicitud_tu_hogar/{idSolicitud}") {
         fun crearRuta(idSolicitud: String) = "solicitud_tu_hogar/$idSolicitud"
+    }
+
+    object Compromiso : Screen("solicitud_compromiso/{idSolicitud}") {
+        fun crearRuta(idSolicitud: String) = "solicitud_compromiso/$idSolicitud"
     }
 
     // Patrón para nueva pantalla

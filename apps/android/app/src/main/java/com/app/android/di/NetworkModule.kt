@@ -1,6 +1,7 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+import com.app.android.data.dataSource.dataSourcesSolicitudes.BorradorLocalDataSource
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
@@ -73,7 +74,11 @@ object NetworkModule {
 
     // 4. Repositorio de Solicitudes.
     // Para volver al fake (sin backend): return SolicitudRepositoryFake()
+    // con borrador local
     @Provides
     @Singleton
-    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)
+    fun provideSolicitudRepository(
+        apiService: SolicitudApiService,
+        borrador: BorradorLocalDataSource,
+    ): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService, borrador)
 }
