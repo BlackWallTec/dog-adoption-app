@@ -132,7 +132,20 @@
                     </div>
                   </form>
                 </div>
-
+                <div id="session-panel" hidden>
+                  <h1 id="session-title" tabindex="-1">Sesión iniciada</h1>
+                  <p class="auth-description">Tu acceso a Qariño Animal está confirmado.</p>
+                  <dl class="mb-4">
+                    <dt class="small">Correo</dt>
+                    <dd id="session-email" class="text-break"></dd>
+                    <dt class="small">Rol</dt>
+                    <dd id="session-role"></dd>
+                  </dl>
+                  <p id="session-feedback" class="alert alert-danger" role="alert" hidden></p>
+                  <button id="session-logout" class="btn btn-primary rounded-pill" type="button">
+                    Cerrar sesión
+                  </button>
+                </div>
               </div>
             </div>
           </section>

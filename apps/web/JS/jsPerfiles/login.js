@@ -1,4 +1,5 @@
 import { PerfilesApiError, perfilesApi } from "./perfiles.api.js";
+import { createSessionView } from "./perfiles.session.js";
 
 const byId = (id) => document.getElementById(id);
 const loginForm = byId("login-form");
@@ -6,6 +7,7 @@ const loginEmail = byId("login-email");
 const loginPassword = byId("login-password");
 const passwordToggle = byId("toggle-password");
 let activeRequest = 0;
+const sessionView = createSessionView(perfilesApi);
 
 function setFieldError(input, message = "") {
   input.classList.toggle("is-invalid", Boolean(message));
@@ -85,11 +87,7 @@ loginForm.addEventListener("submit", async (event) => {
     loginPassword.type = "password";
     passwordToggle.setAttribute("aria-pressed", "false");
     passwordToggle.setAttribute("aria-label", "Mostrar contraseña");
-    feedback(
-      "login-feedback",
-      "Sesión iniciada correctamente.",
-      "success",
-    );
+    sessionView.show(result);
   } catch (error) {
     if (request !== activeRequest) return;
     feedback("login-feedback", errorMessage(error));
@@ -98,3 +96,14 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
+async function restoreSession() {
+  setBusy("login-submit", true, "Comprobando sesión…");
+  try {
+    sessionView.show(await perfilesApi.getSession());
+  } catch (error) {
+    if (error.status !== 401) feedback("login-feedback", errorMessage(error));
+  } finally {
+    setBusy("login-submit", false, "Iniciar sesión");
+  }
+}
+restoreSession();
