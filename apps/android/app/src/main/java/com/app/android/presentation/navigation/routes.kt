@@ -33,6 +33,20 @@ sealed class Screen(
         fun crearRuta(idSolicitud: String) = "solicitud_tu_hogar/$idSolicitud"
     }
 
+    // Paso 4 · Compromiso (todo sale del borrador, no lleva parámetros)
+    object Compromiso : Screen("solicitud_compromiso")
+
+    // Paso 5 · Documentos
+    object Documentos : Screen("solicitud_documentos")
+
+    // Paso 6 · Confirmar (aquí está el único botón que escribe en la BD: Enviar solicitud)
+    object Confirmar : Screen("solicitud_confirmar")
+
+    // Después de enviar con éxito
+    object SolicitudEnviada : Screen("solicitud_enviada/{idSolicitud}") {
+        fun crearRuta(idSolicitud: String) = "solicitud_enviada/$idSolicitud"
+    }
+
     // Patrón para nueva pantalla
     // Object nombrePantalla: Screen("ruta_pantalla"){
     // fun crearRuta(dogId: String, categoria: String) = "editar_perro_screen/$dogId/$categoria"
