@@ -1,12 +1,125 @@
+// ==== Codigo generado con Inteligencia Artificial (IA) ====
+// Carga de modales de manera dinámica en el DOM
+import { loadModal } from "../utils/modalLoader.js";
+import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
+import { initDogSummaryModal } from "./ModalsJS/summaryModal.controller.js";
 import { abrirEdicion } from "./adminPerros.edit.js";
 import { escaparHtml } from "./perroForm.js";
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // 1. Cargar los modales de manera dinámica
+  await Promise.all([
+    loadModal("/HTML/htmlCatalogo/registerDogModal.html", "#modal-container1"),
+    loadModal("/HTML/htmlCatalogo/dogSummaryModal.html", "#modal-container2"),
+  ]);
+
+  //2. Inicializar controladores de modales
+  let registerModalController = null;
+  let summaryModalController = null;
+  const feedback = initFeedbackModal();
+
+  // 1. Inicializamos el Modal de Resumen
+  summaryModalController = initDogSummaryModal({
+    // SIGNAL: Cuando el usuario le da a "Atrás" en el Resumen:
+    onBack: () => {
+      registerModalController.open(); // Reabrimos el formulario intacto
+    },
+    // SIGNAL: Cuando se guardó con éxito:
+    onSuccess: (datosPerro) => {
+      // Limpiamos el formulario de registro y refrescamos la tabla
+      registerModalController.close();
+      registerModalController.reset();
+      feedback.showSuccess(datosPerro?.nombre);
+      cargarPerros();
+    },
+    // SIGNAL: El backend rechazó el registro o ocurrió un error al guardar:
+    onError: (error, datosPerro) => {
+      feedback.showError(error, datosPerro?.nombre);
+    },
+  });
+
+  // 2. Inicializamos el Modal de Registro
+  registerModalController = initDogRegisterModal({
+    // SIGNAL: Cuando le dan a "Continuar" en el Formulario:
+    onContinue: (datosRecolectados) => {
+      // Le pasamos los datos al Resumen y lo abrimos
+      summaryModalController.openWithData(datosRecolectados);
+    },
+  });
+
+  // 3. Botón "Registrar Perro" de la pantalla principal
+  document.querySelector(".button-registrar")?.addEventListener("click", () => {
+    registerModalController.open();
+  });
+});
+// ==== Fin de Codigo generado con Inteligencia Artificial (IA) ====
+
+function initFeedbackModal() {
+  const overlay = document.querySelector("#modalFeedback");
+  const card = document.querySelector("#feedbackCard");
+  const icon = document.querySelector("#feedbackIcon");
+  const title = document.querySelector("#feedbackTitle");
+  const message = document.querySelector("#feedbackMessage");
+  const closeButtons = [
+    document.querySelector("#btnFeedbackCloseTop"),
+    document.querySelector("#btnFeedbackAction"),
+  ];
+
+  const close = () => overlay?.classList.remove("active");
+  closeButtons.forEach((button) => button?.addEventListener("click", close));
+
+  const show = ({ mode, titleText, messageText, iconName, actionText }) => {
+    if (!overlay || !card || !icon || !title || !message) {
+      console.error("No se pudo mostrar el resultado: faltan elementos del modal de feedback.");
+      return;
+    }
+
+    card.classList.remove("modal-success", "modal-error");
+    card.classList.add(mode === "success" ? "modal-success" : "modal-error");
+    icon.textContent = iconName;
+    title.textContent = titleText;
+    message.textContent = messageText;
+
+    const actionButton = document.querySelector("#btnFeedbackAction");
+    if (actionButton) {
+      actionButton.textContent = actionText;
+      actionButton.classList.toggle("btn-error", mode === "error");
+    }
+
+    overlay.classList.add("active");
+  };
+
+  return {
+    showSuccess(nombre) {
+      const nombrePerro = nombre || "el perro";
+      show({
+        mode: "success",
+        titleText: "¡Registro exitoso!",
+        messageText: `El expediente de ${nombrePerro} se guardó correctamente en la base de datos del refugio.`,
+        iconName: "check_circle",
+        actionText: "Continuar",
+      });
+    },
+    showError(error, nombre) {
+      const nombrePerro = nombre || "el perro";
+      const detalle = error instanceof Error ? error.message : String(error);
+      show({
+        mode: "error",
+        titleText: `No se pudo registrar a ${nombrePerro}`,
+        messageText: `No se guardaron los datos. ${detalle} Puedes volver al resumen e intentarlo de nuevo.`,
+        iconName: "error",
+        actionText: "Volver al resumen",
+      });
+    },
+  };
+}
 
 // Referencias a elementos del DOM
 const tablaBody = document.getElementById("tabla-perros-body");
 const counterSubtitle = document.getElementById("perros-counter-subtitle");
 const paginationInfo = document.getElementById("pagination-info");
 
-// Estado ocal de la vista
+// Estado local de la vista
 let catalogoPerros = [];
 
 // Función para obtener la clase de badge según el estado

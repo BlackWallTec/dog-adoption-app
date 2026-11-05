@@ -73,59 +73,6 @@ class DogModel {
 
     return data;
   }
-  // Lista pública del catálogo con filtros opcionales (HU24).
-  // Solo devuelve perros Disponibles o En proceso de adopción.
-  static async getDogsFiltered({ sexo, tamano, raza, edad, caracteres = [] } = {}) {
-    let query = supabase
-      .from("perro")
-      .select(`
-        id_perro,
-        nombre,
-        sexo,
-        edad_aprox,
-        estado,
-        fecha_ingreso,
-        raza ( id_raza, nombre ),
-        tamano ( id_tamano, nombre ),
-        multimedia ( url, tipo, fecha_subida ),
-        perro_tiene_caracter ( id_caracter )
-      `)
-      .in("estado", ["Disponible", "En proceso de adopción"])
-      .order("fecha_ingreso", { ascending: false });
-
-    // sexo viene con espacios al final en la BD ("Hembra    "), por eso ilike con comodín
-    if (sexo) query = query.ilike("sexo", `${sexo}%`);
-    if (tamano) query = query.eq("id_tamano", tamano);
-    if (raza) query = query.eq("id_raza", raza);
-    if (edad === "cachorro") query = query.lte("edad_aprox", 1);
-    if (edad === "adulto") query = query.gte("edad_aprox", 2).lte("edad_aprox", 7);
-    if (edad === "senior") query = query.gte("edad_aprox", 8);
-
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(`Error en la consulta de perros filtrados: ${error.message}`);
-    }
-
-    // Carácter: el perro debe tener TODOS los seleccionados
-    const filtrados =
-      caracteres.length > 0
-        ? data.filter((p) =>
-            caracteres.every((id) => p.perro_tiene_caracter.some((c) => c.id_caracter === id)),
-          )
-        : data;
-
-    return filtrados.map((p) => ({
-      id_perro: p.id_perro,
-      nombre: p.nombre,
-      sexo: (p.sexo ?? "").trim(),
-      edad_aprox: p.edad_aprox,
-      estado: p.estado,
-      raza: p.raza,
-      tamano: p.tamano,
-      foto_url: p.multimedia?.[0]?.url ?? "",
-    }));
-  }
 
   // HU19C: ficha completa para el formulario de edición (admin). Devuelve null si no existe.
   static async getDogAdminById(id) {
@@ -161,6 +108,28 @@ class DogModel {
 
     return data;
   }
+
+  // Función para crear un nuevo perro
+  // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
+  // 2. Inserción en tabla Perro_Imagen: (Incluye id_perro & url_imagen)
+  // 3. Inserción en tabla perro_tiene_caracter (Incluye id_perro & id_caracter)
+  // 4. Inserción en tabla perro_tiene_cuidado_especial (Incluye id_perro & id_cuidado_especial)
+  static async createFullDog(dogData) {
+    const { data, error } = await supabase.rpc("insert_full_dog", { payload: dogData });
+
+    if (error) {
+      throw new Error(`Error al crear el perro: ${error.message}`);
+    }
+
+    return data[0]; // Retorna el primer elemento del array de datos insertados
+  }
+
+  /*
+  
+
+
+
+  */
 }
 
 export default DogModel;
