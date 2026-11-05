@@ -1,5 +1,4 @@
 package com.app.android.domain.entities.entitiesCatalogo
-
 import android.util.Log
 import com.app.android.presentation.view.atomicDesign.organism.basicOrganisms.DogDetailState
 

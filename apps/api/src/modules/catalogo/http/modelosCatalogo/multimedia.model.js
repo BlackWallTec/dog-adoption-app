@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
 
 class MultimediaModel {
   static async getDogMultimediaById(id) {
