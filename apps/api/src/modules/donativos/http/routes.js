@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import { obtenerDonativosPendientes } from "./adminDonativos.controller.js";
+import { TIPOS_COMPROBANTE, postDonativo } from "./donativoCliente.controller.js";
 import {
   TIPOS_CONSTANCIA,
   getDatosFiscales,
@@ -27,6 +28,13 @@ router.put(
   "/cliente/datos-fiscales/:idUsuario/constancia",
   express.raw({ type: TIPOS_CONSTANCIA, limit: "10mb" }),
   putConstancia,
+);
+
+// HU46 - registrar donativo con comprobante (mismo límite que la app)
+router.post(
+  "/cliente/donativos/:idUsuario",
+  express.raw({ type: TIPOS_COMPROBANTE, limit: "10mb" }),
+  postDonativo,
 );
 
 // Rutas Admin

@@ -5,11 +5,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.app.android.presentation.view.atomicDesign.page.DonarDineroScreen
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
+import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
@@ -95,9 +95,10 @@ fun AppNavigation() {
 
         // DONATIVOS - HU46: registrar donativo económico
         composable(route = Screen.DonarDinero.ruta) {
-            DonarDineroScreen(
-                onBackClick = { navController.popBackStack() },
-                onEnviarClick = { monto ->
+            DonarDineroRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.popBackStack() },
+                onEnviado = { monto ->
                     navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
                         // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
                         popUpTo(Screen.DonarDinero.ruta) { inclusive = true }

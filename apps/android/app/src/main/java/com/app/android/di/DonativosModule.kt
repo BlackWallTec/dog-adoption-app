@@ -2,7 +2,9 @@ package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesDonativos.DonativosApiService
 import com.app.android.data.repoImp.repoImpDonativos.DatosFiscalesRepositoryImpl
+import com.app.android.data.repoImp.repoImpDonativos.DonativosRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntDonativos.DatosFiscalesRepositoryInt
+import com.app.android.domain.repoInterface.repoIntDonativos.DonativosRepositoryInt
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,4 +25,8 @@ object DonativosModule {
     @Singleton
     fun provideDatosFiscalesRepository(apiService: DonativosApiService): DatosFiscalesRepositoryInt =
         DatosFiscalesRepositoryImpl(apiService)
+
+    @Provides
+    @Singleton
+    fun provideDonativosRepository(apiService: DonativosApiService): DonativosRepositoryInt = DonativosRepositoryImpl(apiService)
 }

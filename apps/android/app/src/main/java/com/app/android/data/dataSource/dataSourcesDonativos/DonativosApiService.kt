@@ -6,8 +6,10 @@ import com.app.android.data.dtos.dtosDonativos.GuardarDatosFiscalesRequestDto
 import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface DonativosApiService {
     // GET /api/donativos/cliente/datos-fiscales/:idUsuario
@@ -29,5 +31,15 @@ interface DonativosApiService {
     suspend fun uploadConstanciaRemote(
         @Path("idUsuario") idUsuario: String,
         @Body archivo: RequestBody,
+    ): ApiResponseDonativosSimpleDto
+
+    // POST /api/donativos/cliente/donativos/:idUsuario (HU46)
+    // el comprobante va crudo, el Content-Type dice si es pdf, jpg o png
+    @POST("api/donativos/cliente/donativos/{idUsuario}")
+    suspend fun createDonativoRemote(
+        @Path("idUsuario") idUsuario: String,
+        @Query("monto") monto: String,
+        @Query("referencia") referencia: String?,
+        @Body comprobante: RequestBody,
     ): ApiResponseDonativosSimpleDto
 }

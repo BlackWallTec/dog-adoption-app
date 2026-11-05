@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.android.domain.entities.entitiesDonativos.ComprobanteArchivo
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.DatoResumen
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
@@ -63,16 +64,17 @@ private const val MAX_BYTES = 10L * 1024 * 1024 // 10 MB
 @Composable
 fun DonarDineroScreen(
     onBackClick: () -> Unit,
-    onEnviarClick: (String) -> Unit, // manda el monto a la siguiente pantalla
+    onEnviarClick: (String, String, ComprobanteArchivo) -> Unit, // monto, referencia y comprobante
     modifier: Modifier = Modifier,
+    enviando: Boolean = false,
+    errorEnviar: String? = null,
     navSeleccionado: Int = 2, // 2 = Donar
     onNavSelect: (Int) -> Unit = {},
 ) {
-    // ESTADO TEMPORAL: mientras no hay backend todo vive aquí
+    // Lo que va escribiendo: se manda hasta que pica Enviar
     var monto by remember { mutableStateOf("") }
     var referencia by remember { mutableStateOf("") }
-    var comprobante by remember { mutableStateOf<Uri?>(null) }
-    var nombreComprobante by remember { mutableStateOf("") }
+    var comprobante by remember { mutableStateOf<ComprobanteArchivo?>(null) }
     var infoComprobante by remember { mutableStateOf("") }
     var errorComprobante by remember { mutableStateOf<String?>(null) }
     var intentoEnviar by remember { mutableStateOf(false) } // para no marcar errores antes de tiempo
@@ -105,10 +107,15 @@ fun DonarDineroScreen(
                     errorComprobante = "El archivo pesa más de 10 MB."
                 }
                 else -> {
-                    comprobante = uri
-                    nombreComprobante = nombre
-                    infoComprobante = "%.1f MB · Listo".format(tamano / 1_048_576.0)
-                    errorComprobante = null
+                    val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    if (bytes == null || tipo == null) {
+                        comprobante = null
+                        errorComprobante = "No se pudo leer el archivo."
+                    } else {
+                        comprobante = ComprobanteArchivo(nombre = nombre, tipo = tipo, bytes = bytes)
+                        infoComprobante = "%.1f MB · Listo".format(tamano / 1_048_576.0)
+                        errorComprobante = null
+                    }
                 }
             }
         }
@@ -209,7 +216,7 @@ fun DonarDineroScreen(
             } else {
                 FileUploadCard(
                     title = "Comprobante",
-                    fileName = nombreComprobante,
+                    fileName = comprobante?.nombre ?: "",
                     fileInfo = infoComprobante,
                     onClick = { selectorArchivo.launch(TIPOS_PERMITIDOS) },
                 )
@@ -227,14 +234,20 @@ fun DonarDineroScreen(
                 ErrorMessage(text = mensajeComprobante)
             }
 
+            if (errorEnviar != null) {
+                ErrorMessage(text = errorEnviar)
+            }
+
             AppButton(
                 text = "Enviar donativo",
                 onClick = {
                     intentoEnviar = true
-                    if (montoValido && comprobante != null) {
-                        onEnviarClick(monto.replace("$", "").replace(",", "").trim())
+                    val archivo = comprobante
+                    if (montoValido && archivo != null) {
+                        onEnviarClick(monto.replace("$", "").replace(",", "").trim(), referencia, archivo)
                     }
                 },
+                isLoading = enviando,
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -297,7 +310,7 @@ fun DonarDineroScreenPreview() {
     AndroidTheme {
         DonarDineroScreen(
             onBackClick = {},
-            onEnviarClick = {},
+            onEnviarClick = { _, _, _ -> },
         )
     }
 }
