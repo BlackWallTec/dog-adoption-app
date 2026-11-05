@@ -59,7 +59,6 @@ El modo real debe probarse con Vite, cuyo proxy `/api` apunta al backend local.
 | `CSS/cssPerfiles/perfiles.css`  | Diseño del módulo.                                      |
 | `JS/jsPerfiles/login.js`        | Formularios, errores, carga y mostrar contraseña.       |
 | `JS/jsPerfiles/perfiles.api.js` | Datos simulados y adaptación al backend.                |
-| `public/brand-placeholder.svg`  | Marca provisional; reemplazar por el logotipo original. |
 
 El registro público de clientes y su confirmación son pantallas posteriores. No se
 incluye registro abierto en este acceso exclusivo del equipo administrativo.
