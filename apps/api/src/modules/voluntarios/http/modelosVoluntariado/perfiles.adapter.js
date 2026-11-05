@@ -1,13 +1,12 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 // TEMPORAL: el modulo perfiles todavia no pone funciones en su index.js
-// Este archivo se reemplazara por imports de "../../../perfiles/index.js" y se eliminara
 
 class PerfilesAdapter {
   //Nombre y apellido de una lista de usuarios
   static async obtenerNombres(idsUsuario) {
     if (idsUsuario.length === 0) return [];
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("usuario")
       .select("id_usuario, nombre, apellidos")
       .in("id_usuario", idsUsuario);
@@ -23,7 +22,7 @@ class PerfilesAdapter {
   static async obtenerContacto(idsUsuario) {
     if (idsUsuario.length === 0) return [];
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("datos_confidenciales")
       .select("id_usuario, correo, telefono")
       .in("id_usuario", idsUsuario);

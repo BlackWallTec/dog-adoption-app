@@ -1,9 +1,9 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 class ProgramaModel {
   // Devuelve el programa o null si no existe
   static async getProgramaById(idPrograma) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("programa")
       .select(`
                 id_programa,
