@@ -29,6 +29,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
 import com.app.android.presentation.view.atomicDesign.molecule.LabeledOptionPicker
 import com.app.android.presentation.view.atomicDesign.molecule.LabeledWritableCard
+import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -128,6 +129,10 @@ private fun FormularioCompromiso(
                 .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        IndicadorPasos(
+            pasoActual = 3,
+            modifier = Modifier.padding(top = 16.dp),
+        )
         Text(
             text = "Compromiso",
             color = InverseSurface,
