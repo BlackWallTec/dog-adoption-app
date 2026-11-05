@@ -88,6 +88,10 @@ class SolicitudRepositoryImpl
             idSolicitud: String,
             datos: Compromiso,
         ) {
-            val respuesta = api.updateCommitmentRemote(idSolicitud, datos.toRequestDto())
+            val respuesta =
+                api.updateCommitmentRemote(idSolicitud, datos.toRequestDto())
+            if (respuesta.success != true) {
+                throw Exception(respuesta.message ?: "No se pudieron guardar los datos")
+            }
         }
     }
