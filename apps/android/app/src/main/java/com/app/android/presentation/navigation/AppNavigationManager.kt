@@ -1,5 +1,4 @@
 package com.app.android.presentation.navigation
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -7,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
-import com.app.android.presentation.view.viewsCatalogo.dogDetailScreen
+import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 
@@ -23,11 +22,11 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        // TEMPORAL: ahorita es para probar soliicitudes
-        // Original: Screen.DetallePerro.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024")
-        startDestination = Screen.Requisitos.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024"),
+        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
     ) {
-        // PANTALLA 2: El detalle del perro (La pantalla que ya hiciste)
+        // ========= Pantallas Catalogo ========
+
+        // PANTALLA 2: El detalle del perro
         composable(
             route = Screen.DetallePerro.ruta,
             arguments =
@@ -38,9 +37,16 @@ fun AppNavigation() {
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
 
-            // Llamamos a tu pantalla pasándole el ID extraído
-            dogDetailScreen(dogId = dogId)
+            // Llamamos a la función composable de la pantalla pasándole el ID extraído
+            DogDetailScreenView(
+                dogId = dogId,
+                onAdoptClick = { dogId ->
+                    navController.navigate(Screen.Requisitos.crearRuta(dogId))
+                },
+            )
         }
+
+        // ========= Pantallas Solicitudes ========
 
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
@@ -82,7 +88,7 @@ fun AppNavigation() {
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (metqnlo team)
+        // SOLICITUDES: Paso 3 - Tu hogar (metanlo team)
         composable(
             route = Screen.TuHogar.ruta,
             arguments =
@@ -96,7 +102,7 @@ fun AppNavigation() {
             )
         }
 
-        // Pantilla para nueva pantalla
+        // Plantilla para nueva pantalla
         // composable(
         //     route = Screen.EditarPerro.ruta,
         //     arguments =
@@ -107,7 +113,7 @@ fun AppNavigation() {
         // ) { backStackEntry ->
         // val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
         // val categoria = backStackEntry.arguments?.getString("categoria") ?: ""
-        // editDogScreen(dogId = dogId, categoria = categoria)
+        // editDogScreen(dogId = dogId, categoria = categoria) // <- Page/View Composable
         // }
     }
 }
