@@ -13,6 +13,9 @@ sealed class Screen(
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
 
+    // HU39A: catálogo de programas de voluntariado
+    object Programas : Screen("programas_screen")
+
     // ===== Solicitudes de adopción =====
 
     // llega desde el detalle del perro (Catálogo) con el id del perro

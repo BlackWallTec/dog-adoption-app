@@ -11,6 +11,8 @@ import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
+import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
+
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
@@ -24,11 +26,11 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        // TEMPORAL: ahorita es para probar soliicitudes
-        // Original: Screen.DetallePerro.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024")
-        startDestination = Screen.Requisitos.crearRuta("3f2c0f61-f44f-491f-8931-d964badba024"),
+        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
     ) {
-        // PANTALLA 2: El detalle del perro (La pantalla que ya hiciste)
+        // ========= Pantallas Catalogo ========
+
+        // PANTALLA 2: El detalle del perro
         composable(
             route = Screen.DetallePerro.ruta,
             arguments =
@@ -127,19 +129,24 @@ fun AppNavigation() {
                 },
             )
         }
+
+        // ========= Pantallas Voluntariado ========
+        composable(route = Screen.Programas.ruta) {
+            ProgramasScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // Plantilla para nueva pantalla
+        // composable(
+        //     route = Screen.EditarPerro.ruta,
+        //     arguments =
+        //         listOf(
+        //             navArgument("dogId") { type = NavType.StringType },
+        //             navArgument("categoria") { type = NavType.StringType },
+        //         ),
+        // ) { backStackEntry ->
+        // val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
+        // val categoria = backStackEntry.arguments?.getString("categoria") ?: ""
+        // editDogScreen(dogId = dogId, categoria = categoria) // <- Page/View Composable
+        // }
     }
 }
-
-// Plantilla para nueva pantalla
-// composable(
-//     route = Screen.EditarPerro.ruta,
-//     arguments =
-//         listOf(
-//             navArgument("dogId") { type = NavType.StringType },
-//             navArgument("categoria") { type = NavType.StringType },
-//         ),
-// ) { backStackEntry ->
-// val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
-// val categoria = backStackEntry.arguments?.getString("categoria") ?: ""
-// editDogScreen(dogId = dogId, categoria = categoria)
-// }

@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
 
 // Columnas del PASO 3
 // Agregamos la lista de las columnas para crear arreglos.

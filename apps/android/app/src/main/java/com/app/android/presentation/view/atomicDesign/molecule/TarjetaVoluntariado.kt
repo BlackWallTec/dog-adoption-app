@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.atomicDesign.organism
+package com.app.android.presentation.view.atomicDesign.molecule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,8 +27,6 @@ import androidx.compose.ui.unit.sp
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.EtiquetaTipo
-import com.app.android.presentation.view.atomicDesign.molecule.CupoPrograma
-import com.app.android.presentation.view.atomicDesign.molecule.DatoPrograma
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Secondary
