@@ -21,6 +21,8 @@ import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
 import com.app.android.presentation.view.viewsPerfiles.LoginRoute
 import com.app.android.presentation.view.viewsPerfiles.RegistroRoute
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
+import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
+
 
 // Entrada al detalle existente del módulo de catálogo.
 private const val PERRO_INICIAL = "0edfe707-cc43-4bcf-bd43-a7f61e312e17"
@@ -129,48 +131,38 @@ fun AppNavigation(sesionViewModel: SesionViewModel = hiltViewModel()) {
                 idUsuario = idUsuario,
                 idPerro = idPerro,
                 onBack = { navController.navigateUp() },
-                onIrADatosGenerales = { idSolicitud ->
-                    navController.navigate(Screen.DatosGenerales.crearRuta(idSolicitud))
+                onIrADatosGenerales = {
+                    navController.navigate(Screen.DatosGenerales.ruta)
                 },
             )
         }
 
         // SOLICITUDES: Paso 2 - Datos generales
-        composable(
-            route = Screen.DatosGenerales.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
-        ) { backStackEntry ->
-            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
+        composable(route = Screen.DatosGenerales.ruta) {
             val idUsuario = sesionState.sesion?.usuario?.id
             if (idUsuario == null && sesionState.comprobando) {
                 InicioSesionScreen(sesionState, sesionViewModel::restaurar, ::invitado)
             } else if (idUsuario == null) {
                 LaunchedEffect(Unit) { irAlInicio(Screen.Login.ruta) }
             } else DatosGeneralesRoute(
-                idSolicitud = idSolicitud,
-                idUsuario = idUsuario,
                 onBack = { navController.navigateUp() },
                 onIrATuHogar = {
-                    navController.navigate(Screen.TuHogar.crearRuta(idSolicitud))
+                    navController.navigate(Screen.TuHogar.ruta)
                 },
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (metanlo team)
-        composable(
-            route = Screen.TuHogar.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
-        ) {
+        // SOLICITUDES: Paso 3 - Tu hogar (Facu: aquí va TuHogarRoute cuando esté)
+        composable(route = Screen.TuHogar.ruta) {
             TuHogarScreen(
                 onBackClick = { navController.navigateUp() },
                 onContinuarClick = {},
             )
+        }
+
+        // ========= Pantallas Voluntariado ========
+        composable(route = Screen.Programas.ruta) {
+            ProgramasScreen(onBackClick = { navController.popBackStack() })
         }
 
         // Plantilla para nueva pantalla

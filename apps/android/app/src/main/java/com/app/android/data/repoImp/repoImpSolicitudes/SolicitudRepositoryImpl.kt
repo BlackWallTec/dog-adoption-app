@@ -1,60 +1,29 @@
 package com.app.android.data.repoImp.repoImpSolicitudes
 
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
-import com.app.android.data.dtos.dtosSolicitudes.CrearSolicitudRequestDto
-import com.app.android.data.dtos.dtosSolicitudes.GuardarDatosGeneralesRequestDto
 import com.app.android.data.dtos.dtosSolicitudes.toDomain
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
-import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import javax.inject.Inject
 
-// Repositorio de verdad, cumple el mismo contrato que el fake, pero con el backend de verdad
+// REPOSITORIO REAL: cumple el contrato usando el backend
 class SolicitudRepositoryImpl
-    @Inject
-    constructor(
-        private val api: SolicitudApiService,
-    ) : SolicitudRepositoryInt{
-        override suspend fun buscarBorrador(
-            idUsuario: String,
-            idPerro: String,
-        ): Solicitud? {
-            val respuesta = api.fetchDraftRemote(idUsuario, idPerro)
-            return respuesta.data?.toDomain() // data null = no hay borradorr
-        }
-
-    override suspend fun crearSolicitud(
+@Inject
+constructor(
+    private val api: SolicitudApiService,
+) : SolicitudRepositoryInt {
+    override suspend fun getSolicitudActiva(
         idUsuario: String,
         idPerro: String,
-    ): Solicitud {
-        val respuesta = api.createRequestRemote(CrearSolicitudRequestDto(idUsuario, idPerro))
-        return respuesta.data?.toDomain()
-            ?: throw Exception(respuesta.message ?: "El servidor no regresó la solicitud creada")
+    ): SolicitudResumen? {
+        val respuesta = api.fetchActiveRemote(idUsuario, idPerro)
+        return respuesta.data?.toDomain() // data null = no tiene solicitud activa
     }
 
     override suspend fun getPerfil(idUsuario: String): DatosGenerales {
         val respuesta = api.fetchProfileRemote(idUsuario)
         return respuesta.data?.toDomain()
             ?: throw Exception(respuesta.message ?: "No se encontró el perfil")
-    }
-
-    override suspend fun getDatosGenerales(idSolicitud: String): DatosGenerales? {
-        val respuesta = api.fetchGeneralDataRemote(idSolicitud)
-        return respuesta.data?.toDomain()
-    }
-
-    override suspend fun guardarDatosGenerales(
-        idSolicitud: String,
-        datos: DatosGenerales,
-    ) {
-        // Csolo se manda la ocupación (lo demas es preloaded)
-        val respuesta =
-            api.updateGeneralDataRemote(
-                idSolicitud,
-                GuardarDatosGeneralesRequestDto(ocupacion = datos.ocupacion),
-            )
-        if (respuesta.success != true) {
-            throw Exception(respuesta.message ?: "No se pudieron guardar los datos")
-        }
     }
 }

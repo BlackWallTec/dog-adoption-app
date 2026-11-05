@@ -66,6 +66,28 @@ class DogModel {
 
     return data;
   }
+
+  // Función para crear un nuevo perro
+  // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
+  // 2. Inserción en tabla Perro_Imagen: (Incluye id_perro & url_imagen)
+  // 3. Inserción en tabla perro_tiene_caracter (Incluye id_perro & id_caracter)
+  // 4. Inserción en tabla perro_tiene_cuidado_especial (Incluye id_perro & id_cuidado_especial)
+  static async createFullDog(dogData) {
+    const { data, error } = await supabase.rpc("insert_full_dog", { payload: dogData });
+
+    if (error) {
+      throw new Error(`Error al crear el perro: ${error.message}`);
+    }
+
+    return data[0]; // Retorna el primer elemento del array de datos insertados
+  }
+
+  /*
+
+
+
+
+  */
 }
 
 export default DogModel;
