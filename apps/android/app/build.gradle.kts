@@ -1,9 +1,30 @@
+import java.net.URI
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
 }
+
+val localApiProperties = Properties().apply {
+    val contents = providers.fileContents(layout.projectDirectory.file("../local.properties")).asText.orNull
+    if (contents != null) load(contents.reader())
+}
+val configuredApiUrl = providers.gradleProperty("apiBaseUrl")
+    .orElse(providers.environmentVariable("ANDROID_API_BASE_URL"))
+    .getOrElse(localApiProperties.getProperty("api.baseUrl", "http://10.0.2.2:3000/"))
+    .let { if (it.endsWith('/')) it else "$it/" }
+val apiUri = URI(configuredApiUrl)
+require(apiUri.scheme in listOf("http", "https") && !apiUri.host.isNullOrBlank() && apiUri.userInfo == null && apiUri.query == null && apiUri.fragment == null) {
+    "apiBaseUrl debe ser una URL HTTP(S) sin credenciales ni parámetros"
+}
+val validateReleaseApiUrl = tasks.register("validateReleaseApiUrl") {
+    val targetUrl = configuredApiUrl
+    doLast { check(URI(targetUrl).scheme == "https") { "Configura apiBaseUrl con HTTPS para compilar release" } }
+}
+tasks.configureEach { if (name == "preReleaseBuild") dependsOn(validateReleaseApiUrl) }
 
 android {
     namespace = "com.app.android"
@@ -17,6 +38,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "API_BASE_URL", "\"${configuredApiUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

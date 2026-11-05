@@ -22,12 +22,11 @@ data class UserDTO(
 
 fun LoginResponseDTO.toDomain(): Sesion {
     val u = user ?: error("Respuesta sin usuario")
-    return Sesion(
-        usuario = Usuario(
-            id = u.id ?: error("Respuesta sin id"),
-            email = u.email.orEmpty(),
-            rol = u.rol.orEmpty(),
-        ),
-        token = token ?: error("Respuesta sin token"),
-    )
+    check(!token.isNullOrBlank()) { "Respuesta sin token" }
+    return Sesion(usuario = u.toDomain(), token = token)
+}
+
+fun UserDTO.toDomain(): Usuario {
+    check(!id.isNullOrBlank() && !email.isNullOrBlank() && !rol.isNullOrBlank()) { "Respuesta de usuario incompleta" }
+    return Usuario(id, email, rol)
 }

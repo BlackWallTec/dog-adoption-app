@@ -1,5 +1,9 @@
 package com.app.android.di
 
+import com.app.android.BuildConfig
+import com.app.android.data.session.PerfilesAuthInterceptor
+import com.app.android.domain.repoInterface.repoIntPerfiles.AlmacenSesion
+
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
@@ -30,25 +34,20 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            // El nivel BODY imprime: URL, cabeceras, códigos de error y el JSON CRUDO completo
-            level = HttpLoggingInterceptor.Level.BODY
+            redactHeader("Authorization")
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
         }
 
     // Dificultad para conectar backend con Android en iOS
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor, authInterceptor: PerfilesAuthInterceptor): OkHttpClient =
         OkHttpClient
             .Builder()
             .connectTimeout(30, TimeUnit.SECONDS) // 30 segundos de margen para conectar
             .readTimeout(30, TimeUnit.SECONDS) // 30 segundos para leer datos
             .writeTimeout(30, TimeUnit.SECONDS) // 30 segundos para enviar
-            // ====== Inicio de código de Luis Gtz. =====
-            // Este es el interceptor de registro fue añadido por Luis Gtz.
-            .addInterceptor { chain ->
-                chain.proceed(chain.request().newBuilder().header("x-client", "mobile").build())
-            }
-            // ====== Fin de código de Luis Gtz. =====
+            .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     // ====== Fin Codigo agregado con IA =====
@@ -59,7 +58,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://192.168.0.143:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
+            .baseUrl(BuildConfig.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -83,8 +82,8 @@ object NetworkModule {
         retrofit.create(UsuarioAPIservice::class.java)
 
     @Provides @Singleton
-    fun providePerfilesRepository(api: UsuarioAPIservice): PerfilesRepositoryInt =
-        UsuarioRepositoryImpl(api)
+    fun providePerfilesRepository(api: UsuarioAPIservice, almacen: AlmacenSesion): PerfilesRepositoryInt =
+        UsuarioRepositoryImpl(api, almacen)
         
     @Provides
     @Singleton
