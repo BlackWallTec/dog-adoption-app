@@ -11,15 +11,25 @@ import {
 test.each(["Root", "Administrador"])("el acceso web admite el rol %s", async (rol) => {
   const current = await userStore.fetchByEmail();
   userStore.fetchByEmail.mockResolvedValue({ ...current, rol });
-  expect((await post("/api/perfiles/login", credentials)).status).toBe(200);
+  const response = await post("/api/perfiles/login", credentials);
+  expect(response.status).toBe(200);
+  expect(response.headers.get("set-cookie")).toContain("Max-Age=86400");
 });
 
-test("un cliente no obtiene cookie de acceso administrativo", async () => {
+test("un cliente obtiene sesion web sin permisos administrativos", async () => {
   const current = await userStore.fetchByEmail();
   userStore.fetchByEmail.mockResolvedValue({ ...current, rol: "Cliente" });
   const response = await post("/api/perfiles/login", credentials);
-  expect(response.status).toBe(403);
-  expect(response.headers.get("set-cookie")).toBeNull();
+  expect(response.status).toBe(200);
+  expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+  expect(response.headers.get("set-cookie")).toContain("Max-Age=2592000");
+  expect(
+    (
+      await request("/api/catalogo/admin/perros", {
+        headers: { Cookie: cookieOf(response) },
+      })
+    ).status,
+  ).toBe(403);
 });
 
 test("el login movil conserva su token para clientes", async () => {
@@ -51,14 +61,14 @@ test.each(["ausente", "alterada", "vencida"])("rechaza una sesion %s", async (ki
   expect((await post("/api/perfiles/me", undefined, headers)).status).toBe(401);
 });
 
-test("un JWT de cliente tampoco restaura el panel web", async () => {
+test("un JWT de cliente restaura su propia sesion web", async () => {
   expect(
     (
       await post("/api/perfiles/me", undefined, {
         Cookie: `token=${tokenFor("Cliente")}`,
       })
     ).status,
-  ).toBe(403);
+  ).toBe(200);
 });
 
 test("la consulta administrativa exige autenticacion y rol", async () => {

@@ -16,7 +16,7 @@ test("el login web crea una cookie HttpOnly y permite consultar la sesion", asyn
       rol: "Administrador",
     },
   });
-  expect(userStore.fetchByEmail).toHaveBeenCalledWith(credentials.email);
+  expect(userStore.fetchByEmail.mock.calls).toEqual([[credentials.email]]);
   const session = await post("/api/perfiles/me", undefined, { Cookie: cookieOf(response) });
   expect(session.status).toBe(200);
   expect((await session.json()).user.email).toBe(credentials.email);
@@ -27,7 +27,7 @@ test.each([undefined, {}, { email: "   ", passwd: "clave" }])(
   async (body) => {
     const response = await post("/api/perfiles/login", body);
     expect(response.status).toBe(400);
-    expect(userStore.fetchByEmail).not.toHaveBeenCalled();
+    expect(userStore.fetchByEmail.mock.calls).toHaveLength(0);
   },
 );
 
@@ -48,4 +48,15 @@ test("el cierre de sesion borra la cookie del navegador", async () => {
   expect(logout.headers.get("set-cookie")).toMatch(/^token=;/);
   expect(logout.headers.get("set-cookie")).toContain("Expires=Thu, 01 Jan 1970");
   expect((await post("/api/perfiles/me")).status).toBe(401);
+});
+
+test("el endpoint bloquea la cuenta despues de 25 credenciales incorrectas", async () => {
+  const attempt = { email: "bloqueo@gmail.com", passwd: "incorrecta" };
+  for (let i = 0; i < 25; i++)
+    expect((await post("/api/perfiles/login", attempt)).status).toBe(401);
+  const calls = userStore.fetchByEmail.mock.calls.length;
+  const blocked = await post("/api/perfiles/login", attempt);
+  expect(blocked.status).toBe(429);
+  expect(blocked.headers.get("retry-after")).toBeTruthy();
+  expect(userStore.fetchByEmail.mock.calls).toHaveLength(calls);
 });

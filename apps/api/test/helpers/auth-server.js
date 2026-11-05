@@ -7,7 +7,7 @@ import Usuario from "../../src/modules/perfiles/http/modelosPerfiles/user.model.
 
 vi.mock("../../src/config/supabaseClient.js", () => ({ supabase: {}, supabaseAdmin: {} }));
 vi.mock("../../src/modules/perfiles/http/modelosPerfiles/user.model.js", () => ({
-  default: { fetchByEmail: vi.fn() },
+  default: { fetchByEmail: vi.fn(), register: vi.fn(), fetchProfile: vi.fn() },
 }));
 vi.mock("../../src/modules/catalogo/http/modelosCatalogo/dog.model.js", () => ({
   default: { getDogs: vi.fn(async () => []) },
@@ -26,6 +26,8 @@ beforeAll(async () => {
   baseUrl = `http://127.0.0.1:${server.address().port}`;
 });
 beforeEach(() => {
+  userStore.register.mockReset().mockResolvedValue({ id_usuario: "cliente-nuevo", rol: "Cliente" });
+  userStore.fetchProfile.mockReset().mockResolvedValue({ nombre: "Ana", apellidos: "Prueba" });
   userStore.fetchByEmail.mockReset().mockResolvedValue({
     id_usuario: "usuario-prueba",
     contrasena: hash,
