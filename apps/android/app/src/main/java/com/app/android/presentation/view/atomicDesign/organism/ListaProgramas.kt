@@ -11,53 +11,71 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
-import com.app.android.presentation.view.atomicDesign.molecule.TarjetaPrograma
+import com.app.android.presentation.view.atomicDesign.molecule.TarjetaVoluntariado
 import com.app.android.presentation.view.ui.theme.AndroidTheme
-import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-// 1. EL ORGANISMO: la lista de programas vigentes
 @Composable
 fun ListaProgramas(
     programas: List<Programa>,
+    onInscribirse: (Programa) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        items(programas, key = { it.id }) { programa ->
-            TarjetaPrograma(
-                nombre = programa.nombre,
+        items(
+            items = programas,
+            key = { it.id },
+        ) { programa ->
+            val zoneId = ZoneId.systemDefault()
+            val dateFormatter = DateTimeFormatter.ofPattern("EEE. d MMM. yyyy", Locale("es", "ES"))
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale("es", "ES"))
+
+            val fechaTexto = dateFormatter.withZone(zoneId).format(programa.fechaInicio).replaceFirstChar { it.uppercase() }
+            val horaInicio = timeFormatter.withZone(zoneId).format(programa.fechaInicio)
+            val horaFin = timeFormatter.withZone(zoneId).format(programa.fechaFin)
+            val horarioTexto = "$horaInicio – $horaFin h"
+
+            val (textoBoton, botonHabilitado) = botonDe(programa)
+
+            TarjetaVoluntariado(
                 tipo = programa.tipo,
-                fechaInicio = "Inicio: ${formatearFecha(programa.fechaInicio)}",
-                estado = textoEstado(programa.estado),
-                fechaFin = "Fin: ${formatearFecha(programa.fechaFin)}",
+                titulo = programa.nombre,
+                fecha = fechaTexto,
+                horario = horarioTexto,
+                ubicacion = programa.ubicacion ?: "Refugio Qariño · Querétaro",
+                textoCupo = "",
+                progresoCupo = 0f,
+                alAccionBoton = { onInscribirse(programa) },
+                textoBoton = textoBoton,
+                botonHabilitado = botonHabilitado,
             )
         }
     }
 }
 
-// Se formatea en UTC para mostrar la fecha tal como está guardada (sin correrla por zona horaria)
-private val formatoFecha: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("d MMM yyyy", Locale.forLanguageTag("es-MX")).withZone(ZoneOffset.UTC)
+// El botón siempre se muestra; su texto y si se puede tocar dependen del estado del programa
+private fun botonDe(programa: Programa): Pair<String, Boolean> =
+    when {
+        programa.usuarioInscrito -> "Inscrito" to false
+        programa.estado != EstadoPrograma.DISPONIBLE -> "No disponible" to false
+        else -> "Inscribirme" to true
+    }
 
-private fun formatearFecha(fecha: Instant): String = formatoFecha.format(fecha)
-
-private fun textoEstado(estado: EstadoPrograma): String =
-    if (estado == EstadoPrograma.DISPONIBLE) "Disponible" else "No disponible"
-
-// 2. PREVISUALIZACIÓN
 private fun programaDePrueba(
     id: String,
     nombre: String,
     tipo: String,
     inicio: String,
     fin: String,
+    estado: EstadoPrograma = EstadoPrograma.DISPONIBLE,
 ) = Programa(
     id = id,
     nombre = nombre,
@@ -68,7 +86,7 @@ private fun programaDePrueba(
     ubicacion = null,
     cupoMaximo = null,
     cupoDisponible = null,
-    estado = EstadoPrograma.DISPONIBLE,
+    estado = estado,
     usuarioInscrito = false,
 )
 
@@ -82,6 +100,7 @@ private fun ListaProgramasPreview() {
                     programaDePrueba("1", "Bazar de Donativos", "Cuidado de Perros", "2026-12-11T12:17:08", "2026-12-16T12:17:08"),
                     programaDePrueba("2", "Jornada de limpieza", "Limpieza", "2026-12-20T09:00:00", "2026-12-20T13:00:00"),
                 ),
+            onInscribirse = {},
             modifier = Modifier.padding(16.dp),
         )
     }

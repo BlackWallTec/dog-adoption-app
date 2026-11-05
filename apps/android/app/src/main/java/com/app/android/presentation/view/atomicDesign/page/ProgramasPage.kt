@@ -13,8 +13,11 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,15 +37,16 @@ import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiS
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-// PAGE: catálogo de programas de voluntariado (HU39A)
 @Composable
 fun ProgramasPage(
     uiState: ProgramasUiState,
     onReintentar: () -> Unit,
     onBackClick: () -> Unit,
+    onInscribirse: (Programa) -> Unit = {},
     modifier: Modifier = Modifier,
-    navSeleccionado: Int = 1, // 1 = "Ayudar", la pestaña de Voluntariado
+    navSeleccionado: Int = 1,
     onNavSelect: (Int) -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val colores = MaterialTheme.colorScheme
 
@@ -51,6 +55,7 @@ fun ProgramasPage(
         containerColor = colores.surface,
         topBar = { AppTopBar(titulo = "Voluntariado", onBackClick = onBackClick) },
         bottomBar = { NavBar(selected = navSeleccionado, onSelect = onNavSelect) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingInterno ->
         Column(
             modifier =
@@ -99,7 +104,10 @@ fun ProgramasPage(
                     }
 
                     is ProgramasUiState.Success -> {
-                        ListaProgramas(programas = uiState.programas)
+                        ListaProgramas(
+                            programas = uiState.programas,
+                            onInscribirse = onInscribirse,
+                        )
                     }
                 }
             }
@@ -145,7 +153,6 @@ private fun ProgramasPageErrorPreview() {
     }
 }
 
-// Datos de ejemplo solo para las previsualizaciones
 private fun programaDePrueba(
     id: String,
     nombre: String,

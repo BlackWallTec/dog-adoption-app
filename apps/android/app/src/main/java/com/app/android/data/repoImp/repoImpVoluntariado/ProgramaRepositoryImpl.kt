@@ -7,11 +7,13 @@ import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.ZoneId
 import javax.inject.Inject
 
-// Las fechas de la BD son "timestamp without time zone" (sin zona), se asumen UTC.
-private fun String.aInstant(): Instant = LocalDateTime.parse(this).toInstant(ZoneOffset.UTC)
+// Las fechas de la BD no llevan zona: se interpretan en la zona del refugio, igual que InscripcionMapper.
+private val ZONA_REFUGIO: ZoneId = ZoneId.of("America/Mexico_City")
+
+private fun String.aInstant(): Instant = LocalDateTime.parse(this).atZone(ZONA_REFUGIO).toInstant()
 
 // Mapper local DTO -> Entity
 // HU39A solo trae 6 campos; los demás de la entidad compartida quedan sin dato.
