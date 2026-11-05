@@ -9,6 +9,8 @@ import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
+import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
+
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
@@ -62,44 +64,33 @@ fun AppNavigation() {
                 idUsuario = ID_USUARIO_PRUEBA,
                 idPerro = idPerro,
                 onBack = { navController.navigateUp() },
-                onIrADatosGenerales = { idSolicitud ->
-                    navController.navigate(Screen.DatosGenerales.crearRuta(idSolicitud))
+                onIrADatosGenerales = {
+                    navController.navigate(Screen.DatosGenerales.ruta)
                 },
             )
         }
 
         // SOLICITUDES: Paso 2 - Datos generales
-        composable(
-            route = Screen.DatosGenerales.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
-        ) { backStackEntry ->
-            val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
-
+        composable(route = Screen.DatosGenerales.ruta) {
             DatosGeneralesRoute(
-                idSolicitud = idSolicitud,
-                idUsuario = ID_USUARIO_PRUEBA,
                 onBack = { navController.navigateUp() },
                 onIrATuHogar = {
-                    navController.navigate(Screen.TuHogar.crearRuta(idSolicitud))
+                    navController.navigate(Screen.TuHogar.ruta)
                 },
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (metanlo team)
-        composable(
-            route = Screen.TuHogar.ruta,
-            arguments =
-                listOf(
-                    navArgument("idSolicitud") { type = NavType.StringType },
-                ),
-        ) {
+        // SOLICITUDES: Paso 3 - Tu hogar (Facu: aquí va TuHogarRoute cuando esté)
+        composable(route = Screen.TuHogar.ruta) {
             TuHogarScreen(
                 onBackClick = { navController.navigateUp() },
                 onContinuarClick = {},
             )
+        }
+
+        // ========= Pantallas Voluntariado ========
+        composable(route = Screen.Programas.ruta) {
+            ProgramasScreen(onBackClick = { navController.popBackStack() })
         }
 
         // Plantilla para nueva pantalla

@@ -1,8 +1,14 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
+}
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -19,6 +25,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
     }
 
     buildTypes {
@@ -32,9 +40,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -74,4 +84,16 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil)
     implementation("androidx.hilt:hilt-lifecycle-viewmodel-compose:1.3.0")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.material.icons.extended)
+    //Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    //Lifecycle + Navigation
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
+    //Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

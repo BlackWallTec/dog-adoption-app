@@ -1,0 +1,37 @@
+<!-- 
+  MODAL REUTILIZABLE DE FEEDBACK
+  Para alternar estados desde JS:
+  - Éxito: añade la clase 'modal-success' a .modal-card
+  - Error: añade la clase 'modal-error' a .modal-card
+-->
+<div class="modal-overlay active" id="modalFeedback">
+  <!-- Estado predeterminado: modal-success -->
+  <div class="modal-card modal-status modal-success" id="feedbackCard">
+    <!-- Esquina superior derecha: Botón X -->
+    <header class="modal-header" style="border: none; padding: 16px 20px 0">
+      <div></div>
+      <button type="button" class="icon-btn" aria-label="Cerrar" id="btnFeedbackCloseTop">
+        <span class="material-icons-round">close</span>
+      </button>
+    </header>
+
+    <!-- Cuerpo del mensaje -->
+    <div class="modal-body status-body">
+      <div class="status-icon-wrapper">
+        <span class="material-icons-round" id="feedbackIcon">check_circle</span>
+      </div>
+
+      <h3 class="status-title" id="feedbackTitle">¡Registro Exitoso!</h3>
+
+      <p class="status-message" id="feedbackMessage">
+        El expediente de <strong>Firulais</strong> se ha guardado correctamente en la base de datos
+        del refugio.
+      </p>
+    </div>
+
+    <!-- Pie del Modal: Botón Inferior Central -->
+    <footer class="modal-footer footer-center">
+      <button type="button" class="btn-primary" id="btnFeedbackAction">Continuar</button>
+    </footer>
+  </div>
+</div>
