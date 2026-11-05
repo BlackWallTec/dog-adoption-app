@@ -26,7 +26,7 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
       const messages = {
         400: "Revisa el correo y la contraseña.",
         401: "Correo o contraseña incorrectos.",
-        403: "Tu cuenta no tiene acceso o necesita confirmación.",
+        403: "Tu cuenta no tiene acceso al panel administrativo.",
         429: "Has realizado demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
       };
       throw new PerfilesApiError(
@@ -36,6 +36,9 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
     }
     if (action !== "logout" && (!data?.user?.id || !data.user.email || !data.user.rol)) {
       throw new PerfilesApiError("No pudimos comprobar la sesión. Inténtalo de nuevo.", 502);
+    }
+    if (action === "logout" && data?.ok !== true) {
+      throw new PerfilesApiError("No pudimos confirmar el cierre de sesión.", 502);
     }
 
     return data;
