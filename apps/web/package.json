@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
-    "build": "pnpm --filter web build",
+    "build": "vp build",
     "test": "vp test",
     "preview": "vp preview",
     "dev:api": "pnpm --filter api dev",
