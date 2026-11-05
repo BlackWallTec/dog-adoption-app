@@ -1,6 +1,18 @@
 import * as apiService from "./Modals.service.js";
+import { initDropzone } from "./dropZone.controller.js";
+
+let archivosMultimediaLocales = [];
 
 export function initDogRegisterModal({ onContinue }) {
+  // Variables
+
+  // Inicializar Dropzone
+  const dropzoneController = initDropzone({
+    onImageUploaded: (archivosPuros) => {
+      archivosMultimediaLocales = archivosPuros;
+    },
+  });
+
   // Mapa de nodos UI centralizados (variables @export)
   const ui = {
     modalOverlay: document.querySelector("#modalAltaPerro"),
@@ -97,7 +109,8 @@ function recollectFormData() {
     cuidados_ids: obtenerIdsDeBadges("cuidadosContainer"),
 
     // Archivos Binarios (Pasará los elementos File listos para un FormData en el otro JS)
-    imagenes: listaArchivos,
+    archivos_multimedia: archivosMultimediaLocales,
+    imagenes: archivosMultimediaLocales.map((file) => URL.createObjectURL(file)),
   };
 
   return datosPerro;

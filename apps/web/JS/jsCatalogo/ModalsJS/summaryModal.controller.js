@@ -49,6 +49,39 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
     if (ui.description)
       ui.description.textContent = datos.descripcion || "Sin descripción proporcionada.";
 
+    // Renderizado de Galería Multimedia
+    const imagenes = datos.imagenes_urls || [];
+    const imagenPlaceholder =
+      "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=800";
+
+    if (imagenes.length > 0) {
+      // 1. La primera imagen pasa a ser la foto principal
+      if (ui.mainImage) ui.mainImage.src = imagenes[0];
+
+      // 2. Renderizar carrusel de miniaturas
+      if (ui.thumbsContainer) {
+        ui.thumbsContainer.innerHTML = imagenes
+          .map(
+            (url, index) => `
+            <img 
+              src="${url}" 
+              class="${index === 0 ? "active" : ""}" 
+              alt="Miniatura ${index + 1}"
+              data-index="${index}"
+            />
+          `,
+          )
+          .join("");
+
+        // 3. Activar listener de intercambio al hacer clic en cualquier miniatura
+        attachGalleryInteractivity(imagenes);
+      }
+    } else {
+      // Imagen default por si el usuario no subió nada
+      if (ui.mainImage) ui.mainImage.src = imagenPlaceholder;
+      if (ui.thumbsContainer) ui.thumbsContainer.innerHTML = "";
+    }
+
     // Renderizado de Estado de Salud
     if (ui.sterilized) {
       ui.sterilized.textContent = datos.esterilizado ? "Esterilizado" : "No esterilizado";
@@ -102,7 +135,35 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
 
     try {
       // Llamada al Service desacoplado
-      await apiService.guardarPerroBD(currentData);
+      const urlsSubidas = [];
+
+      // 1. AHORA SÍ: Subimos los archivos retenidos a Supabase uno por uno
+      if (currentData.archivos_multimedia && currentData.archivos_multimedia.length > 0) {
+        for (const file of currentData.archivos_multimedia) {
+          // A. Pide la URL firmada a tu backend
+          const { uploadUrl, publicUrl } = await apiService.obtenerUrlFirmadaSupabase(
+            file.name,
+            file.type,
+          );
+
+          // B. Sube el binario directo al Bucket
+          await apiService.subirArchivoASupabase(uploadUrl, file);
+
+          // C. Guarda la URL pública final devuelta por el servidor
+          urlsSubidas.push(publicUrl);
+        }
+      }
+
+      // 2. Construimos el payload definitivo para la Base de Datos con las URLs reales de Supabase
+      const payloadFinal = {
+        currentData,
+        imagenes_urls: urlsSubidas, // por las públicas de Supabase
+      };
+
+      // Quitamos los binarios para no mandar basura pesada en el JSON del backend
+      delete payloadFinal.archivos_multimedia;
+
+      await apiService.guardarPerroBD(payloadFinal);
       close();
       if (typeof onSuccess === "function") onSuccess();
     } catch (error) {
@@ -110,7 +171,7 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
       alert("Ocurrió un error al intentar guardar en la base de datos.");
     } finally {
       ui.btnConfirm.disabled = false;
-      ui.btnConfirm.innerHTML = originalText;
+      ui.btnConfirm.innerHTML = `<span class="material-icons-round">cloud_upload</span> Confirmar y Registrar`;
     }
   });
 
@@ -121,3 +182,35 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
     ui,
   };
 }
+
+// ======== Función Generada con IA ===========
+/**
+ * Permite alternar la imagen principal al hacer clic sobre una miniatura del carrusel
+ */
+function attachGalleryInteractivity(imagenes) {
+  const thumbsContainer = document.querySelector("#resMiniaturas");
+  const mainImage = document.querySelector("#resImagenPrincipal");
+
+  if (!thumbsContainer || !mainImage) return;
+
+  thumbsContainer.querySelectorAll("img").forEach((thumb) => {
+    thumb.addEventListener("click", (e) => {
+      // Remover clase active de todas las miniaturas
+      thumbsContainer.querySelectorAll("img").forEach((img) => img.classList.remove("active"));
+
+      // Asignar active a la seleccionada
+      const selectedThumb = e.currentTarget;
+      selectedThumb.classList.add("active");
+
+      // Actualizar src de la imagen principal con animación suave
+      const newUrl = selectedThumb.src;
+      mainImage.style.opacity = "0.4";
+      setTimeout(() => {
+        mainImage.src = newUrl;
+        mainImage.style.opacity = "1";
+      }, 150);
+    });
+  });
+}
+
+// ======== Fin Función Generada con IA ===========
