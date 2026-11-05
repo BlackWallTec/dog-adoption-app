@@ -1,7 +1,9 @@
 import dogModel from "./modelosCatalogo/dog.model.js";
 import multimediaModel from "./modelosCatalogo/multimedia.model.js";
-import behaviourrModel from "./modelosCatalogo/behaviour.model.js";
+import behaviourModel from "./modelosCatalogo/behaviour.model.js";
 import cuidadoEspecialModel from "./modelosCatalogo/special.model.js";
+import sizeModel from "./modelosCatalogo/size.model.js";
+import breedModel from "./modelosCatalogo/breed.model.js";
 
 import { supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
@@ -64,7 +66,7 @@ export const getPerrosAdmin = async (req, res) => {
 // Get Tamaños
 export const getTamanos = async (req, res) => {
   try {
-    const tamanos = await dogModel.getSizes();
+    const tamanos = await sizeModel.getSizes();
     return res.status(200).json({
       success: true,
       data: tamanos,
@@ -80,7 +82,7 @@ export const getTamanos = async (req, res) => {
 // Get Características
 export const getCaracteristicas = async (req, res) => {
   try {
-    const caracteristicas = await behaviourrModel.getBehaviours();
+    const caracteristicas = await behaviourModel.getBehaviours();
     return res.status(200).json({
       success: true,
       data: caracteristicas,
@@ -96,7 +98,7 @@ export const getCaracteristicas = async (req, res) => {
 // Get Cuidado Especial
 export const getCuidadoEspecial = async (req, res) => {
   try {
-    const cuidados = await cuidadoEspecialModel.getSpecialCare();
+    const cuidados = await cuidadoEspecialModel.getSpecialConditions();
     return res.status(200).json({
       success: true,
       data: cuidados,
@@ -112,7 +114,7 @@ export const getCuidadoEspecial = async (req, res) => {
 //Get getRazas
 export const getRazas = async (req, res) => {
   try {
-    const razas = await dogModel.getBreeds();
+    const razas = await breedModel.getBreeds();
     return res.status(200).json({
       success: true,
       data: razas,

@@ -1,4 +1,6 @@
-export function initDogRegisterModal() {
+import * as apiService from "./Modals.service.js";
+
+export function initDogRegisterModal({ onContinue }) {
   // Mapa de nodos UI centralizados (variables @export)
   const ui = {
     modalOverlay: document.querySelector("#modalAltaPerro"),
@@ -7,7 +9,10 @@ export function initDogRegisterModal() {
     btnContinue: document.querySelector("#btn-continuar-modal"),
   };
 
-  const open = () => ui.modalOverlay.classList.add("active");
+  const open = async () => {
+    ui.modalOverlay.classList.add("active");
+    await loadModelData();
+  };
   const close = () => ui.modalOverlay.classList.remove("active");
   const onContinueButtonClicked = (event) => {
     event.preventDefault();
@@ -57,7 +62,7 @@ function recollectFormData() {
     const contenedor = document.getElementById(containerId);
     if (!contenedor) return [];
     const badgesActivos = contenedor.querySelectorAll(".badge-item.active");
-    return Array.from(badgesActivos).map((badge) => parseInt(badge.getAttribute("data-id"), 10));
+    return Array.from(badgesActivos).map((badge) => badge.getAttribute("data-id"));
   };
 
   // 3. Obtener los archivos de imágenes cargados
@@ -80,8 +85,8 @@ function recollectFormData() {
     descripcion: document.getElementById("descripcion").value.trim(),
 
     // Clasificación de BD (Llaves foráneas numéricas)
-    id_raza: parseInt(document.getElementById("id_raza").value, 10),
-    id_tamano: parseInt(document.getElementById("id_tamano").value, 10),
+    id_raza: document.getElementById("id_raza").value, // string directo
+    id_tamano: document.getElementById("id_tamano").value, // string directo
 
     // Estado de Salud (Booleanos de los Checkboxes)
     esterilizado: document.getElementById("esterilizado").checked,
@@ -96,4 +101,99 @@ function recollectFormData() {
   };
 
   return datosPerro;
+}
+
+// ==========================================
+// FUNCIONES AUXILIARES DE RENDERIZADO (UI)
+// ==========================================
+
+/**
+ * Llena un elemento <select> con las opciones de la API.
+ */
+function populateSelect(selectId, apiGroup, valueKey, labelKey) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+
+  // Extraemos la lista desde apiGroup.data
+  const items = apiGroup?.data || [];
+
+  const defaultOption = `<option value="" disabled selected>Selecciona una opción</option>`;
+  const optionsHTML = items
+    .map(
+      (item) => `
+    <option value="${item[valueKey]}">${item[labelKey]}</option>
+  `,
+    )
+    .join("");
+
+  select.innerHTML = defaultOption + optionsHTML;
+}
+
+/**
+ * Genera dinámicamente los Badges interactivos para Selección Múltiple
+ */
+function populateBadges(containerId, apiGroup, idKey, labelKey) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const items = apiGroup?.data || [];
+
+  container.innerHTML = items
+    .map(
+      (item) => `
+    <span class="badge-item" data-id="${item[idKey]}">
+      ${item[labelKey]}
+    </span>
+  `,
+    )
+    .join("");
+
+  // Re-adjuntamos el listener de toggle (activar/desactivar badge al hacer clic)
+  attachBadgeToggleListener(container);
+}
+
+/**
+ * Permite hacer clic en los badges recién renderizados para seleccionar/deseleccionar
+ */
+function attachBadgeToggleListener(container) {
+  container.querySelectorAll(".badge-item").forEach((badge) => {
+    badge.addEventListener("click", () => {
+      badge.classList.toggle("active");
+    });
+  });
+}
+
+async function loadModelData() {
+  try {
+    // 1. Llamamos al servicio de API para obtener los datos necesarios para el modal
+    const response = await fetchDataFromAPI();
+
+    if (!response) {
+      console.error("onLoad: No se pudieron obtener los datos de la API.");
+      return;
+    }
+
+    // 2. Llenar los selectores y badges con los datos obtenidos
+    populateSelect("id_tamano", response.tamanos, "id", "nombre");
+    populateSelect("id_raza", response.razas, "id", "nombre");
+    populateBadges("caracteristicasContainer", response.caracteristicas, "id_caracter", "nombre");
+    populateBadges("cuidadosContainer", response.cuidados, "id_cuidado", "descripcion");
+  } catch (error) {
+    // Captura cualquier error de red o de ejecución dentro del bloque try
+    console.error("onLoad: Ocurrió un error al procesar la solicitud.", error);
+  }
+}
+
+async function fetchDataFromAPI() {
+  //1. Llamamos al servicio de API para obtener los datos necesarios para el modal
+  try {
+    const response = await apiService.fetchRegisterData();
+    console.log("fetchDataFromAPI: Datos obtenidos de la API:", response);
+    if (!response || typeof response !== "object") {
+      throw new Error("fetchDataFromAPI: Respuesta de la API no es un objeto válido.");
+    }
+    return response;
+  } catch (erro) {
+    console.error("Error al pedir datos de la BD");
+  }
 }
