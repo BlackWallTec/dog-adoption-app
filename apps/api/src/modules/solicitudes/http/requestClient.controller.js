@@ -1,4 +1,3 @@
-import AdoptionRequestModel from "./modelosSolicitudes/adoptionRequest.model.js";
 import adoptionRequestModel from "./modelosSolicitudes/adoptionRequest.model.js";
 import profileModel from "./modelosSolicitudes/profile.model.js";
 
@@ -161,10 +160,9 @@ export const updateGeneralData = async (req, res) => {
   }
 };
 
-
 // Configuración para el paso 3 del formulario (Tu-Hogar)
 
-// GET /api/solicitudes/cliente/:idSolicitud/tu-hogar 
+// GET /api/solicitudes/cliente/:idSolicitud/tu-hogar
 
 export const getHome = async (req, res) => {
   try {
@@ -183,18 +181,14 @@ export const getHome = async (req, res) => {
   }
 };
 
-// PUT /api/solicitudes/cliente/:idSolicitud/tu-hogar   
+// PUT /api/solicitudes/cliente/:idSolicitud/tu-hogar
 // body: { motivo, tipo_vivienda, otras_mascotas, integrantes_hogar, sobre_mascotas, ... }
 export const updateHome = async (req, res) => {
   try {
     const { motivo, tipo_vivienda, otras_mascotas, integrantes_hogar, sobre_mascotas } = req.body;
 
     // Validación mínima. La validación completa (por campo) la hace Android
-    if (
-      !motivo?.trim() || 
-      !tipo_vivienda || 
-      !(integrantes_hogar >= 1)
-    ) {
+    if (!motivo?.trim() || !tipo_vivienda || !(integrantes_hogar >= 1)) {
       return res.status(400).json({
         success: false,
         message: "Faltan datos de Tu Hogar.",
@@ -216,7 +210,7 @@ export const updateHome = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    return res.status(500).json ({
+    return res.status(500).json({
       success: false,
       message: error.message || "Error interno al guardar Tu Hogar.",
     });
@@ -244,7 +238,6 @@ export const getCommitment = async (req, res) => {
   }
 };
 
-
 // PUT /api/solicitudes/cliente/:idSolicitud/compromiso
 // body: { cuidados_basicos, opinion_esterilizacion, permite_seguimiento }
 export const updateCommitment = async (req, res) => {
@@ -252,8 +245,8 @@ export const updateCommitment = async (req, res) => {
     const { cuidados_basicos, opinion_esterilizacion, permite_seguimiento } = req.body;
 
     if (
-      !cuidados_basicos?.trim() || 
-      !opinion_esterilizacion?.trim() || 
+      !cuidados_basicos?.trim() ||
+      !opinion_esterilizacion?.trim() ||
       typeof permite_seguimiento !== "boolean"
     ) {
       return res.status(400).json({
@@ -270,7 +263,7 @@ export const updateCommitment = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    return res.status(500).json ({
+    return res.status(500).json({
       success: false,
       message: error.message || "Error interno al guardar el compromiso.",
     });
