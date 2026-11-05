@@ -24,10 +24,10 @@ interface UsuarioAPIservice {
     suspend fun logout(): LogoutResponseDTO
 }
 
-// Esta no debe implementarse, y con algo como 
+// Esta no debe implementarse, y con algo como
 // val api = retrofit.create(UsuarioAPIservice::class.java)
 // le indica a Retrofit que implemente login.
-// 
+//
 // Cuando la llamas, con:
 // api.login(LoginRequestDTO(email, passwd))
 // Retrofit se encargará de llevar a cabo la petición que fue configurada.

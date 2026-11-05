@@ -101,7 +101,7 @@ object NetworkModule {
     @Provides @Singleton
     fun providePerfilesRepository(api: UsuarioAPIservice, almacen: AlmacenSesion): PerfilesRepositoryInt =
         UsuarioRepositoryImpl(api, almacen)
-        
+
     @Provides
     @Singleton
     fun provideSolicitudApiService(retrofit: Retrofit): SolicitudApiService = retrofit.create(SolicitudApiService::class.java)
@@ -130,5 +130,3 @@ object NetworkModule {
         ProgramaRepositoryImpl(apiService)
 
 }
-
-
