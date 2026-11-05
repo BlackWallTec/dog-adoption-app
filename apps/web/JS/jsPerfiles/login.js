@@ -39,6 +39,7 @@ function setBusy(buttonId, busy, label) {
   button.querySelector(".spinner-border").hidden = !busy;
   button.querySelector("[data-button-label]").textContent = label;
   button.closest("form").setAttribute("aria-busy", String(busy));
+  for (const input of [loginEmail, loginPassword, passwordToggle]) input.disabled = busy;
 }
 
 function errorMessage(error) {
@@ -90,6 +91,10 @@ loginForm.addEventListener("submit", async (event) => {
     sessionView.show(result);
   } catch (error) {
     if (request !== activeRequest) return;
+    if (error.status === 401) {
+      setFieldError(loginEmail, "Revisa tus credenciales.");
+      setFieldError(loginPassword, "Revisa tus credenciales.");
+    }
     feedback("login-feedback", errorMessage(error));
   } finally {
     if (request === activeRequest) setBusy("login-submit", false, "Iniciar sesión");
