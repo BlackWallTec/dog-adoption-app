@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
 
 class AdoptionRequestModel {
   // Busca el uuid de un estado por su nombre ("Borrador")

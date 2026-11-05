@@ -1,23 +1,73 @@
-import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin } from "../../../../config/supabaseAdmin.js";
 
-const ESTADO_INSCRITO = "Aceptado";
+const lanzarError = (contexto, error) => {
+  const err = new Error(`${contexto}: ${error.message}`);
+  err.code = error.code;
+  throw err;
+};
 
-class InscripcionModel {
-  // Devuelve las inscripciones activas de un programa, en orden de llegada
-  // Las inscripciones sin fecha quedan al final
-  static async getInscritosByPrograma(idPrograma) {
-    const { data, error } = await supabaseAdmin
-      .from("se_inscribe")
-      .select("id_usuario, fecha_inscripcion, asistencia")
-      .eq("id_programa", idPrograma)
-      .eq("estado", ESTADO_INSCRITO)
-      .order("fecha_inscripcion", { ascending: true, nullsFirst: false });
+// Datos del programa necesarios para validar la inscripción
+export const getProgramaInscripcionModel = async (idPrograma) => {
+  const { data, error } = await supabaseAdmin
+    .from("programa")
+    .select("id_programa, fecha_inicio, cupo_maximo, estado_del_programa")
+    .eq("id_programa", idPrograma)
+    .maybeSingle();
 
-    if (error) {
-      throw new Error(`Error en la consulta de inscritos: ${error.message}`);
-    }
+  if (error) lanzarError("Error al consultar el programa", error);
+  return data;
+};
 
-    return data;
-  }
-}
-export default InscripcionModel;
+// personas ya inscritas en el programa
+export const contarInscritosModel = async (idPrograma) => {
+  const { count, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .select("id_programa", { count: "exact", head: true })
+    .eq("id_programa", idPrograma);
+
+  if (error) lanzarError("Error al contar inscritos", error);
+  return count ?? 0;
+};
+
+// usuario ya está inscrito en este programa?
+export const existeInscripcionModel = async (idPrograma, idUsuario) => {
+  const { data, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .select("id_programa")
+    .eq("id_programa", idPrograma)
+    .eq("id_usuario", idUsuario)
+    .maybeSingle();
+
+  if (error) lanzarError("Error al verificar la inscripción", error);
+  return data !== null;
+};
+
+// Crear la inscripción y regresar la fila creada
+export const crearInscripcionModel = async (idPrograma, idUsuario, fechaInscripcion) => {
+  const { data, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .insert({
+      id_usuario: idUsuario,
+      id_programa: idPrograma,
+      fecha_inscripcion: fechaInscripcion,
+    })
+    .select("id_programa, fecha_inscripcion, estado")
+    .single();
+
+  if (error) lanzarError("Error al crear la inscripción", error);
+  return data;
+};
+
+// HU34: inscripciones activas de un programa, en orden de llegada
+// "Aceptado" es el default de se_inscribe.estado; las que no tienen fecha van al final
+export const getInscritosByProgramaModel = async (idPrograma) => {
+  const { data, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .select("id_usuario, fecha_inscripcion, asistencia")
+    .eq("id_programa", idPrograma)
+    .eq("estado", "Aceptado")
+    .order("fecha_inscripcion", { ascending: true, nullsFirst: false });
+
+  if (error) lanzarError("Error al consultar los inscritos", error);
+  return data;
+};

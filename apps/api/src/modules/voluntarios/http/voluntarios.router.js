@@ -2,19 +2,24 @@ import { Router } from "express";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
+import { inscribirse } from "./voluntarios.controller.js";
+import * as clientController from "./voluntariadoClient.controller.js";
 import { getInscritos } from "./inscritosAdmin.controller.js";
 
 export const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ module: "voluntarios", items: [] });
-});
+// Rutas Cliente
+
+// GET /api/voluntarios/cliente/programas
+router.get("/cliente/programas", clientController.getProgramasVigentes);
+
+// POST /api/voluntarios/programas/:idPrograma/inscripciones
+router.post("/programas/:idPrograma/inscripciones", inscribirse);
 
 // Rutas Admin
 
 // GET /api/voluntarios/admin/programas/:idPrograma/inscritos
-// Pendiente de proteger con sesion y rol de administrador con el login de perfiles
-
+// Requiere sesión (401) y rol Administrador o Root (403).
 router.get(
   "/admin/programas/:idPrograma/inscritos",
   verificarToken,

@@ -13,7 +13,7 @@ vi.mock("./modelosVoluntariado/programa.model.js", () => ({
   default: { getProgramaById: mocks.getProgramaById },
 }));
 vi.mock("./modelosVoluntariado/inscripcion.model.js", () => ({
-  default: { getInscritosByPrograma: mocks.getInscritosByPrograma },
+  getInscritosByProgramaModel: mocks.getInscritosByPrograma,
 }));
 vi.mock("./modelosVoluntariado/perfiles.adapter.js", () => ({
   default: {

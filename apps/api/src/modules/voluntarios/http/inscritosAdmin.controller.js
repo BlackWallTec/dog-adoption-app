@@ -1,5 +1,5 @@
 import ProgramaModel from "./modelosVoluntariado/programa.model.js";
-import InscripcionModel from "./modelosVoluntariado/inscripcion.model.js";
+import { getInscritosByProgramaModel } from "./modelosVoluntariado/inscripcion.model.js";
 import PerfilesAdapter from "./modelosVoluntariado/perfiles.adapter.js";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -63,7 +63,7 @@ export const getInscritos = async (req, res) => {
       return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");
     }
 
-    const inscripciones = await InscripcionModel.getInscritosByPrograma(idPrograma);
+    const inscripciones = await getInscritosByProgramaModel(idPrograma);
     const ids = inscripciones.map((inscripcion) => inscripcion.id_usuario);
 
     // Nombres y contacto se piden en paralelo
