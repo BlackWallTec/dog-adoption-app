@@ -1,3 +1,6 @@
+import { abrirEdicion } from "./adminPerros.edit.js";
+import { escaparHtml } from "./perroForm.js";
+
 // Referencias a elementos del DOM
 const tablaBody = document.getElementById("tabla-perros-body");
 const counterSubtitle = document.getElementById("perros-counter-subtitle");
@@ -47,22 +50,23 @@ function renderizarTabla(perros) {
   tablaBody.innerHTML = perros
     .map((perro) => {
       // Foto fallback en caso de no tener URL cargada
-      const fotoUrl = perro.foto_url || perro.foto || "/favicon.svg";
-      const raza = textoRelacion(perro.raza, "Mestizo");
-      const edadTexto = textoEdad(perro);
-      const tamano = textoRelacion(perro.tamano || perro.tamanio, "Mediano");
-      const estado = perro.estado || "Disponible";
+      const fotoUrl = escaparHtml(perro.foto_url || perro.foto || "/favicon.svg");
+      const raza = escaparHtml(textoRelacion(perro.raza, "Mestizo"));
+      const edadTexto = escaparHtml(textoEdad(perro));
+      const tamano = escaparHtml(textoRelacion(perro.tamano || perro.tamanio, "Mediano"));
+      const estado = escaparHtml(perro.estado || "Disponible");
       const badgeClase = obtenerClaseBadge(estado);
-      const id = perro.id ?? perro.id_perro ?? "";
+      const id = escaparHtml(perro.id ?? perro.id_perro ?? "");
+      const nombre = escaparHtml(perro.nombre);
 
       return `
       <tr data-id="${id}">
         <td>
-          <img src="${fotoUrl}" alt="${perro.nombre}" class="dog-photo" onerror="this.src='/favicon.svg'">
+          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.src='/favicon.svg'">
         </td>
         <td>
           <div class="dog-name-cell">
-            <span class="dog-name">${perro.nombre}</span>
+            <span class="dog-name">${nombre}</span>
             <span class="dog-meta">${raza}</span>
           </div>
         </td>
@@ -128,3 +132,11 @@ async function cargarPerros() {
 
 // Carga inicial al montar la página
 document.addEventListener("DOMContentLoaded", cargarPerros);
+
+// HU19C: botón Editar de cada fila (delegación de eventos porque las filas se re-pintan)
+tablaBody?.addEventListener("click", (evento) => {
+  const boton = evento.target.closest(".action-edit");
+  if (!boton) return;
+  const id = boton.closest("tr")?.dataset.id;
+  if (id) abrirEdicion(id, cargarPerros);
+});
