@@ -15,6 +15,7 @@ import com.app.android.presentation.viewmodel.viewModelDonativos.GuardarDatosFis
 fun DatosFiscalesRoute(
     idUsuario: String,
     onBack: () -> Unit,
+    onNavSelect: (Int) -> Unit = {},
     viewModel: DatosFiscalesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -50,5 +51,6 @@ fun DatosFiscalesRoute(
         onReintentar = { viewModel.onLoadDatosFiscales(idUsuario) },
         onGuardarClick = { viewModel.onGuardar(idUsuario) },
         onBackClick = onBack,
+        onNavSelect = onNavSelect,
     )
 }

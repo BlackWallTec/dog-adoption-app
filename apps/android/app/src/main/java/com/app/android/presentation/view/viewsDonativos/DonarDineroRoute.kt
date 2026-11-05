@@ -15,6 +15,7 @@ fun DonarDineroRoute(
     idUsuario: String,
     onBack: () -> Unit,
     onEnviado: (String) -> Unit,
+    onNavSelect: (Int) -> Unit = {},
     viewModel: DonarDineroViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -31,6 +32,7 @@ fun DonarDineroRoute(
         enviando = uiState is DonarDineroUiState.Enviando,
         errorEnviar = (uiState as? DonarDineroUiState.Error)?.mensaje,
         onBackClick = onBack,
+        onNavSelect = onNavSelect,
         onEnviarClick = { monto, referencia, comprobante ->
             viewModel.onEnviar(idUsuario, monto, referencia, comprobante)
         },
