@@ -1,12 +1,13 @@
 package com.app.android.presentation.navigation
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.app.android.presentation.view.viewsCatalogo.dogDetailScreen
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
+import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
@@ -38,9 +39,16 @@ fun AppNavigation() {
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
 
-            // Llamamos a tu pantalla pasándole el ID extraído
-            dogDetailScreen(dogId = dogId)
+            // Llamamos a la función composable de la pantalla pasándole el ID extraído
+            DogDetailScreenView(
+                dogId = dogId,
+                onAdoptClick = { dogId ->
+                    navController.navigate(Screen.Requisitos.crearRuta(dogId))
+                },
+            )
         }
+
+        // ========= Pantallas Solicitudes ========
 
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
@@ -82,7 +90,7 @@ fun AppNavigation() {
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (metqnlo team)
+        // SOLICITUDES: Paso 3 - Tu Hogar
         composable(
             route = Screen.TuHogar.ruta,
             arguments =

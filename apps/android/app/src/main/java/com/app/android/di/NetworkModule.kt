@@ -4,9 +4,8 @@ import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.dataSource.dataSourcesSolicitudes.BorradorLocalDataSource
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
-import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
-import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import dagger.Module
 import dagger.Provides
@@ -50,7 +49,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://192.168.101.12:3000/") // backend local en Express
+            .baseUrl("http://localhost:3000/") // backend local en Express
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -81,4 +80,6 @@ object NetworkModule {
         apiService: SolicitudApiService,
         borrador: BorradorLocalDataSource,
     ): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService, borrador)
+    // El provide solicitud anterior que mandaba a BD después de continuar al siguiente view
+    // fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)
 }

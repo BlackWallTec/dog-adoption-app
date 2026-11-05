@@ -41,6 +41,7 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.remote:remote-creation-core:1.0.0-alpha22")
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.runtime:runtime:1.12.1")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.foundation.layout)
@@ -65,4 +66,6 @@ dependencies {
     implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.coil.compose)
+    implementation(libs.coil)
 }
