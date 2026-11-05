@@ -120,9 +120,6 @@
                       tabindex="-1"
                       hidden
                     ></div>
-                    <button class="btn btn-link auth-link" id="show-recovery" type="button" disabled>
-                      ¿Olvidaste tu contraseña?
-                    </button>
                     <div class="auth-actions">
                       <button class="btn btn-primary rounded-pill" id="login-submit" type="submit">
                         <span
@@ -136,53 +133,6 @@
                   </form>
                 </div>
 
-                <div id="recovery-panel" hidden>
-                  <h1 id="recovery-title" tabindex="-1">Recupera tu acceso</h1>
-                  <p class="auth-description">Ingresa el correo asociado a tu cuenta.</p>
-                  <form id="recovery-form" novalidate>
-                    <div class="mb-4">
-                      <label class="form-label" for="recovery-email">Correo</label>
-                      <input
-                        class="form-control"
-                        id="recovery-email"
-                        name="email"
-                        type="email"
-                        autocomplete="email"
-                        inputmode="email"
-                        placeholder="ana@qarinoanimal.org"
-                        aria-describedby="recovery-email-error"
-                        maxlength="254"
-                        required
-                      />
-                      <div class="invalid-feedback" id="recovery-email-error"></div>
-                    </div>
-                    <div
-                      id="recovery-feedback"
-                      class="alert py-3"
-                      role="status"
-                      aria-live="polite"
-                      tabindex="-1"
-                      hidden
-                    ></div>
-                    <div class="d-flex flex-wrap align-items-center gap-3">
-                      <button
-                        class="btn btn-primary rounded-pill"
-                        id="recovery-submit"
-                        type="submit"
-                      >
-                        <span
-                          class="spinner-border spinner-border-sm me-2"
-                          aria-hidden="true"
-                          hidden
-                        ></span>
-                        <span data-button-label>Enviar enlace</span>
-                      </button>
-                      <button class="btn btn-link auth-link" id="cancel-recovery" type="button">
-                        Cancelar y volver
-                      </button>
-                    </div>
-                  </form>
-                </div>
               </div>
             </div>
           </section>
