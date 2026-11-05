@@ -1,8 +1,15 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
+import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
+import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +20,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import com.google.gson.Gson
+import java.time.Clock
+
 
 @Module
 @InstallIn(SingletonComponent::class) // Le dice a Hilt: "Estas dependencias viven tanto como la App"
@@ -25,6 +35,15 @@ object NetworkModule {
             // El nivel BODY imprime: URL, cabeceras, códigos de error y el JSON CRUDO completo
             level = HttpLoggingInterceptor.Level.BODY
         }
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
+    @Provides
+    @Singleton
+    fun provideClock(): Clock = Clock.systemUTC()
+
 
     // Dificultad para conectar backend con Android en iOS
     @Provides
@@ -45,7 +64,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://192.168.0.161:3000/") // backend local en Express
+            .baseUrl("http://localhost:3000/") // backend local en Express
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -62,4 +81,26 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
+    @Provides
+    @Singleton
+    fun provideSolicitudApiService(retrofit: Retrofit): SolicitudApiService = retrofit.create(SolicitudApiService::class.java)
+
+    // 4. Repositorio de Solicitudes.
+    // Para volver al fake (sin backend): return SolicitudRepositoryFake()
+    @Provides
+    @Singleton
+    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt =
+        SolicitudRepositoryImpl(apiService)
+
+    @Provides
+    @Singleton
+    fun provideProgramaApiService(retrofit: Retrofit): ProgramaApiService =
+        retrofit.create(ProgramaApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideProgramaRepository(apiService: ProgramaApiService): ProgramaRepository =
+        ProgramaRepositoryImpl(apiService)
+
 }

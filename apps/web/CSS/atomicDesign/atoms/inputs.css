@@ -7,3 +7,15 @@
   width: 100%;
   font-family: var(--font-body);
 }
+
+.textarea-base {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--md-sys-color-on-surface);
+  width: 100%;
+  font-family: var(--font-body);
+  resize: vertical;
+  min-height: 80px;
+}
