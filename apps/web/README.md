@@ -6,8 +6,8 @@ Usamos **Bootstrap 5.3.8** como base para las nuevas pantallas de toda la web:
 rejilla adaptable, utilidades de espaciado, formularios, botones, tarjetas y alertas.
 Se mantiene JavaScript nativo y la estructura HTML/CSS/JS del proyecto.
 
-La primera pantalla es el acceso administrativo de perfiles, basado en la referencia
-compartida. El catálogo existente conserva sus archivos y estilos; su migración a
+Las pantallas de perfiles permiten iniciar sesión y crear una cuenta de cliente,
+con el fondo amarillo casi blanco y sin logos provisionales. El catálogo conserva sus archivos; su migración a
 Bootstrap queda fuera de este cambio.
 
 ### Orden de estilos para cada nueva pantalla
@@ -39,28 +39,36 @@ Con las dependencias instaladas, ejecutar desde la raíz del repositorio:
 ```
 
 Abrir http://localhost:5173/HTML/htmlPerfiles/login.html.
+El enlace **Crear cuenta** abre `registro.html`. Al registrarse, la cuenta queda activa
+y se inicia sesión inmediatamente, sin enviar ni exigir un correo de confirmación.
 La API escucha en el puerto 3000 y Vite reenvía `/api` hacia ella.
 
 Preparar `apps/api/.env` a partir de `apps/api/.env.example`, con `SUPABASE_URL`,
 `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `JWT_SECRET` válidos.
 Las claves permanecen en el backend; no se copian a variables `VITE_*`.
+Antes del primer registro, aplicar `apps/api/sql/perfiles/001_registro_cliente.sql`
+siguiendo [la guía de configuración y prueba](../api/docs/perfiles-web.md).
 Para una API compartida, copiar `apps/web/.env.example` a `apps/web/.env.local`
 y ajustar `API_PROXY_TARGET`. Reiniciar Vite después de cambiarlo.
 En producción se debe servir `/api` mediante el servidor o proxy del despliegue, con HTTPS.
 
 ## Archivos de perfiles
 
-| Archivo                         | Responsabilidad                                         |
-| ------------------------------- | ------------------------------------------------------- |
-| `HTML/htmlPerfiles/login.html`  | Formulario de login y estado de la sesión.              |
-| `CSS/cssPerfiles/perfiles.css`  | Diseño del módulo.                                      |
-| `JS/jsPerfiles/login.js`        | Formularios, errores, carga y mostrar contraseña.       |
-| `JS/jsPerfiles/perfiles.api.js` | Peticiones reales a login, me y logout.                 |
-| `JS/jsPerfiles/perfiles.session.js` | Presentación y cierre de la sesión.                 |
+| Archivo                                     | Responsabilidad                                               |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `HTML/htmlPerfiles/login.html`              | Formulario de login y estado de la sesión.                    |
+| `HTML/htmlPerfiles/registro.html`           | Formulario de creación de cuenta.                             |
+| `CSS/cssPerfiles/perfiles.css`              | Diseño del módulo.                                            |
+| `JS/jsPerfiles/login.js`                    | Formularios, errores, carga y mostrar contraseña.             |
+| `JS/jsPerfiles/registro.js`                 | Validación, envío del registro y errores por campo.           |
+| `JS/jsPerfiles/perfiles.api.js`             | Peticiones reales a registro, login, sesión, perfil y logout. |
+| `JS/jsPerfiles/perfiles.session.js`         | Datos propios y cierre de sesión.                             |
+| `../shared/perfiles/registro.validation.js` | Reglas compartidas por navegador y Express.                   |
 
-Esta entrega sólo incluye login web para `Root` y `Administrador`.
-Crear cuenta, confirmación de correo y recuperación de contraseña quedan pendientes:
-el backend todavía no ofrece esos endpoints. El acceso móvil de clientes se conserva.
+El registro público siempre crea el rol `Cliente`. Los clientes pueden iniciar sesión
+y consultar sus propios datos. `Root` y `Administrador` conservan acceso administrativo;
+las rutas administrativas rechazan a los clientes incluso con sesión válida.
+La recuperación de contraseña queda fuera de esta entrega. No se requiere verificación de correo.
 
 ## Conexión con la API
 
@@ -78,6 +86,8 @@ Al recargar, `POST /api/perfiles/me` restaura el usuario autenticado. Si devuelv
 se muestra el formulario. `POST /api/perfiles/logout` borra la cookie del servidor.
 El navegador usa una cookie HttpOnly, sin guardar el JWT en localStorage.
 La consulta administrativa de perros también exige sesión y rol administrativo.
+`POST /api/perfiles/register` crea la cuenta y devuelve el mismo contrato de sesión.
+`GET /api/perfiles/profile` obtiene los datos del usuario del JWT: no acepta otro ID.
 
 ## Comprobaciones
 
@@ -86,7 +96,8 @@ La consulta administrativa de perros también exige sesión y rol administrativo
 .\node_modules\.bin\vp.cmd build apps/web
 ```
 
-Las pruebas HTTP ejecutan Express, bcrypt y JWT con una consulta a base de datos aislada.
-Para verificar Supabase de extremo a extremo se requiere el `.env` local y una cuenta
-administrativa real de prueba. Las políticas RLS deben permitir la consulta del servidor
-sin exponer contraseñas al cliente.
+Las pruebas HTTP ejecutan Express, bcrypt y JWT. Las pruebas de PostgreSQL usan PGlite
+en memoria con las relaciones relevantes del esquema y la migración real: verifican
+restricciones, rollback y acceso a la RPC. El recorrido del adaptador web también se
+prueba con Express y esa base aislada. No conectan a Supabase ni dejan cuentas de prueba.
+Para probar el proyecto real se requieren el `.env`, la migración y los permisos del servidor.
