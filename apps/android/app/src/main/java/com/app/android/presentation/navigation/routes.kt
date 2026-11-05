@@ -6,6 +6,10 @@ package com.app.android.presentation.navigation
 sealed class Screen(
     val ruta: String,
 ) {
+    object Inicio : Screen("inicio_sesion")
+    object Login : Screen("login")
+    object Registro : Screen("registro")
+    object Cuenta : Screen("mi_cuenta")
     object Catalogo : Screen("catalogo_screen")
 
     object DetallePerro : Screen("detalle_perro_screen/{dogId}") {

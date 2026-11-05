@@ -1,5 +1,12 @@
 package com.app.android.presentation.navigation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -9,21 +16,73 @@ import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
+import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
+import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
+import com.app.android.presentation.view.viewsPerfiles.LoginRoute
+import com.app.android.presentation.view.viewsPerfiles.RegistroRoute
+import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
 
-// TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
-// Cuando exista login, este id vendra de la sesion del usuario.
-private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
+// Entrada al detalle existente del módulo de catálogo.
+private const val PERRO_INICIAL = "0edfe707-cc43-4bcf-bd43-a7f61e312e17"
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(sesionViewModel: SesionViewModel = hiltViewModel()) {
     // 1. El NavController que controla el estado de la navegación
     val navController = rememberNavController()
+    val sesionState by sesionViewModel.state.collectAsState()
+    var adopcionPendiente by rememberSaveable { mutableStateOf<String?>(null) }
+    fun irAlInicio(ruta: String) {
+        navController.navigate(ruta) {
+            popUpTo(navController.graph.id) { inclusive = false }
+            launchSingleTop = true
+        }
+    }
+    fun catalogo() = irAlInicio(Screen.DetallePerro.crearRuta(PERRO_INICIAL))
+    fun invitado() {
+        sesionViewModel.salir(onFinished = { adopcionPendiente = null; catalogo() }, notificarServidor = false)
+    }
 
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
+        startDestination = Screen.Inicio.ruta,
     ) {
+        composable(Screen.Inicio.ruta) {
+            LaunchedEffect(sesionState.comprobando, sesionState.sesion, sesionState.error) {
+                if (!sesionState.comprobando && (sesionState.sesion != null || sesionState.error == null)) {
+                    irAlInicio(if (sesionState.sesion != null) Screen.Cuenta.ruta else Screen.Login.ruta)
+                }
+            }
+            InicioSesionScreen(sesionState, sesionViewModel::restaurar, ::invitado)
+        }
+        composable(Screen.Login.ruta) {
+            LoginRoute(
+                onBackToCatalog = ::invitado, onExploreWithoutAccount = ::invitado,
+                onRegister = { navController.navigate(Screen.Registro.ruta) { launchSingleTop = true } },
+                onAuthenticated = { sesion ->
+                    sesionViewModel.autenticado(sesion)
+                    val perro = adopcionPendiente
+                    adopcionPendiente = null
+                    irAlInicio(perro?.let(Screen.Requisitos::crearRuta) ?: Screen.Cuenta.ruta)
+                },
+            )
+        }
+        composable(Screen.Registro.ruta) {
+            RegistroRoute(onCancel = { if (!navController.popBackStack()) irAlInicio(Screen.Login.ruta) }, onAuthenticated = { sesion ->
+                sesionViewModel.autenticado(sesion)
+                val perro = adopcionPendiente
+                adopcionPendiente = null
+                irAlInicio(perro?.let(Screen.Requisitos::crearRuta) ?: Screen.Cuenta.ruta)
+            })
+        }
+        composable(Screen.Cuenta.ruta) {
+            LaunchedEffect(sesionState.sesion, sesionState.comprobando) {
+                if (!sesionState.comprobando && sesionState.sesion == null) irAlInicio(Screen.Login.ruta)
+            }
+            CuentaScreen(sesionState, sesionViewModel::consultarPerfil, ::catalogo, {
+                sesionViewModel.salir(onFinished = { irAlInicio(Screen.Login.ruta) })
+            })
+        }
         // ========= Pantallas Catalogo ========
 
         // PANTALLA 2: El detalle del perro
@@ -41,8 +100,12 @@ fun AppNavigation() {
             DogDetailScreenView(
                 dogId = dogId,
                 onAdoptClick = { dogId ->
-                    navController.navigate(Screen.Requisitos.crearRuta(dogId))
+                    if (sesionState.sesion == null) {
+                        adopcionPendiente = dogId
+                        navController.navigate(Screen.Login.ruta) { launchSingleTop = true }
+                    } else navController.navigate(Screen.Requisitos.crearRuta(dogId))
                 },
+                onAccountClick = { navController.navigate(if (sesionState.sesion == null) Screen.Login.ruta else Screen.Cuenta.ruta) { launchSingleTop = true } },
             )
         }
 
@@ -57,9 +120,13 @@ fun AppNavigation() {
                 ),
         ) { backStackEntry ->
             val idPerro = backStackEntry.arguments?.getString("idPerro") ?: ""
-
-            RequisitosRoute(
-                idUsuario = ID_USUARIO_PRUEBA,
+            val idUsuario = sesionState.sesion?.usuario?.id
+            if (idUsuario == null && sesionState.comprobando) {
+                InicioSesionScreen(sesionState, sesionViewModel::restaurar, ::invitado)
+            } else if (idUsuario == null) {
+                LaunchedEffect(Unit) { adopcionPendiente = idPerro; irAlInicio(Screen.Login.ruta) }
+            } else RequisitosRoute(
+                idUsuario = idUsuario,
                 idPerro = idPerro,
                 onBack = { navController.navigateUp() },
                 onIrADatosGenerales = { idSolicitud ->
@@ -77,10 +144,14 @@ fun AppNavigation() {
                 ),
         ) { backStackEntry ->
             val idSolicitud = backStackEntry.arguments?.getString("idSolicitud") ?: ""
-
-            DatosGeneralesRoute(
+            val idUsuario = sesionState.sesion?.usuario?.id
+            if (idUsuario == null && sesionState.comprobando) {
+                InicioSesionScreen(sesionState, sesionViewModel::restaurar, ::invitado)
+            } else if (idUsuario == null) {
+                LaunchedEffect(Unit) { irAlInicio(Screen.Login.ruta) }
+            } else DatosGeneralesRoute(
                 idSolicitud = idSolicitud,
-                idUsuario = ID_USUARIO_PRUEBA,
+                idUsuario = idUsuario,
                 onBack = { navController.navigateUp() },
                 onIrATuHogar = {
                     navController.navigate(Screen.TuHogar.crearRuta(idSolicitud))

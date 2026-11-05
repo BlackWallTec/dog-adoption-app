@@ -37,6 +37,7 @@ fun DogDetailScreenView(
     dogId: String = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
     // 3. Acciones al hacer clic
     onAdoptClick: (String) -> Unit,
+    onAccountClick: () -> Unit = {},
 ) {
     // 2. Nos suscribimos al UiState (conectamos a la señal como en Godot)
     val uiState by viewModel.uiState.collectAsState()
@@ -78,7 +79,7 @@ fun DogDetailScreenView(
                         // Asignamos NavBar al slot inferior del Scaffold
                         NavBar(
                             selected = 0,
-                            onSelect = {},
+                            onSelect = { if (it == 4) onAccountClick() },
                             modifier = Modifier.fillMaxWidth(),
                         )
                     },
