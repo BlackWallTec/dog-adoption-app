@@ -22,21 +22,21 @@ con el texto de web; debe revisarse con el responsable antes de producción.
 
 Rutas relativas a `app/src/main/java/com/app/android/`:
 
-| Archivo | Responsabilidad |
-| --- | --- |
-| `presentation/view/viewsPerfiles/LoginScreen.kt` | Diseño y previews del login. |
-| `presentation/view/viewsPerfiles/RegistroScreen.kt` | Formulario, fecha, privacidad y previews. |
-| `presentation/view/viewsPerfiles/CuentaScreen.kt` | Datos propios, carga, reintento y logout. |
-| `presentation/view/viewsPerfiles/LoginRoute.kt`, `RegistroRoute.kt` | Conectan pantallas y ViewModels. |
-| `presentation/viewmodel/viewModelPerfiles/` | Estados, peticiones, cancelación y sesión. |
-| `presentation/navigation/AppNavigationManager.kt` | Destinos y acceso a cuenta/catálogo/solicitudes. |
-| `domain/entities/entitiesPerfiles/Registro.kt` | Datos y validación de registro. |
-| `data/dataSource/dataSourcesPerfiles/UsuarioAPIservice.kt` | Contrato HTTP con Express. |
-| `data/dtos/dtosPerfiles/RegistroDTO.kt`, `UsuarioDTO.kt` | JSON de solicitudes y respuestas. |
-| `data/repoImp/repoImpPerfiles/UsuarioRepositoryImpl.kt` | Registro, login, perfil, sesión y errores. |
-| `data/session/AlmacenSesionSeguro.kt` | Persistencia cifrada con Android Keystore. |
-| `data/session/PerfilesAuthInterceptor.kt` | Cabeceras móviles y token Bearer. |
-| `di/NetworkModule.kt`, `PerfilesModule.kt` | Configuración e inyección. |
+| Archivo                                                             | Responsabilidad                                  |
+| ------------------------------------------------------------------- | ------------------------------------------------ |
+| `presentation/view/viewsPerfiles/LoginScreen.kt`                    | Diseño y previews del login.                     |
+| `presentation/view/viewsPerfiles/RegistroScreen.kt`                 | Formulario, fecha, privacidad y previews.        |
+| `presentation/view/viewsPerfiles/CuentaScreen.kt`                   | Datos propios, carga, reintento y logout.        |
+| `presentation/view/viewsPerfiles/LoginRoute.kt`, `RegistroRoute.kt` | Conectan pantallas y ViewModels.                 |
+| `presentation/viewmodel/viewModelPerfiles/`                         | Estados, peticiones, cancelación y sesión.       |
+| `presentation/navigation/AppNavigationManager.kt`                   | Destinos y acceso a cuenta/catálogo/solicitudes. |
+| `domain/entities/entitiesPerfiles/Registro.kt`                      | Datos y validación de registro.                  |
+| `data/dataSource/dataSourcesPerfiles/UsuarioAPIservice.kt`          | Contrato HTTP con Express.                       |
+| `data/dtos/dtosPerfiles/RegistroDTO.kt`, `UsuarioDTO.kt`            | JSON de solicitudes y respuestas.                |
+| `data/repoImp/repoImpPerfiles/UsuarioRepositoryImpl.kt`             | Registro, login, perfil, sesión y errores.       |
+| `data/session/AlmacenSesionSeguro.kt`                               | Persistencia cifrada con Android Keystore.       |
+| `data/session/PerfilesAuthInterceptor.kt`                           | Cabeceras móviles y token Bearer.                |
+| `di/NetworkModule.kt`, `PerfilesModule.kt`                          | Configuración e inyección.                       |
 
 El contrato original de login de estos seis archivos procedía de commits de contenido
 firmados como `luise`: servicio, UsuarioDTO, UsuarioRepositoryImpl, Usuario,
@@ -48,13 +48,13 @@ PerfilesRepositoryInt y LoginUseCase. Las funciones nuevas amplían ese trabajo.
 Todas las peticiones llevan `x-client: mobile`. Las autenticadas añaden
 `Authorization: Bearer <token>`; Android no usa la cookie del navegador.
 
-| Método y ruta | Entrada / respuesta |
-| --- | --- |
-| `POST /api/perfiles/login` | `{email, passwd}` → `{user: {id, email, rol}, token}`. |
-| `POST /api/perfiles/register` | Formulario → la misma sesión de login. |
-| `POST /api/perfiles/me` | Sin cuerpo; comprueba el token y devuelve `{user}`. |
-| `GET /api/perfiles/profile` | Devuelve `{profile}` con datos propios. |
-| `POST /api/perfiles/logout` | Devuelve `{ok: true}`. |
+| Método y ruta                 | Entrada / respuesta                                    |
+| ----------------------------- | ------------------------------------------------------ |
+| `POST /api/perfiles/login`    | `{email, passwd}` → `{user: {id, email, rol}, token}`. |
+| `POST /api/perfiles/register` | Formulario → la misma sesión de login.                 |
+| `POST /api/perfiles/me`       | Sin cuerpo; comprueba el token y devuelve `{user}`.    |
+| `GET /api/perfiles/profile`   | Devuelve `{profile}` con datos propios.                |
+| `POST /api/perfiles/logout`   | Devuelve `{ok: true}`.                                 |
 
 El registro envía `nombre`, `apellidos`, `email`, `telefono`, `fechaNacimiento`
 (`YYYY-MM-DD`), `calle`, `numeroExterior`, `codigoPostal`, `passwd`,
@@ -132,8 +132,8 @@ cabeceras, registro, perfil y restauración/logout. No usan Supabase.
 Informe: `app/build/reports/tests/testDebugUnitTest/index.html`.
 APK: `app/build/outputs/apk/debug/app-debug.apk`.
 
-Verificación del 5 de noviembre de 2026: ambos APK (app y pruebas) compilaron;
-25 pruebas unitarias aprobadas, sin fallos; Android Lint sin errores, con 18
+Verificación tras integrar develop el 5 de noviembre de 2026: APK principal compilado;
+28 pruebas unitarias aprobadas, sin fallos; Android Lint sin errores, con 16
 advertencias de mantenimiento. Las pruebas instrumentadas todavía no se ejecutaron:
 el emulador exigía 7.2 GB libres para su partición de datos y el equipo no tenía
 ese espacio. Se requiere comprobar el recorrido completo en un teléfono o emulador.

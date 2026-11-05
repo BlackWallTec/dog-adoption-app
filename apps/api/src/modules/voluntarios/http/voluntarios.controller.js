@@ -18,10 +18,10 @@ const responderError = (res, status, code, message) =>
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 export const inscribirse = async (req, res) => {
   const { idPrograma } = req.params;
-  const idUsuario = process.env.DEV_USUARIO_ID; // Cambiar aqui lo del login
+  const idUsuario = req.user?.uuid;
 
   if (!idUsuario) {
-    return responderError(res, 401, "NO_AUTENTICADO", "No hay un usuario configurado.");
+    return responderError(res, 401, "NO_AUTENTICADO", "Inicia sesión para inscribirte.");
   }
 
   if (!UUID_REGEX.test(idPrograma)) {
@@ -72,9 +72,14 @@ export const inscribirse = async (req, res) => {
     if (error.code === "23505") {
       return responderError(res, 409, "YA_INSCRITO", "Ya estás inscrito en este programa.");
     }
-    // 23503: llave foránea inválida → el DEV_USUARIO_ID no existe en la tabla usuario
+    // 23503: la cuenta autenticada ya no existe en la tabla usuario.
     if (error.code === "23503") {
-      return responderError(res, 401, "NO_AUTENTICADO", "El usuario configurado no existe.");
+      return responderError(
+        res,
+        401,
+        "NO_AUTENTICADO",
+        "La cuenta ya no existe. Inicia sesión de nuevo.",
+      );
     }
 
     console.error("[voluntarios] inscribirse:", error);

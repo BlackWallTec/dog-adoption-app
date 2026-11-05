@@ -9,6 +9,9 @@ const router = Router();
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
 
+// Todas las funciones administrativas comparten el acceso del login de perfiles.
+router.use("/admin", verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT));
+
 // ===== Rutas Especiales =======
 
 //POST api/catalogo/admin/solicitar-subida
@@ -20,12 +23,7 @@ router.post("/admin/solicitar-subida", adminController.obtenerUrlSubidaMultimedi
 
 // ==== Rutas Admin ======
 // GET /api/catalogo/admin/perros
-router.get(
-  "/admin/perros",
-  verificarToken,
-  requireRole(ROLES.ADMIN, ROLES.ROOT),
-  adminController.getPerrosAdmin,
-);
+router.get("/admin/perros", adminController.getPerrosAdmin);
 
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
