@@ -1,5 +1,6 @@
 package com.app.android.domain.repoInterface.repoIntSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.Solicitud
@@ -14,6 +15,11 @@ interface SolicitudRepositoryInt {
         idUsuario: String,
         idPerro: String,
     ): Solicitud?
+
+    suspend fun getSolicitudActiva(
+        idUsuario: String,
+        idPerro: String,
+    ): SolicitudResumen?
 
     // Crea una solicitud nueva (estado BORRADOR)
     suspend fun crearSolicitud(
@@ -53,4 +59,6 @@ interface SolicitudRepositoryInt {
         idSolicitud: String,
         datos: Compromiso,
     )
+
+    suspend fun enviarSolicitud(borrador: BorradorSolicitud): SolicitudResumen
 }

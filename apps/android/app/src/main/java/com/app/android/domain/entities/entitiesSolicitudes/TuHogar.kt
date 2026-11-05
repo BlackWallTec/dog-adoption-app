@@ -12,9 +12,7 @@ data class TuHogar(
     val hasGarden: String = "", // Pregunta: ¿Tienes jardin o patio?
     val petAccept: Boolean? = null, // Opción (Si, No): Si rentas, ¿tu casero acepta mascotas?
     val aboutPets: String = "", // Pregunta: Cuéntanos sobre tus mascotas
-) {
-    constructor(houseType: Any) : this()
-}
+)
 
 enum class HouseType {
     CASA,
