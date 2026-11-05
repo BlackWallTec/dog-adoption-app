@@ -1,11 +1,10 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
-import com.app.android.data.dataSource.dataSourcesSolicitudes.BorradorLocalDataSource
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
-import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import dagger.Module
 import dagger.Provides
