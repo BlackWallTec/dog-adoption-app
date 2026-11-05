@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // SIGNAL: Cuando se guardó con éxito:
     onSuccess: () => {
       // Limpiamos el formulario de registro y refrescamos la tabla
-      registerModalController.ui.form.reset();
-      console.log("Recargando tabla de perros...");
+      registerModalController.reset();
+      cargarPerros();
     },
   });
 

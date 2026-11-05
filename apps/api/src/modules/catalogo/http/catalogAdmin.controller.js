@@ -31,12 +31,16 @@ export const obtenerUrlSubidaMultimedia = async (req, res) => {
       .createSignedUploadUrl(rutaArchivo, 300); // URL válida por 300 segundos
 
     if (error) throw error;
+    const { data: publicUrlData } = supabase.storage
+      .from("multimedia_perros")
+      .getPublicUrl(rutaArchivo);
 
     //5. Retornamos la URL especial de subida y la URL final donde quedará el archivo
     return res.status(200).json({
       message: "Pase de subida generado exitosamente",
       uploadUrl: data.signedUrl, // URL para subir el archivo
       rutaFinal: rutaArchivo, // Ruta final donde quedará el archivo en el bucket
+      publicUrl: publicUrlData.publicUrl,
     });
   } catch (error) {
     console.error("Error al generar URL firmada:", error.message);
@@ -142,10 +146,10 @@ function mapToTypedValue(value, targetType) {
       return [true, String(value)];
     case "number":
       const num = Number(value);
-      return [!isNaN(num), num];
+      return [Number.isFinite(num), num];
     case "boolean":
-      if (value === "true") return [true, true];
-      if (value === "false") return [true, false];
+      if (value === true || value === "true") return [true, true];
+      if (value === false || value === "false") return [true, false];
       return [false, null];
     default:
       return [false, null];
@@ -155,6 +159,7 @@ function mapToTypedValue(value, targetType) {
 // funcion auxiliar para mapear el req entrante a un objeto que pueda ser insertado en la base de datos.
 // Regresa 2 datos (bool & objeto) para saber si el mapeo fue exitoso o no.
 function mapRequestToDogData(reqBody) {
+  // CORREGIDO: id_raza e id_tamano ahora inician como string "" para coincidir con los UUIDs
   var dogData = {
     nombre: "",
     sexo: "",
@@ -164,52 +169,79 @@ function mapRequestToDogData(reqBody) {
     esterilizado: false,
     vacunado: false,
     estado: "",
-    id_raza: 0,
-    id_tamano: 0,
+    id_raza: "", // <-- Cambiado de 0 a ""
+    id_tamano: "", // <-- Cambiado de 0 a ""
     multimedia: [],
     caracteres: [],
     cuidados: [],
   };
+
   var isValid = true;
-  var errorMessages = []; //Array de errores para debug, no se envía al cliente por seguridad.
-  // Validar y mapear los campos del reqBody al objeto dogData
+  var errorMessages = [];
+  const optionalFields = new Set(["edad_aprox", "tamano_medida", "descripcion"]);
+
+  // Expresión regular para validar estructuras UUID v4 estándar
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
   for (const key in dogData) {
-    //1. Validamos que el reqBody tenga siquiera la propiedad
-    if (reqBody.hasOwnProperty(key)) {
-      //2. Validamos que el reqBody tenga un valor válido para la propiedad (mayor seguridad)
+    if (Object.prototype.hasOwnProperty.call(reqBody, key)) {
       const value = reqBody[key];
-      //3. Validar estrictamente contra null y undefined para permitir 0 y false
-      if (value !== null && value !== undefined && value !== "") {
-        //3.1: Arrays & Objetos: Validar que sean del tipo correcto
-        if (Array.isArray(dogData[key])) {
-          if (!Array.isArray(value)) {
+
+      if (value === null || value === undefined || value === "") {
+        if (optionalFields.has(key)) continue;
+        isValid = false;
+        errorMessages.push(`El campo obligatorio '${key}' está vacío.`);
+        break;
+      }
+
+      let cleanedValue = value;
+
+      if (Array.isArray(dogData[key])) {
+        if (!Array.isArray(value)) {
+          isValid = false;
+          errorMessages.push(`El campo '${key}' debe ser un array.`);
+          break;
+        }
+
+        // VALIDACIÓN: Asegurar que los elementos dentro de caracteres y cuidados sean strings UUID válidos
+        if (key === "caracteres" || key === "cuidados") {
+          const allElementsValid = value.every(
+            (id) => typeof id === "string" && uuidRegex.test(id),
+          );
+          if (!allElementsValid) {
             isValid = false;
-            errorMessages.push(`El campo '${key}' debe ser un array.`);
-            break;
-          }
-          // 3.2: Objetos: Validar que sean del tipo correcto
-        } else if (typeof dogData[key] === "object" && dogData[key] !== null) {
-          if (typeof value !== "object" || value === null) {
-            isValid = false;
-            errorMessages.push(`El campo '${key}' debe ser un objeto.`);
-            break;
-          }
-        } else {
-          //3.3: Forzar tipo de dato
-          var [valid, cleanedValue] = mapToTypedValue(value, typeof dogData[key]);
-          if (!valid) {
-            isValid = false;
-            errorMessages.push(`El campo '${key}' tiene un valor inválido.`);
+            errorMessages.push(`El array '${key}' contiene uno o más UUIDs inválidos.`);
             break;
           }
         }
-        dogData[key] = cleanedValue;
+      } else if (typeof dogData[key] === "object" && dogData[key] !== null) {
+        if (typeof value !== "object" || value === null) {
+          isValid = false;
+          errorMessages.push(`El campo '${key}' debe ser un objeto.`);
+          break;
+        }
       } else {
-        isValid = false;
-        break;
+        // VALIDACIÓN: Verificar si los campos id_raza o id_tamano son UUID válidos antes de parsear
+        if (key === "id_raza" || key === "id_tamano") {
+          if (typeof value !== "string" || !uuidRegex.test(value)) {
+            isValid = false;
+            errorMessages.push(`El campo '${key}' no tiene un formato UUID válido.`);
+            break;
+          }
+        }
+
+        const [valid, parsedValue] = mapToTypedValue(value, typeof dogData[key]);
+        if (!valid) {
+          isValid = false;
+          errorMessages.push(`El campo '${key}' tiene un tipo de valor inválido.`);
+          break;
+        }
+        cleanedValue = parsedValue;
       }
+      dogData[key] = cleanedValue;
     } else {
       isValid = false;
+      errorMessages.push(`Falta el campo requerido '${key}' en la solicitud.`);
       break;
     }
   }
@@ -225,22 +257,22 @@ function mapRequestToDogData(reqBody) {
   "esterilizado": true,
   "vacunado": true,
   "estado": "Disponible",
-  "id_raza": 1,
-  "id_tamano": 2,
+  "id_raza": "UUID",
+  "id_tamano": "UUID",
   "multimedia": [
     { "url": "https://storage.com", "tipo": "imagen" }
   ],
-  "caracteres": [id_caracter1: 1, id_caracter2: 3], 
-  "cuidados": [id_cuidado1: 2, id_cuidado2: 4]      
+  "caracteres": [{ "id_caracter": "UUID" }, { "id_caracter": UUID }],
+  "cuidados": [{ "id_cuidado": "UUID" }, { "id_cuidado": UUID }]
 }
   */
 }
 
 export const postNuevoPerro = async (req, res) => {
-  console.log("POST /api/catalogo/admin/perros");
+  console.log("POST receiving call: ", req.body);
   try {
     const dogData = req.body;
-    log("Datos recibidos para nuevo perro:", dogData);
+    console.log("Datos recibidos para nuevo perro:", dogData);
 
     // Validar y mapear el reqBody a un objeto dogData
     const { isValid, dogData: mappedDogData, errorMessages } = mapRequestToDogData(dogData);
@@ -260,11 +292,14 @@ export const postNuevoPerro = async (req, res) => {
     // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
     const perroCreado = await dogModel.createFullDog(mappedDogData);
 
+    console.log("🎉 OPERACIÓN EXITOSA EN SUPABASE:");
+
     return res.status(200).json({
       success: true,
       data: perroCreado,
     });
   } catch (error) {
+    console.error("🚨 DETALLE COMPLETO DEL ERROR DESDE SUPABASE:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Error interno al crear el perro.",

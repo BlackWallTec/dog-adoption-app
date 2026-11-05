@@ -37,6 +37,15 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
 
   // 3. Renderizador de datos (Poblado de UI)
   const populateSummary = (datos) => {
+    console.groupCollapsed("[Resumen de perro] Datos recibidos para construir el resumen");
+    console.log("Datos entrantes:", datos);
+    console.table(
+      Object.entries(datos ?? {}).map(([campo, valor]) => ({
+        campo,
+        valor: Array.isArray(valor) ? JSON.stringify(valor) : valor,
+      })),
+    );
+    console.groupEnd();
     currentData = datos;
 
     // Datos generales
@@ -137,30 +146,25 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
       // Llamada al Service desacoplado
       const urlsSubidas = [];
 
-      // 1. AHORA SÍ: Subimos los archivos retenidos a Supabase uno por uno
       if (currentData.archivos_multimedia && currentData.archivos_multimedia.length > 0) {
+        const idPerroTemporal = `registro-${Date.now()}`;
         for (const file of currentData.archivos_multimedia) {
-          // A. Pide la URL firmada a tu backend
           const { uploadUrl, publicUrl } = await apiService.obtenerUrlFirmadaSupabase(
+            idPerroTemporal,
             file.name,
             file.type,
           );
 
-          // B. Sube el binario directo al Bucket
           await apiService.subirArchivoASupabase(uploadUrl, file);
-
-          // C. Guarda la URL pública final devuelta por el servidor
           urlsSubidas.push(publicUrl);
         }
       }
 
-      // 2. Construimos el payload definitivo para la Base de Datos con las URLs reales de Supabase
       const payloadFinal = {
-        currentData,
-        imagenes_urls: urlsSubidas, // por las públicas de Supabase
+        ...currentData,
+        imagenes_urls: urlsSubidas,
       };
 
-      // Quitamos los binarios para no mandar basura pesada en el JSON del backend
       delete payloadFinal.archivos_multimedia;
 
       await apiService.guardarPerroBD(payloadFinal);
@@ -168,7 +172,7 @@ export function initDogSummaryModal({ onBack, onSuccess }) {
       if (typeof onSuccess === "function") onSuccess();
     } catch (error) {
       console.error("Error al registrar el perro:", error);
-      alert("Ocurrió un error al intentar guardar en la base de datos.");
+      alert(`Ocurrió un error al intentar guardar: ${error.message}`);
     } finally {
       ui.btnConfirm.disabled = false;
       ui.btnConfirm.innerHTML = `<span class="material-icons-round">cloud_upload</span> Confirmar y Registrar`;

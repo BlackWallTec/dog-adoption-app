@@ -311,4 +311,76 @@ admin-topbar {
   color: var(--md-sys-color-on-surface);
 }
 
+/* ==================== MODAL DE FEEDBACK (ÉXITO / ERROR) ==================== */
+.modal-card.modal-status {
+  max-width: 440px;
+  text-align: center;
+}
+
+.status-body {
+  padding: 32px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-icon-wrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon-wrapper .material-icons-round {
+  font-size: 42px;
+}
+
+.status-title {
+  font-family: var(--font-headline);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+}
+
+.status-message {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.5;
+}
+
+/* Estado: Éxito */
+.modal-success .status-icon-wrapper {
+  background-color: #e6f4ea;
+  color: #1e4620;
+}
+
+/* Estado: Error */
+.modal-error .status-icon-wrapper {
+  background-color: #fce8e6;
+  color: var(--md-sys-color-error);
+}
+
+.modal-error .status-title {
+  color: var(--md-sys-color-error);
+}
+
+/* Alineación central para el footer */
+.footer-center {
+  justify-content: center;
+}
+
+/* Botones de acción según variante */
+.btn-error {
+  background-color: var(--md-sys-color-error);
+  color: #ffffff;
+}
+
+.btn-error:hover {
+  opacity: 0.9;
+}
+
 /* ==================== FIN MODAL BASE (GLOBAL) ==================== */

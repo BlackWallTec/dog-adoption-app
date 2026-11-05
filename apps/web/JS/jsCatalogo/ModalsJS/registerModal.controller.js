@@ -2,13 +2,12 @@ import * as apiService from "./Modals.service.js";
 import { initDropzone } from "./dropZone.controller.js";
 
 let archivosMultimediaLocales = [];
+let previewUrls = [];
 
 export function initDogRegisterModal({ onContinue }) {
-  // Variables
-
   // Inicializar Dropzone
   const dropzoneController = initDropzone({
-    onImageUploaded: (archivosPuros) => {
+    onFilesChanged: (archivosPuros) => {
       archivosMultimediaLocales = archivosPuros;
     },
   });
@@ -20,12 +19,35 @@ export function initDogRegisterModal({ onContinue }) {
     btnCancel: document.querySelector("#btn-cancelar-modal"),
     btnContinue: document.querySelector("#btn-continuar-modal"),
   };
+  let modelDataLoaded = false;
+
+  const reset = () => {
+    document
+      .getElementById("contenedorRegistroPerro")
+      ?.querySelectorAll("input, select, textarea")
+      .forEach((field) => {
+        if (field.type === "checkbox") field.checked = false;
+        else if (field.type !== "file") field.value = "";
+      });
+    const multimediaInput = document.getElementById("multimediaInput");
+    if (multimediaInput) multimediaInput.value = "";
+    document
+      .querySelectorAll(
+        "#caracteristicasContainer .badge-item.active, #cuidadosContainer .badge-item.active",
+      )
+      .forEach((badge) => badge.classList.remove("active"));
+    document.getElementById("estado").value = "Disponible";
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    previewUrls = [];
+    archivosMultimediaLocales = [];
+    dropzoneController?.limpiar();
+  };
 
   const open = async () => {
-    ui.modalOverlay.classList.add("active");
-    await loadModelData();
+    ui.modalOverlay?.classList.add("active");
+    if (!modelDataLoaded) modelDataLoaded = await loadModelData();
   };
-  const close = () => ui.modalOverlay.classList.remove("active");
+  const close = () => ui.modalOverlay?.classList.remove("active");
   const onContinueButtonClicked = (event) => {
     event.preventDefault();
     // 1. Recolectamos los datos del formulario
@@ -36,7 +58,15 @@ export function initDogRegisterModal({ onContinue }) {
     }
 
     // 2. Aquí puedes pasar los datos al modal de resumen o a la API según tu flujo
-    console.log("Datos recolectados del formulario:", datosPerro);
+    console.groupCollapsed("[Registro de perro] Datos recolectados del formulario");
+    console.log("Campos y valores:", datosPerro);
+    console.table(
+      Object.entries(datosPerro).map(([campo, valor]) => ({
+        campo,
+        valor: Array.isArray(valor) ? JSON.stringify(valor) : valor,
+      })),
+    );
+    console.groupEnd();
 
     //3. Emitir la "Signal" al Padre con los datos recolectados
     if (typeof onContinue === "function") {
@@ -45,11 +75,11 @@ export function initDogRegisterModal({ onContinue }) {
   };
 
   // Event Listeners
-  ui.btnClose.addEventListener("click", close);
-  ui.btnCancel.addEventListener("click", close);
-  ui.btnContinue.addEventListener("click", onContinueButtonClicked);
+  ui.btnClose?.addEventListener("click", close);
+  ui.btnCancel?.addEventListener("click", close);
+  ui.btnContinue?.addEventListener("click", onContinueButtonClicked);
 
-  return { open, close, ui };
+  return { open, close, reset, ui };
 }
 
 function recollectFormData() {
@@ -70,17 +100,21 @@ function recollectFormData() {
   }
 
   // 2. Extraer IDs de Badges con clase '.active'
-  const obtenerIdsDeBadges = (containerId) => {
+  const obtenerBadgesActivos = (containerId) => {
     const contenedor = document.getElementById(containerId);
-    if (!contenedor) return [];
-    const badgesActivos = contenedor.querySelectorAll(".badge-item.active");
-    return Array.from(badgesActivos).map((badge) => badge.getAttribute("data-id"));
+    if (!contenedor) return { ids: [], nombres: [] };
+    const badgesActivos = Array.from(contenedor.querySelectorAll(".badge-item.active"));
+    return {
+      ids: badgesActivos.map((badge) => badge.dataset.id),
+      nombres: badgesActivos.map((badge) => badge.textContent.trim()),
+    };
   };
 
-  // 3. Obtener los archivos de imágenes cargados
-  const inputMultimedia = document.getElementById("multimediaInput");
-  const listaArchivos =
-    inputMultimedia && inputMultimedia.files ? Array.from(inputMultimedia.files) : [];
+  previewUrls.forEach((url) => URL.revokeObjectURL(url));
+  previewUrls = archivosMultimediaLocales.map((file) => URL.createObjectURL(file));
+  const caracteristicas = obtenerBadgesActivos("caracteristicasContainer");
+  const cuidados = obtenerBadgesActivos("cuidadosContainer");
+  const raza = document.getElementById("id_raza");
 
   // 4. Construcción de la Estructura Final del Objeto
   const datosPerro = {
@@ -97,20 +131,22 @@ function recollectFormData() {
     descripcion: document.getElementById("descripcion").value.trim(),
 
     // Clasificación de BD (Llaves foráneas numéricas)
-    id_raza: document.getElementById("id_raza").value, // string directo
-    id_tamano: document.getElementById("id_tamano").value, // string directo
+    id_raza: raza.value,
+    id_tamano: document.getElementById("id_tamano").value,
+    razaTexto: raza.selectedOptions[0]?.textContent.trim() || "",
 
     // Estado de Salud (Booleanos de los Checkboxes)
     esterilizado: document.getElementById("esterilizado").checked,
     vacunado: document.getElementById("vacunado").checked,
 
     // Relaciones Muchos a Muchos (Arreglos de IDs)
-    caracteristicas_ids: obtenerIdsDeBadges("caracteristicasContainer"),
-    cuidados_ids: obtenerIdsDeBadges("cuidadosContainer"),
+    caracteristicas_ids: caracteristicas.ids,
+    caracteristicas: caracteristicas.nombres,
+    cuidados_ids: cuidados.ids,
+    cuidados: cuidados.nombres,
 
-    // Archivos Binarios (Pasará los elementos File listos para un FormData en el otro JS)
     archivos_multimedia: archivosMultimediaLocales,
-    imagenes: archivosMultimediaLocales.map((file) => URL.createObjectURL(file)),
+    imagenes_urls: previewUrls,
   };
 
   return datosPerro;
@@ -183,17 +219,19 @@ async function loadModelData() {
 
     if (!response) {
       console.error("onLoad: No se pudieron obtener los datos de la API.");
-      return;
+      return false;
     }
 
     // 2. Llenar los selectores y badges con los datos obtenidos
-    populateSelect("id_tamano", response.tamanos, "id", "nombre");
-    populateSelect("id_raza", response.razas, "id", "nombre");
+    populateSelect("id_tamano", response.tamanos, "id_tamano", "nombre");
+    populateSelect("id_raza", response.razas, "id_raza", "nombre");
     populateBadges("caracteristicasContainer", response.caracteristicas, "id_caracter", "nombre");
     populateBadges("cuidadosContainer", response.cuidados, "id_cuidado", "descripcion");
+    return true;
   } catch (error) {
     // Captura cualquier error de red o de ejecución dentro del bloque try
     console.error("onLoad: Ocurrió un error al procesar la solicitud.", error);
+    return false;
   }
 }
 
@@ -207,6 +245,7 @@ async function fetchDataFromAPI() {
     }
     return response;
   } catch (erro) {
-    console.error("Error al pedir datos de la BD");
+    console.error("Error al pedir datos de la BD:", erro);
+    throw erro;
   }
 }

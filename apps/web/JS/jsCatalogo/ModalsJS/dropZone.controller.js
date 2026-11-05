@@ -12,6 +12,7 @@ export function initDropzone({ onFilesChanged }) {
 
   // 📦 EL CAMBIO CLAVE: Guardamos los objetos File físicos en memoria local, NO subimos nada aún.
   let archivosEnMemoria = [];
+  const urlsTemporales = new Map();
 
   // 1. Abrir explorador de archivos al hacer clic (Evitar disparar si hacen clic en un botón interno)
   dropzone.addEventListener("click", (e) => {
@@ -66,6 +67,7 @@ export function initDropzone({ onFilesChanged }) {
 
       // Generar una URL local temporal (Object URL) para la miniatura de la SummaryView
       const urlMiniaturaTemporal = URL.createObjectURL(file);
+      urlsTemporales.set(localId, urlMiniaturaTemporal);
 
       renderVistaPreviaUI(localId, file.name, urlMiniaturaTemporal, file.type);
     });
@@ -80,11 +82,11 @@ export function initDropzone({ onFilesChanged }) {
 
     const elementoUI = document.getElementById(localId);
     if (elementoUI) {
-      // Revocar la URL temporal de memoria para optimizar el navegador
-      const img = elementoUI.querySelector("img, video");
-      if (img && img.src) URL.revokeObjectURL(img.src);
       elementoUI.remove();
     }
+    const urlTemporal = urlsTemporales.get(localId);
+    if (urlTemporal) URL.revokeObjectURL(urlTemporal);
+    urlsTemporales.delete(localId);
 
     notificarCambios();
   }
@@ -137,6 +139,9 @@ export function initDropzone({ onFilesChanged }) {
     obtenerArchivosAEnviar: () => archivosEnMemoria.map((item) => item.file),
     limpiar: () => {
       archivosEnMemoria = [];
+      urlsTemporales.forEach((url) => URL.revokeObjectURL(url));
+      urlsTemporales.clear();
+      fileInput.value = "";
       progressList.innerHTML = "";
     },
   };
