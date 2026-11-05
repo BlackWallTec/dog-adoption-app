@@ -52,3 +52,4 @@ captures/
 .cxx/
 DIR_DUMPS
 .dir_dump.txt
+public/
