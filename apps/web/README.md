@@ -30,27 +30,37 @@ Conservar etiquetas visibles, estados de error con texto, foco de teclado y boto
 con `type` explícito. No mezclar otro framework de estilos.
 
 ## Desarrollo
-Con las dependencias del proyecto instaladas, se puede usar el flujo habitual:
+
+El login utiliza siempre la API de Express; no tiene cuentas ni respuestas de demostración.
+Con las dependencias instaladas, ejecutar desde la raíz del repositorio:
 
 ```powershell
-vp run --filter web dev
-vp run --filter web build
+.\node_modules\.bin\vp.cmd run --filter api --filter web --parallel dev
 ```
 
-La configuración de Vite incluye la entrada y el login como páginas de producción.
-El modo real debe probarse con Vite, cuyo proxy `/api` apunta al backend local.
+Abrir http://localhost:5173/HTML/htmlPerfiles/login.html.
+La API escucha en el puerto 3000 y Vite reenvía `/api` hacia ella.
+
+Preparar `apps/api/.env` a partir de `apps/api/.env.example`, con `SUPABASE_URL`,
+`SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `JWT_SECRET` válidos.
+Las claves permanecen en el backend; no se copian a variables `VITE_*`.
+Para una API compartida, copiar `apps/web/.env.example` a `apps/web/.env.local`
+y ajustar `API_PROXY_TARGET`. Reiniciar Vite después de cambiarlo.
+En producción se debe servir `/api` mediante el servidor o proxy del despliegue, con HTTPS.
 
 ## Archivos de perfiles
 
 | Archivo                         | Responsabilidad                                         |
 | ------------------------------- | ------------------------------------------------------- |
-| `HTML/htmlPerfiles/login.html`  | HTML del login y recuperación de acceso.                |
+| `HTML/htmlPerfiles/login.html`  | Formulario de login y estado de la sesión.              |
 | `CSS/cssPerfiles/perfiles.css`  | Diseño del módulo.                                      |
 | `JS/jsPerfiles/login.js`        | Formularios, errores, carga y mostrar contraseña.       |
-| `JS/jsPerfiles/perfiles.api.js` | Datos simulados y adaptación al backend.                |
+| `JS/jsPerfiles/perfiles.api.js` | Peticiones reales a login, me y logout.                 |
+| `JS/jsPerfiles/perfiles.session.js` | Presentación y cierre de la sesión.                 |
 
-El registro público de clientes y su confirmación son pantallas posteriores. No se
-incluye registro abierto en este acceso exclusivo del equipo administrativo.
+Esta entrega sólo incluye login web para `Root` y `Administrador`.
+Crear cuenta, confirmación de correo y recuperación de contraseña quedan pendientes:
+el backend todavía no ofrece esos endpoints. El acceso móvil de clientes se conserva.
 
 ## Conexión con la API
 
@@ -64,11 +74,19 @@ credentials: include
 Respuesta: { "user": { "id": "...", "email": "...", "rol": "..." } }
 ```
 
-El acceso web usa la cookie HttpOnly del servidor. No enviar `x-client: mobile` ni
-guardar JWT en localStorage. El éxito del login muestra una confirmación sin abrir
-automáticamente otras pantallas que aún no tienen permisos implementados.
+Al recargar, `POST /api/perfiles/me` restaura el usuario autenticado. Si devuelve 401,
+se muestra el formulario. `POST /api/perfiles/logout` borra la cookie del servidor.
+El navegador usa una cookie HttpOnly, sin guardar el JWT en localStorage.
+La consulta administrativa de perros también exige sesión y rol administrativo.
 
-La recuperación real devuelve un aviso de funcionalidad pendiente; no se llama a una
-ruta inventada. Acordar esa ruta, los códigos de error y el enlace de restablecimiento
-antes de conectarla. Las validaciones del frontend deben repetirse en el backend,
-que también debe autorizar roles, acceso a datos y operaciones administrativas.
+## Comprobaciones
+
+```powershell
+.\node_modules\.bin\vp.cmd test apps/api/test apps/web/JS/jsPerfiles --maxWorkers=1 --no-file-parallelism
+.\node_modules\.bin\vp.cmd build apps/web
+```
+
+Las pruebas HTTP ejecutan Express, bcrypt y JWT con una consulta a base de datos aislada.
+Para verificar Supabase de extremo a extremo se requiere el `.env` local y una cuenta
+administrativa real de prueba. Las políticas RLS deben permitir la consulta del servidor
+sin exponer contraseñas al cliente.
