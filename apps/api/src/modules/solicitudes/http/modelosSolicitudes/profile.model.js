@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin as supabase } from "../../../../config/supabaseAdmin.js";
 
 class ProfileModel {
   // Datos del perfil para precargar "Datos generales"

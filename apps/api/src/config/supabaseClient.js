@@ -15,7 +15,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
  * POR EJEMPLO SI HAY GRANTS/POLICIES QUE LO AMERITEN
  */
 
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!serviceKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
 
