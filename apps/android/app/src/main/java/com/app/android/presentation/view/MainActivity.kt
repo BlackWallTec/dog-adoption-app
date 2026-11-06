@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     // El enrutador toma el control total de la app desde aquí
-                    PerrosScreen()
+                    AppNavigation()
                 }
             }
         }
