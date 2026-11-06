@@ -24,6 +24,7 @@ private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
 private fun NavController.irAOpcionBarra(opcion: Int) {
     val destino =
         when (opcion) {
+            1 ->Screen.Programas.ruta
             2 -> Screen.DonarDinero.ruta
             4 -> Screen.DatosFiscales.ruta
             else -> null
@@ -154,9 +155,12 @@ fun AppNavigation() {
             )
         }
 
-        // ========= Pantallas Voluntariado ========
+
+        // Pantallas Voluntariado
         composable(route = Screen.Programas.ruta) {
-            ProgramasScreen(onBackClick = { navController.popBackStack() })
+            ProgramasScreen(onBackClick = { navController.popBackStack() },
+            onNavSelect = navController::irAOpcionBarra,
+            )
         }
 
         // Plantilla para nueva pantalla
