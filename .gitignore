@@ -52,3 +52,5 @@ captures/
 .cxx/
 DIR_DUMPS
 .dir_dump.txt
+
+apps/android/pruebas-voluntariado/capturas/
