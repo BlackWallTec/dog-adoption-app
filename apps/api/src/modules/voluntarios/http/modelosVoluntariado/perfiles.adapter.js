@@ -1,0 +1,37 @@
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+// TEMPORAL: el modulo perfiles todavia no pone funciones en su index.js
+
+class PerfilesAdapter {
+  //Nombre y apellido de una lista de usuarios
+  static async obtenerNombres(idsUsuario) {
+    if (idsUsuario.length === 0) return [];
+
+    const { data, error } = await supabaseAdmin
+      .from("usuario")
+      .select("id_usuario, nombre, apellidos")
+      .in("id_usuario", idsUsuario);
+
+    if (error) {
+      throw new Error(`Error en la consulta de nombres: ${error.message}`);
+    }
+
+    return data;
+  }
+
+  // Correo y telefono de una lista de usuarios
+  static async obtenerContacto(idsUsuario) {
+    if (idsUsuario.length === 0) return [];
+
+    const { data, error } = await supabaseAdmin
+      .from("datos_confidenciales")
+      .select("id_usuario, correo, telefono")
+      .in("id_usuario", idsUsuario);
+
+    if (error) {
+      throw new Error(`Error en la consulta de contacto: ${error.message}`);
+    }
+
+    return data;
+  }
+}
+export default PerfilesAdapter;
