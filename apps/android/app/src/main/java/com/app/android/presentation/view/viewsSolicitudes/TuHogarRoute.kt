@@ -6,29 +6,27 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
-import com.app.android.presentation.viewmodel.viewModelSolicitudes.GuardarUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewModel
 
 // Conecta TuHogar viewModel con la page TuHogar
 @Composable
 fun TuHogarRoute(
-    idSolicitud: String,
     onBack: () -> Unit, // Regresar a Datos Generales
     onIrACompromiso: () -> Unit, // Navegar a Compromisos
     // 1. Hilt inyecta el ViewModel
     viewModel: TuHogarViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val guardarState by viewModel.guardarState.collectAsState()
+    val listo by viewModel.listo.collectAsState()
 
     // Cuando se entra se cargan las respuestas ya guardadas
-    LaunchedEffect(idSolicitud) {
-        viewModel.onLoadTuHogar(idSolicitud)
+    LaunchedEffect(Unit) {
+        viewModel.onLoadTuHogar()
     }
     // Si se guardo bien se navega y avisa
-    LaunchedEffect(guardarState) {
-        if (guardarState is GuardarUiState.Success) {
+    LaunchedEffect(listo) {
+        if (listo) {
             onIrACompromiso()
             viewModel.onNavegacionRealizada()
         }
@@ -43,10 +41,10 @@ fun TuHogarRoute(
         datos = success?.datos,
         errores = success?.errores,
         onDatosChange = viewModel::onDatosChange,
-        guardando = guardarState is GuardarUiState.Loading,
-        errorGuardar = (guardarState as? GuardarUiState.Error)?.mensaje,
-        onReintentar = { viewModel.onLoadTuHogar(idSolicitud) },
+        guardando = false, // guardar es instantáneo (memoria)
+        errorGuardar = null, // y no puede fallar por red
+        onReintentar = { viewModel.onLoadTuHogar() },
         onBackClick = onBack,
-        onContinuarClick = { viewModel.onContinuar(idSolicitud) },
+        onContinuarClick = { viewModel.onContinuar() },
     )
 }

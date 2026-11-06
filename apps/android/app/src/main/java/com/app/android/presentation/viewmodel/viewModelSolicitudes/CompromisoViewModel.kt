@@ -2,7 +2,6 @@ package com.app.android.presentation.viewmodel.viewModelSolicitudes
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.useCases.useCasesSolicitudes.CompromisoErrors
 import com.app.android.domain.useCases.useCasesSolicitudes.GetCompromisoUseCase
@@ -10,7 +9,6 @@ import com.app.android.domain.useCases.useCasesSolicitudes.GuardarCompromisoUseC
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 // Maquina de estados 1: carga lo que ya habia guardado al abrir la pantalla
@@ -40,20 +38,16 @@ class CompromisoViewModel
         private val _uiState = MutableStateFlow<CompromisoUiState>(CompromisoUiState.Loading)
         val uiState: StateFlow<CompromisoUiState> = _uiState
 
-        private val _guardarState = MutableStateFlow<GuardarUiState>(GuardarUiState.Idle)
-        val guardarState: StateFlow<GuardarUiState> = _guardarState
+        private val _listo = MutableStateFlow(false)
+        val listo: StateFlow<Boolean> = _listo
 
-        // Cargar
-        fun onLoadCompromiso(idSolicitud: String) {
-            viewModelScope.launch {
-                _uiState.value = CompromisoUiState.Loading
-                try {
-                    val datos = getCompromisoUseCase(idSolicitud)
-                    _uiState.value = CompromisoUiState.Success(datos = datos)
-                } catch (e: Exception) {
-                    _uiState.value = CompromisoUiState.Error("No se pudieron cargar tus respuestas.")
-                    Log.e("SOLICITUDES", "Error al cargar compromiso: ${e.message}", e)
-                }
+        // Cargar del borrador sin red
+        fun onLoadCompromiso() {
+            try {
+                _uiState.value = CompromisoUiState.Success(datos = getCompromisoUseCase())
+            } catch (e: Exception) {
+                _uiState.value = CompromisoUiState.Error("No se pudieron cargar tus respuestas.")
+                Log.e("SOLICITUDES", "Error al cargar compromiso: ${e.message}", e)
             }
         }
 
@@ -64,30 +58,19 @@ class CompromisoViewModel
         }
 
         // Guardar (valida + guarda; si hay errores no navega)
-        fun onContinuar(idSolicitud: String) {
+        fun onContinuar() {
             val actual = _uiState.value as? CompromisoUiState.Success ?: return
-            if (_guardarState.value is GuardarUiState.Loading) return
-
-            viewModelScope.launch {
-                _guardarState.value = GuardarUiState.Loading
-                try {
-                    val errores = guardarCompromisoUseCase(idSolicitud, actual.datos)
-                    if (errores.hasErrors) {
-                        // Se muestan los errores en los campos y no se navega
-                        _uiState.value = actual.copy(errores = errores)
-                        _guardarState.value = GuardarUiState.Idle
-                    } else {
-                        _guardarState.value = GuardarUiState.Success
-                    }
-                } catch (e: Exception) {
-                    _guardarState.value = GuardarUiState.Error("No se pudo guardar. Intenta de nuevo.")
-                    Log.e("SOLICITUDES", "Error al guardar compromiso: ${e.message}", e)
-                }
+            val errores = guardarCompromisoUseCase(actual.datos)
+            if (errores.hasErrors) {
+                // Se muestan los errores en los campos y no se navega
+                _uiState.value = actual.copy(errores = errores)
+            } else {
+                _listo.value = true
             }
         }
 
         // La pantalla ya navego
         fun onNavegacionRealizada() {
-            _guardarState.value = GuardarUiState.Idle
+            _listo.value = false
         }
     }

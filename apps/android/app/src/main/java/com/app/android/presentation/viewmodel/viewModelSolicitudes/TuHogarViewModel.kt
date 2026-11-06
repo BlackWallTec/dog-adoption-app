@@ -39,20 +39,17 @@ class TuHogarViewModel
         private val _uiState = MutableStateFlow<TuHogarUiState>(TuHogarUiState.Loading)
         val uiState: StateFlow<TuHogarUiState> = _uiState
 
-        private val _guardarState = MutableStateFlow<GuardarUiState>(GuardarUiState.Idle)
-        val guardarState: StateFlow<GuardarUiState> = _guardarState
+        // El "papelito": true = ya se guardo en el borrador
+        private val _listo = MutableStateFlow(false)
+        val listo: StateFlow<Boolean> = _listo
 
-        // Cargar
-        fun onLoadTuHogar(idSolicitud: String) {
-            viewModelScope.launch {
-                _uiState.value = TuHogarUiState.Loading
-                try {
-                    val datos = getTuHogarUseCase(idSolicitud)
-                    _uiState.value = TuHogarUiState.Success(datos = datos)
-                } catch (e: Exception) {
-                    _uiState.value = TuHogarUiState.Error("No se pudieron cargar tus respuestas.")
-                    Log.e("SOLICITUDES", "Error al cargar tu hogar: ${e.message}", e)
-                }
+        // Lee del borrador, no hay red
+        fun onLoadTuHogar() {
+            try {
+                _uiState.value = TuHogarUiState.Success(datos = getTuHogarUseCase())
+            } catch (e: Exception) {
+                _uiState.value = TuHogarUiState.Error("No se pudieron cargar tus respuestas.")
+                Log.e("SOLICITUDES", "Error al cargar tu hogar: ${e.message}", e)
             }
         }
 
@@ -64,30 +61,20 @@ class TuHogarViewModel
             _uiState.value = actual.copy(datos = nuevos, errores = TuHogarErrors())
         }
 
-        // Guardar (valida + guarda; si hay errores no navega)
-        fun onContinuar(idSolicitud: String) {
+        // Valida y escribe en el borrador; si hay errores no navega
+        fun onContinuar() {
             val actual = _uiState.value as? TuHogarUiState.Success ?: return
-            if (_guardarState.value is GuardarUiState.Loading) return
-            viewModelScope.launch {
-                _guardarState.value = GuardarUiState.Loading
-                try {
-                    val errores = guardarTuHogarUseCase(idSolicitud, actual.datos)
-                    if (errores.hasErrors) {
-                        // Se muestan los errores en los campos y no se navega
-                        _uiState.value = actual.copy(errores = errores)
-                        _guardarState.value = GuardarUiState.Idle
-                    } else {
-                        _guardarState.value = GuardarUiState.Success
-                    }
-                } catch (e: Exception) {
-                    _guardarState.value = GuardarUiState.Error("No se pudo guardar. Intenta de nuevo.")
-                    Log.e("SOLICITUDES", "Error al guardar tu hogar: ${e.message}", e)
-                }
+            val errores = guardarTuHogarUseCase(actual.datos)
+            if (errores.hasErrors) {
+                // Se muestan los errores en los campos y no se navega
+                _uiState.value = actual.copy(errores = errores)
+            } else {
+                _listo.value = true
             }
         }
 
         // La pantalla ya navego
         fun onNavegacionRealizada() {
-            _guardarState.value = GuardarUiState.Idle
+            _listo.value = false
         }
     }

@@ -6,13 +6,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
-
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
@@ -83,43 +82,21 @@ fun AppNavigation() {
         }
 
         // SOLICITUDES: Paso 3 - Tu Hogar
-        composable(
-            route = Screen.TuHogar.ruta,
-            arguments = listOf(
-                navArgument("desdeConfirmar") { type = NavType.BoolType; defaultValue = false },
-            ),
-        ) { backStackEntry ->
-            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
+        composable(route = Screen.TuHogar.ruta) {
             TuHogarRoute(
-                desdeConfirmar = desdeConfirmar,
                 onBack = { navController.navigateUp() },
                 onIrACompromiso = {
-                    if (desdeConfirmar) {
-                        navController.popBackStack(Screen.Confirmar.ruta, inclusive = false)
-                    } else {
-                        navController.navigate(Screen.Compromiso.crearRuta())
-                    }
+                    navController.navigate(Screen.Compromiso.ruta)
                 },
             )
         }
 
         // Paso 4 - Compromiso
-        composable(
-            route = Screen.Compromiso.ruta,
-            arguments = listOf(
-                navArgument("desdeConfirmar") { type = NavType.BoolType; defaultValue = false },
-            ),
-        ) { backStackEntry ->
-            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
+        composable(route = Screen.Compromiso.ruta) {
             CompromisoRoute(
-                desdeConfirmar = desdeConfirmar,
                 onBack = { navController.navigateUp() },
-                onIrADocumentos = {
-                    if (desdeConfirmar) {
-                        navController.popBackStack(Screen.Confirmar.ruta, inclusive = false)
-                    } else {
-                        // navController.navigate(Screen.Documentos.ruta)  // descomenta cuando Andy suba su composable
-                    }
+                onIrADocumentoss = {
+                    // navegar a documentos
                 },
             )
         }

@@ -39,21 +39,18 @@ import com.app.android.presentation.view.ui.theme.Surface
 // PAGE: paso 4 de la solicitud de adopcion
 @Composable
 fun CompromisoScreen(
-    // Carga de datos
-    cargando: Boolean, // se estan trayendo las respuestas guardadas?
-    errorCarga: String?, // error al cargar o null
-    datos: Compromiso?, // las respuestas (null mientras carga)
-    // Formulario
-    errores: CompromisoErrors?, // un mensaje por campo (null = sin errores)
-    onDatosChange: (Compromiso) -> Unit, // manda el Compromiso completo con e
+    cargando: Boolean,
+    errorCarga: String?,
+    datos: Compromiso?,
+    errores: CompromisoErrors?,
+    onDatosChange: (Compromiso) -> Unit,
     guardando: Boolean,
     errorGuardar: String?,
-    // Lo demas
     onReintentar: () -> Unit,
     onBackClick: () -> Unit,
     onContinuarClick: () -> Unit,
     modifier: Modifier = Modifier,
-    nombreMascota: String = "tu nueva mascota", // Llevara el nombre del perro cuando se conecte la BD
+    nombreMascota: String = "tu nueva mascota",
     navSeleccionado: Int = 3,
     onNavSelect: (Int) -> Unit = {},
 ) {

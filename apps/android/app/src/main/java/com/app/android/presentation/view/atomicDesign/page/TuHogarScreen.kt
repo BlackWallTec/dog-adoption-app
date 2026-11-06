@@ -57,23 +57,19 @@ private fun Boolean?.aIndice(): Int =
 // Update: Ya sin estados, todo llega por parametros)
 @Composable
 fun TuHogarScreen(
-    // Carga de datos
-    cargando: Boolean, // se estan trayendo las respuestas guardadas?
-    errorCarga: String?, // error al cargar o null
-    datos: TuHogar?, // las respuestas (null mientras carga)
-    // Formulario
-    errores: TuHogarErrors?, // un mensaje por campo (null = sin errores)
-    onDatosChange: (TuHogar) -> Unit, // manda el TuHogar completo con el cambio
-    // Guardar
-    guardando: Boolean, // ¿se esta guardando?
-    errorGuardar: String?, // error al guardar, o null
-    // El resto de las funciones (para navegar)
-    onReintentar: () -> Unit, // volver a cargar si falló
+    cargando: Boolean,
+    errorCarga: String?,
+    datos: TuHogar?,
+    errores: TuHogarErrors?,
+    onDatosChange: (TuHogar) -> Unit,
+    guardando: Boolean,
+    errorGuardar: String?,
+    onReintentar: () -> Unit,
     onBackClick: () -> Unit,
     onContinuarClick: () -> Unit,
     modifier: Modifier = Modifier,
     nombreMascota: String = "tu nueva mascota",
-    navSeleccionado: Int = 3, // 3 = "Solicitudes"
+    navSeleccionado: Int = 3,
     onNavSelect: (Int) -> Unit = {},
 ) {
     Scaffold(
@@ -261,9 +257,10 @@ private fun FormularioTuHogar(
             LabeledOptionPicker(
                 label = "Casa o Departamento",
                 options = opcionesVivienda,
-                selectedIndex = datos.houseType.ordinal,
+                selectedIndex = datos.houseType?.ordinal ?: -1,
                 onOptionSelected = { onDatosChange(datos.copy(houseType = HouseType.entries[it])) },
             )
+            errores?.houseType?.let { ErrorMessage(text = it) }
         }
 
         Column {

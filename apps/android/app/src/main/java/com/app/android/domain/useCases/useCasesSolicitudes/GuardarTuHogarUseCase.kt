@@ -1,7 +1,7 @@
 package com.app.android.domain.useCases.useCasesSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
-import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
+import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import javax.inject.Inject
 
 data class TuHogarErrors(
@@ -35,13 +35,10 @@ data class TuHogarErrors(
 class GuardarTuHogarUseCase
     @Inject
     constructor(
-        private val repository: SolicitudRepositoryInt,
+        private val borrador: BorradorRepositoryInt,
     ) {
         // Valida si todo esta bien, guarda. Regresa los errores (vacios si se guardo)
-        suspend operator fun invoke(
-            idSolicitud: String,
-            datos: TuHogar,
-        ): TuHogarErrors {
+        operator fun invoke(datos: TuHogar): TuHogarErrors {
             val limpios =
                 datos.copy(
                     whyAdopt = datos.whyAdopt.trim(),
@@ -64,7 +61,7 @@ class GuardarTuHogarUseCase
                     aboutPets = if (hasPets && limpios.aboutPets.isBlank()) "Cuéntanos sobre tus mascotas" else null,
                 )
             if (!errores.hasErrors) {
-                repository.guardarTuHogar(idSolicitud, limpios)
+                borrador.actualizar { it.copy(tuHogar = limpios) }
             }
             return errores
         }
