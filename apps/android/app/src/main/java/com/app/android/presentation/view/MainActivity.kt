@@ -21,25 +21,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
+import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.CompromisoViewModel
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewModel
 import com.app.android.presentation.view.viewsCatalogo.PerrosScreen
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    // Inyectamos el ViewModel para pruebas
-    private val viewModel: DogDetailViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             AndroidTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    // El enrutador toma el control total de la app desde aquí
                     AppNavigation()
                 }
             }

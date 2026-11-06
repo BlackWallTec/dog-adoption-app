@@ -17,31 +17,3 @@ export const router = Router();
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
 });
-
-// Rutas Cliente
-
-// HU45 - datos fiscales del donante
-router.get("/cliente/datos-fiscales/:idUsuario", getDatosFiscales);
-router.put("/cliente/datos-fiscales/:idUsuario", putDatosFiscales);
-// el archivo llega crudo, máximo 10 MB como en la app
-router.put(
-  "/cliente/datos-fiscales/:idUsuario/constancia",
-  express.raw({ type: TIPOS_CONSTANCIA, limit: "10mb" }),
-  putConstancia,
-);
-
-// HU46 - registrar donativo con comprobante (mismo límite que la app)
-router.post(
-  "/cliente/donativos/:idUsuario",
-  express.raw({ type: TIPOS_COMPROBANTE, limit: "10mb" }),
-  postDonativo,
-);
-
-// Rutas Admin
-
-router.get(
-  "/admin/pendientes",
-  verificarToken,
-  requireRole(ROLES.ADMIN, ROLES.ROOT),
-  obtenerDonativosPendientes,
-);

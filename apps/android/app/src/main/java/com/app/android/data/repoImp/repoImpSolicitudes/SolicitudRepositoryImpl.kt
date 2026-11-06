@@ -2,8 +2,10 @@ package com.app.android.data.repoImp.repoImpSolicitudes
 
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.dtos.dtosSolicitudes.toDomain
+import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
+import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import javax.inject.Inject
 
@@ -26,4 +28,6 @@ constructor(
         return respuesta.data?.toDomain()
             ?: throw Exception(respuesta.message ?: "No se encontró el perfil")
     }
+
 }
+
