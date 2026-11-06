@@ -8,7 +8,21 @@ function normalizeStatus(status) {
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .replace(/\s+/g, "_");
-  return value === "pendiente" ? "por_revisar" : value;
+
+  // Mappear los distinto valores de la BD
+  const statusMap = {
+    pendiente: "por_revisar",
+    por_revisar: "por_revisar",
+    en_revision: "en_revision",
+    pendiente_de_revision: "por_revisar",
+    en_periodo_de_prueba: "en_revision",
+    aprobada: "aprobada",
+    aprobada_definitiva: "aprobada",
+    rechazada: "rechazada",
+    borrador: "por_revisar",
+  };
+
+  return statusMap[value] || value;
 }
 
 function mapSolicitud(solicitud) {

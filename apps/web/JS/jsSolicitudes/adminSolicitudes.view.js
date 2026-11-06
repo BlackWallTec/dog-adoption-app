@@ -71,8 +71,8 @@ function renderChips(summary = {}) {
   const chips = [
     ["todos", "Todas", summary.todas || 0, "chip-all"],
     ["pendientes", "Pendientes", summary.pendientes || 0, "chip-pending"],
-    ["aprobadas", "Aprobadas", summary.aprobadas || 0, "chip-approved"],
-    ["rechazadas", "Rechazadas", summary.rechazadas || 0, "chip-rejected"],
+    ["aprobada", "Aprobadas", summary.aprobadas || 0, "chip-approved"],
+    ["rechazada", "Rechazadas", summary.rechazadas || 0, "chip-rejected"],
   ];
   elements.chips.replaceChildren();
   chips.forEach(([value, label, count, className]) => {

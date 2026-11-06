@@ -1,4 +1,4 @@
-import { supabase } from "../../../config/supabaseClient.js";
+import { supabaseAdmin as supabase } from "../../../config/supabaseClient.js";
 
 class SolicitudModel {
   static async getAll() {
