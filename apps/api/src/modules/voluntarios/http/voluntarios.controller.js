@@ -6,7 +6,7 @@ import {
 } from "./modelosVoluntariado/inscripcion.model.js";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ESTADO_DISPONIBLE = "Disponible";
+const ESTADO_DISPONIBLE = "disponible";
 
 // Hora actual de México en el mismo formato que guarda la BD: "2026-10-29T19:37:00"
 const ahoraEnMexico = () =>
@@ -35,8 +35,9 @@ export const inscribirse = async (req, res) => {
       return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");
     }
 
-    // Regla 2: debe estar abierto a inscripciones
-    if (programa.estado_del_programa?.trim() !== ESTADO_DISPONIBLE) {
+    // Regla 2: debe estar abierto a inscripciones. Sin fecha de inicio no se puede aplicar la regla 3.
+    const estado = programa.estado_del_programa?.trim().toLowerCase();
+    if (estado !== ESTADO_DISPONIBLE || programa.fecha_inicio == null) {
       return responderError(
         res,
         409,
