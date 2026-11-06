@@ -14,6 +14,25 @@ import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 
 export const router = Router();
 
+// Rutas Cliente
+
+// HU45 - datos fiscales del donante
+router.get("/cliente/datos-fiscales/:idUsuario", getDatosFiscales);
+router.put("/cliente/datos-fiscales/:idUsuario", putDatosFiscales);
+// el archivo llega crudo, máximo 10 MB como en la app
+router.put(
+  "/cliente/datos-fiscales/:idUsuario/constancia",
+  express.raw({ type: TIPOS_CONSTANCIA, limit: "10mb" }),
+  putConstancia,
+);
+
+// HU46 - registrar donativo con comprobante (mismo límite que la app)
+router.post(
+  "/cliente/donativos/:idUsuario",
+  express.raw({ type: TIPOS_COMPROBANTE, limit: "10mb" }),
+  postDonativo,
+);
+
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
 });
