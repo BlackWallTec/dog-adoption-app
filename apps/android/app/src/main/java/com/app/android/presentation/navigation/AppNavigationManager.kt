@@ -12,6 +12,7 @@ import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
@@ -30,12 +31,16 @@ private fun NavController.irAOpcionBarra(opcion: Int) {
             else -> null
         }
     when {
-        opcion == 0 -> popBackStack(Screen.DetallePerro.ruta, inclusive = false)
-        destino != null ->
+        opcion == 0 -> {
+            popBackStack(Screen.DetallePerro.ruta, inclusive = false)
+        }
+
+        destino != null -> {
             navigate(destino) {
                 popUpTo(Screen.DetallePerro.ruta) // para que atrás regrese al inicio y no se apilen
                 launchSingleTop = true
             }
+        }
     }
 }
 
