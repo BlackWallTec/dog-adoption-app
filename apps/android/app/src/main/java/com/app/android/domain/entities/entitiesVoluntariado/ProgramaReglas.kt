@@ -17,5 +17,5 @@ fun Programa.validarInscripcion(ahora: Instant): VoluntariadoError? =
 fun Programa.conInscripcionConfirmada(): Programa =
     copy(
         usuarioInscrito = true,
-        cupoDisponible = cupoDisponible?.minus(1)?.coerceAtLeast(0),
+        cupoDisponible = cupoDisponible?.let { if (it <= 0) 0 else it - 1 },
     )
