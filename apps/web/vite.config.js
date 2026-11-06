@@ -1,14 +1,17 @@
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "vite-plus"; // o 'vite', según lo que ya importes
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const r = (p) => resolve(fileURLToPath(new URL(".", import.meta.url)), p);
 
 export default defineConfig({
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
+  build: {
+    rollupOptions: {
+      input: {
+        main: r("index.html"),
+        login: r("HTML/htmlPerfiles/login.html"),
+        adminPerros: r("HTML/htmlCatalogo/adminPerros.html"),
       },
     },
   },
 });
-
-// Config temporal para algunas pruebas en local. Se debe cambiar por la URL del servidor backend en producción.
