@@ -15,16 +15,4 @@ router.get("/cliente/perfil/:idUsuario", clientController.getProfile);
 // Andy agregará: GET /cliente/documentos/:idUsuario
 // Lucca agregará: POST /cliente (envío multipart)
 
-// GET /api/solicitudes/cliente/:idSolicitud/tu-hogar
-router.get("/cliente/:idSolicitud/tu-hogar", clientController.getHome);
-
-// PUT /api/solicitudes/cliente/:idSolicitud/tu-hogar
-router.put("/cliente/:idSolicitud/tu-hogar", clientController.updateHome);
-
-// GET /api/solicitudes/cliente/:idSolicitud/compromiso
-router.get("/cliente/:idSolicitud/compromiso", clientController.getCommitment);
-
-// PUT /api/solicitudes/cliente/:idSolicitud/compromiso
-router.put("/cliente/:idSolicitud/compromiso", clientController.updateCommitment);
-
 export default router;
