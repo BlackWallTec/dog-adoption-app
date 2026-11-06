@@ -13,6 +13,8 @@ import javax.inject.Inject
 
 // Maquina de estados 1: carga lo que ya habia guardado al abrir la pantalla
 
+// Estos estados los tengo que separar luego en un archivo diferente para seguir correctamente la estructura MVVM
+// Lo mismo con los exceptions
 sealed interface CompromisoUiState {
     data object Loading : CompromisoUiState
 
