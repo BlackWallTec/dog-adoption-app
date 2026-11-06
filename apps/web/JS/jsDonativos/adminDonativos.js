@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api/donativos/admin/pendientes";
+const API_URL = "/api/donativos/admin/pendientes";
 
 export async function obtenerDonativosPendientes() {
   const respuesta = await fetch(API_URL, {
