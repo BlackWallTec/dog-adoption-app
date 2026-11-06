@@ -161,7 +161,7 @@ function renderizarTabla(perros) {
   tablaBody.innerHTML = perros
     .map((perro) => {
       // Foto fallback en caso de no tener URL cargada
-      const fotoUrl = perro.foto_url || perro.foto || "/favicon.svg";
+      const fotoUrl = perro.foto_url || perro.foto || "/public/favicon.svg";
       const raza = textoRelacion(perro.raza, "Mestizo");
       const edadTexto = textoEdad(perro);
       const tamano = textoRelacion(perro.tamano || perro.tamanio, "Mediano");
@@ -172,7 +172,7 @@ function renderizarTabla(perros) {
       return `
       <tr data-id="${id}">
         <td>
-          <img src="${fotoUrl}" alt="${perro.nombre}" class="dog-photo" onerror="this.src='/favicon.svg'">
+          <img src="${fotoUrl}" alt="${perro.nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
         </td>
         <td>
           <div class="dog-name-cell">
