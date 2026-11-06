@@ -293,14 +293,14 @@ export const postNuevoPerro = async (req, res) => {
     // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
     const perroCreado = await dogModel.createFullDog(mappedDogData);
 
-    console.log("🎉 OPERACIÓN EXITOSA EN SUPABASE:");
+    console.log("Operacion exitosa en supabase:");
 
     return res.status(200).json({
       success: true,
       data: perroCreado,
     });
   } catch (error) {
-    console.error("🚨 DETALLE COMPLETO DEL ERROR DESDE SUPABASE:", error);
+    console.error("Detalle completo del errror desde supabase:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Error interno al crear el perro.",
@@ -309,6 +309,46 @@ export const postNuevoPerro = async (req, res) => {
 };
 
 // ===== Fin Función POST Nuevo Perro ====
+
+// ===== SECCION HECHA POR IA ==========
+// Función PATCH Desactivar Perro ====
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i; //verifica que tenga un id unico
+
+export const desactivarPerro = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!UUID_REGEX.test(id || "")) {
+      return res.status(400).json({
+        success: false,
+        message: "El id del perro no tiene un formato UUID válido.",
+      });
+    }
+
+    const perro = await dogModel.desactivarPerro(id);
+
+    if (!perro) {
+      return res.status(404).json({
+        success: false,
+        message: "No se encontró el perro.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: perro,
+    });
+  } catch (error) {
+    console.error("Error al desactivar el perro:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al desactivar el perro.",
+    });
+  }
+};
+
+// ===== Fin Función PATCH Desactivar Perro ====
 
 // funciones de debug general
 function logErrorMessages(messages) {

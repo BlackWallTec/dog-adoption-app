@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&family=Material+Symbols+Rounded&display=swap"
+    />
+    <link rel="stylesheet" href="/CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssVoluntariado/createVolunteering.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crear Jornada de Voluntariado | Qariño Animal</title>
+  </head>
+  <body>
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
+
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
+
+        <div class="content-area">
+          <main class="crear-programa">
+            <header class="page-header">
+              <a class="back-link" href="/" id="volverListado"> Volver a Voluntariado </a>
+              <div class="header-content">
+                <div>
+                  <p class="eyebrow">Panel de administracion / Voluntariado</p>
+                  <h1>Crear Jornada de Voluntariado</h1>
+                  <p class="intro">
+                    Organiza una nueva jornada para que personas voluntarias puedan participar
+                  </p>
+                </div>
+                <span class="publish-badge"> Se publica al guardar</span>
+              </div>
+            </header>
+
+            <form id="programaForm" class="form-card" novalidate>
+              <section class="form-section" aria-labelledby="infoPrograma">
+                <div class="section-header">
+                  <span class="step-number">1</span>
+                  <div>
+                    <h2 id="infoPrograma">Informacion General</h2>
+                    <p>Describe la actividad y el tipo de voluntariado</p>
+                  </div>
+                </div>
+                <div class="field-grid">
+                  <div class="form-field">
+                    <label for="nombre">
+                      Nombre del Programa <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="nombre"
+                      name="nombre"
+                      maxlength="15"
+                      required
+                      placeholder="Ej. Cuidado y Limpieza"
+                    />
+                    <small>Maximo 15 caracteres*</small>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="tipo"> Tipo de Programa <span aria-hidden="true">*</span></label>
+                    <div class="type-row">
+                      <select id="tipo" name="tipo" required>
+                        <option value="">Cargando Tipos...</option>
+                      </select>
+                      <button
+                        type="button"
+                        class="btn btn-ghost"
+                        id="nuevoTipoBtn"
+                        aria-expanded="false"
+                        aria-controls="nuevoTipoPanel"
+                      >
+                        + Nuevo Tipo
+                      </button>
+                    </div>
+                  </div>
+
+                  <div id="nuevoTipoPanel" class="new-type-panel" hidden>
+                    <h3>Registrar un nuevo tipo</h3>
+                    <div class="field-grid">
+                      <div class="form-field">
+                        <label for="nuevoTipoNombre"
+                          >Nombre del Nuevo Tipo <span aria-hidden="true">*</span></label
+                        >
+                        <input
+                          id="nuevoTipoNombre"
+                          maxlength="20"
+                          placeholder="Ej. Jornada de Limpieza"
+                        />
+                        <small> Maximo 20 caracteres. </small>
+                      </div>
+
+                      <div class="form-field">
+                        <label for="nuevoTipoDescripcion">Descripcion del Tipo </label>
+                        <input
+                          id="nuevoTipoDescripcion"
+                          maxlength="200"
+                          placeholder="Describe este tipo de actividad"
+                        />
+                        <small> Maximo 200 caracteres. </small>
+                      </div>
+                    </div>
+
+                    <p class="type-hint">El tipo de registrara antes de publicar el programa.</p>
+                    <button type="button" id="guardarTipoBtn" class="btn btn-secondary">
+                      Guardar Tipo
+                    </button>
+                  </div>
+                  <div class="form-field full-width">
+                    <label for="descripcion">
+                      Descripcion y Requisitos <span aria-hidden="true">*</span></label
+                    >
+                    <textarea
+                      id="descripcion"
+                      name="description"
+                      rows="5"
+                      maxlength="1000"
+                      required
+                      placeholder="Explicar la actividad; que ropa usar y que deben llevar los voluntarios."
+                    ></textarea>
+                    <small><span id="descCount">0</span>/1000 caracteres</small>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Fechas y horarios -->
+              <section class="form-section">
+                <div class="section-header">
+                  <span class="step-number">2</span>
+                  <div>
+                    <h2>Fecha y horario</h2>
+                    <p>Indica cuándo se realizará la jornada.</p>
+                  </div>
+                </div>
+
+                <div class="field-grid">
+                  <div class="form-field">
+                    <label for="fechaInicio"
+                      >Fecha de inicio <span aria-hidden="true">*</span></label
+                    >
+                    <input type="date" id="fechaInicio" required />
+                  </div>
+
+                  <div class="form-field">
+                    <label for="horaInicio">Hora de inicio <span aria-hidden="true">*</span></label>
+                    <input type="time" id="horaInicio" required />
+                  </div>
+
+                  <div class="form-field">
+                    <label for="fechaFin">Fecha de fin <span aria-hidden="true">*</span></label>
+                    <input type="date" id="fechaFin" required />
+                  </div>
+
+                  <div class="form-field">
+                    <label for="horaFin">Hora de fin <span aria-hidden="true">*</span></label>
+                    <input type="time" id="horaFin" required />
+                  </div>
+                </div>
+              </section>
+
+              <!-- Ubicación y cupo -->
+              <section class="form-section">
+                <div class="section-header">
+                  <span class="step-number">3</span>
+                  <div>
+                    <h2>Ubicación y disponibilidad</h2>
+                    <p>Define el lugar y el número de voluntarios.</p>
+                  </div>
+                </div>
+
+                <div class="field-grid">
+                  <div class="form-field">
+                    <label for="ubicacion">Ubicación <span aria-hidden="true">*</span></label>
+                    <input type="text" id="ubicacion" maxlength="100" required />
+                  </div>
+
+                  <div class="form-field">
+                    <label for="cupoMaximo">Cupo máximo <span aria-hidden="true">*</span></label>
+                    <input type="number" id="cupoMaximo" min="1" step="1" required />
+                  </div>
+                </div>
+              </section>
+
+              <!-- Mensajes -->
+              <div id="alerta" class="feedback" role="alert" hidden></div>
+
+              <!-- Advertencia de empalmes -->
+              <div id="empalmesPanel" class="overlap-panel" hidden>
+                <h3>Existen jornadas con horarios coincidentes</h3>
+                <ul id="empalmesLista"></ul>
+
+                <button type="button" class="btn btn-outline" id="ajustarHorarioBtn">
+                  Ajustar horario
+                </button>
+
+                <button type="button" class="btn btn-primary" id="confirmarEmpalmeBtn">
+                  Crear de todos modos
+                </button>
+              </div>
+
+              <!-- Botones -->
+              <div class="form-actions">
+                <a href="/" class="btn btn-outline" id="cancelarBtn"> Cancelar </a>
+
+                <button type="submit" class="btn btn-primary" id="publicarBtn">
+                  Publicar programa
+                </button>
+              </div>
+            </form>
+          </main>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+    <script type="module" src="../../JS/jsVoluntariado/createVolunteering.js"></script>
+  </body>
+</html>

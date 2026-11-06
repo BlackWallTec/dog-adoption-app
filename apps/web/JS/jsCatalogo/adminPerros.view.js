@@ -1,4 +1,3 @@
-// ==== Codigo generado con Inteligencia Artificial (IA) ====
 // Carga de modales de manera dinámica en el DOM
 import { loadModal } from "../utils/modalLoader.js";
 import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
@@ -163,7 +162,7 @@ function renderizarTabla(perros) {
   tablaBody.innerHTML = perros
     .map((perro) => {
       // Foto fallback en caso de no tener URL cargada
-      const fotoUrl = escaparHtml(perro.foto_url || perro.foto || "/favicon.svg");
+      const fotoUrl = escaparHtml(perro.foto_url || perro.foto || "/public/favicon.svg");
       const raza = escaparHtml(textoRelacion(perro.raza, "Mestizo"));
       const edadTexto = escaparHtml(textoEdad(perro));
       const tamano = escaparHtml(textoRelacion(perro.tamano || perro.tamanio, "Mediano"));
@@ -175,7 +174,7 @@ function renderizarTabla(perros) {
       return `
       <tr data-id="${id}">
         <td>
-          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.src='/favicon.svg'">
+          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
         </td>
         <td>
           <div class="dog-name-cell">
