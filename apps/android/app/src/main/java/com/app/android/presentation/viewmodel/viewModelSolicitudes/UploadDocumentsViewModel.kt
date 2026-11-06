@@ -33,6 +33,7 @@ class UploadDocumentsViewModel @Inject constructor(
     }
 
     // 2. Se llama al dar clic en el botón "Continuar"
+    // 2. Se llama al dar clic en el botón "Continuar"
     fun onContinuarClicked(solicitudId: String, onSuccess: () -> Unit) {
         val slots = _uiState.value.slots
 
@@ -45,32 +46,27 @@ class UploadDocumentsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            try {
-                // Subimos cada documento acumulado
-                for ((type, slot) in slots) {
-                    val file = slot.pickedFile ?: continue
+            // Intentamos subir TODOS los documentos aunque uno falle, y juntamos los errores
+            val errores = mutableListOf<String>()
 
-                    val result = uploadDocument(solicitudId, type, file)
-                    if (result.isFailure) {
-                        throw result.exceptionOrNull() ?: Exception("Error al subir ${type.name}")
-                    }
-                }
+            for ((type, slot) in slots) {
+                val file = slot.pickedFile ?: continue
 
-                // Finalizado con éxito -> Restablecemos estado y llamamos al callback de navegación
-                _uiState.update { state ->
-                    state.copy(slots = slots.mapValues { it.value.copy(isUploading = false) })
-                }
-                onSuccess()
-
-            } catch (error: Exception) {
-                // Si algo falla, quitamos el indicador de carga y mostramos el snackbar
-                _uiState.update { state ->
-                    state.copy(
-                        slots = slots.mapValues { it.value.copy(isUploading = false) },
-                        errorMessage = error.message ?: "No se pudieron subir los documentos"
-                    )
+                uploadDocument(solicitudId, type, file).onFailure { e ->
+                    errores += "${type.name}: ${e.message}"
                 }
             }
+
+            // Quitamos el indicador de carga y mostramos los errores (si los hubo)
+            _uiState.update { state ->
+                state.copy(
+                    slots = slots.mapValues { it.value.copy(isUploading = false) },
+                    errorMessage = errores.takeIf { it.isNotEmpty() }?.joinToString("\n")
+                )
+            }
+
+            // Solo navegamos si todos los documentos se subieron
+            if (errores.isEmpty()) onSuccess()
         }
     }
 

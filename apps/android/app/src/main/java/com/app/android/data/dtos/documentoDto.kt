@@ -4,6 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 data class documentoDto(
     @SerializedName("tipo") val tipo: String,
-    @SerializedName("nombreArchivo") val nombreArchivo: String,
-    @SerializedName("tamanoBytes") val tamanoBytes: Long,
+    @SerializedName("fileName") val nombreArchivo: String,
+    @SerializedName("sizeBytes") val tamanoBytes: Long,
 )

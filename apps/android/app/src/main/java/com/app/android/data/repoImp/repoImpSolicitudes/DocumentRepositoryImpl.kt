@@ -54,7 +54,7 @@ class DocumentRepositoryImpl @Inject constructor(
 
         try {
             val dto = api.uploadDocument(solicitudId, tipo, archivo)
-            Result.success(UploadedDocument(type, dto.nombreArchivo, dto.tamanoBytes))
+            Result.success(UploadedDocument(type, dto.nombreArchivo, dto.tamanoBytes ?: 0L))
         } catch (e: HttpException) {
             Result.failure(IllegalStateException(e.mensajeDelServidor()))
         } catch (e: IOException) {
