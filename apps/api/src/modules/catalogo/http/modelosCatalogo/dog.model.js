@@ -22,8 +22,15 @@ class DogModel {
         tamano (
             id_tamano,
             nombre
+        ),
+        multimedia(
+            id_multimedia,
+            url,
+            tipo,
+            fecha_subida
         )
     `)
+      .eq("activo", true)
       .order("fecha_ingreso", { ascending: false });
 
     if (error) {
@@ -58,7 +65,8 @@ class DogModel {
             descripcion
         )
     `)
-      .eq("id_perro", id);
+      .eq("id_perro", id)
+      .eq("activo", true);
 
     if (error) {
       throw new Error(`Error en la consulta de perros: ${error.message}`);
@@ -82,12 +90,20 @@ class DogModel {
     return data[0]; // Retorna el primer elemento del array de datos insertados
   }
 
-  /*
-  
+  static async desactivarPerro(id) {
+    const { data, error } = await supabase
+      .from("perro")
+      .update({ activo: false })
+      .eq("id_perro", id)
+      .select("id_perro, nombre, activo")
+      .maybeSingle();
 
+    if (error) {
+      throw new Error(`Error al desactivar el perro: ${error.message}`);
+    }
 
-
-  */
+    return data;
+  }
 }
 
 export default DogModel;

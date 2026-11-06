@@ -1,14 +1,14 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
-import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
-import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
-import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
-import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
@@ -17,9 +17,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Clock
 import java.util.concurrent.TimeUnit
@@ -64,7 +64,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://10.25.78.14:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
+            .baseUrl("http://localhost:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()

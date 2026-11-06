@@ -72,6 +72,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //para las imagenes
+    implementation("io.coil-kt.coil3:coil-compose:3.6.3") //
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3")  //
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0") //
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor) // Intercepta los json de llamadas HTTP
@@ -79,6 +86,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.coil)
+    implementation("androidx.hilt:hilt-lifecycle-viewmodel-compose:1.3.0")
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.material.icons.extended)
     // Hilt

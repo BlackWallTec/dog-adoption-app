@@ -12,6 +12,15 @@ sealed class Screen(
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
+    // Donativos - HU46
+    object DonarDinero : Screen("donar_dinero_screen")
+
+    object DonativoEnviado : Screen("donativo_enviado_screen/{monto}") {
+        fun crearRuta(monto: String) = "donativo_enviado_screen/$monto"
+    }
+
+    // Donativos - HU45
+    object DatosFiscales : Screen("datos_fiscales_screen")
 
     // HU39A: catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")

@@ -1,6 +1,5 @@
-import { Router } from "express";
-
-const router = Router();
+import express from "express";
+const router = express.Router();
 
 // Importar los controladores
 import * as adminController from "./catalogAdmin.controller.js";
@@ -22,6 +21,9 @@ router.get("/admin/perros", adminController.getPerrosAdmin);
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
 
+// PATCH /api/catalogo/admin/perros/:id/desactivar
+router.patch("/admin/perros/:id/desactivar", adminController.desactivarPerro);
+
 // GET /api/catalogo/admin/tamanos
 router.get("/admin/tamanos", adminController.getTamanos);
 
@@ -34,6 +36,9 @@ router.get("/admin/cuidado_especial", adminController.getCuidadoEspecial);
 // Get /api/catalogo/admin/admin/razas
 router.get("/admin/razas", adminController.getRazas);
 
+//obtener todos los perros
+router.get("/cliente/perros", clientController.getDogs);
+
 // ==== Fin Rutas Admin ======
 
 // ===== Rutas Cliente ====
@@ -41,7 +46,4 @@ router.get("/admin/razas", adminController.getRazas);
 // Get /api/catalogo/cliente/perros/:id (¡nueva!)
 router.get("/cliente/perros/:id", clientController.getDogById);
 
-// La forma correcta si usaste export default:
 export default router;
-
-// ===== Fin Rutas Cliente =====
