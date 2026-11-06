@@ -1,9 +1,4 @@
-import fs from "fs";
-import path from "path";
-
 import dogModel from "./modelosCatalogo/dog.model.js";
-import breedModel from "./modelosCatalogo/breed.model.js";
-import sizeModel from "./modelosCatalogo/size.model.js";
 import behaviorModel from "./modelosCatalogo/behaviour.model.js";
 import specialModel from "./modelosCatalogo/special.model.js";
 import multimediaModel from "./modelosCatalogo/multimedia.model.js";

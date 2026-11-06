@@ -6,10 +6,11 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
 }
-val localProps = Properties().apply {
-    val f = rootProject.file("local.properties")
-    if (f.exists()) f.inputStream().use { load(it) }
-}
+val localProps =
+    Properties().apply {
+        val f = rootProject.file("local.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
 
 android {
     namespace = "com.app.android"
@@ -50,6 +51,7 @@ android {
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
+    implementation("androidx.compose.remote:remote-creation-core:1.0.0-alpha22")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.runtime:runtime:1.12.1")
     implementation(libs.androidx.activity.compose)
@@ -60,6 +62,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.compose.material:material-icons-extended")
     testImplementation(libs.junit)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -87,13 +90,13 @@ dependencies {
     implementation("androidx.hilt:hilt-lifecycle-viewmodel-compose:1.3.0")
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.material.icons.extended)
-    //Hilt
+    // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    //Lifecycle + Navigation
+    // Lifecycle + Navigation
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.navigation.compose)
-    //Retrofit
+    // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")

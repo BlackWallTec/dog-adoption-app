@@ -30,6 +30,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.CheckBox
 import com.app.android.presentation.view.atomicDesign.molecule.ImportantInfoCard
 import com.app.android.presentation.view.atomicDesign.molecule.InfoCard
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
+import com.app.android.presentation.view.atomicDesign.molecule.LabeledCheckBox
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme

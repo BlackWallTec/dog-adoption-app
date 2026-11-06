@@ -39,7 +39,11 @@ sealed class Screen(
     object TuHogar : Screen("solicitud_tu_hogar")
 
     // Paso 4 · Compromiso (todo sale del borrador, no lleva parámetros)
-    object Compromiso : Screen("solicitud_compromiso")
+    // object Compromiso : Screen("solicitud_compromiso")
+
+    object Compromiso : Screen("solicitud_compromiso/{idSolicitud}") {
+        fun crearRuta(idSolicitud: String) = "solicitud_compromiso/$idSolicitud"
+    }
 
     // Paso 5 · Documentos
     object Documentos : Screen("solicitud_documentos")
