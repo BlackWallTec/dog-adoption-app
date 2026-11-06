@@ -1,3 +1,3 @@
 // Public front door of the voluntarios module.
 // Other modules may only import from this file.
-export { router } from "./http/routes.js";
+export { default as router } from "./http/voluntarios.router.js";
