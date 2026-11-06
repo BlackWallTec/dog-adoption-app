@@ -21,6 +21,9 @@ router.get("/admin/perros", adminController.getPerrosAdmin);
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
 
+// PATCH /api/catalogo/admin/perros/:id/desactivar
+router.patch("/admin/perros/:id/desactivar", adminController.desactivarPerro);
+
 // GET /api/catalogo/admin/tamanos
 router.get("/admin/tamanos", adminController.getTamanos);
 
