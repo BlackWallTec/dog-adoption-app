@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 3000;
 
 const app = createApp();
 
-// 0.0.0.0 para que sea accesible desde el celular/emulador, no solo localhost
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });

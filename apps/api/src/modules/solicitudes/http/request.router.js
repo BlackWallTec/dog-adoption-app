@@ -1,10 +1,10 @@
 import express from "express";
-const router = express.Router();
-
+import multer from "multer";
 import * as clientController from "./requestClient.controller.js";
+import { subirDocumento } from "./documentos.controller.js";
 
-// ===== Rutas Cliente =====
-// Antes de "Enviar solicitud" solo hay lecturas (GET).
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // GET /api/solicitudes/cliente/activa?idUsuario=...&idPerro=...
 router.get("/cliente/activa", clientController.getActive);
@@ -12,7 +12,7 @@ router.get("/cliente/activa", clientController.getActive);
 // GET /api/solicitudes/cliente/perfil/:idUsuario
 router.get("/cliente/perfil/:idUsuario", clientController.getProfile);
 
-// Andy agregará: GET /cliente/documentos/:idUsuario
-// Lucca agregará: POST /cliente (envío multipart)
+// POST /api/solicitudes/:id/documentos  (multipart: "archivo" y "tipo")
+router.post("/:id/documentos", upload.single("archivo"), subirDocumento);
 
 export default router;

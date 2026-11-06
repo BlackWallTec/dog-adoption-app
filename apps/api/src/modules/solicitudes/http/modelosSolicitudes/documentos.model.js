@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
 
 //Upload the physical file to supabase storage and get the link
 export const subirArchivoStorage = async (id_solicitud, file) => {
@@ -27,6 +27,7 @@ export const obtenerUsuarioPorSolicitud = async (id_solicitud) => {
     .single();
 
   if (solError || !solicitudData) {
+    console.error("Búsqueda de solicitud:", { id_solicitud, solError, solicitudData });
     throw new Error("NOT_FOUND_SOLICITUD");
   }
 

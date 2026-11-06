@@ -34,9 +34,9 @@ export const subirDocumento = async (req, res) => {
     console.error("Error en subirDocumento:", error.message);
 
     if (error.message === "NOT_FOUND_SOLICITUD") {
-      return res.status(404).json({ error: "No se encontró la solicitud" });
+      return res.status(404).json({ message: "No se encontró la solicitud" });
     }
 
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
