@@ -1,31 +1,28 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
-    "api": {
-      "root": "apps/api",
-      "framework": "express"
-    },
     "web": {
       "root": "apps/web",
-      "framework": "vite",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "api",
-          "format": "url",
-          "env": "API_INTERNAL_URL"
-        }
-      ]
+      "outputDirectory": "."
+    },
+    "api": {
+      "root": "apps/api",
+      "framework": "express",
+      "entrypoint": "src/index.js"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": { "service": "api" }
+      "destination": {
+        "service": "api"
+      }
     },
     {
       "source": "/(.*)",
-      "destination": { "service": "web" }
+      "destination": {
+        "service": "web"
+      }
     }
   ]
 }
