@@ -283,7 +283,7 @@ export const postNuevoPerro = async (req, res) => {
       //Responder con un error 400 al cliente
       return res.status(400).json({
         success: false,
-        message: "Datos invalidos en la solicitud.",
+        message: "Datos inválidos en la solicitud.",
         errors: errorMessages,
       });
     }
