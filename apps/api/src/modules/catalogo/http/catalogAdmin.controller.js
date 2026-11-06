@@ -283,7 +283,7 @@ export const postNuevoPerro = async (req, res) => {
       //Responder con un error 400 al cliente
       return res.status(400).json({
         success: false,
-        message: "Datos inválidos en la solicitud.",
+        message: "Datos invalidos en la solicitud.",
         errors: errorMessages,
       });
     }
@@ -292,14 +292,14 @@ export const postNuevoPerro = async (req, res) => {
     // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
     const perroCreado = await dogModel.createFullDog(mappedDogData);
 
-    console.log("🎉 OPERACIÓN EXITOSA EN SUPABASE:");
+    console.log("Operacion exitosa en supabase:");
 
     return res.status(200).json({
       success: true,
       data: perroCreado,
     });
   } catch (error) {
-    console.error("🚨 DETALLE COMPLETO DEL ERROR DESDE SUPABASE:", error);
+    console.error("Detalle completo del errror desde supabase:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Error interno al crear el perro.",
@@ -309,9 +309,10 @@ export const postNuevoPerro = async (req, res) => {
 
 // ===== Fin Función POST Nuevo Perro ====
 
-// ===== Función PATCH Desactivar Perro ====
+// ===== SECCION HECHA POR IA ==========
+// Función PATCH Desactivar Perro ====
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i; //verifica que tenga un id unico
 
 export const desactivarPerro = async (req, res) => {
   try {
