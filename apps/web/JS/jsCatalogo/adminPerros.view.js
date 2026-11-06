@@ -242,6 +242,40 @@ async function cargarPerros() {
   }
 }
 
+tablaBody?.addEventListener("click", async (event) => {
+  const boton = event.target.closest(".action-delete");
+  if (!boton) return;
+
+  const id = boton.closest("tr")?.dataset.id;
+  if (!id) return;
+
+  const perro = catalogoPerros.find((item) => String(item.id_perro ?? item.id) === id);
+  const nombre = perro?.nombre || "este perro";
+
+  if (!window.confirm(`¿Desactivar a ${nombre}? Dejará de aparecer en el catálogo.`)) {
+    return;
+  }
+
+  boton.disabled = true;
+
+  try {
+    const respuesta = await fetch(`/api/catalogo/admin/perros/${id}/desactivar`, {
+      method: "PATCH",
+    });
+    const data = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+      throw new Error(data.message || `No se pudo desactivar el perro (${respuesta.status}).`);
+    }
+
+    await cargarPerros();
+  } catch (error) {
+    console.error("Error al desactivar el perro:", error);
+    window.alert(error instanceof Error ? error.message : "No se pudo desactivar el perro.");
+    boton.disabled = false;
+  }
+});
+
 // Carga inicial al montar la página
 document.addEventListener("DOMContentLoaded", cargarPerros);
 

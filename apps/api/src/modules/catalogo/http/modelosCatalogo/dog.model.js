@@ -144,7 +144,25 @@ class DogModel {
       throw new Error(`Error al desactivar el perro: ${error.message}`);
     }
 
-    return data;
+    if (data) return data;
+
+    const { data: existente, error: errorConsulta } = await supabase
+      .from("perro")
+      .select("id_perro")
+      .eq("id_perro", id)
+      .maybeSingle();
+
+    if (errorConsulta) {
+      throw new Error(`Error al desactivar el perro: ${errorConsulta.message}`);
+    }
+
+    if (existente) {
+      throw new Error(
+        "Supabase no aplicó el cambio. La política de la tabla perro no permite actualizar activo con la clave anónima.",
+      );
+    }
+
+    return null;
   }
 }
 
