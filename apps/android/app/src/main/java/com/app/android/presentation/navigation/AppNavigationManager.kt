@@ -1,20 +1,49 @@
 package com.app.android.presentation.navigation
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
+import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
+import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
+import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
-
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
 private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
+
+// Barra de abajo: 0 Catálogo, 2 Donar, 4 Ajustes. Ayudar y Solicitudes todavía no tienen pantalla de entrada.
+private fun NavController.irAOpcionBarra(opcion: Int) {
+    val destino =
+        when (opcion) {
+            1 ->Screen.Programas.ruta
+            2 -> Screen.DonarDinero.ruta
+            4 -> Screen.DatosFiscales.ruta
+            else -> null
+        }
+    when {
+        opcion == 0 -> {
+            popBackStack(Screen.DetallePerro.ruta, inclusive = false)
+        }
+
+        destino != null -> {
+            navigate(destino) {
+                popUpTo(Screen.DetallePerro.ruta) // para que atrás regrese al inicio y no se apilen
+                launchSingleTop = true
+            }
+        }
+    }
+}
 
 @Composable
 fun AppNavigation() {
@@ -42,6 +71,7 @@ fun AppNavigation() {
             // Llamamos a la función composable de la pantalla pasándole el ID extraído
             DogDetailScreenView(
                 dogId = dogId,
+                onNavSelect = navController::irAOpcionBarra,
                 onAdoptClick = { dogId ->
                     navController.navigate(Screen.Requisitos.crearRuta(dogId))
                 },
@@ -80,17 +110,118 @@ fun AppNavigation() {
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (Facu: aquí va TuHogarRoute cuando esté)
+        // SOLICITUDES: Paso 3 - Tu Hogar
         composable(route = Screen.TuHogar.ruta) {
-            TuHogarScreen(
-                onBackClick = { navController.navigateUp() },
-                onContinuarClick = {},
+            TuHogarRoute(
+                onBack = { navController.navigateUp() },
+                onIrACompromiso = {
+                    navController.navigate(Screen.Compromiso.ruta)
+                },
             )
         }
 
-        // ========= Pantallas Voluntariado ========
+        // Paso 4 - Compromiso
+        composable(route = Screen.Compromiso.ruta) {
+            CompromisoRoute(
+                onBack = { navController.navigateUp() },
+                onIrADocumentoss = {
+                    // navegar a documentos
+                },
+            )
+        }
+
+        // ========= Pantallas Donativos ========
+
+        // DONATIVOS - HU46: registrar donativo económico
+        composable(route = Screen.DonarDinero.ruta) {
+            DonarDineroRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.popBackStack() },
+                onNavSelect = navController::irAOpcionBarra,
+                onEnviado = { monto ->
+                    navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
+                        // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
+                        popUpTo(Screen.DonarDinero.ruta) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable(
+            route = Screen.DonativoEnviado.ruta,
+            arguments =
+                listOf(
+                    navArgument("monto") { type = NavType.StringType },
+                ),
+        ) { backStackEntry ->
+            val monto = backStackEntry.arguments?.getString("monto") ?: ""
+            DonativoEnviadoScreen(
+                monto = "\$$monto MXN",
+                onBackClick = { navController.popBackStack() },
+                onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
+                onVerMisDonativosClick = {}, // Mis donativos todavía no existe
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
+        // DONATIVOS - HU45: datos fiscales del donante
+        composable(route = Screen.DatosFiscales.ruta) {
+            DatosFiscalesRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.navigateUp() },
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
+        // ========= Pantallas Donativos ========
+
+        // DONATIVOS - HU46: registrar donativo económico
+        composable(route = Screen.DonarDinero.ruta) {
+            DonarDineroRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.popBackStack() },
+                onNavSelect = navController::irAOpcionBarra,
+                onEnviado = { monto ->
+                    navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
+                        // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
+                        popUpTo(Screen.DonarDinero.ruta) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable(
+            route = Screen.DonativoEnviado.ruta,
+            arguments =
+                listOf(
+                    navArgument("monto") { type = NavType.StringType },
+                ),
+        ) { backStackEntry ->
+            val monto = backStackEntry.arguments?.getString("monto") ?: ""
+            DonativoEnviadoScreen(
+                monto = "\$$monto MXN",
+                onBackClick = { navController.popBackStack() },
+                onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
+                onVerMisDonativosClick = {}, // Mis donativos todavía no existe
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
+        // DONATIVOS - HU45: datos fiscales del donante
+        composable(route = Screen.DatosFiscales.ruta) {
+            DatosFiscalesRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.navigateUp() },
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
+
+        // Pantallas Voluntariado
         composable(route = Screen.Programas.ruta) {
-            ProgramasScreen(onBackClick = { navController.popBackStack() })
+            ProgramasScreen(onBackClick = { navController.popBackStack() },
+            onNavSelect = navController::irAOpcionBarra,
+            )
         }
 
         // Plantilla para nueva pantalla

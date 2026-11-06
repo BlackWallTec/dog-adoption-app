@@ -14,29 +14,6 @@ data class BorradorSolicitud(
     val documentos: DocumentosSolicitud? = null, // Paso 5 · Documentos
 )
 
-// Paso 3 · Tu hogar
-data class TuHogar(
-    val tuvoMascotas: Boolean? = null, // Sí / No ; null = sin contestar
-    val otrosAnimales: Boolean? = null,
-    val porQueAdoptar: String = "",
-    val dondeVivira: String = "",
-    val personas: Int = 1, // contador, mínimo 1
-    val todosDeAcuerdo: Boolean? = null,
-    val tipoVivienda: TipoVivienda? = null,
-    val jardinPatio: String = "",
-    val caseroAcepta: Boolean? = null, // null = no renta / no contesto
-    val sobreMascotas: String = "",
-)
-
-enum class TipoVivienda { CASA, DEPARTAMENTO, OTRO }
-
-// Paso 4 · Compromiso
-data class Compromiso(
-    val cuidadosBasicos: String = "",
-    val opinionEsterilizacion: String = "",
-    val aceptaSeguimiento: Boolean? = null,
-)
-
 // Paso 5 · Documentos: archivos elegidos en el telefono, todavaa NO subidos
 data class DocumentosSolicitud(
     val identificacion: DocumentoLocal? = null,

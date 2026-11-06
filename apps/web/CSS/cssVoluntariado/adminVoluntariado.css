@@ -1,0 +1,52 @@
+[hidden] {
+  display: none !important;
+}
+
+.nav-provisional {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.nav-aviso {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.nav-tarjeta {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.nav-tarjeta form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.nav-tarjeta input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: monospace;
+}
+
+.nav-boton {
+  justify-self: start;
+  padding: 0.6rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+}

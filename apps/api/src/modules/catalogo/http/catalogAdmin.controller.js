@@ -4,6 +4,7 @@ import behaviourModel from "./modelosCatalogo/behaviour.model.js";
 import cuidadoEspecialModel from "./modelosCatalogo/special.model.js";
 import sizeModel from "./modelosCatalogo/size.model.js";
 import breedModel from "./modelosCatalogo/breed.model.js";
+import { validarCambiosPerro } from "./dogValidation.js";
 
 import { supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
@@ -292,14 +293,14 @@ export const postNuevoPerro = async (req, res) => {
     // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
     const perroCreado = await dogModel.createFullDog(mappedDogData);
 
-    console.log("🎉 OPERACIÓN EXITOSA EN SUPABASE:");
+    console.log("Operacion exitosa en supabase:");
 
     return res.status(200).json({
       success: true,
       data: perroCreado,
     });
   } catch (error) {
-    console.error("🚨 DETALLE COMPLETO DEL ERROR DESDE SUPABASE:", error);
+    console.error("Detalle completo del errror desde supabase:", error);
     return res.status(500).json({
       success: false,
       message: error.message || "Error interno al crear el perro.",
@@ -308,6 +309,46 @@ export const postNuevoPerro = async (req, res) => {
 };
 
 // ===== Fin Función POST Nuevo Perro ====
+
+// ===== SECCION HECHA POR IA ==========
+// Función PATCH Desactivar Perro ====
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i; //verifica que tenga un id unico
+
+export const desactivarPerro = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!UUID_REGEX.test(id || "")) {
+      return res.status(400).json({
+        success: false,
+        message: "El id del perro no tiene un formato UUID válido.",
+      });
+    }
+
+    const perro = await dogModel.desactivarPerro(id);
+
+    if (!perro) {
+      return res.status(404).json({
+        success: false,
+        message: "No se encontró el perro.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: perro,
+    });
+  } catch (error) {
+    console.error("Error al desactivar el perro:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al desactivar el perro.",
+    });
+  }
+};
+
+// ===== Fin Función PATCH Desactivar Perro ====
 
 // funciones de debug general
 function logErrorMessages(messages) {
@@ -319,3 +360,62 @@ function logErrorMessages(messages) {
     console.error(messages);
   }
 }
+
+// ===== HU19C: editar ficha de perro (admin) =====
+// Postgres: 22P02 = id con formato inválido, 23503 = llave foránea inexistente
+const ID_INVALIDO = "22P02";
+const FK_INEXISTENTE = "23503";
+
+// GET /api/catalogo/admin/perros/:id
+export const getPerroAdminById = async (req, res) => {
+  try {
+    const perro = await dogModel.getDogAdminById(req.params.id);
+    if (!perro) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    return res.status(200).json({ success: true, data: perro });
+  } catch (error) {
+    if (error.code === ID_INVALIDO) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar el perro.",
+    });
+  }
+};
+
+// PATCH /api/catalogo/admin/perros/:id
+export const updatePerroAdmin = async (req, res) => {
+  const { errores, valores } = validarCambiosPerro(req.body);
+  if (Object.keys(errores).length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Hay campos inválidos.",
+      errors: errores,
+    });
+  }
+
+  try {
+    const perro = await dogModel.updateDog(req.params.id, valores);
+    if (!perro) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    return res.status(200).json({ success: true, data: perro });
+  } catch (error) {
+    if (error.code === ID_INVALIDO) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    if (error.code === FK_INEXISTENTE) {
+      return res.status(400).json({
+        success: false,
+        message: "La raza o el tamaño seleccionado no existe.",
+        errors: { id_raza: "Revisa la raza.", id_tamano: "Revisa el tamaño." },
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al actualizar el perro.",
+    });
+  }
+};

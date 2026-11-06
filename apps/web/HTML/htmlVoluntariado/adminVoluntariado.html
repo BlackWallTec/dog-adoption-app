@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voluntariado | Administración</title>
+    <link rel="stylesheet" href="../../CSS/cssVoluntariado/adminVoluntariado.css" />
+  </head>
+  <body>
+    <!-- TODO: sidebar y topbar de adminInscritos.html -->
+
+    <main class="nav-provisional">
+      <h1>Voluntariado</h1>
+      <p class="nav-aviso">Navegación provisional mientras se integra el menú del administrador.</p>
+
+      <section class="nav-tarjeta">
+        <h2>Crear jornada</h2>
+        <p>Registrar y publicar un nuevo programa de voluntariado.</p>
+        <a class="nav-boton" href="./createVolunteering.html">Crear jornada</a>
+      </section>
+
+      <section class="nav-tarjeta">
+        <h2>Ver inscritos</h2>
+        <p>Consultar los voluntarios inscritos en un programa.</p>
+        <form id="form-inscritos" novalidate>
+          <label for="id-programa">ID del programa</label>
+          <input
+            id="id-programa"
+            name="id-programa"
+            type="text"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            autocomplete="off"
+          />
+          <p id="error-id" class="nav-error" hidden>El ID no tiene un formato válido.</p>
+          <button class="nav-boton" type="submit">Ver inscritos</button>
+        </form>
+      </section>
+    </main>
+
+    <script type="module" src="../../JS/jsVoluntariado/adminVoluntariado.js"></script>
+  </body>
+</html>

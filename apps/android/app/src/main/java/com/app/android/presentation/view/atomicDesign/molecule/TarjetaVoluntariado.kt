@@ -111,8 +111,11 @@ fun TarjetaVoluntariado(
 }
 
 // 2. PREVISUALIZACIONES: con lugares y sin lugares
+
 @Preview(showBackground = true, widthDp = 328, name = "Tarjeta de voluntariado")
+
 @Composable
+
 fun TarjetaVoluntariadoPreview() {
     AndroidTheme {
         Column(

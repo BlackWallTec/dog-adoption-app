@@ -12,6 +12,15 @@ sealed class Screen(
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
+    // Donativos - HU46
+    object DonarDinero : Screen("donar_dinero_screen")
+
+    object DonativoEnviado : Screen("donativo_enviado_screen/{monto}") {
+        fun crearRuta(monto: String) = "donativo_enviado_screen/$monto"
+    }
+
+    // Donativos - HU45
+    object DatosFiscales : Screen("datos_fiscales_screen")
 
     // HU39A: catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
@@ -30,7 +39,11 @@ sealed class Screen(
     object TuHogar : Screen("solicitud_tu_hogar")
 
     // Paso 4 · Compromiso (todo sale del borrador, no lleva parámetros)
-    object Compromiso : Screen("solicitud_compromiso")
+    // object Compromiso : Screen("solicitud_compromiso")
+
+    object Compromiso : Screen("solicitud_compromiso/{idSolicitud}") {
+        fun crearRuta(idSolicitud: String) = "solicitud_compromiso/$idSolicitud"
+    }
 
     // Paso 5 · Documentos
     object Documentos : Screen("solicitud_documentos")
