@@ -21,7 +21,7 @@ import {
   consultarEmpalmes,
 } from "../../src/modules/voluntarios/http/programaCreacion.controller.js";
 
-const id_usuario = "1af85629-ee1c-4b36-97bc-41837b2fbae3";
+const id_usuario = "11111111-1111-4111-8111-111111111111";
 const ID_PROGRAMA = "22222222-2222-4222-8222-222222222222";
 
 function crearDatosValidos(cambios = {}) {
@@ -86,11 +86,19 @@ afterEach(() => {
 });
 
 describe("crearPrograma (HU31)", () => {
-  it("crea una jornada válida utilizando el administrador fijo", async () => {
+  it("crea una jornada utilizando el administrador autenticado", async () => {
     const datos = crearDatosValidos();
     const res = crearRespuesta();
 
-    await crearPrograma({ body: datos }, res);
+    const req = {
+      body: datos,
+      user: {
+        uuid: id_usuario,
+        rol: "Administrador",
+      },
+    };
+
+    await crearPrograma(req, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
@@ -124,7 +132,7 @@ describe("crearPrograma (HU31)", () => {
   it.each([
     ["nombre", ""],
     ["nombre", " ".repeat(3)],
-    ["nombre", "a".repeat(16)],
+    ["nombre", "a".repeat(51)],
     ["tipo", ""],
     ["tipo", "a".repeat(21)],
     ["descripcion", ""],
@@ -209,7 +217,13 @@ describe("crearPrograma (HU31)", () => {
 
     const res = crearRespuesta();
 
-    await crearPrograma({ body: crearDatosValidos({ confirmarEmpalme: true }) }, res);
+    await crearPrograma(
+      {
+        body: crearDatosValidos({ confirmarEmpalme: true }),
+        user: { uuid: id_usuario, rol: "Administrador" },
+      },
+      res,
+    );
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(ProgramaModel.insertarPrograma).toHaveBeenCalledOnce();
@@ -220,7 +234,15 @@ describe("crearPrograma (HU31)", () => {
 
     const res = crearRespuesta();
 
-    await crearPrograma({ body: crearDatosValidos() }, res);
+    await crearPrograma(
+      {
+        body: crearDatosValidos(),
+        user: { uuid: id_usuario, rol: "Administrador" },
+      },
+      res,
+    );
+
+    expect(ProgramaModel.insertarPrograma).toHaveBeenCalledOnce();
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(

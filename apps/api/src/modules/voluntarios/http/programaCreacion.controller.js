@@ -81,7 +81,7 @@ export async function crearPrograma(req, res) {
     }
 
     const campos = {
-      nombre: 15,
+      nombre: 50,
       tipo: 20,
       descripcion: 1000,
       ubicacion: 100,
@@ -131,7 +131,7 @@ export async function crearPrograma(req, res) {
       });
     }
 
-    const id_usuario = "1af85629-ee1c-4b36-97bc-41837b2fbae3";
+    const id_usuario = req.user.uuid;
 
     const resultado = await ProgramaModel.insertarPrograma(datos, id_usuario, randomUUID());
 

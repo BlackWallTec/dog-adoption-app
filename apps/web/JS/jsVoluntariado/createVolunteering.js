@@ -105,7 +105,7 @@ function obtenerDatosForm() {
 function validarPrograma(datos) {
   if (
     !datos.nombre ||
-    datos.nombre.length > 15 ||
+    datos.nombre.length > 50 ||
     !datos.tipo ||
     datos.tipo.length > 20 ||
     !datos.descripcion ||
