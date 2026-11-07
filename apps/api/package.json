@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "test": "vp test"
+    "test": "vp test",
+    "test:report": "vp test run --reporter=html"
   },
   "dependencies": {
     "@supabase/supabase-js": "catalog:",
