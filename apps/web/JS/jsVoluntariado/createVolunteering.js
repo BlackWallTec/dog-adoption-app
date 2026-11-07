@@ -1,5 +1,6 @@
 const API = "/api/voluntarios/programas";
-const URL_VOLUNTARIADO = window.QARINO_VOLUNTARIADO_URL || "/";
+const URL_VOLUNTARIADO =
+  window.QARINO_VOLUNTARIADO_URL || "/HTML/htmlVoluntariado/adminVoluntariado.html";
 
 const formulario = document.getElementById("programaForm");
 const mensajeForm = document.getElementById("alerta");
@@ -38,14 +39,23 @@ async function solicitarAPI(ruta, opciones = {}) {
   // Primero ejecuta la petición al backend.
   const respuesta = await fetch(`${API}${ruta}`, configuracion);
 
-  const resultado = await respuesta.json();
+  const esJSON = respuesta.headers.get("content-type")?.includes("application/json");
+  const resultado = esJSON ? await respuesta.json() : {};
 
   if (!respuesta.ok) {
-    const error = new Error(resultado.message || "Error en la solicitud");
+    const mensaje =
+      respuesta.status === 401
+        ? "Tu sesión no está activa. Inicia sesión para continuar."
+        : respuesta.status === 403
+          ? "Necesitas permisos de Administrador o Root para realizar esta acción."
+          : "No se pudo completar la solicitud. Intenta nuevamente.";
+    const error = new Error(resultado.message || resultado.error || mensaje);
     error.code = resultado.code;
     error.empalmes = resultado.empalmes;
     throw error;
   }
+
+  if (!esJSON) throw new Error("El servidor no devolvió una respuesta válida.");
 
   return resultado;
 }
@@ -95,7 +105,7 @@ function obtenerDatosForm() {
 function validarPrograma(datos) {
   if (
     !datos.nombre ||
-    datos.nombre.length > 15 ||
+    datos.nombre.length > 50 ||
     !datos.tipo ||
     datos.tipo.length > 20 ||
     !datos.descripcion ||
@@ -285,4 +295,4 @@ document.getElementById("nuevoTipoBtn").addEventListener("click", alternarNuevoT
 document.getElementById("guardarTipoBtn").addEventListener("click", guardarNuevoTipo);
 
 actualizarContadorDescripcion();
-cargarTipos();
+void cargarTipos();

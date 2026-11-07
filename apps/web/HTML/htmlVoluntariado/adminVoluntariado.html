@@ -4,38 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voluntariado | Administración</title>
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&family=Material+Symbols+Rounded&display=swap"
+    />
+
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
     <link rel="stylesheet" href="../../CSS/cssVoluntariado/adminVoluntariado.css" />
+
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
   </head>
+
   <body>
-    <!-- TODO: sidebar y topbar de adminInscritos.html -->
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
 
-    <main class="nav-provisional">
-      <h1>Voluntariado</h1>
-      <p class="nav-aviso">Navegación provisional mientras se integra el menú del administrador.</p>
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
 
-      <section class="nav-tarjeta">
-        <h2>Crear jornada</h2>
-        <p>Registrar y publicar un nuevo programa de voluntariado.</p>
-        <a class="nav-boton" href="./createVolunteering.html">Crear jornada</a>
-      </section>
+        <main class="content-area voluntariado">
+          <h1>Voluntariado</h1>
 
-      <section class="nav-tarjeta">
-        <h2>Ver inscritos</h2>
-        <p>Consultar los voluntarios inscritos en un programa.</p>
-        <form id="form-inscritos" novalidate>
-          <label for="id-programa">ID del programa</label>
-          <input
-            id="id-programa"
-            name="id-programa"
-            type="text"
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            autocomplete="off"
-          />
-          <p id="error-id" class="nav-error" hidden>El ID no tiene un formato válido.</p>
-          <button class="nav-boton" type="submit">Ver inscritos</button>
-        </form>
-      </section>
-    </main>
+          <section class="segmento">
+            <h2>Crear jornada</h2>
+            <a class="boton" href="./createVolunteering.html"> Crear jornada </a>
+          </section>
+
+          <section class="segmento">
+            <h2>Consultar inscritos</h2>
+
+            <form id="form-inscritos" novalidate>
+              <label for="id-programa">ID del programa</label>
+              <input
+                id="id-programa"
+                name="id-programa"
+                type="text"
+                placeholder="Pega el ID del programa"
+                autocomplete="off"
+              />
+
+              <p id="error-id" role="alert" hidden>El ID no tiene un formato válido.</p>
+
+              <button class="boton" type="submit">Ver inscritos</button>
+            </form>
+          </section>
+        </main>
+      </div>
+    </div>
 
     <script type="module" src="../../JS/jsVoluntariado/adminVoluntariado.js"></script>
   </body>
