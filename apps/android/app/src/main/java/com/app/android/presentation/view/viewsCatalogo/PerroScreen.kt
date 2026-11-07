@@ -44,7 +44,10 @@ import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosViewModel
 @Composable
 fun PerrosScreen(
     modifier: Modifier = Modifier,
-    vm: PerrosViewModel = hiltViewModel()
+    vm: PerrosViewModel = hiltViewModel(),
+    //nuevo
+    onDogClick: (String) -> Unit = {}
+
 ) {
     var selected by remember { mutableIntStateOf(0) } //navbar
     var query by remember { mutableStateOf("") }
@@ -88,7 +91,10 @@ fun PerrosScreen(
 
                     PerrosGrid(
                         vm = vm,
+                        //nuevo
+                        onDogClick = onDogClick,
                         modifier = Modifier.weight(1f).fillMaxWidth()
+
                     )
                 }
                 /*
@@ -106,7 +112,9 @@ fun PerrosScreen(
 @Composable
 private fun PerrosGrid(
     vm: PerrosViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    //nuevo
+    onDogClick: (String) -> Unit = {}
 ) {
     val estado by vm.uiState.collectAsState()
 
@@ -122,8 +130,8 @@ private fun PerrosGrid(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(resultado.perros) { perro ->
-                    Card {
+                items(resultado.perros, key= { it.id }) { perro -> //nuevo  
+                    Card (onClick = { onDogClick(perro.id) }) { //nuevo
                         Column {
                             AsyncImage(
                                 model = perro.fotoUrl,

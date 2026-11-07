@@ -11,6 +11,7 @@ class PerroRepositoryImpl @Inject constructor(
     override suspend fun getPerros():  List<Perro> =     //
         dataSource.getPerros().map { dto ->   //
             Perro(
+                id=dto.id, //nuevo
                 nombre= dto.nombre,
                 edad=dto.edad,
                 fotoUrl= dto.foto_url ?: ""         ///

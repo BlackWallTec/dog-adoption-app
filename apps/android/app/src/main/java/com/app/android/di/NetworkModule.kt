@@ -9,6 +9,7 @@ import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiServic
 import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntCasesCatalogo.PerroRepository
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
@@ -66,7 +67,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://10.25.90.151:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
+            .baseUrl("http://192.168.1.66:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -83,6 +84,13 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+    @Provides
+    @Singleton
+    fun provideDogRepositoryforcatalog(apiService: DogApiService): PerroRepository {
+        // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
+        return DogRepositoryImpl(apiService)
+    }
+
 
     @Provides
     @Singleton

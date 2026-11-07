@@ -1,6 +1,5 @@
 package com.app.android.di
-
-import com.app.android.data.repoImp.repoImpCatalogo.PerroRepositoryImpl
+/*
 import com.app.android.domain.repoInterface.repoIntCasesCatalogo.PerroRepository
 import dagger.Binds
 import dagger.Module
@@ -15,3 +14,4 @@ abstract class AppModule {
         impl: PerroRepositoryImpl
     ): PerroRepository
 }
+*/
