@@ -36,3 +36,10 @@ router.post(
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
 });
+
+router.get(
+  "/admin/pendientes",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  obtenerDonativosPendientes,
+);
