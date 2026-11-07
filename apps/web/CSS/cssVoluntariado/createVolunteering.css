@@ -169,7 +169,7 @@ textarea {
 .form-field textarea {
   resize: vertical;
   min-height: 110px;
-  line-height: 1.5px;
+  line-height: 1.5;
 }
 
 .form-field small {
