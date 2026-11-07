@@ -24,7 +24,7 @@ private val LightColorScheme =
         surfaceContainerLow = SurfaceContainerLow,
         surfaceContainer = SurfaceContainer,
         surfaceContainerHigh = SurfaceContainerHigh,
-        onSurface = InverseSurface,
+        inverseSurface =  InverseSurface,
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),

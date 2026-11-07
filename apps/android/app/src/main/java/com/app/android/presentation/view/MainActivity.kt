@@ -19,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
