@@ -1,14 +1,18 @@
 package com.app.android.di
 
+import android.content.Context
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
-import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
-import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
+import com.app.android.data.dataSource.dataSourcesSolicitudes.DocumentApi
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
-import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
+import com.app.android.data.repoImp.repoImpSolicitudes.DocumentRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntSolicitudes.DocumentRepository
+import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
+import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
+import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
-import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
@@ -16,6 +20,7 @@ import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -80,6 +85,23 @@ object NetworkModule {
     fun provideDogRepository(apiService: DogApiService): DogRepositoryInt {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
+    }
+    @Provides
+    @Singleton
+    fun provideDocumentApi(retrofit: Retrofit): DocumentApi {
+        return retrofit.create(DocumentApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDocumentRepository(
+        //we get the api
+        apiService: DocumentApi,
+        //we also get the context of the hardware to open: photos
+        @ApplicationContext context: Context
+    ): DocumentRepository {
+        //we call the repository implementation with the api service and context
+        return DocumentRepositoryImpl(apiService, context)
     }
 
     @Provides

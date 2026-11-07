@@ -28,6 +28,7 @@ replay_pid*
 
 # Node / pnpm
 node_modules/
+.idea/
 dist/
 coverage/
 .env

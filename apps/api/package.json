@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "test": "vp test"
+    "test": "vp test",
+    "test:solicitudes": "vp test tests/solicitudes"
   },
   "dependencies": {
     "@supabase/supabase-js": "catalog:",
@@ -15,9 +16,12 @@
     "cors": "catalog:",
     "dotenv": "catalog:",
     "express": "^5.3.0",
-    "jsonwebtoken": "catalog:"
+    "jsonwebtoken": "catalog:",
+    "multer": "catalog:"
   },
   "devDependencies": {
-    "vite-plus": "catalog:"
+    "supertest": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }
