@@ -43,7 +43,7 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
     }
     if (
       ["login", "me", "register"].includes(action) &&
-      (!data?.user?.id || !data.user.email || !data.user.rol)
+      (!data?.user?.id || !data.user.correo || !data.user.rol)
     ) {
       throw new PerfilesApiError("No pudimos comprobar la sesión. Inténtalo de nuevo.", 502);
     }
@@ -58,8 +58,8 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
   }
 
   return {
-    login({ email, passwd }) {
-      return request("login", { email: email.trim().toLowerCase(), passwd });
+    login({ correo, contrasena }) {
+      return request("login", { correo: correo.trim().toLowerCase(), contrasena });
     },
     getSession() {
       return request("me");
@@ -69,24 +69,24 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
         nombre,
         apellidos,
         telefono,
-        fechaNacimiento,
+        fecha_nacimiento,
         calle,
-        numeroExterior,
-        codigoPostal,
-        passwd,
+        numero_exterior,
+        id_codigo_postal,
+        contrasena,
         confirmPasswd,
         privacidad,
       } = values;
       return request("register", {
         nombre,
         apellidos,
-        email: values.email.trim().toLowerCase(),
+        correo: values.correo.trim().toLowerCase(),
         telefono,
-        fechaNacimiento,
+        fecha_nacimiento,
         calle,
-        numeroExterior,
-        codigoPostal,
-        passwd,
+        numero_exterior,
+        id_codigo_postal,
+        contrasena,
         confirmPasswd,
         privacidad,
       });
