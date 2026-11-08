@@ -9,7 +9,7 @@ router.post("/login", authController.postLogin);
 router.post("/logout", authController.postLogout);
 
 // Rutas Crear cuenta
-router.post("/crearCuenta", authController.postCrearCuenta);
+router.post("/register", authController.postRegister);
 
 //    Notar cómo aquí sí verifica al token
 router.post("/me", verificarToken, authController.getMe);
