@@ -7,6 +7,10 @@ const router = express.Router();
 // Rutas Login
 router.post("/login", authController.postLogin);
 router.post("/logout", authController.postLogout);
+
+// Rutas Crear cuenta
+router.post("/crearCuenta", authController.postCrearCuenta);
+
 //    Notar cómo aquí sí verifica al token
 router.post("/me", verificarToken, authController.getMe);
 

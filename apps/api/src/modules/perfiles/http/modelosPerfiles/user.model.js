@@ -40,4 +40,15 @@ export default class Usuario {
       rol,
     };
   }
+
+  static async registerAccount(id, Registro, tabla) {
+    const { _data, error } = await supabase.from(tabla).insert({
+      id_usuario: id,
+      ...Registro,
+    });
+
+    if (error) {
+      throw new Error(`Error (${error.code}), al crear `);
+    }
+  }
 }
