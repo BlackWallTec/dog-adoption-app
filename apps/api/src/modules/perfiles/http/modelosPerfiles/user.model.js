@@ -51,4 +51,10 @@ export default class Usuario {
       throw new Error(`Error (${error.code}), al crear `);
     }
   }
+
+  /*
+  static async fetchProfileByUUID(uuid) {
+    const { _data, error } = await supabase.from(tabla).select
+  }
+  */
 }

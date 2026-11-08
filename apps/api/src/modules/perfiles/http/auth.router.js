@@ -1,6 +1,7 @@
 import express from "express";
 import verificarToken from "../../../middleware/is-auth.js";
 import * as authController from "./auth.controller.js";
+import * as registerController from "./register.controller.js";
 
 const router = express.Router();
 
@@ -8,8 +9,10 @@ const router = express.Router();
 router.post("/login", authController.postLogin);
 router.post("/logout", authController.postLogout);
 
+router.get("/profile", authController.loadProfile);
+
 // Rutas Crear cuenta
-router.post("/register", authController.postRegister);
+router.post("/register", registerController.postRegister);
 
 //    Notar cómo aquí sí verifica al token
 router.post("/me", verificarToken, authController.getMe);
