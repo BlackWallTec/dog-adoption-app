@@ -79,8 +79,8 @@ loginForm.addEventListener("submit", async (event) => {
   setBusy("login-submit", true, "Iniciando sesión…");
   try {
     const result = await perfilesApi.login({
-      email: loginEmail.value,
-      passwd: loginPassword.value,
+      correo: loginEmail.value,
+      contrasena: loginPassword.value,
     });
     if (request !== activeRequest) return;
 

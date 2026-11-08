@@ -41,6 +41,7 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
         action === "register" && [400, 409].includes(response.status) ? data.fields || {} : {},
       );
     }
+
     if (
       ["login", "me", "register"].includes(action) &&
       (!data?.user?.id || !data.user.correo || !data.user.rol)
