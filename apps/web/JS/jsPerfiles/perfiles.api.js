@@ -88,12 +88,14 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
         numero_exterior,
         id_codigo_postal,
         contrasena,
-        confirmPasswd,
         privacidad,
       });
     },
     getProfile() {
       return request("profile", undefined, "GET");
+    },
+    getCodigosPostales(cp) {
+      return request(`codigos-postales?cp=${encodeURIComponent(cp)}`, undefined, "GET");
     },
     logout() {
       return request("logout");

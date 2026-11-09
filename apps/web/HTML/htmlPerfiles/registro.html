@@ -80,7 +80,7 @@
                       <input
                         class="form-control"
                         id="register-email"
-                        name="email"
+                        name="correo"
                         type="email"
                         autocomplete="email"
                         inputmode="email"
@@ -115,7 +115,7 @@
                       <input
                         class="form-control"
                         id="register-fechaNacimiento"
-                        name="fechaNacimiento"
+                        name="fecha_nacimiento"
                         type="date"
                         autocomplete="bday"
                         aria-describedby="register-fechaNacimiento-help register-fechaNacimiento-error"
@@ -149,7 +149,7 @@
                       <input
                         class="form-control"
                         id="register-numeroExterior"
-                        name="numeroExterior"
+                        name="numero_exterior"
                         inputmode="numeric"
                         maxlength="9"
                         aria-describedby="register-numeroExterior-error"
@@ -158,18 +158,41 @@
                       <div class="invalid-feedback" id="register-numeroExterior-error"></div>
                     </div>
                     <div class="col-sm-6">
-                      <label class="form-label" for="register-codigoPostal">Código postal</label>
+                      <label class="form-label" for="register-numeroInterior"
+                        >Número interior</label
+                      >
                       <input
                         class="form-control"
-                        id="register-codigoPostal"
-                        name="codigoPostal"
-                        autocomplete="postal-code"
+                        id="register-numeroInterior"
+                        name="numero_interior"
                         inputmode="numeric"
-                        maxlength="5"
-                        aria-describedby="register-codigoPostal-error"
+                        maxlength="9"
+                        aria-describedby="register-numeroInterior-error"
                         required
                       />
-                      <div class="invalid-feedback" id="register-codigoPostal-error"></div>
+                      <div class="invalid-feedback" id="register-numeroInterior-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-cp">Código postal</label>
+                      <input
+                        class="form-control"
+                        id="register-cp"
+                        inputmode="numeric"
+                        maxlength="5"
+                        autocomplete="postal-code"
+                      />
+                      <div class="invalid-feedback" id="register-cp-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-id_codigo_postal">Colonia</label>
+                      <select
+                        class="form-select"
+                        id="register-id_codigo_postal"
+                        name="id_codigo_postal"
+                        required
+                      ></select>
+                      <div class="form-text" id="register-cp-resumen"></div>
+                      <div class="invalid-feedback" id="register-id_codigo_postal-error"></div>
                     </div>
                     <div class="col-12">
                       <label class="form-label" for="register-passwd">Contraseña</label>
@@ -177,7 +200,7 @@
                         <input
                           class="form-control"
                           id="register-passwd"
-                          name="passwd"
+                          name="contrasena"
                           type="password"
                           autocomplete="new-password"
                           minlength="8"
@@ -208,7 +231,7 @@
                       <input
                         class="form-control"
                         id="register-confirmPasswd"
-                        name="confirmPasswd"
+                        name="confirmContrasena"
                         type="password"
                         autocomplete="new-password"
                         maxlength="72"

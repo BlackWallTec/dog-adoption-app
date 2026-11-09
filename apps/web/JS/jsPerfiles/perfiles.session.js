@@ -2,6 +2,7 @@ export function createSessionView(api, root = document) {
   const byId = (id) => root.getElementById(id);
   const profileIds = ["profile-name", "profile-phone", "profile-birth", "profile-address"];
   let profileRequest = 0;
+
   async function loadProfile() {
     const request = ++profileRequest;
     byId("profile-loading").hidden = false;
@@ -15,12 +16,12 @@ export function createSessionView(api, root = document) {
         `${profile.nombre || ""} ${profile.apellidos || ""}`.trim() || "Sin datos";
       byId("profile-phone").textContent = profile.telefono || "Sin datos";
       byId("profile-birth").textContent =
-        profile.fechaNacimiento?.split("-").reverse().join("/") || "Sin datos";
+        profile.fecha_nacimiento?.split("-").reverse().join("/") || "Sin datos";
       byId("profile-address").textContent =
         [
           profile.calle,
-          String(profile.numeroExterior ?? ""),
-          profile.codigoPostal ? `C. P. ${profile.codigoPostal}` : "",
+          String(profile.numero_exterior ?? ""),
+          profile.codigo_postal ? `C. P. ${profile.codigo_postal}` : "",
         ]
           .filter(Boolean)
           .join(", ") || "Sin datos";
@@ -33,16 +34,19 @@ export function createSessionView(api, root = document) {
       if (request === profileRequest) byId("profile-loading").hidden = true;
     }
   }
+
   byId("profile-retry").addEventListener("click", loadProfile);
+
   function show({ user }) {
     byId("login-panel").hidden = true;
     byId("session-panel").hidden = false;
-    byId("session-email").textContent = user.email;
+    byId("session-email").textContent = user.correo;
     byId("session-role").textContent = user.rol;
     byId("session-feedback").hidden = true;
     byId("session-title").focus();
     return loadProfile();
   }
+
   byId("session-logout").addEventListener("click", async () => {
     const button = byId("session-logout");
     if (button.disabled) return;
