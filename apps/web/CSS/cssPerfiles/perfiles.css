@@ -15,15 +15,6 @@
   font-weight: 900;
 }
 
-.demo-badge {
-  padding: 7px 11px;
-  color: #5c6470;
-  background: #f3f5f7;
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
 .skip-link {
   position: absolute;
   z-index: 10;
@@ -41,13 +32,6 @@
 .auth-shell {
   max-width: 1250px;
   padding-inline: 30px;
-}
-
-.brand-logo {
-  display: block;
-  width: 210px;
-  height: 175px;
-  margin: 0 auto 72px;
 }
 
 .brand-message h2 {
@@ -117,6 +101,7 @@
 }
 
 .auth-card .form-control {
+  scroll-margin-block: 100px;
   min-height: 45px;
   padding: 10px 13px;
   border-radius: 11px;
@@ -136,8 +121,34 @@
   padding-right: 48px;
 }
 
-.password-field:has(.is-invalid) + .invalid-feedback {
+.password-field:has(.is-invalid) ~ .invalid-feedback {
   display: block;
+}
+
+.password-toggle-text {
+  width: 60px;
+  font-size: 0.75rem;
+}
+
+.registration-page .password-field .form-control {
+  padding-right: 70px;
+}
+
+.auth-switch,
+.privacy-notice,
+.registration-page .form-text,
+.registration-page .form-check-label,
+.profile-details {
+  font-size: 0.85rem;
+}
+
+.privacy-notice summary {
+  color: var(--qa-primary);
+  cursor: pointer;
+}
+
+.profile-details dt {
+  font-size: 0.78rem;
 }
 
 .password-field .is-invalid {
@@ -170,17 +181,6 @@
   stroke-width: 1.6;
 }
 
-.auth-link {
-  padding: 6px 0;
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.auth-link:hover {
-  text-decoration: underline;
-}
-
 .auth-actions {
   margin-top: 17px;
 }
@@ -209,12 +209,6 @@
   .auth-shell {
     max-width: 650px;
     padding-inline: 24px;
-  }
-
-  .brand-logo {
-    width: 145px;
-    height: 121px;
-    margin-bottom: 24px;
   }
 
   .brand-message {

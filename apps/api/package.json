@@ -19,6 +19,7 @@
     "jsonwebtoken": "catalog:"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.15",
     "vite-plus": "catalog:"
   }
 }

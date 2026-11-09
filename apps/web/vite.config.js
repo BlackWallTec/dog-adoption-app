@@ -17,7 +17,13 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-  },
+    server: {
+      proxy: {
+        "/api": {
+          target: env.API_PROXY_TARGET || "http://localhost:3000",
+          changeOrigin: true,
+        },
+      },
+    },
+  };
 });
-
-// Config temporal para algunas pruebas en local. Se debe cambiar por la URL del servidor backend en producción.
