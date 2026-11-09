@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.view.ui.theme.AndroidTheme
-import com.app.android.presentation.view.viewsCatalogo.PerrosScreen
+import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -40,7 +40,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     // El enrutador toma el control total de la app desde aquí
-                    PerrosScreen()
+                    //PerroScreen()
+                    AppNavigation()
                 }
             }
         }

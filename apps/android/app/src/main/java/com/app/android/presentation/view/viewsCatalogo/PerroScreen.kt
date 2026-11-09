@@ -42,7 +42,7 @@ import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosUiState
 import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosViewModel
 
 @Composable
-fun PerrosScreen(
+fun PerroScreen(
     modifier: Modifier = Modifier,
     vm: PerrosViewModel = hiltViewModel(),
     //nuevo
