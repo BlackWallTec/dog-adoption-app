@@ -1,5 +1,4 @@
 package com.app.android.di
-<<<<<<< HEAD
 /*
 =======
 
@@ -21,6 +20,3 @@ abstract class AppModule {
 <<<<<<< HEAD
 }
 */
-=======
-}
->>>>>>> develop
