@@ -76,9 +76,10 @@ export const postRegister = async (req, res) => {
 
     // Validar y normalizar
     const regUsuario = {
-      nombre: texto("nombre", b.nombre, 100),
-      apellidos: texto("apellidos", b.apellidos, 150),
+      nombre: texto("nombre", b.nombre, 50),
+      apellidos: texto("apellidos", b.apellidos, 50),
       fecha_nacimiento: texto("fecha_nacimiento", b.fecha_nacimiento, 30),
+      aviso_privacidad_aceptado: booleano("privacidad", value.privacidad),
     };
 
     const fecha = new Date(regUsuario.fecha_nacimiento);
@@ -91,7 +92,7 @@ export const postRegister = async (req, res) => {
       throw new ErrorValidacion("contrasena debe tener entre 8 y 32 caracteres");
     }
 
-    const correo = texto("correo", b.correo, 254).toLowerCase();
+    const correo = texto("correo", b.correo, 100).toLowerCase();
     if (!EMAIL_RE.test(correo)) throw new ErrorValidacion("correo no es válido");
 
     const telefono = texto("telefono", b.telefono, 12);
