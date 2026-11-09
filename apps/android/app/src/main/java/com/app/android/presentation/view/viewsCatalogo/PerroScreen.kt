@@ -47,7 +47,6 @@ fun PerroScreen(
     vm: PerrosViewModel = hiltViewModel(),
     //nuevo
     onDogClick: (String) -> Unit = {}
-
 ) {
     var selected by remember { mutableIntStateOf(0) } //navbar
     var query by remember { mutableStateOf("") }
