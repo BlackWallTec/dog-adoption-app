@@ -1,4 +1,5 @@
 import { supabase } from "../../../../config/supabaseClient.js";
+import { instanciarError } from "../../../../../../shared/errores.js";
 
 export default class CodigoPostal {
   // Todas las colonias de un código postal o [] si no
@@ -11,9 +12,7 @@ export default class CodigoPostal {
         ascending: true,
       });
 
-    if (error) {
-      throw new Error(`Error (${error.code}), al consultar códigos postales: ${error.message}`);
-    }
+    if (error) instanciarError("Error al consultar códigos postales", error.code);
 
     return data;
   }
@@ -26,9 +25,7 @@ export default class CodigoPostal {
       .eq("id_codigo_postal", idCodigoPostal)
       .maybeSingle();
 
-    if (error) {
-      throw new Error(`Error (${error.code}), al consultar el código postal: ${error.message}`);
-    }
+    if (error) instanciarError("Error al consultar códigos postales", error.code);
 
     return data !== null;
   }

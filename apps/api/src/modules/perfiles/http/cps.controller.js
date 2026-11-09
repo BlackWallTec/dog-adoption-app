@@ -17,9 +17,11 @@ Regresa
 
 export const getCodigosPostales = async (req, res) => {
   try {
+    const cp = req.query.cp;
+
     if (!/^\d{5}$/.test(cp)) {
       return res.status(422).json(
-        errorBody(ERROR_CODES.VALIDATION, "El código postal debe tener 5 dígitos.", {
+        errorBody(ERROR_CODES.VALIDATION, "Código postal inválido", {
           cp: "El código postal debe tener 5 dígitos.",
         }),
       );
