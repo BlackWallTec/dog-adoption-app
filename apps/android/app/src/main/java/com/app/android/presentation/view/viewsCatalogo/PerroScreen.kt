@@ -40,17 +40,20 @@ import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.organism.SearchBar
 import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosUiState
 import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosViewModel
-
+import androidx.compose.runtime.LaunchedEffect
 @Composable
 fun PerroScreen(
     modifier: Modifier = Modifier,
-    vm: PerrosViewModel = hiltViewModel(),
+    vm: PerrosViewModel = hiltViewModel(), //vm
     //nuevo
     onDogClick: (String) -> Unit = {}
 ) {
     var selected by remember { mutableIntStateOf(0) } //navbar
     var query by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        vm.onLoadPerros()
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -58,12 +61,16 @@ fun PerroScreen(
             .statusBarsPadding()
     ) {
         Column( //esto es para que se pueda mover de arriba hacia abajo y viceversa
-            modifier = Modifier.weight(1f).padding(horizontal = 24.dp)
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 24.dp)
         ) {
             when (selected) {
                 0 -> {
                     Row( //esto es para las 3 rayitas y la campana
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         IconButton(onClick = { }) {
@@ -92,7 +99,9 @@ fun PerroScreen(
                         vm = vm,
                         //nuevo
                         onDogClick = onDogClick,
-                        modifier = Modifier.weight(1f).fillMaxWidth()
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
 
                     )
                 }
@@ -110,12 +119,12 @@ fun PerroScreen(
 
 @Composable
 private fun PerrosGrid(
-    vm: PerrosViewModel,
+    vm: PerrosViewModel,        //vm
     modifier: Modifier = Modifier,
     //nuevo
     onDogClick: (String) -> Unit = {}
 ) {
-    val estado by vm.uiState.collectAsState()
+    val estado by vm.uiState.collectAsState() //vm
 
     when (val resultado = estado) {
         PerrosUiState.Loading -> Text("Cargando perros...", modifier = modifier)
@@ -136,7 +145,9 @@ private fun PerrosGrid(
                                 model = perro.fotoUrl,
                                 contentDescription = perro.nombre,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxWidth().height(150.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(150.dp)
                             )
                             Column(Modifier.padding(12.dp)) {
                                 Text(perro.nombre, fontWeight = FontWeight.Bold)
