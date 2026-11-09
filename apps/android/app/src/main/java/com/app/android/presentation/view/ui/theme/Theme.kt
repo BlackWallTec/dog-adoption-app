@@ -24,7 +24,7 @@ private val LightColorScheme =
         surfaceContainerLow = SurfaceContainerLow,
         surfaceContainer = SurfaceContainer,
         surfaceContainerHigh = SurfaceContainerHigh,
-        inverseSurface = InverseSurface,
+        inverseSurface =  InverseSurface,
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
@@ -41,7 +41,7 @@ private val LightColorScheme =
 fun AndroidTheme(
     // darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    // dynamicColor: Boolean = false,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(

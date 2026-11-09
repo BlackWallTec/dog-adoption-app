@@ -14,29 +14,35 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.RequisitosVie
 fun RequisitosRoute(
     idUsuario: String,
     idPerro: String,
-    onBack: () -> Unit, // regresar (a Catálogo)
-    onIrADatosGenerales: (idSolicitud: String) -> Unit, // navegar al paso 2
+    onBack: () -> Unit, // regresar (a Catalogo)
+    onIrADatosGenerales: () -> Unit, // navegar al paso 2 (ya no lleva id: todo está en el borrador)
     viewModel: RequisitosViewModel = hiltViewModel(),
 ) {
-    // 1 se observan los dos estados del ViewModel
     val aceptado by viewModel.aceptado.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
-    // 2 Si se creo la solicitud se navega y avisa que ya navego
+    // Borrador iniciado → navegamos y avisamos (el papelito)
     LaunchedEffect(uiState) {
-        val estado = uiState
-        if (estado is RequisitosUiState.Success) {
-            onIrADatosGenerales(estado.idSolicitud)
+        if (uiState is RequisitosUiState.Lista) {
+            onIrADatosGenerales()
             viewModel.onNavegacionRealizada()
         }
     }
 
-    // 3 se traduce el estado a parametros simples para la page
+    // Traducimos el estado a un mensaje para la page
+    val mensaje =
+        when (val estado = uiState) {
+            is RequisitosUiState.Error -> estado.mensaje
+            is RequisitosUiState.Bloqueada ->
+                "Ya tienes una solicitud activa para este perro. Puedes revisarla en Solicitudes."
+            else -> null
+        }
+
     RequisitosScreen(
         aceptado = aceptado,
         onAceptadoChange = viewModel::onAceptadoChange,
         cargando = uiState is RequisitosUiState.Loading,
-        errorMensaje = (uiState as? RequisitosUiState.Error)?.mensaje,
+        errorMensaje = mensaje,
         onBackClick = onBack,
         onContinuarClick = { viewModel.onContinuar(idUsuario, idPerro) },
     )

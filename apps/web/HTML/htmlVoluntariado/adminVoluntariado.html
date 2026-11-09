@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voluntariado | Administración</title>
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&family=Material+Symbols+Rounded&display=swap"
+    />
+
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssVoluntariado/adminVoluntariado.css" />
+
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
+
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
+
+        <main class="content-area voluntariado">
+          <h1>Voluntariado</h1>
+
+          <section class="segmento">
+            <h2>Crear jornada</h2>
+            <a class="boton" href="./createVolunteering.html"> Crear jornada </a>
+          </section>
+
+          <section class="segmento">
+            <h2>Consultar inscritos</h2>
+
+            <form id="form-inscritos" novalidate>
+              <label for="id-programa">ID del programa</label>
+              <input
+                id="id-programa"
+                name="id-programa"
+                type="text"
+                placeholder="Pega el ID del programa"
+                autocomplete="off"
+              />
+
+              <p id="error-id" role="alert" hidden>El ID no tiene un formato válido.</p>
+
+              <button class="boton" type="submit">Ver inscritos</button>
+            </form>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="../../JS/jsVoluntariado/adminVoluntariado.js"></script>
+  </body>
+</html>

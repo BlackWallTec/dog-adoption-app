@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseAdmin.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const lanzarError = (contexto, error) => {
   const err = new Error(`${contexto}: ${error.message}`);
@@ -55,5 +55,19 @@ export const crearInscripcionModel = async (idPrograma, idUsuario, fechaInscripc
     .single();
 
   if (error) lanzarError("Error al crear la inscripción", error);
+  return data;
+};
+
+// HU34: inscripciones activas de un programa, en orden de llegada
+// "Aceptado" es el default de se_inscribe.estado; las que no tienen fecha van al final
+export const getInscritosByProgramaModel = async (idPrograma) => {
+  const { data, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .select("id_usuario, fecha_inscripcion, asistencia")
+    .eq("id_programa", idPrograma)
+    .eq("estado", "Aceptado")
+    .order("fecha_inscripcion", { ascending: true, nullsFirst: false });
+
+  if (error) lanzarError("Error al consultar los inscritos", error);
   return data;
 };

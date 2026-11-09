@@ -1,26 +1,18 @@
 import express from "express";
-const router = express.Router();
-
-// Importar los controladores (solo hay uno ahorita)
+import multer from "multer";
 import * as clientController from "./requestClient.controller.js";
+import { subirDocumento } from "./documentos.controller.js";
 
-// Rutas de solicitudes
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
-//Rutas Cliente
-
-// GET /api/solicitudes/cliente/borrador?idUsuario=...&idPerro=...
-router.get("/cliente/borrador", clientController.getDraft);
-
-// POST /api/solicitudes/cliente
-router.post("/cliente", clientController.createRequest);
+// GET /api/solicitudes/cliente/activa?idUsuario=...&idPerro=...
+router.get("/cliente/activa", clientController.getActive);
 
 // GET /api/solicitudes/cliente/perfil/:idUsuario
 router.get("/cliente/perfil/:idUsuario", clientController.getProfile);
 
-// GET /api/solicitudes/cliente/:idSolicitud/datos-generales
-router.get("/cliente/:idSolicitud/datos-generales", clientController.getGeneralData);
-
-// PUT /api/solicitudes/cliente/:idSolicitud/datos-generales
-router.put("/cliente/:idSolicitud/datos-generales", clientController.updateGeneralData);
+// POST /api/solicitudes/:id/documentos  (multipart: "archivo" y "tipo")
+router.post("/:id/documentos", upload.single("archivo"), subirDocumento);
 
 export default router;

@@ -18,6 +18,7 @@
     <!-- CSS Atómico Global y Específico -->
     <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
     <link rel="stylesheet" href="../../CSS/cssCatalogo/adminPerros.css" />
+    <link rel="stylesheet" href="../../CSS/cssCatalogo/perroForm.css" />
 
     <!-- Componentes reutilizables -->
     <script type="module" src="../../components/admin-sidebar.js"></script>
@@ -165,6 +166,25 @@
         </footer>
       </div>
     </div>
+
+    <!-- HU19C: edición de la ficha de un perro -->
+    <dialog id="dialog-editar-perro" class="dialog-perro" aria-labelledby="editar-perro-titulo">
+      <header class="dialog-header">
+        <h2 id="editar-perro-titulo">Editar perro</h2>
+        <p class="dialog-hint">
+          Los campos con * son obligatorios. El estado y las fotos se cambian en otra sección.
+        </p>
+      </header>
+      <div id="editar-perro-cuerpo" class="dialog-body"></div>
+      <p id="editar-perro-aviso" class="form-notice" role="alert" hidden></p>
+      <footer class="dialog-footer">
+        <button type="button" id="editar-perro-cancelar" class="btn-secundario">Cancelar</button>
+        <button type="button" id="editar-perro-guardar" class="btn-primary" disabled>
+          Guardar cambios
+        </button>
+      </footer>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
 
     <script type="module" src="../../JS/jsCatalogo/adminPerros.view.js"></script>
   </body>

@@ -150,3 +150,4 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
 
     return dogDomain
 }
+

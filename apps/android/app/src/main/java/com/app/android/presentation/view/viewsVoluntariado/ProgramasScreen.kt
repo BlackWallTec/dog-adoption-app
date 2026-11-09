@@ -15,6 +15,7 @@ import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasVie
 fun ProgramasScreen(
     viewModel: ProgramasViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
+    onNavSelect: (Int) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -30,5 +31,6 @@ fun ProgramasScreen(
         onBackClick = onBackClick,
         onInscribirse = viewModel::inscribirse,
         snackbarHostState = snackbarHostState,
+        onNavSelect = onNavSelect,
     )
 }

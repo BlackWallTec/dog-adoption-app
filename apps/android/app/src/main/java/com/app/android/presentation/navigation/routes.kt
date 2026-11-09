@@ -12,6 +12,15 @@ sealed class Screen(
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
+    // Donativos - HU46
+    object DonarDinero : Screen("donar_dinero_screen")
+
+    object DonativoEnviado : Screen("donativo_enviado_screen/{monto}") {
+        fun crearRuta(monto: String) = "donativo_enviado_screen/$monto"
+    }
+
+    // Donativos - HU45
+    object DatosFiscales : Screen("datos_fiscales_screen")
 
     // HU39A: catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
@@ -23,14 +32,28 @@ sealed class Screen(
         fun crearRuta(idPerro: String) = "solicitud_requisitos/$idPerro"
     }
 
-    // ya con la solicitud creada
-    object DatosGenerales : Screen("solicitud_datos_generales/{idSolicitud}") {
-        fun crearRuta(idSolicitud: String) = "solicitud_datos_generales/$idSolicitud"
+    // Paso 2 · Datos generales (todo sale del borrador, no lleva parámetros)
+    object DatosGenerales : Screen("solicitud_datos_generales")
+
+    // Paso 3 · Tu hogar
+    object TuHogar : Screen("solicitud_tu_hogar")
+
+    // Paso 4 · Compromiso (todo sale del borrador, no lleva parámetros)
+    // object Compromiso : Screen("solicitud_compromiso")
+
+    object Compromiso : Screen("solicitud_compromiso/{idSolicitud}") {
+        fun crearRuta(idSolicitud: String) = "solicitud_compromiso/$idSolicitud"
     }
 
-    // solo la page con datos de prueba
-    object TuHogar : Screen("solicitud_tu_hogar/{idSolicitud}") {
-        fun crearRuta(idSolicitud: String) = "solicitud_tu_hogar/$idSolicitud"
+    // Paso 5 · Documentos
+    object Documentos : Screen("solicitud_documentos")
+
+    // Paso 6 · Confirmar (aquí está el único botón que escribe en la BD: Enviar solicitud)
+    object Confirmar : Screen("solicitud_confirmar")
+
+    // Después de enviar con éxito
+    object SolicitudEnviada : Screen("solicitud_enviada/{idSolicitud}") {
+        fun crearRuta(idSolicitud: String) = "solicitud_enviada/$idSolicitud"
     }
 
     // Patrón para nueva pantalla
