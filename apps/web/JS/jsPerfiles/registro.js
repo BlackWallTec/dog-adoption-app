@@ -35,7 +35,7 @@ for (const input of form.querySelectorAll("input, select")) {
 }
 
 toggle.addEventListener("click", () => {
-  const visible = byId("register-passwd").type === "password";
+  const visible = byId("register-contrasena").type === "password";
   for (const field of ["contrasena", "confirmContrasena"])
     byId(`register-${field}`).type = visible ? "text" : "password";
   toggle.textContent = visible ? "Ocultar" : "Ver";

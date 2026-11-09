@@ -76,23 +76,23 @@
                       <div class="invalid-feedback" id="register-apellidos-error"></div>
                     </div>
                     <div class="col-12">
-                      <label class="form-label" for="register-email">Correo</label>
+                      <label class="form-label" for="register-correo">Correo</label>
                       <input
                         class="form-control"
-                        id="register-email"
+                        id="register-correo"
                         name="correo"
                         type="email"
                         autocomplete="email"
                         inputmode="email"
                         maxlength="254"
                         placeholder="tu@correo.com"
-                        aria-describedby="register-email-help register-email-error"
+                        aria-describedby="register-correo-help register-correo-error"
                         required
                       />
-                      <div class="form-text" id="register-email-help">
+                      <div class="form-text" id="register-correo-help">
                         Gmail, Outlook, Yahoo, Hotmail o iCloud.
                       </div>
-                      <div class="invalid-feedback" id="register-email-error"></div>
+                      <div class="invalid-feedback" id="register-correo-error"></div>
                     </div>
                     <div class="col-sm-6">
                       <label class="form-label" for="register-telefono">Teléfono</label>
@@ -109,22 +109,22 @@
                       <div class="invalid-feedback" id="register-telefono-error"></div>
                     </div>
                     <div class="col-sm-6">
-                      <label class="form-label" for="register-fechaNacimiento"
+                      <label class="form-label" for="register-fecha_nacimiento"
                         >Fecha de nacimiento</label
                       >
                       <input
                         class="form-control"
-                        id="register-fechaNacimiento"
+                        id="register-fecha_nacimiento"
                         name="fecha_nacimiento"
                         type="date"
                         autocomplete="bday"
-                        aria-describedby="register-fechaNacimiento-help register-fechaNacimiento-error"
+                        aria-describedby="register-fecha_nacimiento-help register-fecha_nacimiento-error"
                         required
                       />
-                      <div class="form-text" id="register-fechaNacimiento-help">
+                      <div class="form-text" id="register-fecha_nacimiento-help">
                         Debes tener 18 años o más.
                       </div>
-                      <div class="invalid-feedback" id="register-fechaNacimiento-error"></div>
+                      <div class="invalid-feedback" id="register-fecha_nacimiento-error"></div>
                     </div>
                     <div class="col-12">
                       <label class="form-label" for="register-calle">Dirección</label>
@@ -143,34 +143,36 @@
                       <div class="invalid-feedback" id="register-calle-error"></div>
                     </div>
                     <div class="col-sm-6">
-                      <label class="form-label" for="register-numeroExterior"
+                      <label class="form-label" for="register-numero_exterior"
                         >Número exterior</label
                       >
                       <input
                         class="form-control"
-                        id="register-numeroExterior"
+                        id="register-numero_exterior"
                         name="numero_exterior"
                         inputmode="numeric"
+                        pattern="[0-9]*"
                         maxlength="9"
-                        aria-describedby="register-numeroExterior-error"
+                        aria-describedby="register-numero_exterior-error"
                         required
                       />
-                      <div class="invalid-feedback" id="register-numeroExterior-error"></div>
+                      <div class="invalid-feedback" id="register-numero_exterior-error"></div>
                     </div>
                     <div class="col-sm-6">
-                      <label class="form-label" for="register-numeroInterior"
+                      <label class="form-label" for="register-numero_interior"
                         >Número interior</label
                       >
                       <input
                         class="form-control"
-                        id="register-numeroInterior"
+                        id="register-numero_interior"
                         name="numero_interior"
                         inputmode="numeric"
+                        pattern="[0-9]*"
                         maxlength="9"
-                        aria-describedby="register-numeroInterior-error"
+                        aria-describedby="register-numero_interior-error"
                         required
                       />
-                      <div class="invalid-feedback" id="register-numeroInterior-error"></div>
+                      <div class="invalid-feedback" id="register-numero_interior-error"></div>
                     </div>
                     <div class="col-sm-6">
                       <label class="form-label" for="register-cp">Código postal</label>
@@ -195,17 +197,17 @@
                       <div class="invalid-feedback" id="register-id_codigo_postal-error"></div>
                     </div>
                     <div class="col-12">
-                      <label class="form-label" for="register-passwd">Contraseña</label>
+                      <label class="form-label" for="register-contrasena">Contraseña</label>
                       <div class="password-field">
                         <input
                           class="form-control"
-                          id="register-passwd"
+                          id="register-contrasena"
                           name="contrasena"
                           type="password"
                           autocomplete="new-password"
                           minlength="8"
                           maxlength="72"
-                          aria-describedby="register-passwd-help register-passwd-error"
+                          aria-describedby="register-contrasena-help register-contrasena-error"
                           required
                         />
                         <button
@@ -213,32 +215,32 @@
                           id="register-toggle"
                           type="button"
                           aria-label="Mostrar contraseñas"
-                          aria-controls="register-passwd register-confirmPasswd"
+                          aria-controls="register-contrasena register-confirmcontrasena"
                           aria-pressed="false"
                         >
                           Ver
                         </button>
                       </div>
-                      <div class="form-text" id="register-passwd-help">
+                      <div class="form-text" id="register-contrasena-help">
                         Usa al menos 8 caracteres.
                       </div>
-                      <div class="invalid-feedback" id="register-passwd-error"></div>
+                      <div class="invalid-feedback" id="register-contrasena-error"></div>
                     </div>
                     <div class="col-12">
-                      <label class="form-label" for="register-confirmPasswd"
+                      <label class="form-label" for="register-confirmContrasena"
                         >Confirmar contraseña</label
                       >
                       <input
                         class="form-control"
-                        id="register-confirmPasswd"
+                        id="register-confirmContrasena"
                         name="confirmContrasena"
                         type="password"
                         autocomplete="new-password"
                         maxlength="72"
-                        aria-describedby="register-confirmPasswd-error"
+                        aria-describedby="register-confirmContrasena-error"
                         required
                       />
-                      <div class="invalid-feedback" id="register-confirmPasswd-error"></div>
+                      <div class="invalid-feedback" id="register-confirmContrasena-error"></div>
                     </div>
                     <div class="col-12">
                       <details class="privacy-notice mb-3">

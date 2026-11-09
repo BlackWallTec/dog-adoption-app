@@ -9,8 +9,8 @@ export function validateRegistration(body = {}, today = new Date()) {
     telefono: typeof body.telefono === "string" ? body.telefono : null,
     id_codigo_postal: typeof body.id_codigo_postal === "string" ? body.id_codigo_postal : null,
     calle: typeof body.calle === "string" ? body.calle : null,
-    numero_exterior: typeof body.numero_exterior === "number" ? body.numero_exterior : null,
-    numero_interior: typeof body.numero_exterior === "number" ? body.numero_exterior : null,
+    numero_exterior: typeof body.numero_exterior === "string" ? body.numero_exterior : null,
+    numero_interior: typeof body.numero_interior === "string" ? body.numero_interior : null,
     privacidad: typeof body.privacidad === "boolean" ? body.privacidad : null,
   };
 
