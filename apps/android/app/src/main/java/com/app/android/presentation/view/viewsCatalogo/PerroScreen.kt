@@ -54,6 +54,7 @@ fun PerroScreen(
     LaunchedEffect(Unit) {
         vm.onLoadPerros()
     }
+    val estado by vm.uiState.collectAsState()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -95,8 +96,8 @@ fun PerroScreen(
                         onFilterClick = {}
                     )
 
-                    PerrosGrid(
-                        vm = vm,
+                    PerroScreen(
+                        estado=estado,
                         //nuevo
                         onDogClick = onDogClick,
                         modifier = Modifier
@@ -118,14 +119,12 @@ fun PerroScreen(
 }
 
 @Composable
-private fun PerrosGrid(
-    vm: PerrosViewModel,        //vm
+private fun PerroScreen(
+    estado: PerrosUiState,        //vm
     modifier: Modifier = Modifier,
     //nuevo
     onDogClick: (String) -> Unit = {}
 ) {
-    val estado by vm.uiState.collectAsState() //vm
-
     when (val resultado = estado) {
         PerrosUiState.Loading -> Text("Cargando perros...", modifier = modifier)
         PerrosUiState.Empty -> Text("No hay perros disponibles", modifier = modifier)
@@ -152,6 +151,7 @@ private fun PerrosGrid(
                             Column(Modifier.padding(12.dp)) {
                                 Text(perro.nombre, fontWeight = FontWeight.Bold)
                                 Text("${perro.edad} años")
+                                Text(perro.sexo)
                             }
                         }
                     }

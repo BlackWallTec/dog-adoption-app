@@ -15,6 +15,7 @@ class PerroRepositoryImpl @Inject constructor(
                 id=dto.id, //nuevo
                 nombre= dto.nombre,
                 edad=dto.edad,
+                sexo=dto.sexo,
                 fotoUrl= dto.foto_url ?: ""         ///
             )
         }
