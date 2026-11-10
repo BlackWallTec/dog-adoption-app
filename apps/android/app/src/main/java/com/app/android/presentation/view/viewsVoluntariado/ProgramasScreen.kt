@@ -16,6 +16,7 @@ fun ProgramasScreen(
     viewModel: ProgramasViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onNavSelect: (Int) -> Unit = {},
+    onInscripcionExitosa: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -23,6 +24,9 @@ fun ProgramasScreen(
     // Muestra en un snackbar los mensajes de la inscripción
     LaunchedEffect(Unit) {
         viewModel.mensajes.collect { snackbarHostState.showSnackbar(it) }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.inscripcionExitosa.collect { onInscripcionExitosa() }
     }
 
     ProgramasPage(
