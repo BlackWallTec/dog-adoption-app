@@ -56,3 +56,4 @@ DIR_DUMPS
 
 apps/android/pruebas-voluntariado/capturas/
 local.properties
+apps/.vitest
