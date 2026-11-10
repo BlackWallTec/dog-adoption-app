@@ -117,11 +117,6 @@ class DogModel {
     return data;
   }
 
-  // Función para crear un nuevo perro
-  // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
-  // 2. Inserción en tabla Perro_Imagen: (Incluye id_perro & url_imagen)
-  // 3. Inserción en tabla perro_tiene_caracter (Incluye id_perro & id_caracter)
-  // 4. Inserción en tabla perro_tiene_cuidado_especial (Incluye id_perro & id_cuidado_especial)
   static async createFullDog(dogData) {
     const { data, error } = await supabase.rpc("insert_full_dog", { payload: dogData });
 
@@ -163,6 +158,20 @@ class DogModel {
     }
 
     return null;
+  }
+
+  static async activarPerroBulk(idList, action) {
+    const { data, error } = await supabase
+      .from("perro")
+      .update({ activo: action })
+      .in("id_perro", idList);
+
+    if (error) {
+      console.error("Error en desactivarPerroBulk:", error.message);
+      throw new Error(`No se pudieron desactivar los registros: ${error.message}`);
+    }
+
+    return data;
   }
 }
 
