@@ -1,21 +1,22 @@
 package com.app.android.di
 
 import android.content.Context
+import com.app.android.BuildConfig
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.dataSource.dataSourcesSolicitudes.DocumentApi
-import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
-import com.app.android.data.repoImp.repoImpSolicitudes.DocumentRepositoryImpl
-import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
-import com.app.android.domain.repoInterface.repoIntSolicitudes.DocumentRepository
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
-import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
+import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
 import com.app.android.data.repoImp.repoImpCatalogo.PerroRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
+import com.app.android.data.repoImp.repoImpSolicitudes.DocumentRepositoryImpl
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCasesCatalogo.PerroRepository
-import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
+import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
+import com.app.android.domain.repoInterface.repoIntSolicitudes.DocumentRepository
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
 import com.google.gson.Gson
@@ -71,7 +72,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
         Retrofit
             .Builder()
-            .baseUrl("http://10.25.90.151:3000/") // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
+            .baseUrl(BuildConfig.BASE_URL) // backend local en Express DA MUCHOS MERGE CONF (buscar con .env mejor)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create()) // El transformador JSON de Google
             .build()
@@ -88,6 +89,7 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
     }
+
     @Provides
     @Singleton
     fun provideDogRepositoryforcatalog(apiService: DogApiService): PerroRepository {
@@ -103,12 +105,12 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideDocumentRepository(
-        //we get the api
+        // we get the api
         apiService: DocumentApi,
-        //we also get the context of the hardware to open: photos
-        @ApplicationContext context: Context
+        // we also get the context of the hardware to open: photos
+        @ApplicationContext context: Context,
     ): DocumentRepository {
-        //we call the repository implementation with the api service and context
+        // we call the repository implementation with the api service and context
         return DocumentRepositoryImpl(apiService, context)
     }
     @Provides

@@ -18,6 +18,11 @@ import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
+import androidx.compose.runtime.remember
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.compose.navigation
+import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
+
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
@@ -27,7 +32,7 @@ private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
 private fun NavController.irAOpcionBarra(opcion: Int) {
     val destino =
         when (opcion) {
-            1 ->Screen.Programas.ruta
+            1 ->Screen.GrafoVoluntariado.ruta
             2 -> Screen.DonarDinero.ruta
             4 -> Screen.DatosFiscales.ruta
             else -> null
@@ -227,11 +232,35 @@ fun AppNavigation() {
         }
 
 
-        // Pantallas Voluntariado
-        composable(route = Screen.Programas.ruta) {
-            ProgramasScreen(onBackClick = { navController.popBackStack() },
-            onNavSelect = navController::irAOpcionBarra,
-            )
+// ========= Pantallas Voluntariado ========
+// Programas y Confirmación comparten la misma instancia de ProgramasViewModel
+        navigation(
+            startDestination = Screen.Programas.ruta,
+            route = Screen.GrafoVoluntariado.ruta,
+        ) {
+            composable(route = Screen.Programas.ruta) { entry ->
+                val grafo = remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
+                ProgramasScreen(
+                    viewModel = hiltViewModel(grafo),
+                    onBackClick = { navController.navigateUp() },
+                    onNavSelect = navController::irAOpcionBarra,
+                    onInscripcionExitosa = {
+                        navController.navigate(Screen.ConfirmacionInscripcion.ruta) { launchSingleTop = true }
+                    },
+                )
+            }
+
+            composable(route = Screen.ConfirmacionInscripcion.ruta) { entry ->
+                val grafo = remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
+                ConfirmacionInscripcionRoute(
+                    viewModel = hiltViewModel(grafo),
+                    onBack = { navController.navigateUp() },
+                    onExplorarProgramas = {
+                        navController.popBackStack(Screen.Programas.ruta, inclusive = false)
+                    },
+                    onNavSelect = navController::irAOpcionBarra,
+                )
+            }
         }
 
         // Plantilla para nueva pantalla
