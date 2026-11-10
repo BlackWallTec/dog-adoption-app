@@ -1,9 +1,7 @@
 import { INTERNAL, errorFromHTTPStatus } from "../../../shared/errores.js";
 import { validateRegistration } from "../../../shared/perfiles/registro.validation.js";
 
-export class PerfilesApiError extends Error {
-  
-};
+export class PerfilesApiError extends Error {}
 
 // Mensajes para mostrar al usuario según el status HTTP
 const MESSAGES = {

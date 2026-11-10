@@ -77,7 +77,7 @@ export function validateRegistration(body = {}, today = new Date()) {
     const val = fun(value[field]);
 
     // Si no coincide con el patrón
-    if (!patrones[field].test(val)) errors[field] = `Campo inválido,\n${descript}\n`;
+    if (!patrones[field].test(val)) errors[field] = `Campo inválido,\n${String(descript)}\n`;
   }
 
   if (value.fecha_nacimiento) {
