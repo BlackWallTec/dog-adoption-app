@@ -1,6 +1,10 @@
 import { INTERNAL, errorFromHTTPStatus } from "../../../shared/errores.js";
 import { validateRegistration } from "../../../shared/perfiles/registro.validation.js";
 
+export class PerfilesApiError extends Error {
+  
+};
+
 // Mensajes para mostrar al usuario según el status HTTP
 const MESSAGES = {
   400: "Revisa el correo y la contraseña.",
@@ -90,7 +94,3 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
 }
 
 export const perfilesApi = createPerfilesApi();
-
-export class PerfilesApiError extends Error {
-  
-};
