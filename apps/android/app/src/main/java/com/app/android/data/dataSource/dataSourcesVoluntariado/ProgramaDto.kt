@@ -14,5 +14,6 @@ data class ProgramaDto(
     @SerializedName("nombre") val nombre: String,
     @SerializedName("estado_del_programa") val estadoDelPrograma: String?,
     @SerializedName("fecha_inicio") val fechaInicio: String,
-    @SerializedName("fecha_fin") val fechaFin: String
+    @SerializedName("fecha_fin") val fechaFin: String,
+    @SerializedName("usuario_inscrito") val usuarioInscrito: Boolean? = null,
 )

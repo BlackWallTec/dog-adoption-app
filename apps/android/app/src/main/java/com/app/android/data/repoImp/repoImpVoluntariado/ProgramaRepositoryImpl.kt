@@ -22,7 +22,7 @@ fun ProgramaDto.toDomain() =
         cupoMaximo = null,
         cupoDisponible = null,
         estado = EstadoPrograma.desdeTexto(estadoDelPrograma),
-        usuarioInscrito = false,
+        usuarioInscrito = usuarioInscrito==true,
     )
 
 class ProgramaRepositoryImpl @Inject constructor(
