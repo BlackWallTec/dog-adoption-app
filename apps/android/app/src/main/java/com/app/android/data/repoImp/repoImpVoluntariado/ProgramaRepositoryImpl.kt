@@ -2,7 +2,7 @@ package com.app.android.data.repoImp.repoImpVoluntariado
 
 import android.util.Log
 import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
-import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaDto
+import com.app.android.data.dtos.dtosVoluntariado.ProgramaDto
 import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository

@@ -1,4 +1,4 @@
-package com.app.android.data.dataSource.dataSourcesVoluntariado
+package com.app.android.data.dtos.dtosVoluntariado
 
 import com.google.gson.annotations.SerializedName
 
