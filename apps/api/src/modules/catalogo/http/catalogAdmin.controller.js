@@ -419,3 +419,37 @@ export const updatePerroAdmin = async (req, res) => {
     });
   }
 };
+
+// ======= HU27: Bulking dog desactivation ======
+
+export const patchActivateBulkDog = async (req, res) => {
+  console.log("Bulking dog in backend.....");
+  try {
+    const request = req.body;
+    console.log("Receiving list of ids for bulk: ", request);
+    const idList = request.idList; //list of ids
+    const action = request.action; //true or false
+    console.log(`Setting ${action} on following dogs: ${idList} `);
+
+    if (request == null) {
+      return res.status(404).json({ success: false, message: "bulk vacío" });
+    }
+
+    //1. llamada a la BD de bulk
+    const result = await dogModel.activarPerroBulk(idList, action);
+
+    console.log("Bulking done correctly");
+    return res.status(200).json({
+      success: true,
+      message: "Success in bulking update",
+    });
+  } catch (error) {
+    console.log("Bulking transaction error: ", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal error in bulking patch on BD",
+    });
+  }
+};
+
+// ==============================================

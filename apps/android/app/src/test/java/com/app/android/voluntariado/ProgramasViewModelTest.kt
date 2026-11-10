@@ -1,7 +1,7 @@
 package com.app.android.voluntariado
 
 import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
-import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramasResponseDto
+import com.app.android.data.dtos.dtosVoluntariado.ProgramasResponseDto
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
 import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.Inscripcion
