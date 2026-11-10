@@ -1,4 +1,5 @@
 import { obtenerDonativosPendientes } from "./adminDonativos.js";
+import { formatearMonto, formatearFecha } from "./adminDonativos.utils.js";
 
 const tablaBody = document.getElementById("tabla-donativos-body");
 const counterSubtitle = document.getElementById("donativos-counter-subtitle");
@@ -26,25 +27,6 @@ function mostrarMensaje(mensaje) {
   celda.textContent = mensaje;
   fila.append(celda);
   tablaBody.append(fila);
-}
-
-function formatearMonto(monto) {
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-  }).format(monto);
-}
-
-function formatearFecha(fecha) {
-  const fechaValida = new Date(fecha);
-
-  if (Number.isNaN(fechaValida.getTime())) {
-    return "Sin fecha";
-  }
-
-  return new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "medium",
-  }).format(fechaValida);
 }
 
 function renderizarTabla(donativos) {
