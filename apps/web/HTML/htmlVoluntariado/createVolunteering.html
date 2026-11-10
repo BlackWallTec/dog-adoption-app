@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <link
       rel="stylesheet"
@@ -21,7 +21,9 @@
         <div class="content-area">
           <main class="crear-programa">
             <header class="page-header">
-              <a class="back-link" href="/" id="volverListado"> Volver a Voluntariado </a>
+              <a class="back-link" href="./adminVoluntariado.html" id="volverListado">
+                Volver a Voluntariado
+              </a>
               <div class="header-content">
                 <div>
                   <p class="eyebrow">Panel de administracion / Voluntariado</p>
@@ -52,11 +54,11 @@
                       type="text"
                       id="nombre"
                       name="nombre"
-                      maxlength="15"
+                      maxlength="50"
                       required
-                      placeholder="Ej. Cuidado y Limpieza"
+                      placeholder="Ej. Limpieza"
                     />
-                    <small>Maximo 15 caracteres*</small>
+                    <small>Maximo 50 caracteres*</small>
                   </div>
 
                   <div class="form-field">
@@ -202,7 +204,9 @@
 
               <!-- Botones -->
               <div class="form-actions">
-                <a href="/" class="btn btn-outline" id="cancelarBtn"> Cancelar </a>
+                <a href="./adminVoluntariado.html" class="btn btn-outline" id="cancelarBtn">
+                  Cancelar
+                </a>
 
                 <button type="submit" class="btn btn-primary" id="publicarBtn">
                   Publicar programa

@@ -5,6 +5,10 @@ const router = express.Router();
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
 
+import verificarToken from "../../../middleware/is-auth.js";
+import requireRole from "../../../middleware/require-role.js";
+import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
+
 // ===== Rutas Especiales =======
 
 //POST api/catalogo/admin/solicitar-subida
@@ -20,6 +24,15 @@ router.get("/admin/perros", adminController.getPerrosAdmin);
 
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
+
+// HU19C: edición de fichas (solo Administrador o Root con sesión activa)
+const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+
+// GET /api/catalogo/admin/perros/:id
+router.get("/admin/perros/:id", ...soloAdmin, adminController.getPerroAdminById);
+
+// PATCH /api/catalogo/admin/perros/:id
+router.patch("/admin/perros/:id", ...soloAdmin, adminController.updatePerroAdmin);
 
 // PATCH /api/catalogo/admin/perros/:id/desactivar
 router.patch("/admin/perros/:id/desactivar", adminController.desactivarPerro);

@@ -14,25 +14,26 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
+import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.CompromisoViewModel
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewModel
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    // Inyectamos el ViewModel para pruebas
-    private val viewModel: DogDetailViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             AndroidTheme {
                 Surface(

@@ -1,5 +1,7 @@
 package com.app.android.domain.repoInterface.repoIntSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
+import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 

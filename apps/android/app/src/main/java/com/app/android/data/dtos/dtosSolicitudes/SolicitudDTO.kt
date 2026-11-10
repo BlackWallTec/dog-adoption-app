@@ -1,5 +1,6 @@
 package com.app.android.data.dtos.dtosSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
@@ -28,6 +29,7 @@ data class ApiResponseDatosGeneralesDto(
     @SerializedName("message") val message: String?,
 )
 
+// Los datos generales ya hechos buenos bonitos hermosos por formatProfile del backend
 data class DatosGeneralesDto(
     @SerializedName("id_usuario") val idUsuario: String?,
     @SerializedName("nombre_completo") val nombreCompleto: String?,
@@ -40,6 +42,26 @@ data class DatosGeneralesDto(
 )
 
 // ===== MAPPERS: DTO → Entity =====
+// Paso 3 y 4
+
+
+// Respuesta sin datos { success, message }
+data class ApiResponseSimpleDto(
+    @SerializedName("success") val success: Boolean?,
+    @SerializedName("message") val message: String?,
+)
+
+// PETICIONES (lo que se le manda  en el body)
+
+// Body del POST /api/solicitudes/cliente
+data class CrearSolicitudRequestDto(
+    @SerializedName("id_usuario") val idUsuario: String,
+    @SerializedName("id_perro") val idPerro: String,
+)
+
+
+
+// ===== MAPPERS: DTO → Entity (Recibir información =====
 
 fun SolicitudActivaDto.toDomain(): SolicitudResumen =
     SolicitudResumen(

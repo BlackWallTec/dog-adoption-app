@@ -1,0 +1,38 @@
+// Activa la medición de cobertura (JaCoCo) SOLO cuando se pasa este script con "-I".
+// Así no hace falta modificar app/build.gradle.kts ni agregar dependencias al proyecto.
+// Uso, desde apps/android (con el gradle.bat en caché si gradlew.bat no funciona):
+//   gradle -I pruebas-voluntariado/cobertura.init.gradle :app:testDebugUnitTest --tests "com.app.android.voluntariado.*" :app:createDebugUnitTestCoverageReport
+// El reporte queda en app/build/reports/coverage/test/debug/index.html
+allprojects {
+    pluginManager.withPlugin('com.android.application') {
+        android.buildTypes.debug.enableUnitTestCoverage = true
+        pluginManager.apply('jacoco')
+        jacoco.toolVersion = android.testCoverage.jacocoVersion
+
+        // El plugin de Android no permite cambiar las clases de su reporte. Por eso, al terminar,
+        // esta tarea lo vuelve a generar en la misma carpeta con los mismos datos, ya filtrado.
+        def reporteFiltrado = tasks.register('reporteCoberturaFiltrado', org.gradle.testing.jacoco.tasks.JacocoReport) {
+            dependsOn 'testDebugUnitTest', 'transformDebugClassesWithAsm'
+            executionData.from(layout.buildDirectory.file('outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'))
+            sourceDirectories.from('src/main/java')
+            classDirectories.from(
+                fileTree(layout.buildDirectory.dir('intermediates/classes/debug/transformDebugClassesWithAsm/dirs')) {
+                    // Excluido: ViewModel aún no conectado a ninguna pantalla; se probará cuando se integre
+                    exclude '**/viewModelVoluntariado/InscripcionViewModel*'
+                    exclude '**/viewModelVoluntariado/InscripcionUiState*'
+                    // InscripcionEvento vive en InscripcionUiState.kt.
+                    exclude '**/viewModelVoluntariado/InscripcionEvento*'
+                }
+            )
+            reports {
+                xml.required = true
+                xml.outputLocation = layout.buildDirectory.file('reports/coverage/test/debug/report.xml')
+                html.required = true
+                html.outputLocation = layout.buildDirectory.dir('reports/coverage/test/debug')
+            }
+        }
+        tasks.matching { it.name == 'createDebugUnitTestCoverageReport' }.configureEach {
+            finalizedBy reporteFiltrado
+        }
+    }
+}

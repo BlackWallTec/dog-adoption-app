@@ -1,8 +1,9 @@
-// ==== Codigo generado con Inteligencia Artificial (IA) ====
 // Carga de modales de manera dinámica en el DOM
 import { loadModal } from "../utils/modalLoader.js";
 import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
 import { initDogSummaryModal } from "./ModalsJS/summaryModal.controller.js";
+import { abrirEdicion } from "./adminPerros.edit.js";
+import { escaparHtml } from "./perroForm.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 1. Cargar los modales de manera dinámica
@@ -161,22 +162,23 @@ function renderizarTabla(perros) {
   tablaBody.innerHTML = perros
     .map((perro) => {
       // Foto fallback en caso de no tener URL cargada
-      const fotoUrl = perro.foto_url || perro.foto || "/public/favicon.svg";
-      const raza = textoRelacion(perro.raza, "Mestizo");
-      const edadTexto = textoEdad(perro);
-      const tamano = textoRelacion(perro.tamano || perro.tamanio, "Mediano");
-      const estado = perro.estado || "Disponible";
+      const fotoUrl = escaparHtml(perro.foto_url || perro.foto || "/public/favicon.svg");
+      const raza = escaparHtml(textoRelacion(perro.raza, "Mestizo"));
+      const edadTexto = escaparHtml(textoEdad(perro));
+      const tamano = escaparHtml(textoRelacion(perro.tamano || perro.tamanio, "Mediano"));
+      const estado = escaparHtml(perro.estado || "Disponible");
       const badgeClase = obtenerClaseBadge(estado);
-      const id = perro.id ?? perro.id_perro ?? "";
+      const id = escaparHtml(perro.id ?? perro.id_perro ?? "");
+      const nombre = escaparHtml(perro.nombre);
 
       return `
       <tr data-id="${id}">
         <td>
-          <img src="${fotoUrl}" alt="${perro.nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
+          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
         </td>
         <td>
           <div class="dog-name-cell">
-            <span class="dog-name">${perro.nombre}</span>
+            <span class="dog-name">${nombre}</span>
             <span class="dog-meta">${raza}</span>
           </div>
         </td>
@@ -240,5 +242,47 @@ async function cargarPerros() {
   }
 }
 
+tablaBody?.addEventListener("click", async (event) => {
+  const boton = event.target.closest(".action-delete");
+  if (!boton) return;
+
+  const id = boton.closest("tr")?.dataset.id;
+  if (!id) return;
+
+  const perro = catalogoPerros.find((item) => String(item.id_perro ?? item.id) === id);
+  const nombre = perro?.nombre || "este perro";
+
+  if (!window.confirm(`¿Desactivar a ${nombre}? Dejará de aparecer en el catálogo.`)) {
+    return;
+  }
+
+  boton.disabled = true;
+
+  try {
+    const respuesta = await fetch(`/api/catalogo/admin/perros/${id}/desactivar`, {
+      method: "PATCH",
+    });
+    const data = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+      throw new Error(data.message || `No se pudo desactivar el perro (${respuesta.status}).`);
+    }
+
+    await cargarPerros();
+  } catch (error) {
+    console.error("Error al desactivar el perro:", error);
+    window.alert(error instanceof Error ? error.message : "No se pudo desactivar el perro.");
+    boton.disabled = false;
+  }
+});
+
 // Carga inicial al montar la página
 document.addEventListener("DOMContentLoaded", cargarPerros);
+
+// HU19C: botón Editar de cada fila (delegación de eventos porque las filas se re-pintan)
+tablaBody?.addEventListener("click", (evento) => {
+  const boton = evento.target.closest(".action-edit");
+  if (!boton) return;
+  const id = boton.closest("tr")?.dataset.id;
+  if (id) abrirEdicion(id, cargarPerros);
+});

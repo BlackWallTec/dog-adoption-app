@@ -1,0 +1,193 @@
+/*Hu19 Editar */
+.dialog-perro {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  width: min(640px, 92vw);
+  max-height: 90vh;
+  margin: auto;
+  background: #ffffff;
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+.dialog-perro[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-perro::backdrop {
+  background: rgba(58, 58, 58, 0.45);
+}
+
+.dialog-header {
+  padding: 24px 28px 8px;
+}
+
+.dialog-header h2 {
+  font-family: var(--font-headline);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.dialog-hint {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 4px;
+}
+
+.dialog-body {
+  padding: 12px 28px;
+  overflow-y: auto;
+}
+
+.dialog-status {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dialog-status.error {
+  color: var(--md-sys-color-error);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface);
+  background: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--md-sys-color-secondary);
+  box-shadow: 0 0 0 2px var(--md-sys-color-secondary-container);
+}
+
+.field.has-error input,
+.field.has-error select,
+.field.has-error textarea {
+  border-color: var(--md-sys-color-error);
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--md-sys-color-secondary);
+}
+
+.field-hint:empty {
+  display: none;
+}
+
+.field-error {
+  min-height: 15px;
+  font-size: 12px;
+  color: var(--md-sys-color-error);
+}
+
+.field-checks {
+  display: flex;
+  gap: 28px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-notice {
+  margin: 0 28px 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.form-notice.error {
+  background: #fdecea;
+  color: var(--md-sys-color-error);
+}
+
+.form-notice.info {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 28px 24px;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secundario {
+  background: none;
+  border: 1.5px solid var(--md-sys-color-secondary);
+  color: var(--md-sys-color-secondary);
+  border-radius: 24px;
+  padding: 10px 22px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--md-sys-color-on-surface);
+  color: #ffffff;
+  padding: 12px 22px;
+  border-radius: 24px;
+  font-size: 14px;
+  z-index: 1000;
+}
+
+@media (max-width: 560px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
