@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Crea tu cuenta de Qariño Animal." />
+    <title>Crear cuenta | Qariño Animal</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Roboto:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="../../CSS/bootstrap-theme.css" />
+    <link rel="stylesheet" href="../../CSS/cssPerfiles/perfiles.css" />
+  </head>
+  <body class="auth-page registration-page">
+    <a class="visually-hidden-focusable skip-link" href="#register-nombre">Ir al formulario</a>
+    <header class="auth-header sticky-top">
+      <div class="container-fluid d-flex align-items-center justify-content-between h-100">
+        <span class="auth-header-title">Crear cuenta</span>
+        <a class="btn btn-outline-secondary rounded-pill" href="login.html">Cancelar</a>
+      </div>
+    </header>
+    <main class="auth-main">
+      <div class="container auth-shell">
+        <div class="row align-items-start gy-4">
+          <aside class="col-lg-4 brand-column" aria-label="Qariño Animal">
+            <div class="brand-message">
+              <h2>Tu próxima historia<br />de cariño empieza aquí.</h2>
+              <p>Crea tu cuenta para acceder a tus datos y acompañarnos a encontrar más hogares.</p>
+              <p class="small">¿Ya tienes una cuenta? <a href="login.html">Iniciar sesión</a></p>
+            </div>
+          </aside>
+          <section class="col-lg-7 offset-lg-1" aria-labelledby="register-title">
+            <div class="card auth-card">
+              <div class="card-body">
+                <p class="auth-eyebrow">Qariño Animal</p>
+                <h1 id="register-title">Crea tu cuenta</h1>
+                <p class="auth-description">
+                  Completa tus datos. Todos los campos son obligatorios.
+                </p>
+                <form id="register-form" novalidate>
+                  <div class="row g-3">
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-nombre">Nombre(s)</label>
+                      <input
+                        class="form-control"
+                        id="register-nombre"
+                        name="nombre"
+                        autocomplete="given-name"
+                        maxlength="100"
+                        aria-describedby="register-nombre-error"
+                        required
+                      />
+                      <div class="invalid-feedback" id="register-nombre-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-apellidos">Apellidos</label>
+                      <input
+                        class="form-control"
+                        id="register-apellidos"
+                        name="apellidos"
+                        autocomplete="family-name"
+                        maxlength="150"
+                        aria-describedby="register-apellidos-error"
+                        required
+                      />
+                      <div class="invalid-feedback" id="register-apellidos-error"></div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="register-correo">Correo</label>
+                      <input
+                        class="form-control"
+                        id="register-correo"
+                        name="correo"
+                        type="email"
+                        autocomplete="email"
+                        inputmode="email"
+                        maxlength="254"
+                        placeholder="tu@correo.com"
+                        aria-describedby="register-correo-help register-correo-error"
+                        required
+                      />
+                      <div class="form-text" id="register-correo-help">
+                        Gmail, Outlook, Yahoo, Hotmail o iCloud.
+                      </div>
+                      <div class="invalid-feedback" id="register-correo-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-telefono">Teléfono</label>
+                      <input
+                        class="form-control"
+                        id="register-telefono"
+                        name="telefono"
+                        type="tel"
+                        autocomplete="tel"
+                        maxlength="25"
+                        aria-describedby="register-telefono-error"
+                        required
+                      />
+                      <div class="invalid-feedback" id="register-telefono-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-fecha_nacimiento"
+                        >Fecha de nacimiento</label
+                      >
+                      <input
+                        class="form-control"
+                        id="register-fecha_nacimiento"
+                        name="fecha_nacimiento"
+                        type="date"
+                        autocomplete="bday"
+                        aria-describedby="register-fecha_nacimiento-help register-fecha_nacimiento-error"
+                        required
+                      />
+                      <div class="form-text" id="register-fecha_nacimiento-help">
+                        Debes tener 18 años o más.
+                      </div>
+                      <div class="invalid-feedback" id="register-fecha_nacimiento-error"></div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="register-calle">Dirección</label>
+                      <input
+                        class="form-control"
+                        id="register-calle"
+                        name="calle"
+                        autocomplete="address-line1"
+                        maxlength="250"
+                        aria-describedby="register-calle-help register-calle-error"
+                        required
+                      />
+                      <div class="form-text" id="register-calle-help">
+                        Incluye calle, colonia, municipio y estado.
+                      </div>
+                      <div class="invalid-feedback" id="register-calle-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-numero_exterior"
+                        >Número exterior</label
+                      >
+                      <input
+                        class="form-control"
+                        id="register-numero_exterior"
+                        name="numero_exterior"
+                        maxlength="9"
+                        aria-describedby="register-numero_exterior-error"
+                        required
+                      />
+                      <div class="invalid-feedback" id="register-numero_exterior-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-numero_interior"
+                        >Número interior</label
+                      >
+                      <input
+                        class="form-control"
+                        id="register-numero_interior"
+                        name="numero_interior"
+                        maxlength="9"
+                        aria-describedby="register-numero_interior-error"
+                        required
+                      />
+                      <div class="invalid-feedback" id="register-numero_interior-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-cp">Código postal</label>
+                      <input
+                        class="form-control"
+                        id="register-cp"
+                        inputmode="numeric"
+                        maxlength="5"
+                        autocomplete="postal-code"
+                      />
+                      <div class="invalid-feedback" id="register-cp-error"></div>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label" for="register-id_codigo_postal">Colonia</label>
+                      <select
+                        class="form-select"
+                        id="register-id_codigo_postal"
+                        name="id_codigo_postal"
+                        required
+                      ></select>
+                      <div class="form-text" id="register-cp-resumen"></div>
+                      <div class="invalid-feedback" id="register-id_codigo_postal-error"></div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="register-contrasena">Contraseña</label>
+                      <div class="password-field">
+                        <input
+                          class="form-control"
+                          id="register-contrasena"
+                          name="contrasena"
+                          type="password"
+                          autocomplete="new-password"
+                          minlength="8"
+                          maxlength="72"
+                          aria-describedby="register-contrasena-help register-contrasena-error"
+                          required
+                        />
+                        <button
+                          class="password-toggle password-toggle-text"
+                          id="register-toggle"
+                          type="button"
+                          aria-label="Mostrar contraseñas"
+                          aria-controls="register-contrasena register-confirmcontrasena"
+                          aria-pressed="false"
+                        >
+                          Ver
+                        </button>
+                      </div>
+                      <div class="form-text" id="register-contrasena-help">
+                        Usa al menos 8 caracteres.
+                      </div>
+                      <div class="invalid-feedback" id="register-contrasena-error"></div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="register-confirmContrasena"
+                        >Confirmar contraseña</label
+                      >
+                      <input
+                        class="form-control"
+                        id="register-confirmContrasena"
+                        name="confirmContrasena"
+                        type="password"
+                        autocomplete="new-password"
+                        maxlength="72"
+                        aria-describedby="register-confirmContrasena-error"
+                        required
+                      />
+                      <div class="invalid-feedback" id="register-confirmContrasena-error"></div>
+                    </div>
+                    <div class="col-12">
+                      <details class="privacy-notice mb-3">
+                        <summary>Aviso de privacidad del registro</summary>
+                        <p class="mb-0 mt-2">
+                          Tus datos se utilizarán para crear tu cuenta, permitirte acceder a ella y
+                          gestionar tus trámites con Qariño Animal. El personal autorizado podrá
+                          consultar la información necesaria para atenderlos.
+                        </p>
+                      </details>
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          id="register-privacidad"
+                          name="privacidad"
+                          type="checkbox"
+                          aria-describedby="register-privacidad-error"
+                          required
+                        />
+                        <label class="form-check-label" for="register-privacidad"
+                          >He leído y acepto el aviso de privacidad.</label
+                        >
+                        <div class="invalid-feedback" id="register-privacidad-error"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    id="register-feedback"
+                    class="alert alert-danger"
+                    role="alert"
+                    tabindex="-1"
+                    hidden
+                  ></div>
+                  <div class="auth-actions">
+                    <button class="btn btn-primary rounded-pill" id="register-submit" type="submit">
+                      <span
+                        class="spinner-border spinner-border-sm me-2"
+                        aria-hidden="true"
+                        hidden
+                      ></span>
+                      <span data-button-label>Crear mi cuenta</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <noscript
+      ><p class="container alert alert-warning">
+        Activa JavaScript para crear tu cuenta.
+      </p></noscript
+    >
+    <script type="module" src="../../JS/jsPerfiles/registro.js"></script>
+  </body>
+</html>

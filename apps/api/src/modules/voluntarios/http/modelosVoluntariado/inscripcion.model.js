@@ -71,3 +71,14 @@ export const getInscritosByProgramaModel = async (idPrograma) => {
   if (error) lanzarError("Error al consultar los inscritos", error);
   return data;
 };
+
+// Ids de los programas en los que el usuario ya está inscrito (para el botón "Inscrito" del catálogo)
+export const getIdsProgramasInscritosModel = async (idUsuario) => {
+  const { data, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .select("id_programa")
+    .eq("id_usuario", idUsuario);
+
+  if (error) lanzarError("Error al consultar las inscripciones del usuario", error);
+  return new Set(data.map((fila) => fila.id_programa));
+};

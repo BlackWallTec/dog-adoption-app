@@ -1,4 +1,5 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { instanciarError } from "../../../../../../shared/errores.js";
 
 // Se parametrizan las consultas, para que se traten como dato y no
 // como instrucción.
@@ -25,9 +26,7 @@ export default class Usuario {
     // conveniente toda vez que sólo debe existir una cuenta
     // asociada a un email)
 
-    if (error) {
-      throw new Error(`Error (${error.code}), al consultar usuario: ${error.message}`);
-    }
+    if (error) instanciarError("Error al consultar usuario", error.code);
 
     if (!data) {
       return null;
@@ -39,5 +38,14 @@ export default class Usuario {
       contrasena,
       rol,
     };
+  }
+
+  static async registerAccount(id, Registro, tabla) {
+    const { _data, error } = await supabaseAdmin.from(tabla).insert({
+      id_usuario: id,
+      ...Registro,
+    });
+
+    if (error) instanciarError(`Error al crear cuenta (${error.code})`, error.code);
   }
 }

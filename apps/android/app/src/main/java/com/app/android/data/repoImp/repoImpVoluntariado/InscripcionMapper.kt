@@ -1,6 +1,6 @@
 package com.app.android.data.repoImp.repoImpVoluntariado
 
-import com.app.android.data.dataSource.dataSourcesVoluntariado.InscripcionDto
+import com.app.android.data.dtos.dtosVoluntariado.InscripcionDto
 import com.app.android.domain.entities.entitiesVoluntariado.Inscripcion
 
 fun InscripcionDto.toDomain(): Inscripcion =

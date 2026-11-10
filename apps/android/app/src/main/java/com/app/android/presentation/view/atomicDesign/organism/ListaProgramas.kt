@@ -14,10 +14,10 @@ import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.presentation.view.atomicDesign.molecule.TarjetaVoluntariado
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import com.app.android.presentation.view.viewsVoluntariado.fechaTexto
+import com.app.android.presentation.view.viewsVoluntariado.horarioTexto
+import com.app.android.presentation.view.viewsVoluntariado.ubicacionTexto
 
 @Composable
 fun ListaProgramas(
@@ -34,23 +34,15 @@ fun ListaProgramas(
             items = programas,
             key = { it.id },
         ) { programa ->
-            val zoneId = ZoneId.systemDefault()
-            val dateFormatter = DateTimeFormatter.ofPattern("EEE. d MMM. yyyy", Locale("es", "ES"))
-            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale("es", "ES"))
-
-            val fechaTexto = dateFormatter.withZone(zoneId).format(programa.fechaInicio).replaceFirstChar { it.uppercase() }
-            val horaInicio = timeFormatter.withZone(zoneId).format(programa.fechaInicio)
-            val horaFin = timeFormatter.withZone(zoneId).format(programa.fechaFin)
-            val horarioTexto = "$horaInicio – $horaFin h"
 
             val (textoBoton, botonHabilitado) = botonDe(programa)
 
             TarjetaVoluntariado(
                 tipo = programa.tipo,
                 titulo = programa.nombre,
-                fecha = fechaTexto,
-                horario = horarioTexto,
-                ubicacion = programa.ubicacion ?: "Refugio Qariño · Querétaro",
+                fecha = programa.fechaTexto(),
+                horario = programa.horarioTexto(),
+                ubicacion = programa.ubicacionTexto(),
                 textoCupo = "",
                 progresoCupo = 0f,
                 alAccionBoton = { onInscribirse(programa) },

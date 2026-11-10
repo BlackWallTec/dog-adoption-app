@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
+import { ERROR_CODES, errorBody } from "../../../../../shared/errores.js";
 
 /*
 IMPORTANTE
@@ -35,29 +36,29 @@ const cookieBase = {
 // Inicio de sesión
 export const postLogin = async (req, res) => {
   try {
-    const email = req.body.email;
-    const passwd = req.body.passwd;
+    let correo = req.body?.correo;
+    const contrasena = req.body?.contrasena;
 
-    if (typeof email !== "string" || typeof passwd !== "string" || !email || !passwd) {
-      return res.status(400).json({
-        error: "Correo y contraseña son requeridos",
-      });
+    if (typeof correo !== "string" || typeof contrasena !== "string" || !correo || !contrasena) {
+      return res
+        .status(400)
+        .json(errorBody(ERROR_CODES.BAD_REQUEST, "Correo y contraseña son requeridos"));
     }
 
-    const usuario = await Usuario.fetchByEmail(email.trim());
+    correo = correo.toLowerCase();
+
+    const usuario = await Usuario.fetchByEmail(correo.trim());
 
     if (!usuario?.contrasena) {
-      return res.status(401).json({
-        error: "Credenciales inválidas",
-      });
+      return res.status(401).json(errorBody(ERROR_CODES.UNAUTHENTICATED, "Credenciales inválidas"));
     }
 
     // Se compara lo ingresado con el hash obtenido de la DB
-    const coincide = await bcrypt.compare(passwd, usuario.contrasena);
+    const coincide = await bcrypt.compare(contrasena, usuario.contrasena);
     if (!coincide) {
-      return res.status(401).json({
-        error: "Credenciales inválidas",
-      });
+      return res
+        .status(401)
+        .json(errorBody(ERROR_CODES.INVALID_CREDENTIALS, "Credenciales inválidas"));
     }
 
     const vida = vidaSeconds(usuario.rol);
@@ -65,7 +66,7 @@ export const postLogin = async (req, res) => {
     const token = jwt.sign(
       {
         uuid: usuario.id_usuario,
-        email: email,
+        correo: correo,
         rol: usuario.rol,
       },
       process.env.JWT_SECRET,
@@ -82,7 +83,7 @@ export const postLogin = async (req, res) => {
       return res.status(200).json({
         user: {
           id: usuario.id_usuario,
-          email: email,
+          correo: correo,
           rol: usuario.rol,
         },
         token,
@@ -97,16 +98,16 @@ export const postLogin = async (req, res) => {
     return res.status(200).json({
       user: {
         id: usuario.id_usuario,
-        email: email,
+        correo: correo,
         rol: usuario.rol,
       },
     });
   } catch (error) {
     console.error(error);
 
-    return res.status(500).json({
-      error: "Error interno del servidor",
-    });
+    return res
+      .status(500)
+      .json(errorBody(ERROR_CODES.INTERNAL, `Error interno del servidor: ${error.message}`));
   }
 };
 
@@ -119,6 +120,6 @@ export const postLogout = (req, res) => {
 // Para corroborar info. de la sesión
 export const getMe = (req, res) => {
   // req.user lo puso verificarToken
-  const { uuid, email, rol } = req.user;
-  return res.status(200).json({ user: { id: uuid, email, rol } });
+  const { uuid, correo, rol } = req.user;
+  return res.status(200).json({ user: { id: uuid, correo, rol } });
 };

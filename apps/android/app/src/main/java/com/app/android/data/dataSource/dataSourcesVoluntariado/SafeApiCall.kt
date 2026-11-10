@@ -1,6 +1,7 @@
 package com.app.android.data.dataSource.dataSourcesVoluntariado
 
 import android.util.Log
+import com.app.android.data.dtos.dtosVoluntariado.ErrorApiDto
 import com.app.android.domain.entities.entitiesVoluntariado.Resultado
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
 import com.google.gson.Gson

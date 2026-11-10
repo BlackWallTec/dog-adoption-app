@@ -9,6 +9,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: r("index.html"),
+        login: r("HTML/htmlPerfiles/login.html"),
         adminPerros: r("HTML/htmlCatalogo/adminPerros.html"),
         adminVoluntariado: r("HTML/htmlVoluntariado/adminVoluntariado.html"),
         adminInscritos: r("HTML/htmlVoluntariado/adminInscritos.html"),

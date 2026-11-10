@@ -24,6 +24,11 @@ sealed class Screen(
 
     // HU39A: catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
+    // HU33: confirmación de inscripción (lee el programa del ViewModel compartido, sin argumentos)
+    object ConfirmacionInscripcion : Screen("voluntariado_confirmacion")
+
+    // Grafo que agrupa Programas y Confirmación para que compartan ProgramasViewModel
+    object GrafoVoluntariado : Screen("voluntariado_graph")
 
     // ===== Solicitudes de adopción =====
 
