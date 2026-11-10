@@ -1,8 +1,8 @@
 package com.app.android.voluntariado
 
 import com.app.android.data.dataSource.dataSourcesVoluntariado.InscripcionApi
-import com.app.android.data.dataSource.dataSourcesVoluntariado.InscripcionDto
-import com.app.android.data.dataSource.dataSourcesVoluntariado.RespuestaApiDto
+import com.app.android.data.dtos.dtosVoluntariado.InscripcionDto
+import com.app.android.data.dtos.dtosVoluntariado.RespuestaApiDto
 import com.app.android.data.dataSource.dataSourcesVoluntariado.safeApiCall
 import com.app.android.data.repoImp.repoImpVoluntariado.InscripcionRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.toDomain

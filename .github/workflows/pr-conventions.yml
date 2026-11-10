@@ -46,9 +46,18 @@ jobs:
         env:
           BRANCH: ${{ github.head_ref }}
         run: |
-          if [[ "$BRANCH" =~ ^(feature|bugfix|docs|chore)/[a-z0-9._-]+$ ]]; then
+          if [[ "$BRANCH" =~ ^(main|master|develop)$ ]]; then
             echo "Branch name OK"
+
+          elif [[ "$BRANCH" =~ ^feature/(solicitudes|catalogo|perfiles|donativos|voluntariado)-hu[0-9]{2}+(-[a-z0-9]+)*$ ]]; then
+            echo "Feature branch name OK"
+
+          elif [[ "$BRANCH" =~ ^(bugfix|fix|hotfix|release|chore|docs)/[a-z0-9]+([.-][a-z0-9]+)*$ ]]; then
+            echo "Branch name OK"
+
           else
             echo "Invalid branch name: $BRANCH"
+            echo "Expected feature/<module>-hu<ticket>-<optional-description>"
+            echo "Or <bugfix|fix|hotfix|release|chore|docs>/<short-description>"
             exit 1
           fi

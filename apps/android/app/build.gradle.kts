@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 val localProps =
     Properties().apply {
@@ -28,6 +29,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", "")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
+        buildConfigField("String", "BASE_URL", "\"${localProps.getProperty("BASE_URL", "")}\"")
     }
 
     buildTypes {
@@ -87,9 +89,9 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    //para las imagenes
+    // para las imagenes
     implementation("io.coil-kt.coil3:coil-compose:3.6.3") //
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3")  //
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3") //
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0") //
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
