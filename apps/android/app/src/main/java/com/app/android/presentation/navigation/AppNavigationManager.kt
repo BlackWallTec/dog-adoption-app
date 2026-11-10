@@ -1,4 +1,5 @@
 package com.app.android.presentation.navigation
+import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
@@ -58,10 +59,19 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
+        //startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
+        startDestination = Screen.Catalogo.ruta,
     ) {
         // ========= Pantallas Catalogo ========
-
+        composable(route=Screen.Catalogo.ruta){
+            PerroScreen(
+                onDogClick = { dogId ->
+                    navController.navigate(
+                        Screen.DetallePerro.crearRuta(dogId)
+                    )
+                }
+            )
+        }
         // PANTALLA 2: El detalle del perro
         composable(
             route = Screen.DetallePerro.ruta,

@@ -21,11 +21,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.CompromisoViewModel
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewModel
-import com.app.android.presentation.view.viewsCatalogo.PerrosScreen
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
@@ -40,6 +40,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
+                    // El enrutador toma el control total de la app desde aquí
+                    //PerroScreen()
                     AppNavigation()
                 }
             }
