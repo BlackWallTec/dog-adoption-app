@@ -11,6 +11,7 @@ export default defineConfig({
         main: r("index.html"),
         login: r("HTML/htmlPerfiles/login.html"),
         adminPerros: r("HTML/htmlCatalogo/adminPerros.html"),
+        adminDonativos: r("HTML/htmlDonativos/adminDonativos.html"),
         adminVoluntariado: r("HTML/htmlVoluntariado/adminVoluntariado.html"),
         adminInscritos: r("HTML/htmlVoluntariado/adminInscritos.html"),
         createVolunteering: r("HTML/htmlVoluntariado/createVolunteering.html"),
