@@ -53,7 +53,7 @@ async function solicitarAPI(ruta, opciones = {}) {
     } else {
       message =
         resultado.message ||
-        reusltado.error ||
+        resultado.error ||
         "No se pudo completar la solicitud, intenta nuevamente.";
     }
 
