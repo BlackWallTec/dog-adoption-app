@@ -91,4 +91,6 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
 
 export const perfilesApi = createPerfilesApi();
 
-export class PerfilesApiError extends Error {};
+export class PerfilesApiError extends Error {
+  
+};
