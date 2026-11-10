@@ -49,14 +49,18 @@ router.get("/admin/cuidado_especial", adminController.getCuidadoEspecial);
 // Get /api/catalogo/admin/admin/razas
 router.get("/admin/razas", adminController.getRazas);
 
-//obtener todos los perros
-router.get("/cliente/perros", clientController.getDogs);
+//Desactivar bulk de perros
+// PATCH /api/catalogo/admin/perros/bulk/activar
+router.patch("/admin/perros/bulk/activar", adminController.patchActivateBulkDog);
 
 // ==== Fin Rutas Admin ======
 
 // ===== Rutas Cliente ====
 
-// Get /api/catalogo/cliente/perros/:id (¡nueva!)
+// Get /api/catalogo/cliente/perros/:id
 router.get("/cliente/perros/:id", clientController.getDogById);
+
+//obtener todos los perros
+router.get("/cliente/perros", clientController.getDogs);
 
 export default router;
