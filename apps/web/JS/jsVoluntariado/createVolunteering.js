@@ -43,13 +43,21 @@ async function solicitarAPI(ruta, opciones = {}) {
   const resultado = esJSON ? await respuesta.json() : {};
 
   if (!respuesta.ok) {
-    const mensaje =
-      respuesta.status === 401
-        ? "Tu sesión no está activa. Inicia sesión para continuar."
-        : respuesta.status === 403
-          ? "Necesitas permisos de Administrador o Root para realizar esta acción."
-          : "No se pudo completar la solicitud. Intenta nuevamente.";
-    const error = new Error(resultado.message || resultado.error || mensaje);
+    let message;
+
+    if (respuesta.status === 401) {
+      message =
+        "Tu sesion no esta activa. Inicia sesion para continuar. Si consideras que esto es un error comunicate con el administrador del sistema ";
+    } else if (respuesta.status === 403) {
+      message = "Necesitas permisos de administrador para realizar esta acción.";
+    } else {
+      message =
+        resultado.message ||
+        reusltado.error ||
+        "No se pudo completar la solicitud, intenta nuevamente.";
+    }
+
+    const error = new Error(message);
     error.code = resultado.code;
     error.empalmes = resultado.empalmes;
     throw error;
