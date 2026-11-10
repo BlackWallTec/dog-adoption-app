@@ -32,17 +32,28 @@ export function errorBody(code, error, fields) {
   return fields ? { error, code, fields } : { error, code };
 }
 
-// En lugar de extender
 export class VALIDATION extends Error {
   constructor(message = "Error de validación", fields) {
     super(message);
 
-    this.name = "ValidationError";
+    this.name = "VALIDATION_ERROR";
     this.code = ERROR_CODES.VALIDATION;
 
     if (fields) {
       this.fields = fields;
     }
+  }
+
+  mostrarFields() {
+    if (this.fields) {
+      return Object.entries(this.fields)
+        .map(([campo, valor]) => `${campo}: ${valor}`)
+        .join("\n\n");
+    }
+  }
+
+  getFields() {
+    if (this.fields) return this.fields;
   }
 }
 
