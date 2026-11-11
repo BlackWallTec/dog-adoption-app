@@ -1,5 +1,5 @@
 import CodigoPostal from "./modelosPerfiles/cps.model.js";
-import { ERROR_CODES, errorBody } from "../../../../../shared/errores.js";
+import { ERROR_CODES, errorBody } from "@qarino/shared/errores.js";
 
 /* Recordar que este endpoint se utiliza antes de tener sesión
 Regresa

@@ -9,6 +9,9 @@
     "test": "vp test",
     "preview": "vp preview"
   },
+  "dependencies": {
+    "@qarino/shared": "workspace:*"
+  },
   "devDependencies": {
     "supabase": "catalog:",
     "vite": "catalog:",

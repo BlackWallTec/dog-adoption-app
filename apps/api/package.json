@@ -11,6 +11,7 @@
     "test:solicitudes": "vp test tests/solicitudes"
   },
   "dependencies": {
+    "@qarino/shared": "workspace:*",
     "@supabase/supabase-js": "catalog:",
     "bcryptjs": "catalog:",
     "cookie-parser": "catalog:",
