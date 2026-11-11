@@ -3,11 +3,17 @@ package com.app.android.domain.entities.entitiesSolicitudes
 /*
 Pendientes a añadir en la BD:
 alter table public.solicitud_adopcion
-  add column if not exists tiene_veterinario boolean,
-  add column if not exists detalle_veterinario character varying,
-  add column if not exists tiempo_solo character varying,
-  add column if not exists rutina_diaria character varying,
-  add column if not exists manejo_comportamiento character varying;
+  drop constraint if exists compromiso_textos_max_1000;
+
+alter table public.solicitud_adopcion
+  add constraint compromiso_textos_max_300 check (
+    char_length(cuidados_basicos) <= 300
+    and char_length(opinion_esterilizacion) <= 300
+    and char_length(detalle_veterinario) <= 300
+    and char_length(tiempo_solo) <= 300
+    and char_length(rutina_diaria) <= 300
+    and char_length(manejo_comportamiento) <= 300
+  ) not valid;
  */
 
 data class Compromiso(
