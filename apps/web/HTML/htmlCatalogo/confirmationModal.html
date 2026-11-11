@@ -1,0 +1,33 @@
+<!-- MODAL DE CONFIRMACIÓN GLOBAL -->
+<div class="modal-overlay" id="modalConfirmacionGlobal">
+  <div class="modal-card modal-confirm" id="confirmCard">
+    <!-- Encabezado con título dinámico y botón X -->
+    <header class="modal-header">
+      <h3 class="modal-title" id="confirmTitle">¿Confirmar Acción?</h3>
+      <button type="button" class="icon-btn" aria-label="Cerrar modal" id="btnConfirmCloseTop">
+        <span class="material-icons-round">close</span>
+      </button>
+    </header>
+
+    <!-- Cuerpo con icono destacado y mensaje personalizable -->
+    <div class="modal-body confirm-body">
+      <div class="confirm-icon-wrapper">
+        <span class="material-icons-round" id="confirmIcon">help_outline</span>
+      </div>
+      <div class="confirm-content">
+        <p class="confirm-text" id="confirmMessage">
+          ¿Estás seguro de que deseas ejecutar esta acción? Este proceso actualizará los registros
+          en el sistema.
+        </p>
+      </div>
+    </div>
+
+    <!-- Pie del Modal: Botones de Rechazar/Cancelar y Confirmar -->
+    <footer class="modal-footer">
+      <button type="button" class="btn-text" id="btnConfirmReject">Cancelar</button>
+      <button type="button" class="btn-primary btn-confirm-action" id="btnConfirmAccept">
+        Confirmar
+      </button>
+    </footer>
+  </div>
+</div>

@@ -7,11 +7,13 @@ import com.app.android.data.dataSource.dataSourcesSolicitudes.DocumentApi
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.data.repoImp.repoImpCatalogo.PerroRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.DocumentRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.ProgramaRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntCasesCatalogo.PerroRepository
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.DocumentRepository
@@ -86,6 +88,13 @@ object NetworkModule {
     fun provideDogRepository(apiService: DogApiService): DogRepositoryInt {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return DogRepositoryImpl(apiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDogRepositoryforcatalog(apiService: DogApiService): PerroRepository {
+        // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
+        return PerroRepositoryImpl(apiService)
     }
 
     @Provides

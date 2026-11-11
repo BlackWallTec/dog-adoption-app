@@ -2,18 +2,12 @@ import { perfilesApi } from "./perfiles.api.js";
 import { initCodigoPostal } from "./registro.cp.js";
 import { VALIDATION, UNAUTHENTICATED } from "../../../shared/errores.js";
 import { validateRegistration } from "../../../shared/perfiles/registro.validation.js";
+import { fieldError, byId } from "./utils.js";
 
-const byId = (id) => document.getElementById(id);
 const form = byId("register-form");
 const submit = byId("register-submit");
 const toggle = byId("register-toggle");
 const feedback = byId("register-feedback");
-
-function fieldError(input, message = "") {
-  input.classList.toggle("is-invalid", Boolean(message));
-  input.setAttribute("aria-invalid", String(Boolean(message)));
-  byId(`${input.id}-error`).textContent = message;
-}
 
 function busy(active, label) {
   form.setAttribute("aria-busy", String(active));

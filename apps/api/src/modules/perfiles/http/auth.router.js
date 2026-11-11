@@ -11,7 +11,7 @@ const router = express.Router();
 router.post("/login", authController.postLogin);
 router.post("/logout", authController.postLogout);
 
-router.get("/profile", profileController.getProfile);
+router.get("/profile", verificarToken, profileController.getProfile);
 
 // Rutas Crear cuenta
 router.post("/register", registerController.postRegister);
