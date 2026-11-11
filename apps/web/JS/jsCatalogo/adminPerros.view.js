@@ -382,7 +382,13 @@ btnBulkDesactivar.addEventListener("click", () => {
       // ====== Fetch bulk =====
       try {
         const response = await apiService.fetchBulkActivationToggle(selectedIds, action);
+
         console.log("Activación exitosa:", response);
+
+        //Recargamos a los perros
+        await cargarPerros();
+        btnBulkDeselect.click();
+
         feedback.show({
           mode: "success",
           titleText: "Perros desactivados",
@@ -420,6 +426,10 @@ btnBulkActivar.addEventListener("click", () => {
         const response = await apiService.fetchBulkActivationToggle(selectedIds, action);
         console.log("Activación exitosa:", response);
         //Llamar al modal de Success
+
+        await cargarPerros();
+        btnBulkDeselect.click();
+
         feedback.show({
           mode: "success",
           titleText: "Perros Activados",
