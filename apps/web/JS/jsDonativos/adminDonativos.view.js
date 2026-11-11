@@ -1,5 +1,5 @@
 import { obtenerDonativosPendientes } from "./adminDonativos.js";
-import { formatearMonto, formatearFecha } from "./adminDonativos.utils.js";
+import { prepararFilaDonativo } from "./adminDonativos.utils.js";
 
 const tablaBody = document.getElementById("tabla-donativos-body");
 const counterSubtitle = document.getElementById("donativos-counter-subtitle");
@@ -42,14 +42,9 @@ function renderizarTabla(donativos) {
   for (const donativo of donativos) {
     const fila = document.createElement("tr");
 
-    const valores = [
-      donativo.id,
-      donativo.donante,
-      formatearMonto(donativo.monto),
-      formatearFecha(donativo.fecha),
-    ];
+    const valores = prepararFilaDonativo(donativo);
 
-    for (const valor of valores) {
+    for (const valor of valores.slice(0, 4)) {
       const celda = document.createElement("td");
       celda.textContent = valor ?? "";
       fila.append(celda);

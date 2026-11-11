@@ -20,3 +20,13 @@ export function formatearFecha(fecha) {
     dateStyle: "medium",
   }).format(fechaValida);
 }
+
+export function prepararFilaDonativo(donativo) {
+  return [
+    donativo.id,
+    donativo.donante,
+    formatearMonto(donativo.monto),
+    formatearFecha(donativo.fecha),
+    donativo.estado,
+  ];
+}
