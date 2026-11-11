@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: r("index.html"),
         login: r("HTML/htmlPerfiles/login.html"),
+        registro: r("HTML/htmlPerfiles/registro.html"),
         adminPerros: r("HTML/htmlCatalogo/adminPerros.html"),
         adminVoluntariado: r("HTML/htmlVoluntariado/adminVoluntariado.html"),
         adminInscritos: r("HTML/htmlVoluntariado/adminInscritos.html"),
