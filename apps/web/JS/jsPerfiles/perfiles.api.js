@@ -1,7 +1,5 @@
 import { INTERNAL, errorFromHTTPStatus } from "../../../shared/errores.js";
 
-export class PerfilesApiError extends Error {}
-
 // Mensajes para mostrar al usuario según el status HTTP
 const MESSAGES = {
   400: "Revisa el correo y la contraseña.",

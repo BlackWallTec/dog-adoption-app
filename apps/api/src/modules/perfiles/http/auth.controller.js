@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
-import { ERROR_CODES, errorBody } from "../../../../../shared/errores.js";
+import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "../../../../../shared/errores.js";
 
 /*
 IMPORTANTE
@@ -55,6 +55,7 @@ export const postLogin = async (req, res) => {
 
     // Se compara lo ingresado con el hash obtenido de la DB
     const coincide = await bcrypt.compare(contrasena, usuario.contrasena);
+
     if (!coincide) {
       return res
         .status(401)
@@ -66,7 +67,6 @@ export const postLogin = async (req, res) => {
     const token = jwt.sign(
       {
         uuid: usuario.id_usuario,
-        correo: correo,
         rol: usuario.rol,
       },
       process.env.JWT_SECRET,
@@ -82,8 +82,7 @@ export const postLogin = async (req, res) => {
     if (esMovil) {
       return res.status(200).json({
         user: {
-          id: usuario.id_usuario,
-          correo: correo,
+          uuid: usuario.id_usuario,
           rol: usuario.rol,
         },
         token,
@@ -97,8 +96,7 @@ export const postLogin = async (req, res) => {
 
     return res.status(200).json({
       user: {
-        id: usuario.id_usuario,
-        correo: correo,
+        uuid: usuario.id_usuario,
         rol: usuario.rol,
       },
     });
@@ -118,8 +116,22 @@ export const postLogout = (req, res) => {
 };
 
 // Para corroborar info. de la sesión
-export const getMe = (req, res) => {
-  // req.user lo puso verificarToken
-  const { uuid, correo, rol } = req.user;
-  return res.status(200).json({ user: { id: uuid, correo, rol } });
+export const getMe = async (req, res) => {
+  try {
+    const { uuid, rol } = req.user; // lo puso verificarToken
+    const correo = await Usuario.fetchEmailByUUID(uuid);
+
+    // Token válido pero la cuenta ya no existe
+    if (!correo) throw new UNAUTHENTICATED();
+
+    return res.status(200).json({
+      user: { id: uuid, correo, rol },
+    });
+  } catch (error) {
+    if (error instanceof UNAUTHENTICATED) {
+      return res.status(401).json(errorBody(ERROR_CODES.UNAUTHENTICATED, error.message));
+    }
+    console.error(error);
+    return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
+  }
 };
