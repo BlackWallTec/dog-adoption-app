@@ -4,6 +4,10 @@ import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
 import { initDogSummaryModal } from "./ModalsJS/summaryModal.controller.js";
 import { abrirEdicion } from "./adminPerros.edit.js";
 import { escaparHtml } from "./perroForm.js";
+import * as apiService from "./ModalsJS/Api.service.js";
+
+// referencias globales de modulo
+let feedback = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 1. Cargar los modales de manera dinámica
@@ -16,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //2. Inicializar controladores de modales
   let registerModalController = null;
   let summaryModalController = null;
-  const feedback = initFeedbackModal();
+  feedback = initFeedbackModal();
 
   // 1. Inicializamos el Modal de Resumen
   summaryModalController = initDogSummaryModal({
@@ -92,6 +96,7 @@ function initFeedbackModal() {
   };
 
   return {
+    show,
     showSuccess(nombre) {
       const nombrePerro = nombre || "el perro";
       show({
@@ -366,30 +371,72 @@ function actualizarBarraFlotante() {
 // Event Listeners para botones de lote
 btnBulkDesactivar.addEventListener("click", () => {
   const selectedIds = obtenerIdsSeleccionados();
+  const action = false;
   //console.log("Ejecutar POST/PUT Desactivar Lote para IDs:", ids);
   showConfirmModal(
     "Desactivar Perros",
     `¿Estás seguro de que deseas desactivar a los <strong>${selectedIds.length} perros</strong> seleccionados?`,
     "Sí, desactivar",
-    true, // Es acción destructiva (Rojo)
-    () => {
-      console.log("Hacer fetch POST/PUT a la API para desactivar:", selectedIds);
-      // ejecutarPeticionLote(selectedIds, 'desactivar');
+    action, // Es acción destructiva (Rojo)
+    async () => {
+      // ====== Fetch bulk =====
+      try {
+        const response = await apiService.fetchBulkActivationToggle(selectedIds, action);
+        console.log("Activación exitosa:", response);
+        feedback.show({
+          mode: "success",
+          titleText: "Perros desactivados",
+          messageText: `Se desactivaron ${selectedIds.length} perros correctamente.`,
+          iconName: "check_circle",
+          actionText: "Continuar",
+        });
+      } catch (error) {
+        console.log("Error al hacer Bulk: ", error);
+        feedback.show({
+          mode: "error",
+          titleText: "No se pudo completar la acción",
+          messageText: error instanceof Error ? error.message : String(error),
+          iconName: "error",
+          actionText: "Cerrar",
+        });
+      }
     },
   );
 });
 
 btnBulkActivar.addEventListener("click", () => {
   const selectedIds = obtenerIdsSeleccionados();
+  const action = false;
   //console.log("Ejecutar POST/PUT Activar Lote para IDs:", ids);
   showConfirmModal(
     "Activar Perros",
     `¿Deseas activar el perfil de los <strong>${selectedIds.length} perros</strong> seleccionados para que estén visibles?`,
     "Sí, activar",
-    false, // Acción estándar (Verde/Azul)
-    () => {
+    action, // Acción estándar (Verde/Azul)
+    async () => {
       console.log("Hacer fetch POST/PUT a la API para activar:", selectedIds);
-      // ejecutarPeticionLote(selectedIds, 'activar');
+      try {
+        //¡Esto es una llamada Async!
+        const response = await apiService.fetchBulkActivationToggle(selectedIds, action);
+        console.log("Activación exitosa:", response);
+        //Llamar al modal de Success
+        feedback.show({
+          mode: "success",
+          titleText: "Perros Activados",
+          messageText: `Se activaron ${selectedIds.length} perros correctamente.`,
+          iconName: "check_circle",
+          actionText: "Continuar",
+        });
+      } catch (error) {
+        console.log("Error al hacer Bulk: ", error);
+        feedback.show({
+          mode: "error",
+          titleText: "No se pudo completar la acción",
+          messageText: error instanceof Error ? error.message : String(error),
+          iconName: "error",
+          actionText: "Cerrar",
+        });
+      }
     },
   );
 });
@@ -411,7 +458,7 @@ btnBulkDeselect.addEventListener("click", () => {
 // Probar nueva forma de ids en lugar de const infinitos.
 // Es como un nodo de Godot
 
-function showConfirmModal(title, content, buttonText, isDanger = false, onConfirm = null) {
+function showConfirmModal(title, content, buttonText, isActivate = false, onConfirm = null) {
   const CONFIRM_MODAL_NODES = {
     overlay: document.getElementById("modalConfirmacionGlobal"),
     card: document.getElementById("confirmCard"),
@@ -430,7 +477,7 @@ function showConfirmModal(title, content, buttonText, isDanger = false, onConfir
   CONFIRM_MODAL_NODES.btnAccept.textContent = buttonText;
 
   // 2. Alternar variante destructiva (Rojo para Desactivar) o estándar (Azul para Activar)
-  if (isDanger) {
+  if (!isActivate) {
     CONFIRM_MODAL_NODES.card.classList.add("confirm-danger");
     CONFIRM_MODAL_NODES.icon.textContent = "warning_amber";
   } else {
