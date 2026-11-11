@@ -15,7 +15,7 @@ class DonativoModel {
         )
       `)
       .eq("estado", "Pendiente de validación")
-      .order("fecha", { ascending: false });
+      .order("fecha", { ascending: true });
 
     if (error) {
       throw new Error(`Error al consultar donativos: ${error.message}`);
