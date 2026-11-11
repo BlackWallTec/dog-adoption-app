@@ -1,5 +1,7 @@
 import { perfilesApi } from "./perfiles.api.js";
 
+// ESTO LO HIZO LA IA
+
 // Código postal en dos pasos:
 //   1. La persona escribe 5 dígitos en #register-cp (este input NO se envía).
 //   2. Se consulta GET /api/perfiles/codigos-postales?cp=XXXXX y se llena el
