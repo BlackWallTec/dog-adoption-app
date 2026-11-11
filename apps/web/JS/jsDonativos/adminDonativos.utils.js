@@ -30,3 +30,6 @@ export function prepararFilaDonativo(donativo) {
     donativo.estado,
   ];
 }
+export function obtenerMensajeListaVacia(donativos) {
+  return donativos.length === 0 ? "No hay donativos pendientes." : null;
+}

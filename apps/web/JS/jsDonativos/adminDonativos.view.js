@@ -1,5 +1,5 @@
 import { obtenerDonativosPendientes } from "./adminDonativos.js";
-import { prepararFilaDonativo } from "./adminDonativos.utils.js";
+import { obtenerMensajeListaVacia, prepararFilaDonativo } from "./adminDonativos.utils.js";
 
 const tablaBody = document.getElementById("tabla-donativos-body");
 const counterSubtitle = document.getElementById("donativos-counter-subtitle");
@@ -34,8 +34,10 @@ function renderizarTabla(donativos) {
 
   tablaBody.replaceChildren();
 
-  if (donativos.length === 0) {
-    mostrarMensaje("No hay donativos pendientes.");
+  const mensajeListaVacia = obtenerMensajeListaVacia(donativos);
+
+  if (mensajeListaVacia) {
+    mostrarMensaje(mensajeListaVacia);
     return;
   }
 
