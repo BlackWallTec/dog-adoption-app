@@ -3,10 +3,16 @@ package com.app.android.data.dataSource.dataSourcesPerfiles
 import com.app.android.data.dtos.dtosPerfiles.LoginRequestDTO
 import com.app.android.data.dtos.dtosPerfiles.LoginResponseDTO
 import retrofit2.http.Body
+import retrofit2.http.Headers
 import retrofit2.http.POST
 
-// LOGIN - Contrato, declaración de RETROFIT, en que se describe y configura la petición en método, ruta, cuerpo, respuesta, etc.
+
+/**
+La cabecera x-client: mobile permite que el backend identifique la petición como móvil y
+devuelva el token en el JSON.
+ **/
 interface UsuarioAPIservice {
+    @Headers("x-client: mobile")
     @POST("api/perfiles/login")
     suspend fun login(@Body body: LoginRequestDTO): LoginResponseDTO
 }

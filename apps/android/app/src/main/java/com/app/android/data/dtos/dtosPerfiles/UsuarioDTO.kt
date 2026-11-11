@@ -4,9 +4,12 @@ import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.entities.entitiesPerfiles.Usuario
 import com.google.gson.annotations.SerializedName
 
+/**
+ corrigo correo, contraseña y el uuid
+ **/
 data class LoginRequestDTO(
-    @SerializedName("email") val email: String,
-    @SerializedName("passwd") val passwd: String,
+    @SerializedName("correo") val email: String,
+    @SerializedName("contrasena") val passwd: String,
 )
 
 data class LoginResponseDTO(
@@ -15,7 +18,7 @@ data class LoginResponseDTO(
 )
 
 data class UserDTO(
-    @SerializedName("id") val id: String?,
+    @SerializedName("uuid") val id: String?,
     @SerializedName("email") val email: String?,
     @SerializedName("rol") val rol: String?,
 )
