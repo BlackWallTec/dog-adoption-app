@@ -16,7 +16,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
 import javax.inject.Inject
+
 
 @HiltViewModel
 class ProgramasViewModel @Inject constructor(
@@ -30,6 +32,14 @@ class ProgramasViewModel @Inject constructor(
     // Mensajes de una sola vez (snackbar): éxito o error al inscribirse
     private val _mensajes = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val mensajes: SharedFlow<String> = _mensajes.asSharedFlow()
+
+    // Programa recién inscrito: lo lee la pantalla de confirmación
+    private val _programaConfirmado = MutableStateFlow<Programa?>(null)
+    val programaConfirmado: StateFlow<Programa?> = _programaConfirmado.asStateFlow()
+
+    // Evento de una sola vez: la inscripción salió bien, hay que ir a la confirmación
+    private val _inscripcionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val inscripcionExitosa: SharedFlow<Unit> = _inscripcionExitosa.asSharedFlow()
 
     // Evita doble toque mientras una inscripción sigue en curso
     private var inscribiendo = false
@@ -60,7 +70,8 @@ class ProgramasViewModel @Inject constructor(
                 when (val resultado = inscribirseEnPrograma(programa)) {
                     is Resultado.Exito -> {
                         marcarInscrito(programa.id)
-                        _mensajes.emit("¡Te inscribiste en ${programa.nombre}!")
+                        _programaConfirmado.value = programa.conInscripcionConfirmada()
+                        _inscripcionExitosa.emit(Unit)
                     }
                     is Resultado.Error -> {
                         // Si ya estaba inscrito, la tarjeta también debe reflejarlo

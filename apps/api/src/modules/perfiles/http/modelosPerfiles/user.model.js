@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 import { instanciarError } from "../../../../../../shared/errores.js";
 
 // Se parametrizan las consultas, para que se traten como dato y no
@@ -41,7 +41,7 @@ export default class Usuario {
   }
 
   static async registerAccount(id, Registro, tabla) {
-    const { _data, error } = await supabase.from(tabla).insert({
+    const { _data, error } = await supabaseAdmin.from(tabla).insert({
       id_usuario: id,
       ...Registro,
     });

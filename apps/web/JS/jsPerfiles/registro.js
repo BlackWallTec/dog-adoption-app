@@ -1,5 +1,6 @@
 import { perfilesApi } from "./perfiles.api.js";
 import { initCodigoPostal } from "./registro.cp.js";
+import { VALIDATION, UNAUTHENTICATED } from "../../../shared/errores.js";
 import { validateRegistration } from "../../../shared/perfiles/registro.validation.js";
 
 const byId = (id) => document.getElementById(id);
@@ -35,9 +36,11 @@ for (const input of form.querySelectorAll("input, select")) {
 }
 
 toggle.addEventListener("click", () => {
-  const visible = byId("register-passwd").type === "password";
+  const visible = byId("register-contrasena").type === "password";
+
   for (const field of ["contrasena", "confirmContrasena"])
     byId(`register-${field}`).type = visible ? "text" : "password";
+
   toggle.textContent = visible ? "Ocultar" : "Ver";
   toggle.setAttribute("aria-pressed", String(visible));
   toggle.setAttribute("aria-label", visible ? "Ocultar contraseñas" : "Mostrar contraseñas");
@@ -50,18 +53,20 @@ form.addEventListener("submit", async (event) => {
   showError("");
 
   const values = Object.fromEntries(new FormData(form));
-
   values.privacidad = byId("register-privacidad").checked;
 
-  if (values.confirmContrasena !== values.contrasena)
-    errors.confirmPasswd = "Las contraseñas no coinciden.";
-
-  const { errors } = validateRegistration(values);
-
-  for (const input of form.querySelectorAll("input, select")) fieldError(input, errors[input.name]);
-
-  if (Object.keys(errors).length) {
-    byId(`register-${Object.keys(errors)[0]}`).focus();
+  try {
+    validateRegistration(values);
+  } catch (error) {
+    if (error instanceof VALIDATION) {
+      for (const [field, message] of Object.entries(error.getFields() ?? {})) {
+        const input = byId(`register-${field}`);
+        if (input && typeof message === "string") fieldError(input, message);
+      }
+    } else if (error instanceof EMAIL_EXISTS) {
+      fieldError(byId("register-correo"), error.message);
+    }
+    showError(error.message || "No pudimos crear tu cuenta. Inténtalo de nuevo.");
     return;
   }
 
@@ -90,7 +95,7 @@ async function checkSession() {
     await perfilesApi.getSession();
     window.location.replace("login.html");
   } catch (error) {
-    if (error.status !== 401) showError(error.message);
+    if (!(error instanceof UNAUTHENTICATED)) showError(error.message);
   } finally {
     busy(false, "Crear mi cuenta");
   }
