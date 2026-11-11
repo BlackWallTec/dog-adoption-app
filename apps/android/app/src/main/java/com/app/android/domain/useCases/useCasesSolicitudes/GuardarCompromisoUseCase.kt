@@ -13,9 +13,6 @@ data class CompromisoErrors(
     val timeAlone: String? = null,
     val dailyRoutine: String? = null,
     val dogManagement: String? = null,
-    val acceptsReturn: String? = null,
-    val petSpending: String? = null,
-    val petFollowing: String? = null,
 ) {
     val hasErrors: Boolean
         get() =
@@ -27,9 +24,6 @@ data class CompromisoErrors(
                 timeAlone,
                 dailyRoutine,
                 dogManagement,
-                acceptsReturn,
-                petSpending,
-                petFollowing,
             ).any { it != null }
 }
 
@@ -57,10 +51,7 @@ class GuardarCompromisoUseCase
                     vetDetail = if (limpios.vetDetail.isBlank()) "Escribe tu respuesta" else null,
                     timeAlone = if (limpios.timeAlone.isBlank()) "Escribe tu respuesta" else null,
                     dailyRoutine = if (limpios.dailyRoutine.isBlank()) "Escribe tu respuesta" else null,
-                    // Para los que tienen que marcar checkmark para continuar (deben de aceptar estos compromisos)
-                    acceptsReturn = if (!limpios.acceptsReturn) "Debes de aceptar este compromiso para continuar" else null,
-                    petSpending = if (!limpios.petSpending) "Debes confirmar que entiendes los gastos de tu mascota" else null,
-                    petFollowing = if (!limpios.petFollowing) "Debes de aceptar el seguimiento de tu mascota para continuar" else null,
+                    dogManagement = if (limpios.dogManagement.isBlank()) "Escribe tu respuesta" else null,
                 )
             if (!errores.hasErrors) {
                 borrador.actualizar { it.copy(compromiso = limpios) }

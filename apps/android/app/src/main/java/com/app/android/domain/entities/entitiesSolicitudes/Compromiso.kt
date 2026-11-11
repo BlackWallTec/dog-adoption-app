@@ -1,5 +1,15 @@
 package com.app.android.domain.entities.entitiesSolicitudes
 
+/*
+Pendientes a añadir en la BD:
+alter table public.solicitud_adopcion
+  add column if not exists tiene_veterinario boolean,
+  add column if not exists detalle_veterinario character varying,
+  add column if not exists tiempo_solo character varying,
+  add column if not exists rutina_diaria character varying,
+  add column if not exists manejo_comportamiento character varying;
+ */
+
 data class Compromiso(
     // Paso 4 del Formulario | "Compromiso"
     val petNeeds: String = "", // Pregunta: Menciona los cuidados básicos de una mascota
@@ -10,9 +20,4 @@ data class Compromiso(
     // cuidaría si viajas o sales de vacaciones?
     val dailyRoutine: String = "", // Pregunta: Describe un día normal para tu perro (paseos, comida, juego, dónde duerme)
     val dogManagement: String = "", // Pregunta: Si el perro ladra mucho, rompe cosas o se porta agresivo con otros perros, ¿qué harías?
-    val acceptsReturn: Boolean = false, // Opción (Si, No): Si en algún momento no puedo quedarme con mi perro, me comprometo
-    // a devolverlo/a al refugio y no venderlo ni abandonarlo/a."
-    val petSpending: Boolean = false, // Pregunta: Entiendo que la adopción implica gastos continuos
-    // (alimento, vacunas, desparasitación y consultas veterinarias).
-    val petFollowing: Boolean = false, // Opción (Si, No): ¿Nos permites dar seguimiento (visitas o fotos)?
 )
