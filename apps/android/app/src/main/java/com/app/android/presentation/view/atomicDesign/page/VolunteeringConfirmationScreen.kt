@@ -31,12 +31,11 @@ fun VolunteeringConfirmationScreen(
     ubicacion: String,
     textoCupo: String,
     progresoCupo: Float,
-    correoAviso: String,
     onBackClick: () -> Unit,
     onVerMisProgramasClick: () -> Unit,
     onExplorarProgramasClick: () -> Unit,
     onCancelarInscripcionClick: () -> Unit,
-    onVerDetalleProgramaClick: () -> Unit = {},
+    onVerDetalleProgramaClick: (() -> Unit)? = {},
     modifier: Modifier = Modifier,
     navSeleccionado: Int = 1, // 1 = "Ayudar", la pestaña de Voluntariado
     onNavSelect: (Int) -> Unit = {},
@@ -46,7 +45,7 @@ fun VolunteeringConfirmationScreen(
         topBar = {
             AppTopBar(
                 titulo = "Voluntariado",
-                onBackClick = {},
+                onBackClick = onBackClick,
                 modifier = Modifier.background(Surface),
             )
         },
@@ -65,7 +64,6 @@ fun VolunteeringConfirmationScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-
             ConfirmationHeader(
                 titulo = "¡Te inscribiste!",
                 subtitulo = "Gracias por sumar tu cariño. Tu lugar está confirmado.",
@@ -87,8 +85,6 @@ fun VolunteeringConfirmationScreen(
                      varianteBoton = ButtonVariant.Danger,
                 )
             }
-
-            InfoMessageCard(mensaje = correoAviso)
 
             ConfirmationActionsGroup(
                 onVerMisProgramasClick = onVerMisProgramasClick,
@@ -119,7 +115,6 @@ private fun VolunteeringConfirmationScreenPreview() {
             ubicacion = "Refugio Qariño · Querétaro",
             textoCupo = "8/15 lugares ocupados · 7 disponibles",
             progresoCupo = 8f / 15f,
-            correoAviso = "Enviamos los detalles a sofia.garcia@correo.com. Recuerda llegar 10 minutos antes.",
             onBackClick = {},
             onVerMisProgramasClick = {},
             onExplorarProgramasClick = {},

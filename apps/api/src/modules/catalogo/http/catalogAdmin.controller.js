@@ -4,8 +4,9 @@ import behaviourModel from "./modelosCatalogo/behaviour.model.js";
 import cuidadoEspecialModel from "./modelosCatalogo/special.model.js";
 import sizeModel from "./modelosCatalogo/size.model.js";
 import breedModel from "./modelosCatalogo/breed.model.js";
+import { validarCambiosPerro } from "./dogValidation.js";
 
-import { supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
+import { supabaseAdmin as supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
 //===== Funciones de Subida de Documentos SUPEROPTIMIZADOS ====
 // Nosotros en Catalogo neceistamos que la subida de documentos sea lo más rápida posible, por eso no hacemos validaciones de tipo ni de tamaño ni de extensión.
@@ -359,3 +360,96 @@ function logErrorMessages(messages) {
     console.error(messages);
   }
 }
+
+// ===== HU19C: editar ficha de perro (admin) =====
+// Postgres: 22P02 = id con formato inválido, 23503 = llave foránea inexistente
+const ID_INVALIDO = "22P02";
+const FK_INEXISTENTE = "23503";
+
+// GET /api/catalogo/admin/perros/:id
+export const getPerroAdminById = async (req, res) => {
+  try {
+    const perro = await dogModel.getDogAdminById(req.params.id);
+    if (!perro) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    return res.status(200).json({ success: true, data: perro });
+  } catch (error) {
+    if (error.code === ID_INVALIDO) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar el perro.",
+    });
+  }
+};
+
+// PATCH /api/catalogo/admin/perros/:id
+export const updatePerroAdmin = async (req, res) => {
+  const { errores, valores } = validarCambiosPerro(req.body);
+  if (Object.keys(errores).length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Hay campos inválidos.",
+      errors: errores,
+    });
+  }
+
+  try {
+    const perro = await dogModel.updateDog(req.params.id, valores);
+    if (!perro) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    return res.status(200).json({ success: true, data: perro });
+  } catch (error) {
+    if (error.code === ID_INVALIDO) {
+      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    }
+    if (error.code === FK_INEXISTENTE) {
+      return res.status(400).json({
+        success: false,
+        message: "La raza o el tamaño seleccionado no existe.",
+        errors: { id_raza: "Revisa la raza.", id_tamano: "Revisa el tamaño." },
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al actualizar el perro.",
+    });
+  }
+};
+
+// ======= HU27: Bulking dog desactivation ======
+
+export const patchActivateBulkDog = async (req, res) => {
+  console.log("Bulking dog in backend.....");
+  try {
+    const request = req.body;
+    console.log("Receiving list of ids for bulk: ", request);
+    const idList = request.idList; //list of ids
+    const action = request.action; //true or false
+    console.log(`Setting ${action} on following dogs: ${idList} `);
+
+    if (request == null) {
+      return res.status(404).json({ success: false, message: "bulk vacío" });
+    }
+
+    //1. llamada a la BD de bulk
+    const result = await dogModel.activarPerroBulk(idList, action);
+
+    console.log("Bulking done correctly");
+    return res.status(200).json({
+      success: true,
+      message: "Success in bulking update",
+    });
+  } catch (error) {
+    console.log("Bulking transaction error: ", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal error in bulking patch on BD",
+    });
+  }
+};
+
+// ==============================================

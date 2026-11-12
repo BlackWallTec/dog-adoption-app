@@ -5,6 +5,10 @@ const router = express.Router();
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
 
+import verificarToken from "../../../middleware/is-auth.js";
+import requireRole from "../../../middleware/require-role.js";
+import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
+
 // ===== Rutas Especiales =======
 
 //POST api/catalogo/admin/solicitar-subida
@@ -21,6 +25,15 @@ router.get("/admin/perros", adminController.getPerrosAdmin);
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", adminController.postNuevoPerro);
 
+// HU19C: edición de fichas (solo Administrador o Root con sesión activa)
+const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+
+// GET /api/catalogo/admin/perros/:id
+router.get("/admin/perros/:id", ...soloAdmin, adminController.getPerroAdminById);
+
+// PATCH /api/catalogo/admin/perros/:id
+router.patch("/admin/perros/:id", ...soloAdmin, adminController.updatePerroAdmin);
+
 // PATCH /api/catalogo/admin/perros/:id/desactivar
 router.patch("/admin/perros/:id/desactivar", adminController.desactivarPerro);
 
@@ -36,14 +49,18 @@ router.get("/admin/cuidado_especial", adminController.getCuidadoEspecial);
 // Get /api/catalogo/admin/admin/razas
 router.get("/admin/razas", adminController.getRazas);
 
-//obtener todos los perros
-router.get("/cliente/perros", clientController.getDogs);
+//Desactivar bulk de perros
+// PATCH /api/catalogo/admin/perros/bulk/activar
+router.patch("/admin/perros/bulk/activar", adminController.patchActivateBulkDog);
 
 // ==== Fin Rutas Admin ======
 
 // ===== Rutas Cliente ====
 
-// Get /api/catalogo/cliente/perros/:id (¡nueva!)
+// Get /api/catalogo/cliente/perros/:id
 router.get("/cliente/perros/:id", clientController.getDogById);
+
+//obtener todos los perros
+router.get("/cliente/perros", clientController.getDogs);
 
 export default router;

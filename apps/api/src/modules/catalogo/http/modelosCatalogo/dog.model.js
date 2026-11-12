@@ -1,4 +1,11 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
+
+const FICHA_ADMIN = `
+  id_perro, nombre, sexo, edad_aprox, tamano_medida, descripcion,
+  esterilizado, vacunado, estado, fecha_ingreso,
+  raza ( id_raza, nombre ),
+  tamano ( id_tamano, nombre )
+`;
 
 class DogModel {
   static async getDogs() {
@@ -75,11 +82,41 @@ class DogModel {
     return data;
   }
 
-  // Función para crear un nuevo perro
-  // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
-  // 2. Inserción en tabla Perro_Imagen: (Incluye id_perro & url_imagen)
-  // 3. Inserción en tabla perro_tiene_caracter (Incluye id_perro & id_caracter)
-  // 4. Inserción en tabla perro_tiene_cuidado_especial (Incluye id_perro & id_cuidado_especial)
+  // HU19C: ficha completa para el formulario de edición (admin). Devuelve null si no existe.
+  static async getDogAdminById(id) {
+    const { data, error } = await supabase
+      .from("perro")
+      .select(FICHA_ADMIN)
+      .eq("id_perro", id)
+      .maybeSingle();
+
+    if (error) {
+      throw Object.assign(new Error(`Error en la consulta del perro: ${error.message}`), {
+        code: error.code,
+      });
+    }
+
+    return data;
+  }
+
+  // HU19C: actualiza solo los campos recibidos. Devuelve la ficha actualizada o null si no existe.
+  static async updateDog(id, valores) {
+    const { data, error } = await supabaseAdmin
+      .from("perro")
+      .update(valores)
+      .eq("id_perro", id)
+      .select(FICHA_ADMIN)
+      .maybeSingle();
+
+    if (error) {
+      throw Object.assign(new Error(`Error al actualizar el perro: ${error.message}`), {
+        code: error.code,
+      });
+    }
+
+    return data;
+  }
+
   static async createFullDog(dogData) {
     const { data, error } = await supabase.rpc("insert_full_dog", { payload: dogData });
 
@@ -100,6 +137,38 @@ class DogModel {
 
     if (error) {
       throw new Error(`Error al desactivar el perro: ${error.message}`);
+    }
+
+    if (data) return data;
+
+    const { data: existente, error: errorConsulta } = await supabase
+      .from("perro")
+      .select("id_perro")
+      .eq("id_perro", id)
+      .maybeSingle();
+
+    if (errorConsulta) {
+      throw new Error(`Error al desactivar el perro: ${errorConsulta.message}`);
+    }
+
+    if (existente) {
+      throw new Error(
+        "Supabase no aplicó el cambio. La política de la tabla perro no permite actualizar activo con la clave anónima.",
+      );
+    }
+
+    return null;
+  }
+
+  static async activarPerroBulk(idList, action) {
+    const { data, error } = await supabase
+      .from("perro")
+      .update({ activo: action })
+      .in("id_perro", idList);
+
+    if (error) {
+      console.error("Error en desactivarPerroBulk:", error.message);
+      throw new Error(`No se pudieron desactivar los registros: ${error.message}`);
     }
 
     return data;

@@ -6,18 +6,24 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "test": "vp test"
+    "test": "vp test",
+    "test:report": "vp test run --reporter=html",
+    "test:solicitudes": "vp test tests/solicitudes"
   },
   "dependencies": {
+    "@qarino/shared": "workspace:*",
     "@supabase/supabase-js": "catalog:",
     "bcryptjs": "catalog:",
     "cookie-parser": "catalog:",
     "cors": "catalog:",
     "dotenv": "catalog:",
     "express": "^5.3.0",
-    "jsonwebtoken": "catalog:"
+    "jsonwebtoken": "catalog:",
+    "multer": "catalog:"
   },
   "devDependencies": {
-    "vite-plus": "catalog:"
+    "supertest": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -11,7 +11,6 @@ export async function obtenerTipos() {
 
   if (error) throw error;
 
-  const tipos = data || [];
   return data || [];
 }
 

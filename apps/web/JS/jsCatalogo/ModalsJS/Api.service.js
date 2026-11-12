@@ -111,3 +111,23 @@ export async function guardarPerroBD(datosFrontend) {
 
   return leerRespuesta(response);
 }
+
+export async function fetchBulkActivationToggle(idList, action) {
+  console.log("Api service de front llamando a backend");
+  try {
+    const payloadBackend = {
+      idList: idList,
+      action: action,
+    };
+
+    const response = await fetch(`${API_BASE_URL}/perros/bulk/activar`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payloadBackend),
+    });
+  } catch (error) {
+    console.log("Error en bulk update: ", error);
+  }
+}

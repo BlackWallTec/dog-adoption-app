@@ -29,6 +29,6 @@ router.get(
 );
 
 // Rutas de creación de programas (HU31)
-router.use("/programas", programas);
+router.use("/programas", verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT), programas);
 
 export default router;

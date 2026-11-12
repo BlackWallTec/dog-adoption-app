@@ -1,5 +1,6 @@
 package com.app.android.presentation.navigation
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -12,10 +13,15 @@ import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
+import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
+import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
-
+import androidx.compose.runtime.remember
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.compose.navigation
+import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
 
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
@@ -26,17 +32,22 @@ private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
 private fun NavController.irAOpcionBarra(opcion: Int) {
     val destino =
         when (opcion) {
+            1 ->Screen.GrafoVoluntariado.ruta
             2 -> Screen.DonarDinero.ruta
             4 -> Screen.DatosFiscales.ruta
             else -> null
         }
     when {
-        opcion == 0 -> popBackStack(Screen.DetallePerro.ruta, inclusive = false)
-        destino != null ->
+        opcion == 0 -> {
+            popBackStack(Screen.DetallePerro.ruta, inclusive = false)
+        }
+
+        destino != null -> {
             navigate(destino) {
                 popUpTo(Screen.DetallePerro.ruta) // para que atrás regrese al inicio y no se apilen
                 launchSingleTop = true
             }
+        }
     }
 }
 
@@ -48,8 +59,7 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        //startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
-        startDestination = Screen.Catalogo.ruta,
+        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
     ) {
         // ========= Pantallas Catalogo ========
         composable(route=Screen.Catalogo.ruta){
@@ -114,11 +124,23 @@ fun AppNavigation() {
             )
         }
 
-        // SOLICITUDES: Paso 3 - Tu hogar (Facu: aquí va TuHogarRoute cuando esté)
+        // SOLICITUDES: Paso 3 - Tu Hogar
         composable(route = Screen.TuHogar.ruta) {
-            TuHogarScreen(
-                onBackClick = { navController.navigateUp() },
-                onContinuarClick = {},
+            TuHogarRoute(
+                onBack = { navController.navigateUp() },
+                onIrACompromiso = {
+                    navController.navigate(Screen.Compromiso.ruta)
+                },
+            )
+        }
+
+        // Paso 4 - Compromiso
+        composable(route = Screen.Compromiso.ruta) {
+            CompromisoRoute(
+                onBack = { navController.navigateUp() },
+                onIrADocumentoss = {
+                    // navegar a documentos
+                },
             )
         }
 
@@ -165,9 +187,79 @@ fun AppNavigation() {
             )
         }
 
-        // ========= Pantallas Voluntariado ========
-        composable(route = Screen.Programas.ruta) {
-            ProgramasScreen(onBackClick = { navController.popBackStack() })
+        // ========= Pantallas Donativos ========
+
+        // DONATIVOS - HU46: registrar donativo económico
+        composable(route = Screen.DonarDinero.ruta) {
+            DonarDineroRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.popBackStack() },
+                onNavSelect = navController::irAOpcionBarra,
+                onEnviado = { monto ->
+                    navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
+                        // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
+                        popUpTo(Screen.DonarDinero.ruta) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable(
+            route = Screen.DonativoEnviado.ruta,
+            arguments =
+                listOf(
+                    navArgument("monto") { type = NavType.StringType },
+                ),
+        ) { backStackEntry ->
+            val monto = backStackEntry.arguments?.getString("monto") ?: ""
+            DonativoEnviadoScreen(
+                monto = "\$$monto MXN",
+                onBackClick = { navController.popBackStack() },
+                onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
+                onVerMisDonativosClick = {}, // Mis donativos todavía no existe
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
+        // DONATIVOS - HU45: datos fiscales del donante
+        composable(route = Screen.DatosFiscales.ruta) {
+            DatosFiscalesRoute(
+                idUsuario = ID_USUARIO_PRUEBA,
+                onBack = { navController.navigateUp() },
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
+
+// ========= Pantallas Voluntariado ========
+// Programas y Confirmación comparten la misma instancia de ProgramasViewModel
+        navigation(
+            startDestination = Screen.Programas.ruta,
+            route = Screen.GrafoVoluntariado.ruta,
+        ) {
+            composable(route = Screen.Programas.ruta) { entry ->
+                val grafo = remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
+                ProgramasScreen(
+                    viewModel = hiltViewModel(grafo),
+                    onBackClick = { navController.navigateUp() },
+                    onNavSelect = navController::irAOpcionBarra,
+                    onInscripcionExitosa = {
+                        navController.navigate(Screen.ConfirmacionInscripcion.ruta) { launchSingleTop = true }
+                    },
+                )
+            }
+
+            composable(route = Screen.ConfirmacionInscripcion.ruta) { entry ->
+                val grafo = remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
+                ConfirmacionInscripcionRoute(
+                    viewModel = hiltViewModel(grafo),
+                    onBack = { navController.navigateUp() },
+                    onExplorarProgramas = {
+                        navController.popBackStack(Screen.Programas.ruta, inclusive = false)
+                    },
+                    onNavSelect = navController::irAOpcionBarra,
+                )
+            }
         }
 
         // Plantilla para nueva pantalla

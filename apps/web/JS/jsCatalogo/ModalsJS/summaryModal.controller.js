@@ -1,5 +1,5 @@
 // summaryModalJS/summaryModal.controller.js
-import * as apiService from "./Modals.service.js";
+import * as apiService from "./Api.service.js";
 
 export function initDogSummaryModal({ onBack, onSuccess, onError }) {
   // 1. Centralización de referencias DOM (Estilo @export)

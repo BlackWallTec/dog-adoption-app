@@ -131,9 +131,9 @@ export async function crearPrograma(req, res) {
       });
     }
 
-    const idAdmin = process.env.ADMIN_ID;
+    const id_usuario = req.user.uuid;
 
-    const resultado = await ProgramaModel.insertarPrograma(datos, idAdmin, randomUUID());
+    const resultado = await ProgramaModel.insertarPrograma(datos, id_usuario, randomUUID());
 
     return res.status(201).json({
       success: true,

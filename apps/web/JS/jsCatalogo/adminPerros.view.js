@@ -1,20 +1,26 @@
-// ==== Codigo generado con Inteligencia Artificial (IA) ====
 // Carga de modales de manera dinámica en el DOM
 import { loadModal } from "../utils/modalLoader.js";
 import { initDogRegisterModal } from "./ModalsJS/registerModal.controller.js";
 import { initDogSummaryModal } from "./ModalsJS/summaryModal.controller.js";
+import { abrirEdicion } from "./adminPerros.edit.js";
+import { escaparHtml } from "./perroForm.js";
+import * as apiService from "./ModalsJS/Api.service.js";
+
+// referencias globales de modulo
+let feedback = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   // 1. Cargar los modales de manera dinámica
   await Promise.all([
     loadModal("/HTML/htmlCatalogo/registerDogModal.html", "#modal-container1"),
     loadModal("/HTML/htmlCatalogo/dogSummaryModal.html", "#modal-container2"),
+    loadModal("/HTML/htmlCatalogo/confirmationModal.html", "#modal-container3"),
   ]);
 
   //2. Inicializar controladores de modales
   let registerModalController = null;
   let summaryModalController = null;
-  const feedback = initFeedbackModal();
+  feedback = initFeedbackModal();
 
   // 1. Inicializamos el Modal de Resumen
   summaryModalController = initDogSummaryModal({
@@ -49,8 +55,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector(".button-registrar")?.addEventListener("click", () => {
     registerModalController.open();
   });
+
+  //4. Inicializar Bulking setup
+  inicializarSeleccionLote();
 });
-// ==== Fin de Codigo generado con Inteligencia Artificial (IA) ====
 
 function initFeedbackModal() {
   const overlay = document.querySelector("#modalFeedback");
@@ -88,6 +96,7 @@ function initFeedbackModal() {
   };
 
   return {
+    show,
     showSuccess(nombre) {
       const nombrePerro = nombre || "el perro";
       show({
@@ -149,8 +158,8 @@ function renderizarTabla(perros) {
 
   if (perros.length === 0) {
     tablaBody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 32px; color: var(--md-sys-color-on-surface-variant);">
+           <tr>
+                <td colspan="7" style="text-align: center; padding: 32px; color: var(--md-sys-color-on-surface-variant);">
                 No se encontraron perros registrados.
                 </td>
             </tr>
@@ -161,22 +170,26 @@ function renderizarTabla(perros) {
   tablaBody.innerHTML = perros
     .map((perro) => {
       // Foto fallback en caso de no tener URL cargada
-      const fotoUrl = perro.foto_url || perro.foto || "/public/favicon.svg";
-      const raza = textoRelacion(perro.raza, "Mestizo");
-      const edadTexto = textoEdad(perro);
-      const tamano = textoRelacion(perro.tamano || perro.tamanio, "Mediano");
-      const estado = perro.estado || "Disponible";
+      const fotoUrl = escaparHtml(perro.foto_url || perro.foto || "/public/favicon.svg");
+      const raza = escaparHtml(textoRelacion(perro.raza, "Mestizo"));
+      const edadTexto = escaparHtml(textoEdad(perro));
+      const tamano = escaparHtml(textoRelacion(perro.tamano || perro.tamanio, "Mediano"));
+      const estado = escaparHtml(perro.estado || "Disponible");
       const badgeClase = obtenerClaseBadge(estado);
-      const id = perro.id ?? perro.id_perro ?? "";
+      const id = escaparHtml(perro.id ?? perro.id_perro ?? "");
+      const nombre = escaparHtml(perro.nombre);
 
       return `
       <tr data-id="${id}">
+        <td style="text-align: center;">
+          <input type="checkbox" class="perro-select-checkbox" value="${id}">
+        </td>
         <td>
-          <img src="${fotoUrl}" alt="${perro.nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
+          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
         </td>
         <td>
           <div class="dog-name-cell">
-            <span class="dog-name">${perro.nombre}</span>
+            <span class="dog-name">${nombre}</span>
             <span class="dog-meta">${raza}</span>
           </div>
         </td>
@@ -240,5 +253,266 @@ async function cargarPerros() {
   }
 }
 
+tablaBody?.addEventListener("click", async (event) => {
+  const boton = event.target.closest(".action-delete");
+  if (!boton) return;
+
+  const id = boton.closest("tr")?.dataset.id;
+  if (!id) return;
+
+  const perro = catalogoPerros.find((item) => String(item.id_perro ?? item.id) === id);
+  const nombre = perro?.nombre || "este perro";
+
+  if (!window.confirm(`¿Desactivar a ${nombre}? Dejará de aparecer en el catálogo.`)) {
+    return;
+  }
+
+  boton.disabled = true;
+
+  try {
+    const respuesta = await fetch(`/api/catalogo/admin/perros/${id}/desactivar`, {
+      method: "PATCH",
+    });
+    const data = await respuesta.json().catch(() => ({}));
+
+    if (!respuesta.ok) {
+      throw new Error(data.message || `No se pudo desactivar el perro (${respuesta.status}).`);
+    }
+
+    await cargarPerros();
+  } catch (error) {
+    console.error("Error al desactivar el perro:", error);
+    window.alert(error instanceof Error ? error.message : "No se pudo desactivar el perro.");
+    boton.disabled = false;
+  }
+});
+
 // Carga inicial al montar la página
 document.addEventListener("DOMContentLoaded", cargarPerros);
+
+// HU19C: botón Editar de cada fila (delegación de eventos porque las filas se re-pintan)
+tablaBody?.addEventListener("click", (evento) => {
+  const boton = evento.target.closest(".action-edit");
+  if (!boton) return;
+  const id = boton.closest("tr")?.dataset.id;
+  if (id) abrirEdicion(id, cargarPerros);
+});
+
+// ========== HU27 ========= //
+// 1. Inicializador de eventos para selección masiva e individual
+function inicializarSeleccionLote() {
+  const selectAllHeader = document.getElementById("select-all-perros");
+  const tablaBody = document.getElementById("tabla-perros-body");
+
+  if (!tablaBody || !selectAllHeader) return;
+
+  // Evento: Seleccionar/Desmarcar todos los checkboxes
+  selectAllHeader.addEventListener("change", (e) => {
+    const isChecked = e.target.checked;
+    const checkboxes = tablaBody.querySelectorAll(".perro-select-checkbox");
+
+    checkboxes.forEach((cb) => {
+      cb.checked = isChecked;
+      const row = cb.closest("tr");
+      row.classList.toggle("selected-row", isChecked);
+    });
+
+    actualizarBarraFlotante();
+  });
+
+  // Evento delegado: Al marcar individualmente un checkbox en la tabla
+  tablaBody.addEventListener("change", (e) => {
+    if (e.target.classList.contains("perro-select-checkbox")) {
+      const row = e.target.closest("tr");
+      row.classList.toggle("selected-row", e.target.checked);
+
+      // Desmarcar 'seleccionar todos' si alguno se desmarca individualmente
+      const checkboxes = Array.from(tablaBody.querySelectorAll(".perro-select-checkbox"));
+      const todosSeleccionados =
+        checkboxes.length > 0 &&
+        checkboxes.every((cb) => {
+          cb.checked;
+          actualizarBarraFlotante();
+        });
+      selectAllHeader.checked = todosSeleccionados;
+    }
+  });
+}
+
+/**
+ * 2. Función helper para obtener los IDs seleccionados
+ * @returns {Array<string>} Arreglo con los IDs de los perros marcados
+ */
+function obtenerIdsSeleccionados() {
+  const checkboxesMarcados = document.querySelectorAll(".perro-select-checkbox:checked");
+  return Array.from(checkboxesMarcados).map((cb) => cb.value);
+}
+
+// == Bulking mini-menu ==
+const bulkBar = document.getElementById("bulk-actions-bar");
+const bulkCounter = document.getElementById("bulk-counter-text");
+const btnBulkDesactivar = document.getElementById("btn-bulk-desactivar");
+const btnBulkActivar = document.getElementById("btn-bulk-activar");
+const btnBulkDeselect = document.getElementById("btn-bulk-deselect");
+
+function actualizarBarraFlotante() {
+  const idsSeleccionados = obtenerIdsSeleccionados();
+  const total = idsSeleccionados.length;
+  console.log("IDs seleccionado: ", idsSeleccionados);
+
+  if (total > 1) {
+    bulkCounter.textContent = `${total} seleccionados`;
+    bulkBar.classList.add("active");
+  } else {
+    bulkBar.classList.remove("active");
+  }
+}
+
+// Event Listeners para botones de lote
+btnBulkDesactivar.addEventListener("click", () => {
+  const selectedIds = obtenerIdsSeleccionados();
+  const action = false;
+  //console.log("Ejecutar POST/PUT Desactivar Lote para IDs:", ids);
+  showConfirmModal(
+    "Desactivar Perros",
+    `¿Estás seguro de que deseas desactivar a los <strong>${selectedIds.length} perros</strong> seleccionados?`,
+    "Sí, desactivar",
+    action, // Es acción destructiva (Rojo)
+    async () => {
+      // ====== Fetch bulk =====
+      try {
+        const response = await apiService.fetchBulkActivationToggle(selectedIds, action);
+
+        console.log("Activación exitosa:", response);
+
+        //Recargamos a los perros
+        await cargarPerros();
+        btnBulkDeselect.click();
+
+        feedback.show({
+          mode: "success",
+          titleText: "Perros desactivados",
+          messageText: `Se desactivaron ${selectedIds.length} perros correctamente.`,
+          iconName: "check_circle",
+          actionText: "Continuar",
+        });
+      } catch (error) {
+        console.log("Error al hacer Bulk: ", error);
+        feedback.show({
+          mode: "error",
+          titleText: "No se pudo completar la acción",
+          messageText: error instanceof Error ? error.message : String(error),
+          iconName: "error",
+          actionText: "Cerrar",
+        });
+      }
+    },
+  );
+});
+
+btnBulkActivar.addEventListener("click", () => {
+  const selectedIds = obtenerIdsSeleccionados();
+  const action = false;
+  //console.log("Ejecutar POST/PUT Activar Lote para IDs:", ids);
+  showConfirmModal(
+    "Activar Perros",
+    `¿Deseas activar el perfil de los <strong>${selectedIds.length} perros</strong> seleccionados para que estén visibles?`,
+    "Sí, activar",
+    action, // Acción estándar (Verde/Azul)
+    async () => {
+      console.log("Hacer fetch POST/PUT a la API para activar:", selectedIds);
+      try {
+        //¡Esto es una llamada Async!
+        const response = await apiService.fetchBulkActivationToggle(selectedIds, action);
+        console.log("Activación exitosa:", response);
+        //Llamar al modal de Success
+
+        await cargarPerros();
+        btnBulkDeselect.click();
+
+        feedback.show({
+          mode: "success",
+          titleText: "Perros Activados",
+          messageText: `Se activaron ${selectedIds.length} perros correctamente.`,
+          iconName: "check_circle",
+          actionText: "Continuar",
+        });
+      } catch (error) {
+        console.log("Error al hacer Bulk: ", error);
+        feedback.show({
+          mode: "error",
+          titleText: "No se pudo completar la acción",
+          messageText: error instanceof Error ? error.message : String(error),
+          iconName: "error",
+          actionText: "Cerrar",
+        });
+      }
+    },
+  );
+});
+
+btnBulkDeselect.addEventListener("click", () => {
+  const selectAllHeader = document.getElementById("select-all-perros");
+  const checkboxes = document.querySelectorAll(".perro-select-checkbox");
+
+  if (selectAllHeader) selectAllHeader.checked = false;
+  checkboxes.forEach((cb) => {
+    cb.checked = false;
+    cb.closest("tr")?.classList.remove("selected-row");
+  });
+
+  actualizarBarraFlotante();
+});
+
+//=== Confirmation Ids =====
+// Probar nueva forma de ids en lugar de const infinitos.
+// Es como un nodo de Godot
+
+function showConfirmModal(title, content, buttonText, isActivate = false, onConfirm = null) {
+  const CONFIRM_MODAL_NODES = {
+    overlay: document.getElementById("modalConfirmacionGlobal"),
+    card: document.getElementById("confirmCard"),
+    title: document.getElementById("confirmTitle"),
+    message: document.getElementById("confirmMessage"),
+    icon: document.getElementById("confirmIcon"),
+    btnAccept: document.getElementById("btnConfirmAccept"),
+    btnReject: document.getElementById("btnConfirmReject"),
+    btnCloseTop: document.getElementById("btnConfirmCloseTop"),
+  };
+
+  console.log(`¡${title}!:${content}. --> ${buttonText}`);
+  // 1. Inyectar valores al DOM
+  CONFIRM_MODAL_NODES.title.textContent = title;
+  CONFIRM_MODAL_NODES.message.innerHTML = content;
+  CONFIRM_MODAL_NODES.btnAccept.textContent = buttonText;
+
+  // 2. Alternar variante destructiva (Rojo para Desactivar) o estándar (Azul para Activar)
+  if (!isActivate) {
+    CONFIRM_MODAL_NODES.card.classList.add("confirm-danger");
+    CONFIRM_MODAL_NODES.icon.textContent = "warning_amber";
+  } else {
+    CONFIRM_MODAL_NODES.card.classList.remove("confirm-danger");
+    CONFIRM_MODAL_NODES.icon.textContent = "help_outline";
+  }
+
+  // 3. Handlers para cerrar y confirmar
+  const close = () => {
+    CONFIRM_MODAL_NODES.overlay.classList.remove("active");
+    CONFIRM_MODAL_NODES.btnAccept.onclick = null;
+    CONFIRM_MODAL_NODES.btnReject.onclick = null;
+    CONFIRM_MODAL_NODES.btnCloseTop.onclick = null;
+  };
+
+  CONFIRM_MODAL_NODES.btnAccept.onclick = () => {
+    close();
+    if (typeof onConfirm === "function") onConfirm();
+  };
+
+  CONFIRM_MODAL_NODES.btnReject.onclick = close;
+  CONFIRM_MODAL_NODES.btnCloseTop.onclick = close;
+
+  // 4. Mostrar modal
+  CONFIRM_MODAL_NODES.overlay.classList.add("active");
+}
+
+// ======== FIN DE HU27 ===== //
