@@ -193,16 +193,21 @@ private fun FormularioCompromiso(
                 label = "Si tienes veterinario, ¿cuál es? Si no, ¿cómo piensas conseguir uno?",
                 value = datos.vetDetail,
                 onValueChange = { onDatosChange(datos.copy(vetDetail = it)) },
-                placeholder = "Escribe tu respuesta...",
-            )
-            LabeledWritableCard(
-                label = "¿Cuántas horas al día estaría solo el perro y quién lo cuidaría si viajas o sales de vacaciones?",
-                value = datos.timeAlone,
-                onValueChange = { onDatosChange(datos.copy(timeAlone = it)) },
                 placeholder = "Nombre del veterinario o clínica, o cómo lo buscarías...",
                 minLines = 3,
             )
             errores?.vetDetail?.let { ErrorMessage(text = it) }
+        }
+
+        Column {
+            LabeledWritableCard(
+                label = "¿Cuántas horas al día estaría sola tu mascota y quién la cuidaría si viajas o sales de vacaciones?",
+                value = datos.timeAlone,
+                onValueChange = { onDatosChange(datos.copy(timeAlone = it)) },
+                placeholder = "Indica cuántas horas y quién la cuidaría cuando no estés...",
+                minLines = 3,
+            )
+            errores?.timeAlone?.let { ErrorMessage(text = it) }
         }
 
         Column {
@@ -266,6 +271,7 @@ private fun FormularioCompromiso(
         AppButton(
             text = "Continuar a Documentos",
             onClick = onContinuarClick,
+            enabled = acceptances.allAccepted, // gris hasta que palomeen los 3
             modifier =
                 Modifier
                     .fillMaxWidth()
