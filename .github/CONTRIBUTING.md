@@ -23,15 +23,14 @@ Use `!` for breaking changes, e.g.
 
 ## Branches
 
-Use `type/module-huxx-short-description`, lowercase with hyphens.
+Use lowercase with hyphens (`-`).
 
-- `feature/` - new functionality
-- `bugfix/` - bug fixes
-- `docs/` - documentation
-- `chore/` - maintenance and tooling
+- **Feature branches:** `feature/<module>-hu<xx>-<short-description>` (minimum 2 digits for `hu<xx>`, description optional)
+  - Allowed modules: `solicitudes`, `catalogo`, `perfiles`, `donativos`, `voluntarios`
+- **Other branches:** `<type>/<short-description>`
+  - Allowed types: `bugfix`, `fix`, `hotfix`, `release`, `chore`, `docs`
 
-Examples: `feature/catalogo-hu39-menu`, `bugfix/login`,
-`chore/repo-conventions`.
+Examples: `feature/catalogo-hu39-menu`, `feature/voluntarios-hu12`, `bugfix/login`, `chore/repo-conventions`, `release/1.0.0`.
 
 ## Pull requests
 
