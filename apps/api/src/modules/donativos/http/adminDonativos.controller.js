@@ -6,10 +6,10 @@ export async function obtenerDonativosPendientes(req, res) {
 
     return res.status(200).json(donativos);
   } catch (error) {
-    console.error("Error al consultar donativos pendientes:", error);
+    console.error("Error al obtener donativos pendientes:", error);
 
     return res.status(500).json({
-      error: "No fue posible consultar los donativos pendientes",
+      error: "No fue posible consultar los donativos pendientes.",
     });
   }
 }

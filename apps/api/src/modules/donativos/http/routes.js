@@ -36,7 +36,29 @@ router.post(
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
 });
+// HU44 - Consulta general de donativos pendientes
+router.get("/pendientes/resumen", async (req, res) => {
+  try {
+    const { default: DonativoModel } = await import("./modelosDonativos/donativo.model.js");
 
+    const donativos = await DonativoModel.getPendientes();
+
+    const resumen = donativos.map((donativo) => ({
+      id: donativo.id_donativo,
+      fecha: donativo.fecha,
+      estado: donativo.estado,
+      donante: "Donante anónimo",
+    }));
+
+    return res.status(200).json(resumen);
+  } catch (error) {
+    console.error("Error al consultar donativos:", error);
+
+    return res.status(500).json({
+      error: "No fue posible consultar los donativos.",
+    });
+  }
+});
 router.get(
   "/admin/pendientes",
   verificarToken,

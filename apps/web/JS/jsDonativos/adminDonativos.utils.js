@@ -1,4 +1,8 @@
 export function formatearMonto(monto) {
+  if (monto === null || monto === undefined || monto === "") {
+    return "—";
+  }
+
   return new Intl.NumberFormat("es-MX", {
     style: "currency",
     currency: "MXN",
@@ -6,9 +10,7 @@ export function formatearMonto(monto) {
 }
 
 export function formatearFecha(fecha) {
-  if (!fecha) {
-    return "Sin fecha";
-  }
+  if (!fecha) return "Sin fecha";
 
   const fechaValida = new Date(fecha);
 
@@ -30,6 +32,7 @@ export function prepararFilaDonativo(donativo) {
     donativo.estado,
   ];
 }
+
 export function obtenerMensajeListaVacia(donativos) {
   return donativos.length === 0 ? "No hay donativos pendientes." : null;
 }

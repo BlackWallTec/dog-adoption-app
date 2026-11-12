@@ -101,3 +101,23 @@
   font-weight: 400;
   line-height: 1.5;
 }
+
+/* Aviso visible cuando se utilizan datos ficticios de demostración. */
+.donativos-demo-notice {
+  padding: 12px 16px;
+  margin: 0 0 16px;
+  border: 1px solid #b98d2c;
+  border-radius: 8px;
+  background: #fff5d6;
+  color: #654a16;
+}
+.donativos-demo-action {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #f3e3ad;
+  color: #302719;
+  text-decoration: none;
+  font-weight: 600;
+}

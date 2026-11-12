@@ -1,8 +1,12 @@
-const API_URL = "/api/donativos/admin/pendientes";
+const API_URL = "/api/donativos/pendientes/resumen";
 
 export async function obtenerDonativosPendientes() {
   const respuesta = await fetch(API_URL, {
+    method: "GET",
     credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
   });
 
   if (respuesta.status === 401) {
@@ -19,12 +23,14 @@ export async function obtenerDonativosPendientes() {
 
   const datos = await respuesta.json();
 
+  if (!Array.isArray(datos)) {
+    throw new Error("La API no devolvió una lista de donativos.");
+  }
+
   return datos.map((donativo) => ({
-    id: donativo.id_donativo,
-    donante:
-      [donativo.usuario?.nombre, donativo.usuario?.apellidos].filter(Boolean).join(" ") ||
-      "Sin nombre",
-    monto: donativo.monto,
+    id: donativo.id,
+    donante: donativo.donante,
+    monto: null,
     fecha: donativo.fecha,
     estado: donativo.estado,
   }));
