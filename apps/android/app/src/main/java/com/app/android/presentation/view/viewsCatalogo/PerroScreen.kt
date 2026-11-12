@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,9 +43,9 @@ import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosViewModel
 @Composable
 fun PerrosScreen(
     modifier: Modifier = Modifier,
-    vm: PerrosViewModel = hiltViewModel()
+    onNavSelect: (Int) -> Unit = {},
+    vm: PerrosViewModel = hiltViewModel(),
 ) {
-    var selected by remember { mutableIntStateOf(0) } //navbar
     var query by remember { mutableStateOf("") }
 
     Column(
@@ -58,48 +57,37 @@ fun PerrosScreen(
         Column( //esto es para que se pueda mover de arriba hacia abajo y viceversa
             modifier = Modifier.weight(1f).padding(horizontal = 24.dp)
         ) {
-            when (selected) {
-                0 -> {
-                    Row( //esto es para las 3 rayitas y la campana
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        IconButton(onClick = { }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú")
-                        }
-                        IconButton(onClick = { }) {
-                            Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
-                        }
-                    }
-                    Text(
-                        "Catálogo",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Text("Encuentra a tu nuevo mejor amigo.", fontSize = 16.sp)
-                    Spacer(Modifier.height(20.dp))
-
-                    SearchBar(
-                        query = query,
-                        onQueryChange = { query = it },
-                        onFilterClick = {}
-                    )
-
-                    PerrosGrid(
-                        vm = vm,
-                        modifier = Modifier.weight(1f).fillMaxWidth()
-                    )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                IconButton(onClick = { }) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menú")
                 }
-                /*
-                                1 -> Text("Ayudar")
-                                2 -> Text("Perfil")
-                                3 -> Text("Solicitudes")
-                                4 -> Text("Ajustes")
-                 */
+                IconButton(onClick = { }) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                }
             }
+            Text(
+                "Catálogo",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text("Encuentra a tu nuevo mejor amigo.", fontSize = 16.sp)
+            Spacer(Modifier.height(20.dp))
+            FinalesFelicesSection()
+            SearchBar(
+                query = query,
+                onQueryChange = { query = it },
+                onFilterClick = {},
+            )
+            PerrosGrid(
+                vm = vm,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            )
         }
-        NavBar(selected = selected, onSelect = { selected = it })
+        NavBar(selected = 0, onSelect = onNavSelect)
     }
 }
 

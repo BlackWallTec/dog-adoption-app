@@ -7,6 +7,8 @@ import sizeModel from "./modelosCatalogo/size.model.js";
 import behaviorModel from "./modelosCatalogo/behaviour.model.js";
 import specialModel from "./modelosCatalogo/special.model.js";
 import multimediaModel from "./modelosCatalogo/multimedia.model.js";
+import finalFelizModel from "./modelosCatalogo/finalFeliz.model.js";
+import { prepararFinalesFelices } from "./finalFelizReglas.js";
 
 export const getDogById = async (req, res) => {
   console.log("ID recibido:", req.params.id); // Agrega este log para verificar el ID recibido
@@ -67,4 +69,18 @@ export const getDogs = async (req, res) => {
   }
 };
 
-//
+// HU22: finales felices publicados para el carrusel del catálogo cliente.
+export const getFinalesFelices = async (req, res) => {
+  try {
+    const filas = await finalFelizModel.getPublicados();
+    res.status(200).json({
+      success: true,
+      data: prepararFinalesFelices(filas),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Error interno al consultar finales felices.",
+    });
+  }
+};

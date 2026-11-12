@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
+import com.app.android.presentation.view.viewsCatalogo.PerrosScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
@@ -20,22 +21,20 @@ import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 // Cuando exista login, este id vendra de la sesion del usuario.
 private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
 
-// Barra de abajo: 0 Catálogo, 2 Donar, 4 Ajustes. Ayudar y Solicitudes todavía no tienen pantalla de entrada.
+// Barra de abajo: 0 Catálogo, 1 Ayudar, 2 Donar, 4 Ajustes. Solicitudes todavía no tiene pantalla.
 private fun NavController.irAOpcionBarra(opcion: Int) {
     val destino =
         when (opcion) {
-            1 ->Screen.Programas.ruta
+            0 -> Screen.Catalogo.ruta
+            1 -> Screen.Programas.ruta
             2 -> Screen.DonarDinero.ruta
             4 -> Screen.DatosFiscales.ruta
             else -> null
-        }
-    when {
-        opcion == 0 -> popBackStack(Screen.DetallePerro.ruta, inclusive = false)
-        destino != null ->
-            navigate(destino) {
-                popUpTo(Screen.DetallePerro.ruta) // para que atrás regrese al inicio y no se apilen
-                launchSingleTop = true
-            }
+        } ?: return
+
+    navigate(destino) {
+        popUpTo(Screen.Catalogo.ruta)
+        launchSingleTop = true
     }
 }
 
@@ -47,9 +46,12 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
+        startDestination = Screen.Catalogo.ruta,
     ) {
         // ========= Pantallas Catalogo ========
+        composable(route = Screen.Catalogo.ruta) {
+            PerrosScreen(onNavSelect = navController::irAOpcionBarra)
+        }
 
         // PANTALLA 2: El detalle del perro
         composable(

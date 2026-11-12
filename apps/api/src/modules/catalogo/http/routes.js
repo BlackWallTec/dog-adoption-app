@@ -52,6 +52,9 @@ router.get("/admin/razas", adminController.getRazas);
 //obtener todos los perros
 router.get("/cliente/perros", clientController.getDogs);
 
+// HU22: GET /api/catalogo/cliente/finales-felices
+router.get("/cliente/finales-felices", clientController.getFinalesFelices);
+
 // ==== Fin Rutas Admin ======
 
 // ===== Rutas Cliente ====

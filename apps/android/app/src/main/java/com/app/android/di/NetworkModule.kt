@@ -1,8 +1,11 @@
 package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
+import com.app.android.data.dataSource.dataSourcesCatalogo.FinalFelizApi
 import com.app.android.data.repoImp.repoImpCatalogo.DogRepositoryImpl
+import com.app.android.data.repoImp.repoImpCatalogo.FinalFelizRepositoryImpl
 import com.app.android.domain.repoInterface.repoIntCatalogo.DogRepositoryInt
+import com.app.android.domain.repoInterface.repoIntCatalogo.FinalFelizRepository
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryImpl
 import com.app.android.data.dataSource.dataSourcesVoluntariado.ProgramaApiService
@@ -111,4 +114,11 @@ object NetworkModule {
     fun provideProgramaRepository(apiService: ProgramaApiService): ProgramaRepository =
         ProgramaRepositoryImpl(apiService)
 
+    @Provides
+    @Singleton
+    fun provideFinalFelizApi(retrofit: Retrofit): FinalFelizApi = retrofit.create(FinalFelizApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideFinalFelizRepository(api: FinalFelizApi): FinalFelizRepository = FinalFelizRepositoryImpl(api)
 }
