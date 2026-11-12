@@ -1,6 +1,7 @@
 package com.app.android.data.dataSource.dataSourcesSolicitudes
 
 import com.app.android.data.dtos.dtosSolicitudes.ApiResponseDatosGeneralesDto
+import com.app.android.data.dtos.dtosSolicitudes.ApiResponseMisSolicitudesDto
 import com.app.android.data.dtos.dtosSolicitudes.ApiResponseSolicitudActivaDto
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -21,6 +22,10 @@ interface SolicitudApiService {
     suspend fun fetchProfileRemote(
         @Path("idUsuario") idUsuario: String,
     ): ApiResponseDatosGeneralesDto
+
+    // GET /api/solicitudes/cliente/mis-solicitudes
+    @GET("api/solicitudes/cliente/mis-solicitudes")
+    suspend fun fetchMisSolicitudesRemote(): ApiResponseMisSolicitudesDto
 
     // Andy: fetchUserDocumentsRemote (GET /documentos/:idUsuario)
     // Lucca: enviarSolicitudRemote (POST multipart)

@@ -3,6 +3,7 @@ package com.app.android.data.dtos.dtosSolicitudes
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.google.gson.annotations.SerializedName
 
@@ -18,6 +19,31 @@ data class ApiResponseSolicitudActivaDto(
 data class SolicitudActivaDto(
     @SerializedName("id_solicitud") val idSolicitud: String?,
     @SerializedName("estado") val estado: String?, // la descripción: "Pendiente de Revisión", etc.
+)
+
+// ===== GET /api/solicitudes/cliente/mis-solicitudes =====
+
+// { success, data: [ ...solicitudes ] }  — data = [] si no tiene ninguna
+data class ApiResponseMisSolicitudesDto(
+    @SerializedName("success") val success: Boolean?,
+    @SerializedName("data") val data: List<SolicitudClienteDto>?,
+    @SerializedName("message") val message: String?,
+)
+
+data class SolicitudClienteDto(
+    @SerializedName("id_solicitud") val idSolicitud: String?,
+    @SerializedName("folio") val folio: String?,
+    @SerializedName("fecha_solicitud") val fechaSolicitud: String?,
+    @SerializedName("estado") val estado: String?,
+    @SerializedName("perro") val perro: PerroSolicitudDto?,
+    @SerializedName("foto_url") val fotoUrl: String?,
+    @SerializedName("documento_rechazado") val documentoRechazado: Boolean?,
+    @SerializedName("comentario_admin") val comentarioAdmin: String?,
+)
+
+data class PerroSolicitudDto(
+    @SerializedName("nombre") val nombre: String?,
+    @SerializedName("foto_url") val fotoUrl: String?,
 )
 
 // ===== GET /api/solicitudes/cliente/perfil/:idUsuario =====
@@ -44,7 +70,6 @@ data class DatosGeneralesDto(
 // ===== MAPPERS: DTO → Entity =====
 // Paso 3 y 4
 
-
 // Respuesta sin datos { success, message }
 data class ApiResponseSimpleDto(
     @SerializedName("success") val success: Boolean?,
@@ -58,8 +83,6 @@ data class CrearSolicitudRequestDto(
     @SerializedName("id_usuario") val idUsuario: String,
     @SerializedName("id_perro") val idPerro: String,
 )
-
-
 
 // ===== MAPPERS: DTO → Entity (Recibir información =====
 
@@ -88,4 +111,16 @@ fun DatosGeneralesDto.toDomain(): DatosGenerales =
         municipio = municipio ?: "",
         telefono = telefono ?: "",
         correo = correo ?: "",
+    )
+
+fun SolicitudClienteDto.toDomain(): SolicitudCliente =
+    SolicitudCliente(
+        idSolicitud = idSolicitud ?: "",
+        folio = folio ?: "",
+        fechaSolicitud = fechaSolicitud ?: "",
+        estado = estado.toEstadoSolicitud(),
+        nombrePerro = perro?.nombre?.takeIf { it.isNotBlank() },
+        fotoUrl = perro?.fotoUrl?.takeIf { it.isNotBlank() },
+        documentoRechazado = documentoRechazado ?: false,
+        comentarioAdmin = comentarioAdmin?.takeIf { it.isNotBlank() },
     )
