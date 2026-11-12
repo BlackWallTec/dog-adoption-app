@@ -22,6 +22,7 @@
     "multer": "catalog:"
   },
   "devDependencies": {
+    "@vitest/ui": "catalog:",
     "supertest": "catalog:",
     "vite-plus": "catalog:",
     "vitest": "catalog:"
