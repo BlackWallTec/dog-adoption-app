@@ -96,11 +96,10 @@ object NetworkModule {
         // Hilt inyectará el ApiService aquí dentro de tu implementación automáticamente
         return PerroRepositoryImpl(apiService)
     }
+
     @Provides
     @Singleton
-    fun provideDocumentApi(retrofit: Retrofit): DocumentApi {
-        return retrofit.create(DocumentApi::class.java)
-    }
+    fun provideDocumentApi(retrofit: Retrofit): DocumentApi = retrofit.create(DocumentApi::class.java)
 
     @Provides
     @Singleton
@@ -113,6 +112,7 @@ object NetworkModule {
         // we call the repository implementation with the api service and context
         return DocumentRepositoryImpl(apiService, context)
     }
+
     @Provides
     @Singleton
     fun provideSolicitudApiService(retrofit: Retrofit): SolicitudApiService = retrofit.create(SolicitudApiService::class.java)
