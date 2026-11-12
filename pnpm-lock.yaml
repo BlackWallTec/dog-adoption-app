@@ -195,6 +195,9 @@ catalogs:
     '@vitest/coverage-v8':
       specifier: 5.0.5
       version: 5.0.5
+    '@vitest/ui':
+      specifier: 5.0.5
+      version: 5.0.5
     bcryptjs:
       specifier: ^3.0.3
       version: 3.0.3
@@ -277,6 +280,9 @@ importers:
         specifier: 'catalog:'
         version: 2.5.0
     devDependencies:
+      '@vitest/ui':
+        specifier: 'catalog:'
+        version: 5.0.5(vitest@5.1.0)
       supertest:
         specifier: 'catalog:'
         version: 7.3.1
@@ -2268,6 +2274,16 @@ snapshots:
       tinyrainbow: 3.2.0
       vitest: 5.0.5(@vitest/browser-preview@5.0.5)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0)
 
+  '@vitest/ui@5.0.5(vitest@5.1.0)':
+    dependencies:
+      '@vitest/utils': 5.0.5
+      fflate: 0.8.3
+      flatted: 3.4.4
+      pathe: 2.0.3
+      sirv: 3.0.2
+      tinyrainbow: 3.2.0
+      vitest: 5.1.0(@vitest/browser-preview@5.0.5)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0)
+
   '@vitest/utils@5.0.5':
     dependencies:
       '@vitest/pretty-format': 5.0.5
@@ -3182,7 +3198,7 @@ snapshots:
     optionalDependencies:
       '@vitest/browser-preview': 5.0.5(vitest@5.0.5)
       '@vitest/coverage-v8': 5.0.5(@vitest/browser@5.0.5)(vitest@5.0.5)
-      '@vitest/ui': 5.0.5(vitest@5.0.5)
+      '@vitest/ui': 5.0.5(vitest@5.1.0)
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
       - '@typescript/native-preview'
