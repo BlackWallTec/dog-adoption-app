@@ -28,5 +28,4 @@ internal fun validateLogin(state: LoginUiState): LoginUiState {
         isSignedIn = false,
     )
 }
-
 private val EMAIL_PATTERN = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")

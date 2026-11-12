@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesPerfiles.Registro
 import com.app.android.domain.entities.entitiesPerfiles.RegistroInvalidoException
-import com.app.android.domain.entities.entitiesPerfiles.Sesion
-import com.app.android.domain.entities.entitiesPerfiles.mensajePerfiles
 import com.app.android.domain.entities.entitiesPerfiles.validarRegistro
 import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,11 +26,11 @@ data class RegistroUiState(
 class RegistroViewModel @Inject constructor(private val repository: PerfilesRepositoryInt) : ViewModel() {
     private val _uiState = MutableStateFlow(RegistroUiState())
     val uiState = _uiState.asStateFlow()
-    private val sessions = Channel<Sesion>(Channel.BUFFERED)
-    val authenticatedSessions = sessions.receiveAsFlow()
+    // Avisa cuando la cuenta se haya creado correctamente.
+    private val registrations = Channel<Unit>(Channel.BUFFERED)
+    val registrationCompleted = registrations.receiveAsFlow()
     private var requestId = 0
     private var job: Job? = null
-
     fun actualizar(campo: String, valor: String) {
         if (_uiState.value.isLoading) return
         _uiState.update { state ->
@@ -61,10 +59,10 @@ class RegistroViewModel @Inject constructor(private val repository: PerfilesRepo
         _uiState.update { it.copy(isLoading = true) }
         job = viewModelScope.launch {
             try {
-                val sesion = repository.registrar(datos)
+                repository.registrar(datos)
                 if (request != requestId) return@launch
                 _uiState.update { it.copy(datos = it.datos.copy(passwd = "", confirmPasswd = "")) }
-                sessions.send(sesion)
+                registrations.send(Unit)
             } catch (e: CancellationException) { throw e }
             catch (e: RegistroInvalidoException) {
                 if (request == requestId) _uiState.update { it.copy(campos = e.campos, error = e.mensajePerfiles()) }

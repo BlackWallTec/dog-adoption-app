@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesPerfiles.CredencialesInvalidasException
 import com.app.android.domain.entities.entitiesPerfiles.FalloAutenticacion
-import com.app.android.domain.entities.entitiesPerfiles.mensajePerfiles
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.useCases.useCasesPerfiles.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +24,7 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
-    // El repositorio guarda la sesión cifrada; la contraseña se limpia de la vista.
+    // Comunica la sesión obtenida para que la navegación procese el acceso.
     private val sessions = Channel<Sesion>(Channel.BUFFERED)
     val authenticatedSessions = sessions.receiveAsFlow()
     private var loginJob: Job? = null
