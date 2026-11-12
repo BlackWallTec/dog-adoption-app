@@ -1,5 +1,8 @@
 import express, { Router } from "express";
-import { obtenerDonativosPendientes } from "./adminDonativos.controller.js";
+import {
+  obtenerDonativosPendientes,
+  obtenerResumenDonativosPendientes,
+} from "./adminDonativos.controller.js";
 import { TIPOS_COMPROBANTE, postDonativo } from "./donativoCliente.controller.js";
 import {
   TIPOS_CONSTANCIA,
@@ -37,6 +40,8 @@ router.post(
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
 });
+
+router.get("/pendientes/resumen", obtenerResumenDonativosPendientes);
 
 // HU44 - Listado administrativo de donativos pendientes
 router.get(

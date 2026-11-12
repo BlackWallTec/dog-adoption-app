@@ -12,6 +12,7 @@ vi.mock("../../src/config/supabaseClient.js", () => ({
 vi.mock("../../src/modules/donativos/http/modelosDonativos/donativo.model.js", () => ({
   default: {
     getPendientes: vi.fn().mockResolvedValue([]),
+    countPendientes: vi.fn().mockResolvedValue(7),
     registrarMonetario: vi.fn(),
   },
 }));
@@ -21,6 +22,7 @@ vi.mock("../../src/modules/donativos/http/modelosDonativos/datosFiscales.model.j
 }));
 
 import { router as donativosRouter } from "../../src/modules/donativos/index.js";
+import DonativoModel from "../../src/modules/donativos/http/modelosDonativos/donativo.model.js";
 
 const JWT_SECRET_TEST = "test-secret-for-route-authorization";
 const JWT_SECRET_ORIGINAL = process.env.JWT_SECRET;
@@ -75,9 +77,11 @@ describe("HU44 - Protección de rutas administrativas", () => {
     expect(response.body).toEqual([]);
   });
 
-  it("no publica el resumen de registros individuales", async () => {
+  it("publica solo el conteo agregado, sin registros individuales", async () => {
     const response = await request(crearApp()).get("/api/donativos/pendientes/resumen");
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ totalPendientes: 7 });
+    expect(DonativoModel.countPendientes).toHaveBeenCalledOnce();
   });
 });

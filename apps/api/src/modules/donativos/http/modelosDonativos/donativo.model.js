@@ -1,6 +1,19 @@
 import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 class DonativoModel {
+  static async countPendientes() {
+    const { count, error } = await supabaseAdmin
+      .from("donativo")
+      .select("id_donativo", { count: "exact", head: true })
+      .eq("estado", "Pendiente de validación");
+
+    if (error) {
+      throw new Error(`Error al consultar el total de donativos pendientes: ${error.message}`);
+    }
+
+    return count ?? 0;
+  }
+
   static async getPendientes() {
     const { data, error } = await supabaseAdmin
       .from("donativo")

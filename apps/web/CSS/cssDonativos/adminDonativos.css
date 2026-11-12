@@ -9,6 +9,18 @@
   margin-bottom: 24px;
 }
 
+.public-summary-link {
+  color: var(--md-sys-color-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.public-summary-link:hover {
+  text-decoration: underline;
+}
+
 .section-title {
   font-family: var(--font-headline);
   font-size: 28px;

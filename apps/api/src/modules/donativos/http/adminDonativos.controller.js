@@ -14,3 +14,17 @@ export async function obtenerDonativosPendientes(req, res) {
     });
   }
 }
+
+export async function obtenerResumenDonativosPendientes(req, res) {
+  try {
+    const totalPendientes = await DonativoModel.countPendientes();
+
+    return res.status(200).json({ totalPendientes });
+  } catch (error) {
+    console.error("Error al consultar el resumen público de donativos:", error);
+
+    return res.status(500).json({
+      error: "No fue posible consultar el resumen de donativos.",
+    });
+  }
+}
