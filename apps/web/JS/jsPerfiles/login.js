@@ -1,5 +1,4 @@
 import { perfilesApi } from "./perfiles.api.js";
-import {} from "../../../shared/errores.js";
 import { createSessionView } from "./perfiles.session.js";
 import { fieldError, byId } from "./utils.js";
 

@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "../../../../config/supabaseClient.js";
-import { instanciarError } from "../../../../../../shared/errores.js";
+import { instanciarError } from "@qarino/shared/errores.js";
 
 export default class CodigoPostal {
   // Todas las colonias de un código postal o [] si no

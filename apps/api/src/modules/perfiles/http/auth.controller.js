@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
-import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "../../../../../shared/errores.js";
+import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "@qarino/shared/errores.js";
 
 /*
 IMPORTANTE

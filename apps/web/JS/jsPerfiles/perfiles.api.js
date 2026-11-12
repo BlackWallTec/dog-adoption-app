@@ -1,4 +1,4 @@
-import { INTERNAL, errorFromHTTPStatus } from "../../../shared/errores.js";
+import { INTERNAL, errorFromHTTPStatus } from "@qarino/shared/errores.js";
 
 // Mensajes para mostrar al usuario según el status HTTP
 const MESSAGES = {

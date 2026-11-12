@@ -10,10 +10,13 @@ export default defineConfig({
       input: {
         main: r("index.html"),
         login: r("HTML/htmlPerfiles/login.html"),
+        registro: r("HTML/htmlPerfiles/registro.html"),
         adminPerros: r("HTML/htmlCatalogo/adminPerros.html"),
         adminVoluntariado: r("HTML/htmlVoluntariado/adminVoluntariado.html"),
         adminInscritos: r("HTML/htmlVoluntariado/adminInscritos.html"),
         createVolunteering: r("HTML/htmlVoluntariado/createVolunteering.html"),
+        adminSolicitudes: r("HTML/htmlSolicitudes/adminSolicitudes.html"),
+        adminDonativos: r("HTML/htmlDonativos/adminDonativos.html"),
       },
     },
   },

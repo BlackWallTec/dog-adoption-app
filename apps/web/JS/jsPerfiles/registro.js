@@ -1,7 +1,7 @@
 import { perfilesApi } from "./perfiles.api.js";
 import { initCodigoPostal } from "./registro.cp.js";
-import { VALIDATION, UNAUTHENTICATED } from "../../../shared/errores.js";
-import { validateRegistration } from "../../../shared/perfiles/registro.validation.js";
+import { VALIDATION, UNAUTHENTICATED } from "@qarino/shared/errores.js";
+import { validateRegistration } from "@qarino/shared/perfiles/registro.validation.js";
 import { fieldError, byId } from "./utils.js";
 
 const form = byId("register-form");
