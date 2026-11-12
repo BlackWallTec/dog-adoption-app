@@ -274,18 +274,20 @@ private fun FormularioCompromiso(
     }
 }
 
-@Preview(showBackground = true, name = "Paso 4 - Completo")
+@Preview(showBackground = true, name = "Paso 4 - Interactivo")
 @Composable
-fun CompromisoCompletoPreview() {
+fun CompromisoInteractivoPreview() {
+    var datos by remember { mutableStateOf(Compromiso()) }
+    var acceptances by remember { mutableStateOf(Acceptances()) }
     AndroidTheme {
         CompromisoScreen(
             cargando = false,
             errorCarga = null,
-            datos = Compromiso(),
+            datos = datos,
             errores = null,
-            onDatosChange = {},
-            acceptances = Acceptances(acceptsReturn = true, petSpending = true, petFollowing = true),
-            onAcceptancesChange = {},
+            onDatosChange = { datos = it }, // el estado vive en el preview
+            acceptances = acceptances,
+            onAcceptancesChange = { acceptances = it },
             guardando = false,
             errorGuardar = null,
             onReintentar = {},
@@ -294,7 +296,6 @@ fun CompromisoCompletoPreview() {
         )
     }
 }
-
 
 @Preview(showBackground = true, name = "Paso 4 - Con errores")
 @Composable
