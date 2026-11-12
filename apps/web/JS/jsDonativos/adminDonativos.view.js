@@ -11,7 +11,6 @@ function actualizarContador(total) {
   if (counterSubtitle) {
     counterSubtitle.textContent = mensaje;
   }
-
   if (paginationInfo) {
     paginationInfo.textContent = mensaje;
   }
@@ -24,10 +23,8 @@ function mostrarMensaje(mensaje) {
 
   const fila = document.createElement("tr");
   const celda = document.createElement("td");
-
   celda.colSpan = 5;
   celda.textContent = mensaje;
-
   fila.append(celda);
   tablaBody.append(fila);
 }
@@ -38,7 +35,6 @@ function renderizarTabla(donativos) {
   tablaBody.replaceChildren();
 
   const mensajeListaVacia = obtenerMensajeListaVacia(donativos);
-
   if (mensajeListaVacia) {
     mostrarMensaje(mensajeListaVacia);
     return;
@@ -50,43 +46,43 @@ function renderizarTabla(donativos) {
 
     for (const valor of valores.slice(0, 4)) {
       const celda = document.createElement("td");
-      celda.textContent = valor ?? "";
+      celda.textContent = String(valor);
       fila.append(celda);
     }
 
     const celdaEstado = document.createElement("td");
     const etiqueta = document.createElement("span");
-
     etiqueta.className = "badge-estado badge-pendiente";
-    etiqueta.textContent = donativo.estado;
-
+    etiqueta.textContent = valores[4];
     celdaEstado.append(etiqueta);
     fila.append(celdaEstado);
-
     tablaBody.append(fila);
   }
 }
 
 async function cargarDonativos() {
   mostrarMensaje("Cargando donativos pendientes...");
-  actualizarContador(0);
 
   try {
     const donativos = await obtenerDonativosPendientes();
-
-    donativos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-
     renderizarTabla(donativos);
     actualizarContador(donativos.length);
   } catch (error) {
-    console.error("Error al cargar donativos:", error);
+    console.error("Error al cargar los donativos:", error);
 
     if (error.message === "NO_AUTENTICADO") {
-      mostrarMensaje("No existe una sesión autorizada para consultar los donativos.");
+      mostrarMensaje("Necesitas una sesión administrativa para consultar los donativos.");
     } else if (error.message === "SIN_PERMISOS") {
-      mostrarMensaje("La cuenta actual no tiene permisos para consultar donativos.");
+      mostrarMensaje("Tu cuenta no tiene permisos para consultar los donativos.");
     } else {
       mostrarMensaje("No fue posible cargar los donativos pendientes.");
+    }
+
+    if (counterSubtitle) {
+      counterSubtitle.textContent = "No se pudieron cargar los donativos.";
+    }
+    if (paginationInfo) {
+      paginationInfo.textContent = "Error al cargar los donativos";
     }
   }
 }

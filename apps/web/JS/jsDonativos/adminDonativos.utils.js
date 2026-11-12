@@ -13,7 +13,6 @@ export function formatearFecha(fecha) {
   if (!fecha) return "Sin fecha";
 
   const fechaValida = new Date(fecha);
-
   if (Number.isNaN(fechaValida.getTime())) {
     return "Sin fecha";
   }
@@ -25,11 +24,11 @@ export function formatearFecha(fecha) {
 
 export function prepararFilaDonativo(donativo) {
   return [
-    donativo.id,
-    donativo.donante,
+    donativo.id ?? "",
+    donativo.donante || "Sin nombre",
     formatearMonto(donativo.monto),
     formatearFecha(donativo.fecha),
-    donativo.estado,
+    donativo.estado || "Sin estado",
   ];
 }
 

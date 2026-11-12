@@ -1,12 +1,8 @@
-const API_URL = "/api/donativos/pendientes/resumen";
+const API_URL = "/api/donativos/admin/pendientes";
 
 export async function obtenerDonativosPendientes() {
   const respuesta = await fetch(API_URL, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-    },
+    credentials: "same-origin",
   });
 
   if (respuesta.status === 401) {
@@ -21,16 +17,17 @@ export async function obtenerDonativosPendientes() {
     throw new Error(`Error al consultar donativos: ${respuesta.status}`);
   }
 
-  const datos = await respuesta.json();
-
-  if (!Array.isArray(datos)) {
-    throw new Error("La API no devolvió una lista de donativos.");
+  const donativos = await respuesta.json();
+  if (!Array.isArray(donativos)) {
+    throw new Error("La respuesta de donativos tiene un formato inválido.");
   }
 
-  return datos.map((donativo) => ({
-    id: donativo.id,
-    donante: donativo.donante,
-    monto: null,
+  return donativos.map((donativo) => ({
+    id: donativo.id_donativo,
+    donante:
+      [donativo.usuario?.nombre, donativo.usuario?.apellidos].filter(Boolean).join(" ") ||
+      "Sin nombre",
+    monto: donativo.monto,
     fecha: donativo.fecha,
     estado: donativo.estado,
   }));
