@@ -12,6 +12,7 @@ sealed class Screen(
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
+
     // Donativos - HU46
     object DonarDinero : Screen("donar_dinero_screen")
 
@@ -24,6 +25,7 @@ sealed class Screen(
 
     // HU39A: catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
+
     // HU33: confirmación de inscripción (lee el programa del ViewModel compartido, sin argumentos)
     object ConfirmacionInscripcion : Screen("voluntariado_confirmacion")
 
@@ -31,6 +33,9 @@ sealed class Screen(
     object GrafoVoluntariado : Screen("voluntariado_graph")
 
     // ===== Solicitudes de adopción =====
+
+    // HU04 · Mis solicitudes (entra por la barra de abajo, no lleva parámetros)
+    object MisSolicitudes : Screen("mis_solicitudes_screen")
 
     // llega desde el detalle del perro (Catálogo) con el id del perro
     object Requisitos : Screen("solicitud_requisitos/{idPerro}") {
