@@ -46,6 +46,9 @@ sealed class Screen(
 
     // ===== Solicitudes de adopción =====
 
+    // HU04 · Mis solicitudes (entra por la barra de abajo, no lleva parámetros)
+    object MisSolicitudes : Screen("mis_solicitudes_screen")
+
     // llega desde el detalle del perro (Catálogo) con el id del perro
     object Requisitos : Screen("solicitud_requisitos/{idPerro}") {
         fun crearRuta(idPerro: String) = "solicitud_requisitos/$idPerro"
