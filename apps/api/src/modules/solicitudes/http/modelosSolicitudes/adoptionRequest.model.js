@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
+import { supabase } from "../../../../config/supabaseClient.js";
 
 // Estados que NO cuentan como solicitud activa
 const ESTADOS_INACTIVOS = ["Rechazada", "Borrador"];
