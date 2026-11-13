@@ -1,5 +1,8 @@
 import express, { Router } from "express";
-import { obtenerDonativosPendientes } from "./adminDonativos.controller.js";
+import {
+  obtenerDonativosPendientes,
+  obtenerResumenDonativosPendientes,
+} from "./adminDonativos.controller.js";
 import { TIPOS_COMPROBANTE, postDonativo } from "./donativoCliente.controller.js";
 import {
   TIPOS_CONSTANCIA,
@@ -19,14 +22,15 @@ export const router = Router();
 // HU45 - datos fiscales del donante
 router.get("/cliente/datos-fiscales/:idUsuario", getDatosFiscales);
 router.put("/cliente/datos-fiscales/:idUsuario", putDatosFiscales);
-// el archivo llega crudo, máximo 10 MB como en la app
+
+// El archivo llega crudo, máximo 10 MB como en la app
 router.put(
   "/cliente/datos-fiscales/:idUsuario/constancia",
   express.raw({ type: TIPOS_CONSTANCIA, limit: "10mb" }),
   putConstancia,
 );
 
-// HU46 - registrar donativo con comprobante (mismo límite que la app)
+// HU46 - registrar donativo con comprobante
 router.post(
   "/cliente/donativos/:idUsuario",
   express.raw({ type: TIPOS_COMPROBANTE, limit: "10mb" }),
@@ -37,6 +41,9 @@ router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
 });
 
+router.get("/pendientes/resumen", obtenerResumenDonativosPendientes);
+
+// HU44 - Listado administrativo de donativos pendientes
 router.get(
   "/admin/pendientes",
   verificarToken,

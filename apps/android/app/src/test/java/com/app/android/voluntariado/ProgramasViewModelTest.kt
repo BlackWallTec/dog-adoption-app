@@ -39,9 +39,11 @@ import kotlin.coroutines.cancellation.CancellationException
  * PRUEBAS DE ProgramasViewModel: EL FLUJO REAL DE LA APP
  *
  * `ProgramasScreen` usa este ViewModel: carga la lista y atiende el botón "Inscribirme".
- * Comunica sus resultados de dos formas:
+ * Comunica sus resultados de estas formas:
  *   - `uiState`: lo que la pantalla dibuja (cargando, vacía, lista o error).
- *   - `mensajes`: los textos del snackbar, que se muestran una sola vez.
+ *   - `mensajes`: los textos de error del snackbar, que se muestran una sola vez.
+ *   - `inscripcionExitosa`: evento de una sola vez para ir a la pantalla de confirmación.
+ *   - `programaConfirmado`: el programa recién inscrito que lee esa confirmación.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProgramasViewModelTest {
@@ -89,6 +91,20 @@ class ProgramasViewModelTest {
             accion()
             escucha.cancel()
             recibidos
+        }
+
+    /*
+     * Mismo patrón que `mensajesDurante`, pero con `inscripcionExitosa`: también es un
+     * SharedFlow, así que hay que escuchar antes de actuar. Como el evento no trae datos
+     * (es `Unit`), solo importa cuántas veces llegó.
+     */
+    private fun exitosDurante(vm: ProgramasViewModel, accion: () -> Unit): Int =
+        runBlocking {
+            val recibidos = mutableListOf<Unit>()
+            val escucha = launch(UnconfinedTestDispatcher()) { vm.inscripcionExitosa.toList(recibidos) }
+            accion()
+            escucha.cancel()
+            recibidos.size
         }
 
     private fun programasEnPantalla(vm: ProgramasViewModel): List<Programa> =
@@ -160,13 +176,18 @@ class ProgramasViewModelTest {
     // ------------------------------------------------------------------------------
 
     @Test
-    fun `estructural - al inscribirse marca solo ese programa y avisa`() {
+    fun `estructural - al inscribirse marca solo ese programa y va a la confirmacion`() {
         val otro = programaValido().copy(id = "programa-2")
         val vm = viewModel(CatalogoFalso(listOf(programaValido(), otro)))
 
-        val mensajes = mensajesDurante(vm) { vm.inscribirse(programaValido()) }
+        val exitos = exitosDurante(vm) { vm.inscribirse(programaValido()) }
 
-        assertEquals(listOf("¡Te inscribiste en Paseo de perritos!"), mensajes)
+        assertEquals(1, exitos)
+        // La confirmación recibe el programa ya marcado y con un lugar menos (5 -> 4).
+        val confirmado = vm.programaConfirmado.value!!
+        assertEquals("programa-1", confirmado.id)
+        assertTrue(confirmado.usuarioInscrito)
+        assertEquals(4, confirmado.cupoDisponible)
         // Es la decisión `if (it.id == idPrograma)` en sus dos caminos:
         assertTrue(programasEnPantalla(vm)[0].usuarioInscrito)
         assertFalse(programasEnPantalla(vm)[1].usuarioInscrito)
@@ -218,8 +239,8 @@ class ProgramasViewModelTest {
         val inscripciones = RepositorioFalso(compuerta = compuerta)
         val vm = viewModel(inscripciones = inscripciones)
 
-        val mensajes =
-            mensajesDurante(vm) {
+        val exitos =
+            exitosDurante(vm) {
                 vm.inscribirse(programaValido())
 
                 // Estrés: mientras la petición "viaja", 100 toques más no deben hacer nada.
@@ -230,7 +251,7 @@ class ProgramasViewModelTest {
             }
 
         assertEquals(listOf("programa-1"), inscripciones.llamadas.toList())
-        assertEquals(1, mensajes.size)
+        assertEquals(1, exitos)
     }
 
     @Test
@@ -264,14 +285,14 @@ class ProgramasViewModelTest {
             }
         val vm = viewModel(inscripciones = inscripciones)
 
-        val mensajes =
-            mensajesDurante(vm) {
+        val exitos =
+            exitosDurante(vm) {
                 vm.inscribirse(programaValido())
                 vm.inscribirse(programaValido())
             }
 
         assertEquals(2, intentos)
-        assertEquals(listOf("¡Te inscribiste en Paseo de perritos!"), mensajes)
+        assertEquals(1, exitos) // solo el segundo intento llega a la confirmación
     }
 
     @Test
@@ -279,10 +300,10 @@ class ProgramasViewModelTest {
         // Es la decisión `if (actual is ProgramasUiState.Success)` en su camino falso.
         val vm = viewModel(CatalogoFalso(emptyList()))
 
-        val mensajes = mensajesDurante(vm) { vm.inscribirse(programaValido()) }
+        val exitos = exitosDurante(vm) { vm.inscribirse(programaValido()) }
 
         assertEquals(ProgramasUiState.Empty, vm.uiState.value)
-        assertEquals(1, mensajes.size) // aun así, el usuario recibe el aviso
+        assertEquals(1, exitos) // aun así, el usuario va a la confirmación
     }
 
     // ------------------------------------------------------------------------------
@@ -333,13 +354,15 @@ class ProgramasViewModelTest {
     }
 
     @Test
-    fun `vacios - un nombre vacio deja el mensaje incompleto`() {
+    fun `vacios - un nombre vacio no rompe la confirmacion`() {
+        // La confirmación muestra el nombre tal cual llega: vacío, pero sin fallar.
         val programa = programaValido().copy(nombre = "")
         val vm = viewModel(CatalogoFalso(listOf(programa)))
 
-        val mensajes = mensajesDurante(vm) { vm.inscribirse(programa) }
+        val exitos = exitosDurante(vm) { vm.inscribirse(programa) }
 
-        assertEquals(listOf("¡Te inscribiste en !"), mensajes)
+        assertEquals(1, exitos)
+        assertEquals("", vm.programaConfirmado.value!!.nombre)
     }
 
     // ------------------------------------------------------------------------------
@@ -352,8 +375,10 @@ class ProgramasViewModelTest {
         estado: String? = "\"Disponible\"",
         inicio: String = "2026-12-31T23:59:59",
         fin: String = "2027-01-01T00:00:00",
+        // null = el backend no manda el campo (así se prueba su ausencia, no un null explícito)
+        usuarioInscrito: Boolean? = null,
     ) = """{"id_programa":"p","tipo":"t","nombre":"n","estado_del_programa":$estado,
-        "fecha_inicio":"$inicio","fecha_fin":"$fin"}"""
+        "fecha_inicio":"$inicio","fecha_fin":"$fin"${usuarioInscrito?.let { ",\"usuario_inscrito\":$it" } ?: ""}}"""
 
     private fun programasDesdeJson(json: String): List<Programa> {
         val respuesta = gson.fromJson("""{"success":true,"data":[$json]}""", ProgramasResponseDto::class.java)
@@ -379,14 +404,24 @@ class ProgramasViewModelTest {
     }
 
     @Test
-    fun `nulos - DOCUMENTA que la lista no trae cupo ni usuario inscrito`() {
-        // El endpoint de la lista no manda estos datos. Por eso, en la app real, las reglas
-        // YaInscrito y SinCupo nunca bloquean desde Android: solo el servidor las detecta.
-        // Pendiente: historia de usuario de manejo de cupos.
+    fun `nulos - sin usuario_inscrito se asume no inscrito y el cupo sigue pendiente`() {
+        // El backend ya manda `usuario_inscrito`, pero si algún día no llega, el mapper asume
+        // que el usuario NO está inscrito (`== true` convierte el null en false).
+        // El cupo todavía no viene en la lista, así que la regla SinCupo solo la detecta el
+        // servidor. Pendiente: historia de usuario de manejo de cupos.
         val programa = programasDesdeJson(jsonPrograma()).single()
 
         assertNull(programa.cupoDisponible)
         assertFalse(programa.usuarioInscrito)
+    }
+
+    @Test
+    fun `estructural - el mapper respeta usuario_inscrito del backend`() {
+        // Es el otro camino de `usuarioInscrito == true`: si el backend dice que sí, la
+        // tarjeta debe salir como inscrita desde la carga.
+        val programa = programasDesdeJson(jsonPrograma(usuarioInscrito = true)).single()
+
+        assertTrue(programa.usuarioInscrito)
     }
 
     @Test
