@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+
 msg_file="$1"
 first_line=$(head -n1 "$msg_file")
 
@@ -8,10 +9,15 @@ case "$first_line" in
   Merge*|Revert*|"") exit 0 ;;
 esac
 
-if ! echo "$first_line" | grep -qE '^(feat|fix|docs|style|refactor|test|build|ci|chore|revert)(\([a-z]+\))?!?: .+'; then
+TYPES="feat|fix|docs|style|refactor|test|build|ci|chore|revert"
+SCOPES="api|web|android|contract|perfiles|donativos|solicitudes|catalogo|voluntarios|deps"
+
+if ! printf '%s\n' "$first_line" | grep -qE "^($TYPES)(\(($SCOPES)\))?!?: .+"; then
   echo ""
   echo "ERROR: Commit message must follow Conventional Commits."
-  echo "Format: type(scope): description"
+  echo "Format: <type>(<optional-scope>): <description>"
+  echo "Allowed types:  feat, fix, docs, style, refactor, test, build, ci, chore, revert"
+  echo "Allowed scopes: api, web, android, contract, perfiles, donativos, solicitudes, catalogo, voluntarios, deps"
   echo "Example: feat(catalogo): add dog filters"
   echo ""
   exit 1

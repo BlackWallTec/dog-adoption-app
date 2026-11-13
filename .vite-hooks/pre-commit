@@ -1,28 +1,28 @@
-
 #!/bin/sh
 set -e
 
 branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "DETACHED")
 
 case "$branch" in
-  main|master|develop) ;;
+  main|master|develop|DETACHED) ;;
 
   feature/*)
-    if ! printf '%s' "$branch" | grep -qE '^feature/(solicitudes|catalogo|perfiles|donativos|voluntariado)-hu[0-9]+(-[a-z0-9]+)*$'; then
+    if ! printf '%s\n' "$branch" | grep -qE '^feature/(solicitudes|catalogo|perfiles|donativos|voluntarios)-hu[0-9]{2,}(-[a-z0-9]+)*$'; then
       echo ""
       echo "ERROR: Feature branch '$branch' does not match the naming convention."
       echo "Expected: feature/<module>-hu<ticket>-<optional-description>"
-      echo "Modules: solicitudes, catalogo, perfiles, donativos, voluntariado"
-      echo "Example: feature/solicitudes-hu13-add-validation"
+      echo "Modules:  solicitudes, catalogo, perfiles, donativos, voluntarios"
+      echo "Example:  feature/solicitudes-hu13-add-validation"
       echo ""
       exit 1
     fi
     ;;
 
   *)
-    if ! printf '%s' "$branch" | grep -qE '^(bugfix|fix|hotfix|release|chore|docs)/[a-z0-9]+([.-][a-z0-9]+)*$'; then
+    if ! printf '%s\n' "$branch" | grep -qE '^(bugfix|fix|hotfix|release|chore|docs)/[a-z0-9]+([.-][a-z0-9]+)*$'; then
       echo ""
       echo "ERROR: Branch '$branch' does not match the naming convention."
+      echo "Expected: <bugfix|fix|hotfix|release|chore|docs>/<short-description>"
       echo "Rename with: git branch -m <type>/<short-description>"
       echo ""
       exit 1
