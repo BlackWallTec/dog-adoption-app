@@ -9,6 +9,18 @@
   margin-bottom: 24px;
 }
 
+.public-summary-link {
+  color: var(--md-sys-color-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.public-summary-link:hover {
+  text-decoration: underline;
+}
+
 .section-title {
   font-family: var(--font-headline);
   font-size: 28px;
@@ -30,8 +42,13 @@
   overflow: hidden;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .donations-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -60,17 +77,18 @@
   background-color: var(--md-sys-color-surface);
 }
 
+.donations-table tbody td[colspan="5"] {
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 .badge-estado {
   display: inline-block;
   padding: 5px 14px;
   border-radius: 16px;
   font-size: 12px;
   font-weight: 500;
-}
-
-.badge-confirmado {
-  background-color: #e6f4ea;
-  color: #1e4620;
 }
 
 .badge-pendiente {
@@ -91,13 +109,8 @@
   color: var(--md-sys-color-on-surface-variant);
 }
 
-.donations-table tbody td[colspan="5"] {
-  text-align: center;
-  padding: 32px 24px;
-  color: #666;
-  font-family: Arial, sans-serif;
-  color: var(--md-sys-color-on-surface-variant);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
+@media (max-width: 640px) {
+  .content-area {
+    padding: 24px 16px;
+  }
 }

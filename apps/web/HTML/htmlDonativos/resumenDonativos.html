@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resumen de donativos | Qariño Animal</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link rel="stylesheet" href="../../CSS/cssDonativos/resumenDonativos.css" />
+  </head>
+  <body>
+    <main class="public-summary" aria-labelledby="resumen-titulo">
+      <p class="public-summary-brand">Qariño Animal</p>
+      <h1 id="resumen-titulo">Donativos pendientes</h1>
+      <p class="public-summary-description">
+        Gracias a quienes ayudan a que nuestros perros reciban el cuidado que necesitan.
+      </p>
+
+      <section class="summary-card" aria-label="Conteo de donativos pendientes">
+        <p id="resumen-estado" class="summary-status" role="status" aria-live="polite">
+          Consultando resumen...
+        </p>
+        <p id="total-pendientes" class="summary-count" aria-live="polite">—</p>
+        <p class="summary-label">donativos pendientes registrados</p>
+      </section>
+    </main>
+    <script type="module" src="../../JS/jsDonativos/resumenDonativos.view.js"></script>
+  </body>
+</html>

@@ -1,4 +1,5 @@
 import { obtenerDonativosPendientes } from "./adminDonativos.js";
+import { obtenerMensajeListaVacia, prepararFilaDonativo } from "./adminDonativos.utils.js";
 
 const tablaBody = document.getElementById("tabla-donativos-body");
 const counterSubtitle = document.getElementById("donativos-counter-subtitle");
@@ -28,65 +29,39 @@ function mostrarMensaje(mensaje) {
   tablaBody.append(fila);
 }
 
-function formatearMonto(monto) {
-  return new Intl.NumberFormat("es-MX", {
-    style: "currency",
-    currency: "MXN",
-  }).format(monto);
-}
-
-function formatearFecha(fecha) {
-  const fechaValida = new Date(fecha);
-
-  if (Number.isNaN(fechaValida.getTime())) {
-    return "Sin fecha";
-  }
-
-  return new Intl.DateTimeFormat("es-MX", {
-    dateStyle: "medium",
-  }).format(fechaValida);
-}
-
 function renderizarTabla(donativos) {
   if (!tablaBody) return;
 
   tablaBody.replaceChildren();
 
-  if (donativos.length === 0) {
-    mostrarMensaje("No hay donativos pendientes.");
+  const mensajeListaVacia = obtenerMensajeListaVacia(donativos);
+  if (mensajeListaVacia) {
+    mostrarMensaje(mensajeListaVacia);
     return;
   }
 
   for (const donativo of donativos) {
     const fila = document.createElement("tr");
+    const valores = prepararFilaDonativo(donativo);
 
-    const valores = [
-      donativo.id,
-      donativo.donante,
-      formatearMonto(donativo.monto),
-      formatearFecha(donativo.fecha),
-    ];
-
-    for (const valor of valores) {
+    for (const valor of valores.slice(0, 4)) {
       const celda = document.createElement("td");
-      celda.textContent = valor ?? "";
+      celda.textContent = String(valor);
       fila.append(celda);
     }
 
     const celdaEstado = document.createElement("td");
     const etiqueta = document.createElement("span");
     etiqueta.className = "badge-estado badge-pendiente";
-    etiqueta.textContent = donativo.estado;
+    etiqueta.textContent = valores[4];
     celdaEstado.append(etiqueta);
     fila.append(celdaEstado);
-
     tablaBody.append(fila);
   }
 }
 
 async function cargarDonativos() {
   mostrarMensaje("Cargando donativos pendientes...");
-  actualizarContador(0);
 
   try {
     const donativos = await obtenerDonativosPendientes();
@@ -101,6 +76,13 @@ async function cargarDonativos() {
       mostrarMensaje("Tu cuenta no tiene permisos para consultar los donativos.");
     } else {
       mostrarMensaje("No fue posible cargar los donativos pendientes.");
+    }
+
+    if (counterSubtitle) {
+      counterSubtitle.textContent = "No se pudieron cargar los donativos.";
+    }
+    if (paginationInfo) {
+      paginationInfo.textContent = "Error al cargar los donativos";
     }
   }
 }

@@ -32,28 +32,33 @@
           <div class="section-header">
             <div>
               <h1 class="section-title">Administración de Donativos</h1>
-              <p id="donativos-counter-subtitle" class="section-subtitle">Cargando donativos...</p>
+              <p id="donativos-counter-subtitle" class="section-subtitle">
+                Cargando donativos pendientes...
+              </p>
             </div>
+            <a class="public-summary-link" href="./resumenDonativos.html"> Ver resumen público </a>
           </div>
 
           <div class="table-card">
-            <table class="donations-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Donante</th>
-                  <th>Monto</th>
-                  <th>Fecha</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
+            <div class="table-scroll">
+              <table class="donations-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Donante</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
 
-              <tbody id="tabla-donativos-body">
-                <tr>
-                  <td colspan="5">Cargando donativos...</td>
-                </tr>
-              </tbody>
-            </table>
+                <tbody id="tabla-donativos-body" aria-live="polite">
+                  <tr>
+                    <td colspan="5">Cargando donativos pendientes...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <div class="table-footer">
               <span id="pagination-info" class="pagination-text"> Mostrando 0 de 0 donativos </span>
