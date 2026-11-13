@@ -6,7 +6,7 @@ import sizeModel from "./modelosCatalogo/size.model.js";
 import breedModel from "./modelosCatalogo/breed.model.js";
 import { validarCambiosPerro } from "./dogValidation.js";
 
-import { supabaseAdmin as supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
+import { supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
 //===== Funciones de Subida de Documentos SUPEROPTIMIZADOS ====
 // Nosotros en Catalogo neceistamos que la subida de documentos sea lo más rápida posible, por eso no hacemos validaciones de tipo ni de tamaño ni de extensión.

@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { supabase } from "../../../../config/supabaseClient.js";
 
 const FICHA_ADMIN = `
   id_perro, nombre, sexo, edad_aprox, tamano_medida, descripcion,
@@ -101,7 +101,7 @@ class DogModel {
 
   // HU19C: actualiza solo los campos recibidos. Devuelve la ficha actualizada o null si no existe.
   static async updateDog(id, valores) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("perro")
       .update(valores)
       .eq("id_perro", id)
