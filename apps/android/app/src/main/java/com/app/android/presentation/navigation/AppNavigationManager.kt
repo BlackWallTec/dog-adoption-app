@@ -1,39 +1,40 @@
 package com.app.android.presentation.navigation
-import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
+import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
+import com.app.android.presentation.view.viewsSolicitudes.MisSolicitudesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
-import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
-import androidx.compose.runtime.remember
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.compose.navigation
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
-
+import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 
 // TEMPORAL: usuario de prueba (Abraham) mientras no hay login.
 // Cuando exista login, este id vendra de la sesion del usuario.
 private const val ID_USUARIO_PRUEBA = "f31fc2d1-c4d8-46a2-9a52-0ee84d637217"
 
-// Barra de abajo: 0 Catálogo, 2 Donar, 4 Ajustes. Ayudar y Solicitudes todavía no tienen pantalla de entrada.
+// Barra de abajo: 0 Catálogo, 1 Ayudar, 2 Donar, 3 Solicitudes, 4 Ajustes.
 private fun NavController.irAOpcionBarra(opcion: Int) {
     val destino =
         when (opcion) {
-            1 ->Screen.GrafoVoluntariado.ruta
+            1 -> Screen.GrafoVoluntariado.ruta
             2 -> Screen.DonarDinero.ruta
+            3 -> Screen.MisSolicitudes.ruta
             4 -> Screen.DatosFiscales.ruta
             else -> null
         }
@@ -59,17 +60,17 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        //startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
+        // startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
         startDestination = Screen.Catalogo.ruta,
     ) {
         // ========= Pantallas Catalogo ========
-        composable(route=Screen.Catalogo.ruta){
+        composable(route = Screen.Catalogo.ruta) {
             PerroScreen(
                 onDogClick = { dogId ->
                     navController.navigate(
-                        Screen.DetallePerro.crearRuta(dogId)
+                        Screen.DetallePerro.crearRuta(dogId),
                     )
-                }
+                },
             )
         }
         // PANTALLA 2: El detalle del perro
@@ -94,6 +95,8 @@ fun AppNavigation() {
         }
 
         // ========= Pantallas Solicitudes ========
+
+        // SOLICITUDES - HU06: Mis solicitudes
 
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
@@ -145,6 +148,17 @@ fun AppNavigation() {
             )
         }
 
+        // SOLICITUDES - HU04: Mis solicitudes (solo lectura)
+        composable(route = Screen.MisSolicitudes.ruta) {
+            MisSolicitudesRoute(
+                onEditar = {
+                    // navegar a editar documentos (HU de edición, todavía no existe)
+                },
+                onVerCatalogo = { navController.popBackStack(Screen.Catalogo.ruta, inclusive = false) },
+                onNavSelect = navController::irAOpcionBarra,
+            )
+        }
+
         // ========= Pantallas Donativos ========
 
         // DONATIVOS - HU46: registrar donativo económico
@@ -230,7 +244,6 @@ fun AppNavigation() {
                 onNavSelect = navController::irAOpcionBarra,
             )
         }
-
 
 // ========= Pantallas Voluntariado ========
 // Programas y Confirmación comparten la misma instancia de ProgramasViewModel
