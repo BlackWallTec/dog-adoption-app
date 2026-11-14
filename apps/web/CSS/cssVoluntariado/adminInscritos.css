@@ -252,6 +252,7 @@
 /* ==================== DIALOGO DE CANCELACION HU38 ==================== */
 .dialogo {
   width: min(480px, 90vw);
+  margin: auto;
   padding: 24px;
   border: none;
   border-radius: 20px;
