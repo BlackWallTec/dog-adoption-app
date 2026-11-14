@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import * as ProgramaModel from "./modelosVoluntariado/programaCreacion.model.js";
 import * as TipoProgramaModel from "./modelosVoluntariado/TipoPrograma.model.js";
+import { validarDatosPrograma } from "./validacionPrograma.js";
 
 // Obtiene los tipos de programas disponibles
 export async function obtenerTipos(req, res) {
@@ -72,54 +73,13 @@ export async function consultarEmpalmes(req, res) {
 // Valida y publica una nueva jornada de voluntariado
 export async function crearPrograma(req, res) {
   try {
-    const datos = req.body;
+    const validacion = validarDatosPrograma(req.body);
 
-    if (!datos || typeof datos !== "object" || Array.isArray(datos)) {
-      return res.status(400).json({
-        message: "Datos de la jornada inválidos.",
-      });
+    if (!validacion.valido) {
+      return res.status(400).json({ message: validacion.message });
     }
 
-    const campos = {
-      nombre: 50,
-      tipo: 20,
-      descripcion: 1000,
-      ubicacion: 100,
-    };
-
-    for (const [campo, maximo] of Object.entries(campos)) {
-      if (
-        typeof datos[campo] !== "string" ||
-        !datos[campo].trim() ||
-        datos[campo].trim().length > maximo
-      ) {
-        return res.status(400).json({
-          message: `El campo ${campo} es inválido.`,
-        });
-      }
-
-      datos[campo] = datos[campo].trim();
-    }
-
-    const inicio = new Date(`${datos.fechaInicio} ${datos.horaInicio}:00`);
-    const fin = new Date(`${datos.fechaFin} ${datos.horaFin}:00`);
-
-    if (
-      Number.isNaN(inicio.getTime()) ||
-      Number.isNaN(fin.getTime()) ||
-      inicio <= new Date() ||
-      fin <= inicio
-    ) {
-      return res.status(400).json({
-        message: "Revisa las fechas y el horario de la jornada.",
-      });
-    }
-
-    if (!Number.isInteger(datos.cupoMaximo) || datos.cupoMaximo <= 0) {
-      return res.status(400).json({
-        message: "El cupo debe ser un entero positivo.",
-      });
-    }
+    const datos = validacion.datos;
 
     const empalmes = await ProgramaModel.obtenerEmpalmes(datos);
 
