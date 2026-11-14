@@ -66,6 +66,11 @@
   color: var(--md-sys-color-secondary);
 }
 
+.badge-cerrado {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+}
+
 .badge-finalizado {
   background-color: var(--md-sys-color-surface-container);
   color: var(--md-sys-color-on-surface-variant);
@@ -188,4 +193,131 @@
 
 .estado-error .btn-primary {
   color: #ffffff;
+}
+
+/* ==================== ACCIONES DEL PROGRAMA HU38 ==================== */
+.header-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-secundario,
+.btn-peligro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-secundario {
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-secondary);
+}
+
+.btn-peligro {
+  background-color: var(--md-sys-color-error);
+  border: 1px solid var(--md-sys-color-error);
+  color: #ffffff;
+}
+
+.btn-secundario:disabled,
+.btn-peligro:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secundario .material-symbols-rounded,
+.btn-peligro .material-symbols-rounded {
+  font-size: 18px;
+}
+
+.aviso-exito {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: #e6f4ea;
+  color: #1e4620;
+  font-size: 14px;
+}
+
+/* ==================== DIALOGO DE CANCELACION HU38 ==================== */
+.dialogo {
+  width: min(480px, 90vw);
+  padding: 24px;
+  border: none;
+  border-radius: 20px;
+  font-family: var(--font-body);
+}
+
+.dialogo::backdrop {
+  background-color: rgb(0 0 0 / 40%);
+}
+
+.dialogo-titulo {
+  margin-bottom: 8px;
+  font-family: var(--font-headline);
+  font-size: 20px;
+  color: var(--md-sys-color-on-surface);
+}
+
+.dialogo-texto {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface);
+}
+
+.dialogo-nota {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dialogo-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.dialogo-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  font: inherit;
+  resize: vertical;
+}
+
+.dialogo-pie-campo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.dialogo-contador {
+  margin-left: auto;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dialogo-error {
+  color: var(--md-sys-color-error);
+}
+
+.dialogo-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
 }

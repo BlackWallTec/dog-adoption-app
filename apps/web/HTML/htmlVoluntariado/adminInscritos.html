@@ -43,11 +43,24 @@
               <h1 id="programa-nombre" class="section-title">Cargando programa...</h1>
               <p id="programa-tipo" class="section-subtitle"></p>
             </div>
-            <span id="programa-estado" class="badge-estado" hidden></span>
+            <div class="header-acciones">
+              <span id="programa-estado" class="badge-estado" hidden></span>
+              <a id="btn-editar" class="btn-secundario" hidden>
+                <span class="material-symbols-rounded">edit</span>
+                Editar programa
+              </a>
+              <button type="button" id="btn-cancelar" class="btn-peligro" hidden>
+                <span class="material-symbols-rounded">event_busy</span>
+                Cancelar programa
+              </button>
+            </div>
           </div>
 
           <!-- Aviso para programas cancelados o finalizados -->
           <p id="aviso-estado" class="aviso-estado" hidden></p>
+
+          <!-- Confirmación de cambios guardados o de cancelacion HU38 -->
+          <p id="aviso-exito" class="aviso-exito" role="status" hidden></p>
 
           <!-- Resumen del programa -->
           <section id="resumen-programa" class="resumen-card" hidden>
@@ -99,6 +112,35 @@
             <p id="mensaje-error"></p>
             <button type="button" id="btn-reintentar" class="btn-primary">Reintentar</button>
           </div>
+          <!-- Dialogo para cancelar el programa HU38 -->
+          <dialog id="dialogo-cancelar" class="dialogo" aria-labelledby="dialogo-titulo">
+            <form method="dialog" id="form-cancelar" novalidate>
+              <h2 id="dialogo-titulo" class="dialogo-titulo">Cancelar programa</h2>
+              <p id="dialogo-texto" class="dialogo-texto"></p>
+              <p class="dialogo-nota">Esta acción no se puede deshacer.</p>
+
+              <label for="motivo-cancelacion" class="dialogo-label">
+                Motivo de cancelación (opcional)
+              </label>
+              <textarea
+                id="motivo-cancelacion"
+                class="dialogo-textarea"
+                rows="3"
+                maxlength="200"
+                placeholder="Ej. Pronóstico de lluvia"
+              ></textarea>
+              <div class="dialogo-pie-campo">
+                <span id="error-cancelar" class="dialogo-error" hidden></span>
+                <span id="contador-motivo" class="dialogo-contador">0/200</span>
+              </div>
+              <div class="dialogo-botones">
+                <button type="button" id="btn-volver-dialogo" class="btn-secundario">Volver</button>
+                <button type="button" id="btn-confirmar-cancelar" class="btn-peligro">
+                  Cancelar programa
+                </button>
+              </div>
+            </form>
+          </dialog>
         </main>
       </div>
     </div>
