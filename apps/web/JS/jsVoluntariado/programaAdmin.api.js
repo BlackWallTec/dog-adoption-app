@@ -23,12 +23,15 @@ async function pedir(url, opciones = {}) {
   const cuerpo = esJson ? await respuesta.json() : null;
 
   if (!respuesta.ok) {
-    // Los middlewares de sesion responden { error }, el resto { code, message }
-    throw new ErrorApi(
+    // Los middlewares de sesión responden { error }, el resto { code, message }
+    const error = new ErrorApi(
       respuesta.status,
       cuerpo?.code ?? null,
       cuerpo?.message ?? cuerpo?.error ?? "Ocurrió un error. Intenta de nuevo.",
     );
+    // En un 409 OVERLAP la API manda la lista de jornadas que se empalman
+    error.empalmes = cuerpo?.empalmes;
+    throw error;
   }
 
   return cuerpo;
