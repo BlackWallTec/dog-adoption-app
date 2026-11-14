@@ -1,6 +1,6 @@
 import "dotenv/config";
 import Usuario from "./modelosPerfiles/user.model.js";
-import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "../../../../../shared/errores.js";
+import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "@qarino/shared/errores.js";
 
 export const getProfile = async (req, res) => {
   try {

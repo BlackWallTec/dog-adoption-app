@@ -1,5 +1,5 @@
 import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
-import { instanciarError } from "../../../../../../shared/errores.js";
+import { instanciarError } from "@qarino/shared/errores.js";
 
 // Se parametrizan las consultas, para que se traten como dato y no
 // como instrucción.

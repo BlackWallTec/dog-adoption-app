@@ -51,6 +51,11 @@ android {
     }
 }
 
+secrets {
+    ignoreList.add("sdk.*")
+    defaultPropertiesFileName = "local.defaults.properties"
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.remote:remote-creation-core:1.0.0-alpha22")

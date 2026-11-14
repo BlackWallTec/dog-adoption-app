@@ -19,7 +19,7 @@ const desc = (min, max, args = "") => {
   } else if (!min && !max) {
     rango = "cualquier cantidad de";
   } else if (!min) {
-    rango = `cáximo ${max}`;
+    rango = `máximo ${max}`;
   } else if (!max) {
     rango = `mínimo ${min}`;
   }

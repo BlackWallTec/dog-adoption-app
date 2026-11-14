@@ -383,4 +383,65 @@ admin-topbar {
   opacity: 0.9;
 }
 
+/* ==================== MODAL DE CONFIRMACIÓN GLOBAL ==================== */
+.modal-card.modal-confirm {
+  max-width: 480px;
+}
+
+.confirm-body {
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.confirm-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.confirm-icon-wrapper .material-icons-round {
+  font-size: 28px;
+}
+
+.confirm-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirm-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.confirm-text strong {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 700;
+}
+
+/* Variante para acciones destructivas o críticas (ej. Eliminar perro/registro) */
+.modal-confirm.confirm-danger .confirm-icon-wrapper {
+  background-color: #fce8e6;
+  color: var(--md-sys-color-error);
+}
+
+.modal-confirm.confirm-danger .btn-confirm-action {
+  background-color: var(--md-sys-color-error);
+  color: #ffffff;
+}
+
+.modal-confirm.confirm-danger .btn-confirm-action:hover {
+  opacity: 0.9;
+}
+
 /* ==================== FIN MODAL BASE (GLOBAL) ==================== */

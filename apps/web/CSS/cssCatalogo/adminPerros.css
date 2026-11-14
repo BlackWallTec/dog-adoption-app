@@ -458,3 +458,114 @@
   box-shadow: 0 6px 20px rgba(47, 111, 181, 0.5);
   background-color: #265d99;
 }
+
+/* ======== Bulking CSS ============== */
+/* Resaltado de fila al seleccionar el checkbox */
+.dogs-table tbody tr.selected-row {
+  background-color: var(--md-sys-color-secondary-container, #d8e8ff) !important;
+}
+
+/* ==================== BARRA FLOTANTE ACCIONES EN LOTE ==================== */
+.bulk-actions-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99;
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(100px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.bulk-actions-bar.active {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.bulk-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+}
+
+.bulk-info .material-symbols-rounded {
+  color: var(--md-sys-color-secondary);
+  font-size: 20px;
+}
+
+.bulk-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-bulk {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    transform 0.15s ease;
+}
+
+.btn-bulk:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-bulk .material-symbols-rounded {
+  font-size: 18px;
+}
+
+/* Botón A: Desactivar (Rojo) */
+.btn-bulk-danger {
+  background-color: var(--md-sys-color-error);
+  color: #ffffff;
+}
+
+/* Botón B: Activar (Verde) */
+.btn-bulk-success {
+  background-color: #1e4620;
+  color: #ffffff;
+}
+
+/* Botón Cierre 'X' */
+.icon-btn-bulk {
+  background: none;
+  border: none;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.icon-btn-bulk:hover {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+/* ======== END Bulking CSS ============== */

@@ -1,4 +1,4 @@
-import * as apiService from "./Modals.service.js";
+import * as apiService from "./Api.service.js";
 import { initDropzone } from "./dropZone.controller.js";
 
 let archivosMultimediaLocales = [];

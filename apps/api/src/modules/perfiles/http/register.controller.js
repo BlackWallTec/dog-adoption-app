@@ -11,11 +11,11 @@ import {
   EMAIL_EXISTS,
   CONFLICT,
   BAD_REQUEST,
-} from "../../../../../shared/errores.js";
+} from "@qarino/shared/errores.js";
 import {
   validateRegistration,
   limpiarTelefono,
-} from "../../../../../shared/perfiles/registro.validation.js";
+} from "@qarino/shared/perfiles/registro.validation.js";
 
 // Creación de cuenta (rol Cliente)
 

@@ -8,6 +8,7 @@ import com.app.android.domain.entities.entitiesVoluntariado.Resultado
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
 import com.app.android.domain.useCases.useCasesVoluntariado.InscribirseProgramaUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.ObtenerProgramasVigentesUseCase
+import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
 import javax.inject.Inject
 
 
@@ -29,7 +29,7 @@ class ProgramasViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ProgramasUiState>(ProgramasUiState.Loading)
     val uiState: StateFlow<ProgramasUiState> = _uiState.asStateFlow()
 
-    // Mensajes de una sola vez (snackbar): éxito o error al inscribirse
+    // Mensajes de una sola vez (snackbar): error al inscribirse
     private val _mensajes = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val mensajes: SharedFlow<String> = _mensajes.asSharedFlow()
 
