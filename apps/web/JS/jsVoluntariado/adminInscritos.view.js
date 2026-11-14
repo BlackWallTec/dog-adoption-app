@@ -1,4 +1,5 @@
 import { obtenerInscritos } from "./adminInscritos.js";
+import { obtenerProgramaAdmin, cancelarProgramaAdmin } from "./programaAdmin.api.js";
 
 // Referencias a elementos del DOM
 const $ = (id) => document.getElementById(id);
@@ -7,6 +8,7 @@ const el = {
   tipo: $("programa-tipo"),
   estado: $("programa-estado"),
   aviso: $("aviso-estado"),
+  avisoExito: $("aviso-exito"),
   resumen: $("resumen-programa"),
   fecha: $("programa-fecha"),
   ubicacion: $("programa-ubicacion"),
@@ -16,11 +18,23 @@ const el = {
   error: $("estado-error"),
   mensajeError: $("mensaje-error"),
   btnReintentar: $("btn-reintentar"),
+  // HU38
+  btnEditar: $("btn-editar"),
+  btnCancelar: $("btn-cancelar"),
+  dialogo: $("dialogo-cancelar"),
+  dialogoTexto: $("dialogo-texto"),
+  motivo: $("motivo-cancelacion"),
+  contador: $("contador-motivo"),
+  errorCancelar: $("error-cancelar"),
+  btnVolverDialogo: $("btn-volver-dialogo"),
+  btnConfirmarCancelar: $("btn-confirmar-cancelar"),
 };
 
 // El programa llega en la URL adminInscritos.html?id=<id_programa>
-const idPrograma = new URLSearchParams(window.location.search).get("id");
+const parametros = new URLSearchParams(window.location.search);
+const idPrograma = parametros.get("id");
 
+const MAX_MOTIVO = 200;
 const FECHA_HORA = { dateStyle: "medium", timeStyle: "short" };
 
 const AVISOS = {
@@ -39,6 +53,9 @@ const MENSAJES_ERROR = {
   403: "No tienes permiso para ver esta información.",
   404: "No encontramos este programa.",
 };
+
+// Inscritos activos del programa, para el texto del dialogo de cancelacion
+let inscritosActivos = 0;
 
 // Los nombres y correos los escriben los usuarios, se escapan antes de usar innerHTML
 function escapar(texto) {
@@ -71,7 +88,15 @@ function celda(valor) {
   return valor ? escapar(valor) : '<span class="sin-dato">No registrado</span>';
 }
 
-function pintarPrograma(programa, total) {
+function textoAviso(estado, detalle) {
+  const aviso = AVISOS[estado];
+  if (estado === "cancelado" && detalle?.motivoCancelacion) {
+    return `${aviso} Motivo: ${detalle.motivoCancelacion}`;
+  }
+  return aviso ?? "";
+}
+
+function pintarPrograma(programa, total, detalle) {
   const estado = (programa.estado ?? "").toLowerCase();
 
   el.nombre.textContent = programa.nombre;
@@ -81,13 +106,24 @@ function pintarPrograma(programa, total) {
   el.estado.className = `badge-estado badge-${estado}`;
   el.estado.hidden = !programa.estado;
 
-  el.aviso.textContent = AVISOS[estado] ?? "";
+  // textContent: el motivo lo escribe el Admin y no se interpreta como HTML
+  el.aviso.textContent = textoAviso(estado, detalle);
   el.aviso.hidden = !AVISOS[estado];
 
   el.fecha.textContent = textoHorario(programa.fechaInicio, programa.fechaFin);
   el.ubicacion.textContent = programa.ubicacion ?? "Sin ubicación";
   el.cupo.textContent = programa.cupoMaximo ? `${total} / ${programa.cupoMaximo}` : `${total}`;
   el.resumen.hidden = false;
+}
+
+// Editar y cancelar solo aparecen si el programa no esta cancelado ni finalizado
+function pintarAcciones(detalle) {
+  const editable = Boolean(detalle?.editable);
+  inscritosActivos = detalle?.inscritosActivos ?? 0;
+
+  el.btnEditar.href = `./createVolunteering.html?id=${encodeURIComponent(idPrograma)}`;
+  el.btnEditar.hidden = !editable;
+  el.btnCancelar.hidden = !editable;
 }
 
 function pintarInscritos(inscritos) {
@@ -121,10 +157,17 @@ function mostrarError(status) {
   el.error.hidden = false;
 }
 
+function mostrarExito(texto) {
+  el.avisoExito.textContent = texto;
+  el.avisoExito.hidden = false;
+}
+
 async function cargar() {
   el.error.hidden = true;
   el.resumen.hidden = true;
   el.tabla.hidden = true;
+  el.btnEditar.hidden = true;
+  el.btnCancelar.hidden = true;
   el.nombre.textContent = "Cargando programa...";
 
   if (!idPrograma) {
@@ -133,8 +176,12 @@ async function cargar() {
   }
 
   try {
-    const { programa, totalInscritos, inscritos } = await obtenerInscritos(idPrograma);
-    pintarPrograma(programa, totalInscritos);
+    const [{ programa, totalInscritos, inscritos }, detalle] = await Promise.all([
+      obtenerInscritos(idPrograma),
+      obtenerProgramaAdmin(idPrograma),
+    ]);
+    pintarPrograma(programa, totalInscritos, detalle);
+    pintarAcciones(detalle);
     pintarInscritos(inscritos);
   } catch (error) {
     console.error("Error al cargar los inscritos:", error);
@@ -142,7 +189,109 @@ async function cargar() {
   }
 }
 
-el.btnReintentar.addEventListener("click", cargar);
+// ==================== Mensaje al volver de la edicion ====================
 
-// El script es type="module" asi que el DOM ya está listo cuando se ejecuta
+function mostrarMensajeGuardado() {
+  if (parametros.get("guardado") !== "1") return;
+
+  const avisar = Number(parametros.get("avisar") ?? 0);
+  mostrarExito(
+    avisar > 0
+      ? `Cambios guardados. Hay ${avisar} inscritos, avísales del cambio con esta lista.`
+      : "Cambios guardados.",
+  );
+
+  // Se limpia la URL para que el mensaje no vuelva a salir al recargar
+  window.history.replaceState(null, "", `?id=${encodeURIComponent(idPrograma)}`);
+}
+
+// ==================== Dialogo de cancelacion ====================
+
+function textoDialogo() {
+  if (inscritosActivos === 0) return "Este programa no tiene inscritos.";
+  if (inscritosActivos === 1) {
+    return "Hay 1 persona inscrita. Después de cancelar, avísale con esta lista.";
+  }
+  return `Hay ${inscritosActivos} personas inscritas. Después de cancelar, avísales con esta lista.`;
+}
+
+function actualizarContador() {
+  el.contador.textContent = `${el.motivo.value.length}/${MAX_MOTIVO}`;
+}
+
+function mostrarErrorCancelar(texto) {
+  el.errorCancelar.textContent = texto;
+  el.errorCancelar.hidden = !texto;
+}
+
+function bloquearDialogo(bloqueado) {
+  el.btnConfirmarCancelar.disabled = bloqueado;
+  el.btnVolverDialogo.disabled = bloqueado;
+  el.btnConfirmarCancelar.textContent = bloqueado ? "Cancelando..." : "Cancelar programa";
+}
+
+function abrirDialogo() {
+  el.dialogoTexto.textContent = textoDialogo();
+  el.motivo.value = "";
+  actualizarContador();
+  mostrarErrorCancelar("");
+  bloquearDialogo(false);
+  el.dialogo.showModal();
+}
+
+async function confirmarCancelacion() {
+  const motivo = el.motivo.value.trim();
+
+  if (motivo.length > MAX_MOTIVO) {
+    mostrarErrorCancelar(`El motivo no puede tener más de ${MAX_MOTIVO} caracteres.`);
+    return;
+  }
+
+  bloquearDialogo(true);
+  mostrarErrorCancelar("");
+
+  try {
+    const resultado = await cancelarProgramaAdmin(idPrograma, motivo || null);
+    el.dialogo.close();
+    await cargar();
+
+    const total = resultado.inscritosActivos;
+    mostrarExito(
+      total > 0
+        ? `Programa cancelado. Avisa a ${total === 1 ? "la persona inscrita" : `las ${total} personas inscritas`} con esta lista.`
+        : "Programa cancelado.",
+    );
+  } catch (error) {
+    console.error("Error al cancelar el programa:", error);
+
+    if (error.status === 409) {
+      el.dialogo.close();
+      await cargar();
+      mostrarExito("Este programa ya no se puede cancelar.");
+      return;
+    }
+
+    if (error.status === 401 || error.status === 403) {
+      el.dialogo.close();
+      mostrarError(error.status);
+      return;
+    }
+
+    mostrarErrorCancelar(error.message ?? "No se pudo cancelar el programa. Intenta de nuevo.");
+    bloquearDialogo(false);
+  }
+}
+
+// ==================== Eventos ====================
+
+el.btnReintentar.addEventListener("click", cargar);
+el.btnCancelar.addEventListener("click", abrirDialogo);
+el.btnVolverDialogo.addEventListener("click", () => el.dialogo.close());
+el.motivo.addEventListener("input", actualizarContador);
+el.btnConfirmarCancelar.addEventListener("click", () => {
+  void confirmarCancelacion();
+});
+
+// El script es type="module" asi que el DOM ya esta listo cuando se ejecuta
+mostrarMensajeGuardado();
 void cargar();
