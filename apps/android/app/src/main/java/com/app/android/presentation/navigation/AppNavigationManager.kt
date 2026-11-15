@@ -1,5 +1,4 @@
 package com.app.android.presentation.navigation
-import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -13,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
+import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
@@ -75,7 +75,6 @@ fun AppNavigation() {
                         Screen.DetallePerro.crearRuta(dogId),
                     )
                 },
-                onNavSelect = navController::irAOpcionBarra,
             )
         }
         // PANTALLA 2: El detalle del perro
