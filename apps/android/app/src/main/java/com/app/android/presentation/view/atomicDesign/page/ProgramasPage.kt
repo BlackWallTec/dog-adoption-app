@@ -30,6 +30,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
 import com.app.android.presentation.view.atomicDesign.molecule.InfoMessageCard
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
+import com.app.android.presentation.view.atomicDesign.organism.FiltrosProgramasPanel
 import com.app.android.presentation.view.atomicDesign.organism.ListaProgramas
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -113,6 +114,20 @@ fun ProgramasPage(
                 )
             }
 
+            if (
+                uiState is ProgramasUiState.Success ||
+                uiState is ProgramasUiState.Empty
+            ) {
+                FiltrosProgramasPanel(
+                    estado = filtrosState,
+                    onFiltrosChange = onFiltrosChange,
+                    onAplicarFiltros = onAplicarFiltros,
+                    onLimpiarFiltros = onLimpiarFiltros,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             Box(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
             ) {
@@ -148,12 +163,28 @@ fun ProgramasPage(
                     }
 
                     is ProgramasUiState.Success -> {
-                        ListaProgramas(
-                            programas = uiState.programas,
-                            onInscribirse = onInscribirse,
-                            onCancelar = onCancelar,
-                            onVerDetalle = onVerDetalle,
-                        )
+                        if (filtrosState.sinCoincidencias) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                InfoMessageCard(
+                                    mensaje = "No hay programas en esas fechas u horario.",
+                                    icono = Icons.Outlined.Info,
+                                )
+
+                                AppButton(
+                                    text = "Limpiar filtros",
+                                    onClick = onLimpiarFiltros,
+                                )
+                            }
+                        } else {
+                            ListaProgramas(
+                                programas = uiState.programas,
+                                onInscribirse = onInscribirse,
+                                onCancelar = onCancelar,
+                                onVerDetalle = onVerDetalle,
+                            )
+                        }
                     }
                 }
             }
@@ -189,6 +220,7 @@ private fun ProgramasPageSuccessPreview() {
                 ),
             onReintentar = {},
             onBackClick = {},
+            onVerDetalle = {},
             onMisVoluntariados = {},
         )
     }
