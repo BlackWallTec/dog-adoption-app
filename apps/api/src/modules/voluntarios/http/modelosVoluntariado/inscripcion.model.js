@@ -82,3 +82,15 @@ export const getIdsProgramasInscritosModel = async (idUsuario) => {
   if (error) lanzarError("Error al consultar las inscripciones del usuario", error);
   return new Set(data.map((fila) => fila.id_programa));
 };
+
+// Cuenta las inscripciones activas de un programa HU38. (estado Aceptado)
+export const contarInscritosActivosModel = async (idPrograma) => {
+  const { count, error } = await supabaseAdmin
+    .from("se_inscribe")
+    .select("id_usuario", { count: "exact", head: true })
+    .eq("id_programa", idPrograma)
+    .eq("estado", "Aceptado");
+
+  if (error) lanzarError("Error al contar los inscritos", error);
+  return count ?? 0;
+};
