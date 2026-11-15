@@ -182,6 +182,7 @@ fun TarjetaSolicitud(
                 }
             }
         }
+        pie()
     }
 }
 

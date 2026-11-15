@@ -60,6 +60,7 @@ fun CatalogoFiltradoScreen(
     onRetry: () -> Unit,
     onDogClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onNavSelect: (Int) -> Unit = {},
 ) {
     var selected by remember { mutableIntStateOf(0) } // navbar
     var query by remember { mutableStateOf("") }
@@ -120,7 +121,16 @@ fun CatalogoFiltradoScreen(
                         .fillMaxWidth(),
             )
         }
-        NavBar(selected = selected, onSelect = { selected = it })
+        NavBar(
+            selected = selected,
+            onSelect = { opcion ->
+                if (opcion == 0) {
+                    selected = 0
+                } else {
+                    onNavSelect(opcion)
+                }
+            },
+        )
     }
 
     FilterSheet(
@@ -143,12 +153,13 @@ private fun CatalogoContenido(
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        CatalogUiState.Loading ->
+        CatalogUiState.Loading -> {
             Box(modifier = modifier, contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
+        }
 
-        CatalogUiState.Empty ->
+        CatalogUiState.Empty -> {
             Column(
                 modifier = modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -168,8 +179,9 @@ private fun CatalogoContenido(
                     TextButton(onClick = onClearFilters) { Text("Quitar filtros") }
                 }
             }
+        }
 
-        is CatalogUiState.Error ->
+        is CatalogUiState.Error -> {
             Column(
                 modifier = modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -179,8 +191,9 @@ private fun CatalogoContenido(
                 Spacer(Modifier.height(12.dp))
                 Button(onClick = onRetry) { Text("Reintentar") }
             }
+        }
 
-        is CatalogUiState.Success ->
+        is CatalogUiState.Success -> {
             LazyVerticalGrid(
                 modifier = modifier,
                 columns = GridCells.Fixed(2),
@@ -210,6 +223,7 @@ private fun CatalogoContenido(
                     }
                 }
             }
+        }
     }
 }
 

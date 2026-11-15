@@ -75,6 +75,7 @@ fun AppNavigation() {
                         Screen.DetallePerro.crearRuta(dogId),
                     )
                 },
+                onNavSelect = navController::irAOpcionBarra,
             )
         }
         // PANTALLA 2: El detalle del perro
