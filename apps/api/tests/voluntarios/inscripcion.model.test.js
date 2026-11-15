@@ -1,16 +1,17 @@
 /*
-- PRUEBAS DEL MODELO: las funciones que hablan con Supabase.
+ * PRUEBAS DEL MODELO: las funciones que hablan con Supabase.
  *
-- Tienen poca lógica, pero importante: cómo reaccionan cuando Supabase responde con un
-- error, con null o con una lista vacía. No nos conectamos a Supabase de verdad.
+ * Tienen poca lógica, pero importante: cómo reaccionan cuando Supabase responde con un
+ * error, con null o con una lista vacía. No nos conectamos a Supabase de verdad.
  */
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("../../src/config/supabaseClient.js", () => ({
+  supabase: { from: vi.fn() },
   supabaseAdmin: { from: vi.fn() },
 }));
 
-import { supabaseAdmin } from "../../src/config/supabaseClient.js";
+import { supabase } from "../../src/config/supabaseClient.js";
 import {
   contarInscritosModel,
   crearInscripcionModel,
@@ -19,11 +20,11 @@ import {
 } from "../../src/modules/voluntarios/http/modelosVoluntariado/inscripcion.model.js";
 
 /*
-- Supabase se usa "encadenando" llamadas:
--     await supabaseAdmin.from("tabla").select("x").eq("y", 1).maybeSingle()
-- Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
-- entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
-- para revisar con qué argumentos se llamaron.
+ * Supabase se usa "encadenando" llamadas:
+ *     await supabase.from("tabla").select("x").eq("y", 1).maybeSingle()
+ * Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
+ * entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
+ * para revisar con qué argumentos se llamaron.
  */
 const simularSupabase = (resultado) => {
   const consulta = {
@@ -36,7 +37,7 @@ const simularSupabase = (resultado) => {
     // `contarInscritosModel` termina en `.eq()`: hacemos la cadena "esperable" con await.
     then: (resolver) => resolver(resultado),
   };
-  supabaseAdmin.from.mockReturnValue(consulta);
+  supabase.from.mockReturnValue(consulta);
   return consulta;
 };
 
@@ -53,7 +54,7 @@ describe("getProgramaInscripcionModel", () => {
 
     await expect(getProgramaInscripcionModel("p1")).resolves.toEqual(programa);
 
-    expect(supabaseAdmin.from).toHaveBeenCalledWith("programa");
+    expect(supabase.from).toHaveBeenCalledWith("programa");
     expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
   });
 
@@ -128,7 +129,7 @@ describe("crearInscripcionModel", () => {
 
     await expect(crearInscripcionModel("p1", "u1", "2026-11-05T12:00:00")).resolves.toEqual(fila);
 
-    expect(supabaseAdmin.from).toHaveBeenCalledWith("se_inscribe");
+    expect(supabase.from).toHaveBeenCalledWith("se_inscribe");
     expect(consulta.upsert).toHaveBeenCalledWith(
       {
         id_usuario: "u1",

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 // Valores de se_inscribe.estado
 const ESTADO_INSCRITO = "Aceptado";
@@ -12,7 +12,7 @@ const lanzarError = (contexto, error) => {
 
 // Datos del programa necesarios para validar la inscripción
 export const getProgramaInscripcionModel = async (idPrograma) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("programa")
     .select("id_programa, fecha_inicio, cupo_maximo, estado_del_programa")
     .eq("id_programa", idPrograma)
@@ -24,7 +24,7 @@ export const getProgramaInscripcionModel = async (idPrograma) => {
 
 // personas inscritas (activas) en el programa
 export const contarInscritosModel = async (idPrograma) => {
-  const { count, error } = await supabaseAdmin
+  const { count, error } = await supabase
     .from("se_inscribe")
     .select("id_programa", { count: "exact", head: true })
     .eq("id_programa", idPrograma)
@@ -36,7 +36,7 @@ export const contarInscritosModel = async (idPrograma) => {
 
 // usuario ya está inscrito (activo) en este programa?
 export const existeInscripcionModel = async (idPrograma, idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_programa", idPrograma)
@@ -51,7 +51,7 @@ export const existeInscripcionModel = async (idPrograma, idUsuario) => {
 // Crear la inscripción y regresar la fila.
 // Si el usuario ya tenía una fila ("Pendiente", por una cancelación) se reactiva la misma fila.
 export const crearInscripcionModel = async (idPrograma, idUsuario, fechaInscripcion) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .upsert(
       {
@@ -102,7 +102,7 @@ export const getInscritosByProgramaModel = async (idPrograma) => {
 
 // Ids de los programas en los que el usuario está inscrito (activo), para el botón del catálogo
 export const getIdsProgramasInscritosModel = async (idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_usuario", idUsuario)
