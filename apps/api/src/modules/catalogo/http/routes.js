@@ -63,4 +63,8 @@ router.get("/cliente/perros/:id", clientController.getDogById);
 //obtener todos los perros
 router.get("/cliente/perros", clientController.getDogs);
 
+// HU24: opciones de filtro (razas, tamaños y características)
+// GET /api/catalogo/cliente/filtros
+router.get("/cliente/filtros", clientController.getFiltros);
+
 export default router;

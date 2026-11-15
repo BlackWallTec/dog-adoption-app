@@ -1,5 +1,5 @@
 package com.app.android.presentation.navigation
-import com.app.android.presentation.view.viewsCatalogo.PerroScreen
+import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
@@ -64,7 +64,7 @@ fun AppNavigation() {
     ) {
         // ========= Pantallas Catalogo ========
         composable(route=Screen.Catalogo.ruta){
-            PerroScreen(
+            CatalogoFiltrosRoute(
                 onDogClick = { dogId ->
                     navController.navigate(
                         Screen.DetallePerro.crearRuta(dogId)
