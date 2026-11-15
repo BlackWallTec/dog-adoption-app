@@ -3,7 +3,11 @@ import multer from "multer";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
-import { getSolicitudAdminDetalle, getSolicitudesAdmin } from "./solicitudAdmin.controller.js";
+import {
+  getSolicitudAdminDetalle,
+  getSolicitudesAdmin,
+  adoptionRequest,
+} from "./solicitudAdmin.controller.js";
 import { MAX_SIZE_BYTES, manejarErrorSubida, subirDocumento } from "./documentos.controller.js";
 import clientRouter from "./request.router.js";
 
@@ -24,6 +28,7 @@ router.use(clientRouter);
 // ===== Rutas Admin =====
 // GET /api/solicitudes/admin/solicitudes
 router.get("/admin/solicitudes", soloAdmin, getSolicitudesAdmin);
+router.post("/admin/solicitudes/:id/resolucion", soloAdmin, adoptionRequest);
 
 // GET /api/solicitudes/admin/solicitudes/:id
 router.get("/admin/solicitudes/:id", soloAdmin, getSolicitudAdminDetalle);

@@ -1,7 +1,8 @@
 import SolicitudModel from "./solicitud.model.js";
+//We import the modal
+import * as modeloAceptarRechazar from "./modelosSolicitudes/aceptarRechazar.model.js";
 
 const PAGE_SIZE = 10;
-
 function normalizeStatus(status) {
   const value = String(status || "")
     .normalize("NFD")
@@ -211,5 +212,49 @@ export async function getSolicitudAdminDetalle(req, res) {
   } catch (error) {
     console.error("Error al cargar el detalle:", error);
     return res.status(500).json({ error: "No se pudo cargar el detalle de la solicitud." });
+  }
+}
+//We get the data from the frontend
+export async function getSolicitudDetalle(req, res) {
+  try {
+    const data = await modeloAceptarRechazar.getData(req.params.id);
+    if (!data) return res.status(404).json({ error: "Solicitud no encontrada" });
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error("Error en getSolicitudDetalle:", error);
+    return res.status(500).json({ error: "Error al obtener la solicitud" });
+  }
+}
+
+// Process to accept or reject an adoption request
+//We send the data to the modal
+export async function adoptionRequest(req, res) {
+  const { id } = req.params;
+  const { state, comment } = req.body;
+
+  //If an option was not chosen, we send that the decsion was not valid
+  if (!["en_revision", "periodo_prueba", "aprobada", "rechazada"].includes(state)) {
+    return res.status(400).json({ error: "Decisión inválida" });
+  }
+
+  //If a comment was not sent we send an error in the JSON
+  if (state === "rechazada" && !String(comment || "").trim()) {
+    return res.status(400).json({ error: "El comentario es obligatorio al rechazar la solicitud" });
+  }
+
+  try {
+    const resultado = await modeloAceptarRechazar.resolverSolicitud(
+      id,
+      state,
+      state === "rechazada" ? String(comment).trim() : null,
+    );
+    //If it is done correctly, then it is sent that everything was done correctly
+    return res.status(200).json({ message: "Resolución guardada", data: resultado });
+  } catch (error) {
+    console.error("Error en adoptionRequest:", error);
+    if (error.code === "CONFLICT") {
+      return res.status(409).json({ error: error.message });
+    }
+    return res.status(500).json({ error: error.message || "Error al guardar la resolución" });
   }
 }
