@@ -1,0 +1,205 @@
+.cfdi-content {
+  padding: 36px 40px;
+}
+
+.cfdi-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cfdi-link,
+.cfdi-reload {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: var(--md-sys-color-secondary);
+  color: #ffffff;
+  font: 700 14px var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cfdi-link {
+  background: transparent;
+  color: var(--md-sys-color-secondary);
+}
+
+.cfdi-link:hover {
+  text-decoration: underline;
+}
+
+.cfdi-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cfdi-table thead {
+  background: var(--md-sys-color-surface-container);
+}
+
+.cfdi-table th,
+.cfdi-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--md-sys-color-surface-container-low);
+  font: 14px var(--font-body);
+}
+
+.cfdi-table th {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cfdi-table td[colspan] {
+  padding: 32px 24px;
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: center;
+}
+
+.cfdi-review,
+.cfdi-state {
+  display: inline-block;
+  border-radius: 16px;
+  padding: 5px 10px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cfdi-review-ok {
+  background: #e6f4ea;
+  color: #1e4620;
+}
+
+.cfdi-detail-button {
+  border: 0;
+  padding: 6px 0;
+  background: transparent;
+  color: var(--md-sys-color-secondary);
+  font: 700 14px var(--font-body);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.cfdi-dialog {
+  width: min(680px, calc(100% - 32px));
+  max-height: min(90vh, 900px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 18px;
+  color: var(--md-sys-color-on-surface);
+  box-shadow: 0 16px 48px rgb(22 46 72 / 22%);
+}
+
+.cfdi-dialog::backdrop {
+  background: rgb(20 30 40 / 48%);
+}
+
+.cfdi-dialog-header,
+.cfdi-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.cfdi-dialog-header h2,
+.cfdi-dialog-body h3 {
+  font-family: var(--font-headline);
+  font-weight: 800;
+}
+
+.cfdi-dialog-header p {
+  margin-top: 4px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.cfdi-close {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+
+.cfdi-close:hover {
+  background: var(--md-sys-color-surface-container);
+}
+
+.cfdi-dialog-body {
+  display: grid;
+  gap: 24px;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.cfdi-dialog-body section {
+  display: grid;
+  gap: 12px;
+}
+
+.cfdi-fields {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px 16px;
+  font-size: 14px;
+}
+
+.cfdi-fields dt {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 700;
+}
+
+.cfdi-fields dd {
+  overflow-wrap: anywhere;
+}
+
+.cfdi-warning {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff4e5;
+  color: #7a3e00;
+  line-height: 1.5;
+}
+
+.cfdi-dialog-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  border-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .cfdi-content {
+    padding: 24px 16px;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cfdi-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .cfdi-fields {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .cfdi-fields dd {
+    margin-bottom: 8px;
+  }
+}
