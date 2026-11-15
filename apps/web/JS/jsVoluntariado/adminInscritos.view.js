@@ -1,5 +1,6 @@
 import { obtenerInscritos } from "./adminInscritos.js";
 import { obtenerProgramaAdmin, cancelarProgramaAdmin } from "./programaAdmin.api.js";
+import { rutaDe } from "../rutas.js";
 
 // Referencias a elementos del DOM
 const $ = (id) => document.getElementById(id);
@@ -121,7 +122,7 @@ function pintarAcciones(detalle) {
   const editable = Boolean(detalle?.editable);
   inscritosActivos = detalle?.inscritosActivos ?? 0;
 
-  el.btnEditar.href = `./createVolunteering.html?id=${encodeURIComponent(idPrograma)}`;
+  el.btnEditar.href = `${rutaDe("nuevaJornada")}?id=${encodeURIComponent(idPrograma)}`;
   el.btnEditar.hidden = !editable;
   el.btnCancelar.hidden = !editable;
 }

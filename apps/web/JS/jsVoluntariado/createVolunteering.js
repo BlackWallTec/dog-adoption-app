@@ -8,7 +8,7 @@ const URL_VOLUNTARIADO = window.QARINO_VOLUNTARIADO_URL || rutaDe("voluntariado"
 const idEdicion = new URLSearchParams(window.location.search).get("id");
 const modoEdicion = Boolean(idEdicion);
 const URL_PROGRAMA = modoEdicion
-  ? `./adminInscritos.html?id=${encodeURIComponent(idEdicion)}`
+  ? `${rutaDe("inscritos")}?id=${encodeURIComponent(idEdicion)}`
   : null;
 const URL_REGRESO = URL_PROGRAMA ?? URL_VOLUNTARIADO;
 
