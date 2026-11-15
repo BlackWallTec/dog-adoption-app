@@ -8,10 +8,23 @@ import javax.inject.Inject
 data class CompromisoErrors(
     val petNeeds: String? = null,
     val petSterilization: String? = null,
-    val petFollowing: String? = null,
+    val hasVet: String? = null,
+    val vetDetail: String? = null,
+    val timeAlone: String? = null,
+    val dailyRoutine: String? = null,
+    val dogManagement: String? = null,
 ) {
     val hasErrors: Boolean
-        get() = listOf(petNeeds, petSterilization, petFollowing).any { it != null }
+        get() =
+            listOf(
+                petNeeds,
+                petSterilization,
+                hasVet,
+                vetDetail,
+                timeAlone,
+                dailyRoutine,
+                dogManagement,
+            ).any { it != null }
 }
 
 class GuardarCompromisoUseCase
@@ -25,12 +38,20 @@ class GuardarCompromisoUseCase
                 datos.copy(
                     petNeeds = datos.petNeeds.trim(),
                     petSterilization = datos.petSterilization.trim(),
+                    vetDetail = datos.vetDetail.trim(),
+                    timeAlone = datos.timeAlone.trim(),
+                    dailyRoutine = datos.dailyRoutine.trim(),
+                    dogManagement = datos.dogManagement.trim(),
                 )
             val errores =
                 CompromisoErrors(
                     petNeeds = if (limpios.petNeeds.isBlank()) "Escribe tu respuesta" else null,
                     petSterilization = if (limpios.petSterilization.isBlank()) "Escribe tu respuesta" else null,
-                    petFollowing = if (limpios.petFollowing == null) "Selecciona una opción" else null,
+                    hasVet = if (limpios.hasVet == null) "Selecciona una opción" else null,
+                    vetDetail = if (limpios.vetDetail.isBlank()) "Escribe tu respuesta" else null,
+                    timeAlone = if (limpios.timeAlone.isBlank()) "Escribe tu respuesta" else null,
+                    dailyRoutine = if (limpios.dailyRoutine.isBlank()) "Escribe tu respuesta" else null,
+                    dogManagement = if (limpios.dogManagement.isBlank()) "Escribe tu respuesta" else null,
                 )
             if (!errores.hasErrors) {
                 borrador.actualizar { it.copy(compromiso = limpios) }

@@ -19,6 +19,7 @@ fun CompromisoRoute(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listo by viewModel.listo.collectAsState()
+    val acceptances by viewModel.acceptances.collectAsState()
 
     LaunchedEffect(Unit) { viewModel.onLoadCompromiso() }
 
@@ -39,6 +40,8 @@ fun CompromisoRoute(
         errorCarga = (uiState as? CompromisoUiState.Error)?.mensaje,
         datos = success?.datos,
         errores = success?.errores,
+        acceptances = acceptances,
+        onAcceptancesChange = viewModel::onAcceptancesChange,
         onDatosChange = viewModel::onDatosChange,
         guardando = false,
         errorGuardar = null,
