@@ -2,7 +2,7 @@ import { Router } from "express";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
-import { inscribirse } from "./voluntarios.controller.js";
+import { inscribirse, cancelarInscripcion } from "./voluntarios.controller.js";
 import * as clientController from "./voluntariadoClient.controller.js";
 import { getInscritos } from "./inscritosAdmin.controller.js";
 import { router as programas } from "./programas.routes.js";
@@ -16,6 +16,9 @@ router.get("/cliente/programas", clientController.getProgramasVigentes);
 
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 router.post("/programas/:idPrograma/inscripciones", inscribirse);
+
+// PATCH /api/voluntarios/programas/:idPrograma/inscripciones
+router.patch("/programas/:idPrograma/inscripciones", cancelarInscripcion);
 
 // Rutas Admin
 

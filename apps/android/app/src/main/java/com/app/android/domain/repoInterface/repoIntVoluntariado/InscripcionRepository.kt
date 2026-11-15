@@ -5,4 +5,6 @@ import com.app.android.domain.entities.entitiesVoluntariado.Resultado
 
 interface InscripcionRepository {
     suspend fun inscribirse(idPrograma: String): Resultado<Inscripcion>
+
+    suspend fun cancelarInscripcion(idPrograma: String): Resultado<Inscripcion>
 }

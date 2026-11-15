@@ -39,6 +39,7 @@ private fun HttpException.toVoluntariadoError(gson: Gson): VoluntariadoError {
     return when (codigo) {
         "SIN_CUPO" -> VoluntariadoError.SinCupo
         "YA_INSCRITO" -> VoluntariadoError.YaInscrito
+        "NO_INSCRITO" -> VoluntariadoError.NoInscrito
         "PROGRAMA_INICIADO" -> VoluntariadoError.ProgramaIniciado
         "PROGRAMA_NO_DISPONIBLE" -> VoluntariadoError.ProgramaNoDisponible
         "PROGRAMA_NO_ENCONTRADO" -> VoluntariadoError.ProgramaNoEncontrado

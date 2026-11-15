@@ -5,6 +5,8 @@ sealed interface VoluntariadoError {
 
     data object YaInscrito : VoluntariadoError
 
+    data object NoInscrito : VoluntariadoError
+
     data object ProgramaIniciado : VoluntariadoError
 
     data object ProgramaNoDisponible : VoluntariadoError

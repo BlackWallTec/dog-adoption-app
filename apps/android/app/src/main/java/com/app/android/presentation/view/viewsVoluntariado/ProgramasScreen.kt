@@ -5,8 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.app.android.domain.entities.entitiesVoluntariado.Programa
+import com.app.android.presentation.view.atomicDesign.organism.ConfirmActionDialog
 import com.app.android.presentation.view.atomicDesign.page.ProgramasPage
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasViewModel
 
@@ -20,8 +24,9 @@ fun ProgramasScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var programaPorCancelar by remember { mutableStateOf<Programa?>(null) }
 
-    // Muestra en un snackbar los mensajes de la inscripción
+    // Muestra en un snackbar los mensajes de la inscripción y la cancelación
     LaunchedEffect(Unit) {
         viewModel.mensajes.collect { snackbarHostState.showSnackbar(it) }
     }
@@ -34,7 +39,22 @@ fun ProgramasScreen(
         onReintentar = viewModel::cargarProgramas,
         onBackClick = onBackClick,
         onInscribirse = viewModel::inscribirse,
+        onCancelar = { programaPorCancelar = it },
         snackbarHostState = snackbarHostState,
         onNavSelect = onNavSelect,
     )
+
+    // Confirmación antes de cancelar: la acción libera el lugar y otra persona puede tomarlo
+    programaPorCancelar?.let { programa ->
+        ConfirmActionDialog(
+            titulo = "¿Cancelar tu inscripción?",
+            descripcion = "Si cancelas, liberarás tu lugar en ${programa.nombre}. ¿Quieres continuar?",
+            textoConfirmar = "Sí, cancelar",
+            onConfirmar = {
+                viewModel.cancelarInscripcion(programa)
+                programaPorCancelar = null
+            },
+            onDismiss = { programaPorCancelar = null },
+        )
+    }
 }

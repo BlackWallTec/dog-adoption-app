@@ -3,6 +3,7 @@ import {
   contarInscritosModel,
   existeInscripcionModel,
   crearInscripcionModel,
+  cancelarInscripcionModel,
 } from "./modelosVoluntariado/inscripcion.model.js";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -80,5 +81,49 @@ export const inscribirse = async (req, res) => {
 
     console.error("[voluntarios] inscribirse:", error);
     return responderError(res, 500, "ERROR_INTERNO", "Error interno al procesar la inscripción.");
+  }
+};
+
+// PATCH /api/voluntarios/programas/:idPrograma/inscripciones  (HU37)
+// No borra la fila: cambia su estado de "Aceptado" a "Pendiente".
+export const cancelarInscripcion = async (req, res) => {
+  const { idPrograma } = req.params;
+  const idUsuario = process.env.DEV_USUARIO_ID; // Cambiar aqui lo del login
+
+  if (!idUsuario) {
+    return responderError(res, 401, "NO_AUTENTICADO", "No hay un usuario configurado.");
+  }
+
+  if (!UUID_REGEX.test(idPrograma)) {
+    return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");
+  }
+
+  try {
+    // Regla 1: el programa debe existir
+    const programa = await getProgramaInscripcionModel(idPrograma);
+    if (!programa) {
+      return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");
+    }
+
+    // Regla 2: no se cancela si el programa ya comenzó (el admin necesita la lista exacta de inscritos)
+    if (programa.fecha_inicio <= ahoraEnMexico()) {
+      return responderError(
+        res,
+        409,
+        "PROGRAMA_INICIADO",
+        "El programa ya comenzó, ya no puedes cancelar.",
+      );
+    }
+
+    // Regla 3: debe haber una inscripción activa de este usuario en ESTE programa
+    const cancelada = await cancelarInscripcionModel(idPrograma, idUsuario);
+    if (!cancelada) {
+      return responderError(res, 409, "NO_INSCRITO", "No estás inscrito en este programa.");
+    }
+
+    return res.status(200).json({ sucess: true, data: cancelada });
+  } catch (error) {
+    console.error("[voluntarios] cancelarInscripcion:", error);
+    return responderError(res, 500, "ERROR_INTERNO", "Error interno al cancelar la inscripción.");
   }
 };
