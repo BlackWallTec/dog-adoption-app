@@ -246,6 +246,8 @@ fun AppNavigation() {
 
         // ========= Pantallas Solicitudes ========
 
+        // SOLICITUDES - HU06: Mis solicitudes
+
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
             route = Screen.Requisitos.ruta,

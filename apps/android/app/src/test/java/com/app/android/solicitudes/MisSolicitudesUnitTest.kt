@@ -1,5 +1,9 @@
 package com.app.android.solicitudes
 
+import com.app.android.data.dtos.dtosSolicitudes.PerroSolicitudDto
+import com.app.android.data.dtos.dtosSolicitudes.SolicitudClienteDto
+import com.app.android.data.dtos.dtosSolicitudes.toDomain
+import com.app.android.data.dtos.dtosSolicitudes.toEstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
@@ -9,6 +13,7 @@ import com.app.android.domain.useCases.useCasesSolicitudes.GetMisSolicitudesUseC
 import com.app.android.presentation.util.utilSolicitudes.toItem
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.MisSolicitudesUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.MisSolicitudesViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -21,10 +26,12 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.TimeZone
 import kotlin.coroutines.cancellation.CancellationException
 
 // Testing asistidos por IA para comprobar los diferentes casos de testeo:
 // Guiado por el prompt aportado por el profesor Luis Corral para unit testing
+// stress testing - range coverage - void value coverage - boundary value analysis, - structural coverage
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MisSolicitudesUnitTest {
@@ -32,7 +39,12 @@ class MisSolicitudesUnitTest {
         var solicitudesARetornar: List<SolicitudCliente> = emptyList()
         var excepcionASimular: Exception? = null
 
+        // NUEVO: si se le asigna una compuerta, el repositorio "se queda esperando" hasta que
+        // el test la abra. Sirve para poder observar el estado Loading.
+        var compuerta: CompletableDeferred<Unit>? = null
+
         override suspend fun getMisSolicitudes(): List<SolicitudCliente> {
+            compuerta?.await()
             excepcionASimular?.let { throw it }
             return solicitudesARetornar
         }
@@ -49,14 +61,24 @@ class MisSolicitudesUnitTest {
     private val useCase = GetMisSolicitudesUseCase(repositoryFake)
     private lateinit var viewModel: MisSolicitudesViewModel
 
+    // NUEVO: zona horaria original, para restaurarla al terminar cada test
+    private lateinit var zonaOriginal: TimeZone
+
+    // @Before corre antes de CADA test:
+    //  - Fijamos la zona horaria en UTC: el formateador de fechas usa la zona del teléfono
+    //    (ZoneId.systemDefault()), y sin esto un test podría pasar en tu compu y fallar en otra.
+    //  - viewModelScope usa el hilo principal de Android, que no existe en un test: le ponemos uno de prueba.
     @Before
     fun setUp() {
+        zonaOriginal = TimeZone.getDefault()
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
         Dispatchers.setMain(UnconfinedTestDispatcher())
         viewModel = MisSolicitudesViewModel(useCase)
     }
 
     @After
     fun tearDown() {
+        TimeZone.setDefault(zonaOriginal)
         Dispatchers.resetMain()
     }
 
@@ -83,7 +105,105 @@ class MisSolicitudesUnitTest {
 
     /**
      * ---------------------------------------------------------------------------------
-     * SECCIÓN 1: COBERTURA DE VALORES VACÍOS Y NULOS (VOID VALUE COVERAGE)
+     * SECCIÓN 1 (NUEVO): CAPA DE DATOS, DEL JSON DEL SERVIDOR A LA ENTITY
+     * ---------------------------------------------------------------------------------
+     * El backend manda el estado como texto ("Aprobada Definitiva") y cualquier campo del JSON
+     * puede venir null. Esta capa lo convierte en una entity segura, sin nulos donde la app
+     * no los espera. Antes de esta sección, los tests arrancaban ya desde la entity.
+     */
+    @Test
+    fun `range_coverage_texto_del_estado_se_convierte_en_enum`() {
+        // Cada valor válido del rango (los 4 estados que existen en la BD)
+        assertEquals(EstadoSolicitud.PENDIENTE_REVISION, "Pendiente de Revisión".toEstadoSolicitud())
+        assertEquals(EstadoSolicitud.EN_PERIODO_PRUEBA, "En Periodo de Prueba".toEstadoSolicitud())
+        assertEquals(EstadoSolicitud.APROBADA, "Aprobada Definitiva".toEstadoSolicitud())
+        assertEquals(EstadoSolicitud.RECHAZADA, "Rechazada".toEstadoSolicitud())
+    }
+
+    @Test
+    fun `void_value_coverage_estado_nulo_vacio_o_casi_correcto_es_desconocido`() {
+        assertEquals(EstadoSolicitud.DESCONOCIDO, (null as String?).toEstadoSolicitud())
+        assertEquals(EstadoSolicitud.DESCONOCIDO, "".toEstadoSolicitud())
+        // La comparación es EXACTA: el backend ya limpia los espacios, la app no perdona diferencias
+        assertEquals(EstadoSolicitud.DESCONOCIDO, "rechazada".toEstadoSolicitud()) // minúscula
+        assertEquals(EstadoSolicitud.DESCONOCIDO, "Rechazada ".toEstadoSolicitud()) // espacio al final
+        assertEquals(EstadoSolicitud.DESCONOCIDO, "Borrador".toEstadoSolicitud()) // el backend no lo manda
+    }
+
+    @Test
+    fun `structural_coverage_dto_completo_se_mapea_a_la_entity`() {
+        val entity =
+            SolicitudClienteDto(
+                idSolicitud = "sol-9",
+                folio = "QA-00000009",
+                fechaSolicitud = "2026-10-12T18:30:00Z",
+                estado = "Aprobada Definitiva",
+                perro = PerroSolicitudDto(nombre = "Bruno", fotoUrl = "https://example.com/bruno.jpg"),
+                fotoUrl = null,
+                documentoRechazado = true,
+                comentarioAdmin = "Todo en orden",
+            ).toDomain()
+
+        assertEquals("sol-9", entity.idSolicitud)
+        assertEquals("QA-00000009", entity.folio)
+        assertEquals("2026-10-12T18:30:00Z", entity.fechaSolicitud)
+        assertEquals(EstadoSolicitud.APROBADA, entity.estado)
+        assertEquals("Bruno", entity.nombrePerro)
+        assertEquals("https://example.com/bruno.jpg", entity.fotoUrl)
+        assertTrue(entity.documentoRechazado)
+        assertEquals("Todo en orden", entity.comentarioAdmin)
+    }
+
+    @Test
+    fun `void_value_coverage_dto_con_todo_nulo_usa_valores_seguros`() {
+        val entity =
+            SolicitudClienteDto(
+                idSolicitud = null,
+                folio = null,
+                fechaSolicitud = null,
+                estado = null,
+                perro = null,
+                fotoUrl = null,
+                documentoRechazado = null,
+                comentarioAdmin = null,
+            ).toDomain()
+
+        // Los textos obligatorios quedan "" (no null), el estado DESCONOCIDO y el booleano false
+        assertEquals("", entity.idSolicitud)
+        assertEquals("", entity.folio)
+        assertEquals("", entity.fechaSolicitud)
+        assertEquals(EstadoSolicitud.DESCONOCIDO, entity.estado)
+        assertFalse(entity.documentoRechazado)
+        // Lo opcional sigue siendo null
+        assertNull(entity.nombrePerro)
+        assertNull(entity.fotoUrl)
+        assertNull(entity.comentarioAdmin)
+    }
+
+    @Test
+    fun `void_value_coverage_dto_con_textos_en_blanco_los_convierte_en_null`() {
+        // Un texto vacío o con solo espacios es lo mismo que "no hay dato"
+        val entity =
+            SolicitudClienteDto(
+                idSolicitud = "1",
+                folio = "QA-00000001",
+                fechaSolicitud = "2026-10-12T18:30:00Z",
+                estado = "Rechazada",
+                perro = PerroSolicitudDto(nombre = "   ", fotoUrl = ""),
+                fotoUrl = null,
+                documentoRechazado = false,
+                comentarioAdmin = "   ",
+            ).toDomain()
+
+        assertNull(entity.nombrePerro)
+        assertNull(entity.fotoUrl)
+        assertNull(entity.comentarioAdmin)
+        assertEquals(EstadoSolicitud.RECHAZADA, entity.estado)
+    }
+
+    /**
+     * ---------------------------------------------------------------------------------
+     * SECCIÓN 2: COBERTURA DE VALORES VACÍOS Y NULOS (VOID VALUE COVERAGE)
      * ---------------------------------------------------------------------------------
      * Evalúa el comportamiento del mapeador cuando los campos vienen nulos, vacíos o
      * con formato de fecha inválido desde la base de datos.
@@ -113,7 +233,7 @@ class MisSolicitudesUnitTest {
 
     /**
      * ---------------------------------------------------------------------------------
-     * SECCIÓN 2: ANÁLISIS DE VALORES LÍMITE (BOUNDARY VALUE ANALYSIS)
+     * SECCIÓN 3: ANÁLISIS DE VALORES LÍMITE (BOUNDARY VALUE ANALYSIS)
      * ---------------------------------------------------------------------------------
      * Comprueba los límites de tamaño en listas (0 y 1 elemento), fechas en bordes
      * de año/mes (bisiestos, 1 ene, 31 dic) y la conversión de los 12 meses.
@@ -154,6 +274,34 @@ class MisSolicitudesUnitTest {
         assertEquals("15 may 2026", sinZonaHoraria.fecha)
     }
 
+    // NUEVO: fechas que NO existen en el calendario
+    @Test
+    fun `boundary_value_analysis_fechas_imposibles_retornan_cadena_vacia`() {
+        // 2026 no es bisiesto: el 29 de febrero no existe
+        assertEquals("", crearSolicitudCliente(fecha = "2026-02-29T12:00:00Z").toItem().fecha)
+        // Mes y día imposibles
+        assertEquals("", crearSolicitudCliente(fecha = "2026-13-45").toItem().fecha)
+    }
+
+    // NUEVO: el formato REAL con el que Supabase manda las fechas (milisegundos y +00:00)
+    @Test
+    fun `range_coverage_fecha_en_formato_real_de_supabase`() {
+        val item = crearSolicitudCliente(fecha = "2026-10-06T22:07:36.789+00:00").toItem()
+        assertEquals("6 oct 2026", item.fecha) // el día no lleva cero a la izquierda
+    }
+
+    // NUEVO: la fecha se muestra en la zona horaria del teléfono
+    @Test
+    fun `boundary_value_analysis_zona_horaria_puede_cambiar_el_dia`() {
+        // 02:00 UTC del día 13 todavía es el día 12 por la noche en México (UTC-6)
+        val iso = "2026-10-13T02:00:00Z"
+
+        assertEquals("13 oct 2026", crearSolicitudCliente(fecha = iso).toItem().fecha) // UTC (fijada en setUp)
+
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Mexico_City")) // tearDown la restaura
+        assertEquals("12 oct 2026", crearSolicitudCliente(fecha = iso).toItem().fecha)
+    }
+
     @Test
     fun `boundary_value_analysis_cobertura_de_los_12_meses_del_ano`() {
         val fechasPrueba =
@@ -180,7 +328,7 @@ class MisSolicitudesUnitTest {
 
     /**
      * ---------------------------------------------------------------------------------
-     * SECCIÓN 3: COBERTURA ESTRUCTURAL Y DE DECISIONES (DECISION COVERAGE)
+     * SECCIÓN 4: COBERTURA ESTRUCTURAL Y DE DECISIONES (DECISION COVERAGE)
      * ---------------------------------------------------------------------------------
      * Evalúa la matriz de decisión completa de la regla de negocio `puedeEditar`:
      * requiere documentoRechazado = true Y estado == PENDIENTE_REVISION.
@@ -239,7 +387,7 @@ class MisSolicitudesUnitTest {
 
     /**
      * ---------------------------------------------------------------------------------
-     * SECCIÓN 4: PRUEBAS DE ESTRÉS Y RANGOS (STRESS TESTING & RANGE COVERAGE)
+     * SECCIÓN 5: PRUEBAS DE ESTRÉS Y RANGOS (STRESS TESTING & RANGE COVERAGE)
      * ---------------------------------------------------------------------------------
      * Verifica la estabilidad y rendimiento del ViewModel al procesar conjuntos masivos
      * (1,000 elementos) y listas con datos altamente heterogéneos.
@@ -263,6 +411,9 @@ class MisSolicitudesUnitTest {
         assertEquals(1000, state.solicitudes.size)
         assertEquals("sol-1", state.solicitudes.first().idSolicitud)
         assertEquals("sol-1000", state.solicitudes.last().idSolicitud)
+        // NUEVO: la regla también se cumple a escala. Pueden editar los pares (en revisión)
+        // que además son múltiplos de 5, o sea los múltiplos de 10: 100 solicitudes.
+        assertEquals(100, state.solicitudes.count { it.puedeEditar })
     }
 
     @Test
@@ -293,7 +444,7 @@ class MisSolicitudesUnitTest {
 
     /**
      * ---------------------------------------------------------------------------------
-     * SECCIÓN 5: INTEGRACIÓN Y MÁQUINA DE ESTADOS DE VIEWMODEL (STATE FLOW COVERAGE)
+     * SECCIÓN 6: INTEGRACIÓN Y MÁQUINA DE ESTADOS DE VIEWMODEL (STATE FLOW COVERAGE)
      * ---------------------------------------------------------------------------------
      * Valida el ciclo de vida del StateFlow en el ViewModel: estado inicial Loading,
      * transiciones a Success, Error y recuperación en reintentos.
@@ -302,6 +453,20 @@ class MisSolicitudesUnitTest {
     fun `viewmodel_estado_inicial_es_loading`() {
         val nuevoViewModel = MisSolicitudesViewModel(useCase)
         assertEquals(MisSolicitudesUiState.Loading, nuevoViewModel.uiState.value)
+    }
+
+    // NUEVO: se observa el Loading en transición, no solo el estado inicial
+    @Test
+    fun `viewmodel_muestra_loading_mientras_espera_la_respuesta_del_servidor`() {
+        val compuerta = CompletableDeferred<Unit>()
+        repositoryFake.compuerta = compuerta
+        repositoryFake.solicitudesARetornar = listOf(crearSolicitudCliente())
+
+        viewModel.onLoadSolicitudes()
+        assertEquals(MisSolicitudesUiState.Loading, viewModel.uiState.value) // sigue esperando
+
+        compuerta.complete(Unit) // el servidor "responde"
+        assertTrue(viewModel.uiState.value is MisSolicitudesUiState.Success)
     }
 
     @Test
@@ -346,7 +511,7 @@ class MisSolicitudesUnitTest {
 
     /**
      * ---------------------------------------------------------------------------------
-     * SECCIÓN 6: CASOS FALLIDOS Y EXCEPCIONALES (FAILED & UNHAPPY PATH TEST CASES)
+     * SECCIÓN 7: CASOS FALLIDOS Y EXCEPCIONALES (FAILED & UNHAPPY PATH TEST CASES)
      * ---------------------------------------------------------------------------------
      * Prueba escenarios donde las operaciones fallan, el servidor responde con datos
      * corruptos o errores no controlados para verificar la resiliencia de la app.
