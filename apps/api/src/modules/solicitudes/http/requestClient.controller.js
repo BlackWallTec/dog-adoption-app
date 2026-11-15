@@ -41,7 +41,44 @@ const formatProfile = (raw) => {
   };
 };
 
-// ===== Rutas Cliente (solo LECTURAS; el envío lo agrega Lucca) =====
+// ===== Consulta de mis solicitudes =====
+
+// formato del figma para la id de solicitud (QA- +  los 8 primeros cáracteres del ID)
+
+const folioDe = (idSolicitud) => `QA-${idSolicitud.slice(0, 8).toUpperCase()}`;
+
+// La foto del animal (agarra la primera)
+const fotoDe = (perro) => {
+  const multimedia = perro?.multimedia || [];
+  const foto =
+    multimedia.find((item) => item.tipo?.trim().toLowerCase() === "foto") || multimedia[0];
+  return foto?.url || null;
+};
+
+// Checa si alguno de los documentos fue rechazado en el proceso de solicitud
+
+const tieneDocumentoRechazado = (documentos) =>
+  (documentos || []).some((relacion) =>
+    first(relacion.documento)?.estado_revision?.trim().toLowerCase().startsWith("rechaz"),
+  );
+
+// Fila de datos que solo el cliente puede ver
+const formatMiSolicitud = (fila) => {
+  const perro = first(fila.perro);
+
+  return {
+    id_solicitud: fila.id_solicitud,
+    folio: folioDe(fila.id_solicitud),
+    fecha_solicitud: fila.fecha_solicitud,
+    estado: first(fila.estado)?.descripcion?.trim() ?? null,
+    // null = no hay perro
+    perro: perro ? { nombre: perro.nombre, foto_url: fotoDe(perro) } : null,
+    documento_rechazado: tieneDocumentoRechazado(fila.documentos),
+    comentario_admin: fila.comentario_admin?.trim() || null,
+  };
+};
+
+// ===== Rutas Cliente (solo las lecturas de momento; el envío lo agrega Lucca) =====
 
 // GET /api/solicitudes/cliente/activa?idUsuario=...&idPerro=...
 export const getActive = async (req, res) => {
@@ -88,6 +125,28 @@ export const getProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Error interno al consultar el perfil.",
+    });
+  }
+};
+
+// GET /api/solicitudes/cliente/mis-solicitudes
+
+export const getMisSolicitudes = async (req, res) => {
+  try {
+    const filas = await adoptionRequestModel.getByUser(req.user.uuid);
+
+    // El Borrador vive en la app
+    const enviadas = filas.filter((fila) => first(fila.estado)?.descripcion?.trim() !== "Borrador");
+
+    return res.status(200).json({
+      success: true,
+      data: enviadas.map(formatMiSolicitud), // [] si no ha enviado
+    });
+  } catch (error) {
+    console.error("getMisSolicitudes", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "No se pudieron consultar tus solicitudes.",
     });
   }
 };

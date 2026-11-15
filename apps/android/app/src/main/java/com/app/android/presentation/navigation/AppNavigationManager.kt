@@ -41,7 +41,10 @@ private fun NavController.irAOpcionBarra(opcion: Int) {
         }
     when {
         opcion == 0 -> {
-            popBackStack(Screen.DetallePerro.ruta, inclusive = false)
+            // si no venimos del detalle, regresa a catálogo
+            if (!popBackStack(Screen.DetallePerro.ruta, inclusive = false)) {
+                popBackStack(Screen.Catalogo.ruta, inclusive = false)
+            }
         }
 
         destino != null -> {
@@ -72,6 +75,7 @@ fun AppNavigation() {
                         Screen.DetallePerro.crearRuta(dogId),
                     )
                 },
+                onNavSelect = navController::irAOpcionBarra,
             )
         }
         // PANTALLA 2: El detalle del perro
@@ -96,6 +100,8 @@ fun AppNavigation() {
         }
 
         // ========= Pantallas Solicitudes ========
+
+        // SOLICITUDES - HU06: Mis solicitudes
 
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
