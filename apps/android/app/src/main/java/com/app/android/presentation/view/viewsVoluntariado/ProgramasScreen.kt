@@ -28,17 +28,26 @@ fun ProgramasScreen(
     onMisVoluntariados: () -> Unit = {},
     onVerDetalle: ((String) -> Unit)? = null, // HU36: id del programa
 ) {
-    // Guía: collectAsStateWithLifecycle pausa la recolección cuando la pantalla no está visible
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var programaPorCancelar by remember { mutableStateOf<ProgramaUi?>(null) }
+    val filtrosState by viewModel.filtroState.collectAsStateWithLifecycle()
 
-    // Muestra en un snackbar los mensajes de la inscripción y la cancelación
-    LaunchedEffect(Unit) {
-        viewModel.mensajes.collect { snackbarHostState.showSnackbar(it) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    var programaPorCancelar by remember {
+        mutableStateOf<ProgramaUi?>(null)
     }
-    LaunchedEffect(Unit) {
-        viewModel.inscripcionExitosa.collect { onInscripcionExitosa() }
+
+    // Muestra los mensajes de inscripción y cancelación.
+    LaunchedEffect(viewModel) {
+        viewModel.mensajes.collect { mensaje ->
+            snackbarHostState.showSnackbar(mensaje)
+        }
+    }
+
+    // Navega a la confirmación cuando termina la inscripción.
+    LaunchedEffect(viewModel, onInscripcionExitosa) {
+        viewModel.inscripcionExitosa.collect {
+            onInscripcionExitosa()
+        }
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.actualizarProgramas() }
@@ -49,25 +58,36 @@ fun ProgramasScreen(
         onBackClick = onBackClick,
         onInscribirse = viewModel::inscribirse,
         onCancelar = { id ->
-            programaPorCancelar = (uiState as? ProgramasUiState.Success)?.programas?.find { it.id == id }
+            programaPorCancelar =
+                (uiState as? ProgramasUiState.Success)
+                    ?.programas
+                    ?.find { it.id == id }
         },
         snackbarHostState = snackbarHostState,
         onNavSelect = onNavSelect,
         onMisVoluntariados = onMisVoluntariados,
         onVerDetalle = onVerDetalle, // HU36
+        filtrosState = filtrosState,
+        onFiltrosChange = viewModel::actualizarFiltros,
+        onAplicarFiltros = viewModel::aplicarFiltros,
+        onLimpiarFiltros = viewModel::limpiarFiltros,
     )
 
-    // Confirmación antes de cancelar: la acción libera el lugar y otra persona puede tomarlo
+    // Solicita confirmación antes de cancelar la inscripción.
     programaPorCancelar?.let { programa ->
         ConfirmActionDialog(
             titulo = "¿Cancelar tu inscripción?",
-            descripcion = "Si cancelas, liberarás tu lugar en ${programa.titulo}. ¿Quieres continuar?",
+            descripcion =
+                "Si cancelas, liberarás tu lugar en ${programa.titulo}. " +
+                        "¿Quieres continuar?",
             textoConfirmar = "Sí, cancelar",
             onConfirmar = {
                 viewModel.cancelarInscripcion(programa.id)
                 programaPorCancelar = null
             },
-            onDismiss = { programaPorCancelar = null },
+            onDismiss = {
+                programaPorCancelar = null
+            },
         )
     }
 }

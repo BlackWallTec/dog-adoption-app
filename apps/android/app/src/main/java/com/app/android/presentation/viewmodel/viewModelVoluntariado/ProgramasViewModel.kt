@@ -3,15 +3,20 @@ package com.app.android.presentation.viewmodel.viewModelVoluntariado
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.android.domain.entities.entitiesVoluntariado.ErroresFiltrosProgramas
+import com.app.android.domain.entities.entitiesVoluntariado.FiltrosProgramas
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.domain.entities.entitiesVoluntariado.Resultado
+import com.app.android.domain.entities.entitiesVoluntariado.ResultadoFiltrado
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
+import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
 import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionCancelada
 import com.app.android.domain.useCases.useCasesVoluntariado.CancelarInscripcionUseCase
+import com.app.android.domain.useCases.useCasesVoluntariado.FiltrarProgramasUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.InscribirseProgramaUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.ObtenerProgramasVigentesUseCase
-import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,26 +35,37 @@ class ProgramasViewModel @Inject constructor(
     private val inscribirseEnPrograma: InscribirseProgramaUseCase,
     private val cancelarInscripcionEnPrograma: CancelarInscripcionUseCase,
     private val clock: Clock,
+    private val filtrarProgramas: FiltrarProgramasUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<ProgramasUiState>(ProgramasUiState.Loading)
+    private val _uiState =
+        MutableStateFlow<ProgramasUiState>(ProgramasUiState.Loading)
     val uiState: StateFlow<ProgramasUiState> = _uiState.asStateFlow()
 
-    // Mensajes de una sola vez (snackbar): errores al inscribirse o cancelar, y aviso de cancelación
+    // Mensajes de inscripción y cancelación.
     private val _mensajes = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val mensajes: SharedFlow<String> = _mensajes.asSharedFlow()
 
     // Programa recién inscrito: lo lee la pantalla de confirmación
-    private val _programaConfirmado = MutableStateFlow<ProgramaUi?>(null)
-    val programaConfirmado: StateFlow<ProgramaUi?> = _programaConfirmado.asStateFlow()
+    private val _programaConfirmado =
+        MutableStateFlow<ProgramaUi?>(null)
+    val programaConfirmado: StateFlow<ProgramaUi?> =
+        _programaConfirmado.asStateFlow()
 
-    // Evento de una sola vez: la inscripción salió bien, hay que ir a la confirmación
-    private val _inscripcionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val inscripcionExitosa: SharedFlow<Unit> = _inscripcionExitosa.asSharedFlow()
+    private val _inscripcionExitosa =
+        MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val inscripcionExitosa: SharedFlow<Unit> =
+        _inscripcionExitosa.asSharedFlow()
 
-    // Evento de una sola vez: la cancelación salió bien (la confirmación lo usa para regresar a la lista)
-    private val _cancelacionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val cancelacionExitosa: SharedFlow<Unit> = _cancelacionExitosa.asSharedFlow()
+    private val _cancelacionExitosa =
+        MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val cancelacionExitosa: SharedFlow<Unit> =
+        _cancelacionExitosa.asSharedFlow()
+
+    private val _filtrosState = MutableStateFlow(FiltrosProgramasUiState())
+    val filtroState: StateFlow<FiltrosProgramasUiState> =
+        _filtrosState.asStateFlow()
+
 
     // Entidades del dominio: las necesita el caso de uso; la View nunca las ve
     private var programas: List<Programa> = emptyList()
@@ -68,10 +84,12 @@ class ProgramasViewModel @Inject constructor(
             _uiState.value = ProgramasUiState.Loading
             try {
                 programas = obtenerProgramasVigentes()
+                _filtrosState.value = FiltrosProgramasUiState()
                 publicarProgramas()
             } catch (e: Exception) {
                 Log.e("HU39A", "Error loading programs", e)
-                _uiState.value = ProgramasUiState.Error("No se pudieron cargar los programas")
+                _uiState.value =
+                    ProgramasUiState.Error("No se pudieron cargar los programas")
             }
         }
     }
@@ -95,7 +113,8 @@ class ProgramasViewModel @Inject constructor(
                         // Descuenta el lugar y marca "Inscrito" sin volver a pedir la lista
                         val confirmado = programa.conInscripcionConfirmada()
                         reemplazar(confirmado)
-                        _programaConfirmado.value = confirmado.toUi(Instant.now(clock))
+                        _programaConfirmado.value =
+                            confirmado.toUi(Instant.now(clock))
                         _inscripcionExitosa.emit(Unit)
                     }
                     is Resultado.Error -> {
@@ -130,7 +149,9 @@ class ProgramasViewModel @Inject constructor(
                     }
                     is Resultado.Error -> {
                         // Ya no estaba inscrito: se trae el estado y el cupo reales del servidor
-                        if (resultado.error == VoluntariadoError.NoInscrito) recargarSinIndicador()
+                        if (resultado.error == VoluntariadoError.NoInscrito) {
+                            recargarSinIndicador()
+                        }
                         _mensajes.emit(mensajeCancelacionDe(resultado.error))
                     }
                 }
@@ -189,20 +210,115 @@ class ProgramasViewModel @Inject constructor(
         }
     }
 
+    // Actualiza los controles sin cambiar todavía los resultados.
+    fun actualizarFiltros(filtros: FiltrosProgramas) {
+        _filtrosState.value =
+            _filtrosState.value.copy(
+                seleccionados = filtros,
+                errores = ErroresFiltrosProgramas(),
+            )
+    }
+
+    fun aplicarFiltros() {
+        if (!puedeFiltrar()) return
+
+        publicarProgramas(
+            filtros = _filtrosState.value.seleccionados,
+            actualizarValidacion = true,
+        )
+    }
+
+    fun limpiarFiltros() {
+        if (!puedeFiltrar()) return
+
+        _filtrosState.value = FiltrosProgramasUiState()
+        publicarProgramas()
+    }
+
+    private fun puedeFiltrar(): Boolean =
+        _uiState.value is ProgramasUiState.Success ||
+                _uiState.value is ProgramasUiState.Empty
+
+    // Al inscribir o cancelar, vuelve a aplicar los filtros ya confirmados.
+    private fun publicarProgramas(
+        filtros: FiltrosProgramas = _filtrosState.value.aplicados,
+        actualizarValidacion: Boolean = false,
+    ) {
+        when (val resultado = filtrarProgramas(programas, filtros)) {
+            is ResultadoFiltrado.Invalido -> {
+                _filtrosState.value =
+                    _filtrosState.value.copy(
+                        errores = resultado.errores,
+                    )
+                // Conserva los resultados anteriores.
+            }
+
+            is ResultadoFiltrado.Exito -> {
+                val catalogo = filtrarProgramas(programas, FiltrosProgramas())
+                val catalogoVacio =
+                    catalogo is ResultadoFiltrado.Exito &&
+                            catalogo.programas.isEmpty()
+
+                val estadoFiltros = _filtrosState.value
+                _filtrosState.value =
+                    estadoFiltros.copy(
+                        aplicados = filtros,
+                        errores =
+                            if (actualizarValidacion) {
+                                ErroresFiltrosProgramas()
+                            } else {
+                                estadoFiltros.errores
+                            },
+                        sinCoincidencias =
+                            !catalogoVacio && resultado.programas.isEmpty(),
+                    )
+
+                val ahora = Instant.now(clock)
+
+                _uiState.value =
+                    if (catalogoVacio) {
+                        ProgramasUiState.Empty
+                    } else {
+                        ProgramasUiState.Success(
+                            resultado.programas.map { programa ->
+                                val ui = programa.toUi(ahora)
+                                if (programa.id == idProcesando) {
+                                    ui.copy(
+                                        textoBoton = textoProcesando,
+                                        botonHabilitado = false,
+                                    )
+                                } else {
+                                    ui
+                                }
+                            },
+                        )
+                    }
+            }
+        }
+    }
+
     private fun mensajeDe(error: VoluntariadoError): String =
         when (error) {
-            VoluntariadoError.SinCupo -> "Este programa ya no tiene lugares disponibles."
-            VoluntariadoError.YaInscrito -> "Ya estás inscrito en este programa."
-            VoluntariadoError.NoInscrito -> "No tienes una inscripción activa en este programa."
-            VoluntariadoError.ProgramaIniciado -> "Este programa ya comenzó, ya no es posible inscribirse."
-            VoluntariadoError.ProgramaNoDisponible -> "Este programa no está disponible por ahora."
-            VoluntariadoError.ProgramaNoEncontrado -> "No encontramos este programa. Actualiza la lista."
-            VoluntariadoError.NoAutenticado -> "Inicia sesión para inscribirte."
-            VoluntariadoError.SinConexion -> "Sin conexión. Revisa tu internet e inténtalo de nuevo."
-            VoluntariadoError.Desconocido -> "Ocurrió un error. Inténtalo de nuevo."
+            VoluntariadoError.SinCupo ->
+                "Este programa ya no tiene lugares disponibles."
+            VoluntariadoError.YaInscrito ->
+                "Ya estás inscrito en este programa."
+            VoluntariadoError.NoInscrito ->
+                "No tienes una inscripción activa en este programa."
+            VoluntariadoError.ProgramaIniciado ->
+                "Este programa ya comenzó, ya no es posible inscribirse."
+            VoluntariadoError.ProgramaNoDisponible ->
+                "Este programa no está disponible por ahora."
+            VoluntariadoError.ProgramaNoEncontrado ->
+                "No encontramos este programa. Actualiza la lista."
+            VoluntariadoError.NoAutenticado ->
+                "Inicia sesión para inscribirte."
+            VoluntariadoError.SinConexion ->
+                "Sin conexión. Revisa tu internet e inténtalo de nuevo."
+            VoluntariadoError.Desconocido ->
+                "Ocurrió un error. Inténtalo de nuevo."
         }
 
-    // Igual que mensajeDe, salvo el programa ya iniciado (aquí no se puede cancelar)
     private fun mensajeCancelacionDe(error: VoluntariadoError): String =
         if (error == VoluntariadoError.ProgramaIniciado) {
             "Este programa ya comenzó, ya no es posible cancelar."

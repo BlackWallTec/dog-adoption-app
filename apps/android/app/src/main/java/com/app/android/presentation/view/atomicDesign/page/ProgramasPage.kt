@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.app.android.domain.entities.entitiesVoluntariado.FiltrosProgramas
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
@@ -32,6 +33,7 @@ import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.ListaProgramas
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.viewmodel.viewModelVoluntariado.FiltrosProgramasUiState
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramaUi
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiState
 
@@ -50,16 +52,32 @@ fun ProgramasPage(
     descripcion: String = "Elige un programa de voluntariado para ayudar a los perritos de Qariño.",
     mensajeVacio: String = "No hay programas disponibles por ahora.",
     onMisVoluntariados: (() -> Unit)? = null,
-    onVerDetalle: ((String) -> Unit)? = null, // evento HU36: id del programa
+    onVerDetalle: ((String) -> Unit)? = null,
+    filtrosState: FiltrosProgramasUiState = FiltrosProgramasUiState(),
+    onFiltrosChange: (FiltrosProgramas) -> Unit = {},
+    onAplicarFiltros: () -> Unit = {},
+    onLimpiarFiltros: () -> Unit = {},
 ) {
     val colores = MaterialTheme.colorScheme
 
     Scaffold(
         modifier = modifier,
         containerColor = colores.surface,
-        topBar = { AppTopBar(titulo = "Voluntariado", onBackClick = onBackClick) },
-        bottomBar = { NavBar(selected = navSeleccionado, onSelect = onNavSelect) },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            AppTopBar(
+                titulo = "Voluntariado",
+                onBackClick = onBackClick,
+            )
+        },
+        bottomBar = {
+            NavBar(
+                selected = navSeleccionado,
+                onSelect = onNavSelect,
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
     ) { paddingInterno ->
         Column(
             modifier =
@@ -75,24 +93,34 @@ fun ProgramasPage(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 16.dp),
             )
+
             Text(
                 text = descripcion,
                 color = colores.inverseSurface,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
             )
+
             onMisVoluntariados?.let { alTocar ->
                 AppButton(
                     text = "Mis voluntariados",
                     onClick = alTocar,
                     variant = ButtonVariant.Outlined,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
                 )
             }
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            ) {
                 when (uiState) {
                     is ProgramasUiState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                        )
                     }
 
                     is ProgramasUiState.Empty -> {
@@ -109,8 +137,13 @@ fun ProgramasPage(
                             verticalArrangement = Arrangement.Center,
                         ) {
                             ErrorMessage(text = uiState.mensaje)
+
                             Spacer(modifier = Modifier.height(12.dp))
-                            AppButton(text = "Reintentar", onClick = onReintentar)
+
+                            AppButton(
+                                text = "Reintentar",
+                                onClick = onReintentar,
+                            )
                         }
                     }
 
@@ -119,7 +152,7 @@ fun ProgramasPage(
                             programas = uiState.programas,
                             onInscribirse = onInscribirse,
                             onCancelar = onCancelar,
-                            onVerDetalle = onVerDetalle, // HU36
+                            onVerDetalle = onVerDetalle,
                         )
                     }
                 }
@@ -137,14 +170,21 @@ private fun ProgramasPageSuccessPreview() {
                 ProgramasUiState.Success(
                     listOf(
                         programaUiDePrueba(
-                            "1",
-                            "Bazar de Donativos",
-                            "8/15 lugares ocupados · 7 disponibles",
-                            8f / 15f,
-                            "Inscribirme",
-                            true,
+                            id = "1",
+                            titulo = "Bazar de Donativos",
+                            textoCupo = "8/15 lugares ocupados · 7 disponibles",
+                            progresoCupo = 8f / 15f,
+                            textoBoton = "Inscribirme",
+                            botonHabilitado = true,
                         ),
-                        programaUiDePrueba("2", "Jornada de limpieza", "10/10 lugares ocupados · 0 disponibles", 1f, "Sin lugares", false),
+                        programaUiDePrueba(
+                            id = "2",
+                            titulo = "Jornada de limpieza",
+                            textoCupo = "10/10 lugares ocupados · 0 disponibles",
+                            progresoCupo = 1f,
+                            textoBoton = "Sin lugares",
+                            botonHabilitado = false,
+                        ),
                     ),
                 ),
             onReintentar = {},
@@ -173,7 +213,11 @@ private fun MisProgramasEmptyPreview() {
 @Composable
 private fun ProgramasPageEmptyPreview() {
     AndroidTheme {
-        ProgramasPage(uiState = ProgramasUiState.Empty, onReintentar = {}, onBackClick = {})
+        ProgramasPage(
+            uiState = ProgramasUiState.Empty,
+            onReintentar = {},
+            onBackClick = {},
+        )
     }
 }
 
@@ -182,7 +226,9 @@ private fun ProgramasPageEmptyPreview() {
 private fun ProgramasPageErrorPreview() {
     AndroidTheme {
         ProgramasPage(
-            uiState = ProgramasUiState.Error("No se pudieron cargar los programas"),
+            uiState = ProgramasUiState.Error(
+                "No se pudieron cargar los programas",
+            ),
             onReintentar = {},
             onBackClick = {},
         )
