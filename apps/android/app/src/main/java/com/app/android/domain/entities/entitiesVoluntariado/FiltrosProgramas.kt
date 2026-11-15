@@ -17,7 +17,8 @@ data class EroresFiltrosProgramas(
     val horaHasta: String? = null,
 ) {
     val hayErorres: Boolean
-        get() = fechaDesde != null ||
+        get() =
+            fechaDesde != null ||
                 fechaHasta != null ||
                 horaDesde != null ||
                 horaHasta != null
