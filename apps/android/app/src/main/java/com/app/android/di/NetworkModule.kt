@@ -119,10 +119,10 @@ object NetworkModule {
 
     // 4. Repositorio de Solicitudes.
     // Para volver al fake (sin backend): return SolicitudRepositoryFake()
+    // fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryFake()
     @Provides
     @Singleton
-    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryFake()
-    // fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)
+    fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)
 
     // Borrador de la solicitud (en memoria, compartido por las 6 pantallas).
     // @Singleton es obligatory: sin el, cada pantalla tendria su propio borrador vacio.
