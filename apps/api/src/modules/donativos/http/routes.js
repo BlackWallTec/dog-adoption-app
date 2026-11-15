@@ -3,6 +3,10 @@ import {
   obtenerDonativosPendientes,
   obtenerResumenDonativosPendientes,
 } from "./adminDonativos.controller.js";
+import {
+  obtenerDetalleSolicitudCfdiPendiente,
+  obtenerSolicitudesCfdiPendientes,
+} from "./adminSolicitudesCfdi.controller.js";
 import { TIPOS_COMPROBANTE, postDonativo } from "./donativoCliente.controller.js";
 import {
   TIPOS_CONSTANCIA,
@@ -49,4 +53,17 @@ router.get(
   verificarToken,
   requireRole(ROLES.ADMIN, ROLES.ROOT),
   obtenerDonativosPendientes,
+);
+
+router.get(
+  "/admin/solicitudes-cfdi",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  obtenerSolicitudesCfdiPendientes,
+);
+router.get(
+  "/admin/solicitudes-cfdi/:idSolicitud",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  obtenerDetalleSolicitudCfdiPendiente,
 );

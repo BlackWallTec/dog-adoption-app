@@ -8,6 +8,7 @@ const EXTENSIONES = {
   "image/jpeg": "jpg",
   "image/png": "png",
 };
+const URL_CONSTANCIA_EXPIRACION_SEGUNDOS = 300;
 
 // HU45: datos fiscales del donante
 // Todo vive en datos_confidenciales (una fila por usuario, la crea Perfiles)
@@ -71,6 +72,32 @@ class DatosFiscalesModel {
     }
 
     return ruta;
+  }
+
+  static async crearUrlFirmadaConstancia(idUsuario, ruta) {
+    if (!this.esRutaConstanciaValida(idUsuario, ruta)) {
+      throw new Error("La ruta de la constancia fiscal no es válida.");
+    }
+
+    const { data, error } = await supabaseAdmin.storage
+      .from(BUCKET_CONSTANCIAS)
+      .createSignedUrl(ruta, URL_CONSTANCIA_EXPIRACION_SEGUNDOS);
+
+    if (error) {
+      throw new Error(`Error al generar el acceso temporal a la constancia: ${error.message}`);
+    }
+    if (!data?.signedUrl) {
+      throw new Error("No se recibió una URL temporal para la constancia fiscal.");
+    }
+
+    return data.signedUrl;
+  }
+
+  static esRutaConstanciaValida(idUsuario, ruta) {
+    return (
+      typeof ruta === "string" &&
+      ["pdf", "jpg", "png"].some((extension) => ruta === `${idUsuario}/constancia.${extension}`)
+    );
   }
 }
 
