@@ -1,6 +1,7 @@
+import { rutaDe } from "../rutas.js";
+
 const API = "/api/voluntarios/programas";
-const URL_VOLUNTARIADO =
-  window.QARINO_VOLUNTARIADO_URL || "/HTML/htmlVoluntariado/adminVoluntariado.html";
+const URL_VOLUNTARIADO = window.QARINO_VOLUNTARIADO_URL || rutaDe("voluntariado");
 
 const formulario = document.getElementById("programaForm");
 const mensajeForm = document.getElementById("alerta");
