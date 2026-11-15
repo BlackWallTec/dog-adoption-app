@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const lanzarError = (contexto, error) => {
   const err = new Error(`${contexto}: ${error.message}`);
@@ -8,7 +8,7 @@ const lanzarError = (contexto, error) => {
 
 // Datos del programa necesarios para validar la inscripción
 export const getProgramaInscripcionModel = async (idPrograma) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("programa")
     .select("id_programa, fecha_inicio, cupo_maximo, estado_del_programa")
     .eq("id_programa", idPrograma)
@@ -20,7 +20,7 @@ export const getProgramaInscripcionModel = async (idPrograma) => {
 
 // personas ya inscritas en el programa
 export const contarInscritosModel = async (idPrograma) => {
-  const { count, error } = await supabaseAdmin
+  const { count, error } = await supabase
     .from("se_inscribe")
     .select("id_programa", { count: "exact", head: true })
     .eq("id_programa", idPrograma);
@@ -31,7 +31,7 @@ export const contarInscritosModel = async (idPrograma) => {
 
 // usuario ya está inscrito en este programa?
 export const existeInscripcionModel = async (idPrograma, idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_programa", idPrograma)
@@ -44,7 +44,7 @@ export const existeInscripcionModel = async (idPrograma, idUsuario) => {
 
 // Crear la inscripción y regresar la fila creada
 export const crearInscripcionModel = async (idPrograma, idUsuario, fechaInscripcion) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .insert({
       id_usuario: idUsuario,
@@ -74,7 +74,7 @@ export const getInscritosByProgramaModel = async (idPrograma) => {
 
 // Ids de los programas en los que el usuario ya está inscrito (para el botón "Inscrito" del catálogo)
 export const getIdsProgramasInscritosModel = async (idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_usuario", idUsuario);
