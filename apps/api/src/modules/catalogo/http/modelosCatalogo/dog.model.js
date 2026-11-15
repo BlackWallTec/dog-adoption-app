@@ -8,8 +8,47 @@ const FICHA_ADMIN = `
 `;
 
 class DogModel {
-  static async getDogs() {
+  // HU24: ids de los perros que tienen TODAS las características pedidas.
+  // Nota: PostgREST devuelve máximo 1000 filas por consulta, de sobra para este catálogo.
+  static async getDogIdsConTodosLosCaracteres(idsCaracter) {
     const { data, error } = await supabase
+      .from("perro_tiene_caracter")
+      .select("id_perro, id_caracter")
+      .in("id_caracter", idsCaracter);
+
+    if (error) {
+      throw Object.assign(new Error(`Error en la consulta de perros: ${error.message}`), {
+        code: error.code,
+      });
+    }
+
+    const porPerro = new Map();
+    for (const fila of data) {
+      if (!porPerro.has(fila.id_perro)) porPerro.set(fila.id_perro, new Set());
+      porPerro.get(fila.id_perro).add(String(fila.id_caracter));
+    }
+
+    return [...porPerro]
+      .filter(([, caracteres]) => caracteres.size === idsCaracter.length)
+      .map(([idPerro]) => idPerro);
+  }
+
+  // HU24: filtros opcionales { sexo, tamano, raza, edad: { min, max }, caracteres }.
+  // Sin filtros devuelve exactamente lo mismo que antes.
+  static async getDogs(filtros = {}) {
+    const { sexo, tamano, raza, edad, caracteres } = filtros;
+
+    // Si se filtra por una relación, tiene que ser obligatoria (!inner); si no, queda igual que antes.
+    const relRaza = raza ? "raza!inner" : "raza";
+    const relTamano = tamano ? "tamano!inner" : "tamano";
+
+    let idsConCaracteres;
+    if (caracteres?.length) {
+      idsConCaracteres = await DogModel.getDogIdsConTodosLosCaracteres(caracteres);
+      if (idsConCaracteres.length === 0) return [];
+    }
+
+    let consulta = supabase
       .from("perro")
       .select(`
         id_perro,
@@ -22,11 +61,11 @@ class DogModel {
         vacunado,
         estado,
         fecha_ingreso,
-        raza (
+        ${relRaza} (
             id_raza,
             nombre
         ),
-        tamano (
+        ${relTamano} (
             id_tamano,
             nombre
         ),
@@ -37,11 +76,23 @@ class DogModel {
             fecha_subida
         )
     `)
-      .eq("activo", true)
-      .order("fecha_ingreso", { ascending: false });
+      .eq("activo", true);
+
+    if (sexo) consulta = consulta.eq("sexo", sexo);
+    if (tamano) consulta = consulta.eq("tamano.id_tamano", tamano);
+    if (raza) consulta = consulta.eq("raza.id_raza", raza);
+    if (edad) {
+      consulta = consulta.gte("edad_aprox", edad.min);
+      if (edad.max !== null) consulta = consulta.lte("edad_aprox", edad.max);
+    }
+    if (idsConCaracteres) consulta = consulta.in("id_perro", idsConCaracteres);
+
+    const { data, error } = await consulta.order("fecha_ingreso", { ascending: false });
 
     if (error) {
-      throw new Error(`Error en la consulta de perros: ${error.message}`);
+      throw Object.assign(new Error(`Error en la consulta de perros: ${error.message}`), {
+        code: error.code,
+      });
     }
 
     return data;

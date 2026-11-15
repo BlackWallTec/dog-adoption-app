@@ -1,8 +1,8 @@
+import { rutaDe } from "../rutas.js";
 import { obtenerProgramaAdmin, editarProgramaAdmin } from "./programaAdmin.api.js";
 
 const API = "/api/voluntarios/programas";
-const URL_VOLUNTARIADO =
-  window.QARINO_VOLUNTARIADO_URL || "/HTML/htmlVoluntariado/adminVoluntariado.html";
+const URL_VOLUNTARIADO = window.QARINO_VOLUNTARIADO_URL || rutaDe("voluntariado");
 
 // HU38 con ?id=<id_programa> el formulario funciona en modo edicion
 const idEdicion = new URLSearchParams(window.location.search).get("id");

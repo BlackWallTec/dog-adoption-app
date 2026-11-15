@@ -58,7 +58,13 @@ enum class EstadoTarjeta(
     val colorContenido: Color,
     val editable: Boolean,
 ) {
-    EN_REVISION("En revisión", Icons.Outlined.Schedule, SecondaryContainer, Secondary, true),
+    EN_REVISION(
+        "En revisión",
+        Icons.Outlined.Schedule,
+        SecondaryContainer,
+        Secondary,
+        editable = false,
+    ),
     DOCUMENTO_RECHAZADO(
         "Documento rechazado",
         Icons.Outlined.WarningAmber,

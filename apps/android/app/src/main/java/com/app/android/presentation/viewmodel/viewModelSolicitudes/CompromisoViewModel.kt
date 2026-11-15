@@ -11,7 +11,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
-// Maquina de estados 1: carga lo que ya habia guardado al abrir la pantalla
+// Estado SOLO de la pantalla: no es dato de la solicitud (no va al borrador ni a la BD).
+data class Acceptances(
+    val acceptsReturn: Boolean = false,
+    val petSpending: Boolean = false,
+    val petFollowing: Boolean = false,
+) {
+    val allAccepted: Boolean get() = acceptsReturn && petSpending && petFollowing
+}
+
+// Maquina de estados: carga lo que ya habia guardado al abrir la pantalla
 
 // Estos estados los tengo que separar luego en un archivo diferente para seguir correctamente la estructura MVVM
 // Lo mismo con los exceptions
@@ -40,6 +49,9 @@ class CompromisoViewModel
         private val _uiState = MutableStateFlow<CompromisoUiState>(CompromisoUiState.Loading)
         val uiState: StateFlow<CompromisoUiState> = _uiState
 
+        private val _acceptances = MutableStateFlow(Acceptances())
+        val acceptances: StateFlow<Acceptances> = _acceptances
+
         private val _listo = MutableStateFlow(false)
         val listo: StateFlow<Boolean> = _listo
 
@@ -59,9 +71,14 @@ class CompromisoViewModel
             _uiState.value = actual.copy(datos = nuevos, errores = CompromisoErrors())
         }
 
+        fun onAcceptancesChange(nuevos: Acceptances) {
+            _acceptances.value = nuevos
+        }
+
         // Guardar (valida + guarda; si hay errores no navega)
         fun onContinuar() {
             val actual = _uiState.value as? CompromisoUiState.Success ?: return
+            if (!_acceptances.value.allAccepted) return // el boton esta desactivado
             val errores = guardarCompromisoUseCase(actual.datos)
             if (errores.hasErrors) {
                 // Se muestan los errores en los campos y no se navega

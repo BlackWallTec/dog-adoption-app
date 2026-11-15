@@ -1,10 +1,54 @@
-import { defineConfig } from "vite-plus"; // o 'vite', según lo que ya importes
-import { resolve } from "node:path";
+import { copyFileSync, existsSync, mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { defineConfig } from "vite-plus"; // o 'vite', según lo que ya importes
+import { PANTALLAS, archivoDeRuta } from "./JS/rutas.js";
 
 const r = (p) => resolve(fileURLToPath(new URL(".", import.meta.url)), p);
 
+function reescribirRutas(req, _res, next) {
+  const destino = archivoDeRuta(req.url ?? "");
+  if (!destino) {
+    next();
+    return;
+  }
+
+  const archivo = destino.split("?")[0].replace(/^\//, "");
+  if (!existsSync(r(archivo))) {
+    next();
+    return;
+  }
+
+  req.url = destino;
+  next();
+}
+
+function pluginRutas() {
+  return {
+    name: "rutas-admin",
+    configureServer(server) {
+      server.middlewares.use(reescribirRutas);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(reescribirRutas);
+    },
+    writeBundle(outputOptions) {
+      const dir = outputOptions.dir ?? r("dist");
+      for (const pantalla of PANTALLAS) {
+        if (!pantalla.archivo) continue;
+        const origen = resolve(dir, pantalla.archivo.replace(/^\//, ""));
+        if (!existsSync(origen)) continue;
+        const destino = resolve(dir, pantalla.ruta.replace(/^\//, ""), "index.html");
+        mkdirSync(dirname(destino), { recursive: true });
+        copyFileSync(origen, destino);
+      }
+    },
+  };
+}
+
 export default defineConfig({
+  appType: "mpa",
+  plugins: [pluginRutas()],
   build: {
     rollupOptions: {
       input: {

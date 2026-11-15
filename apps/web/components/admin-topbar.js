@@ -1,8 +1,12 @@
+import { tituloDe } from "../JS/rutas.js";
+
 class AdminTopbar extends HTMLElement {
   connectedCallback() {
+    const titulo = tituloDe(window.location.pathname);
+
     this.innerHTML = `
         <header class="topbar">
-        <h2 class="topbar-title">Perros</h2>
+        <h2 class="topbar-title">${titulo}</h2>
 
         <div class="topbar-right">
           <div class="global-search">
