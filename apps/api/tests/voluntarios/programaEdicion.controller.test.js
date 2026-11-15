@@ -411,6 +411,36 @@ describe("editarPrograma (HU38)", () => {
       expect.objectContaining({ success: false, code: "ERROR_INTERNO" }),
     );
   });
+  it("permite una edición parcial conservando los demás campos", async () => {
+    const res = crearRespuesta();
+
+    await editarPrograma(crearReq({ body: { nombre: "Solo cambia el nombre" } }), res);
+
+    expect(res.status).not.toHaveBeenCalled();
+    const [, datosGuardados] = mocks.actualizar.mock.calls[0];
+    expect(datosGuardados).toMatchObject({
+      nombre: "Solo cambia el nombre",
+      tipo: "Limpieza",
+      fechaInicio: "2030-11-14",
+      horaInicio: "09:00",
+      fechaFin: "2030-11-14",
+      horaFin: "12:00",
+      ubicacion: "Qariño Animal",
+      cupoMaximo: 15,
+    });
+  });
+
+  it("en una edición parcial sigue validando el valor enviado", async () => {
+    const res = crearRespuesta();
+
+    await editarPrograma(crearReq({ body: { cupoMaximo: 0 } }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "VALIDACION", campo: "cupoMaximo" }),
+    );
+    expect(mocks.actualizar).not.toHaveBeenCalled();
+  });
 });
 
 describe("cancelarPrograma (HU38)", () => {

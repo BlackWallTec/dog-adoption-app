@@ -34,6 +34,19 @@ const errorInterno = (res, error) => {
 const inicioDe = (p) => combinarFechaHora(p.fechaInicio, p.horaInicio);
 const finDe = (p) => combinarFechaHora(p.fechaFin, p.horaFin);
 
+// Campos editables del programa actual, para completar ediciones parciales
+const camposActuales = (programa) => ({
+  nombre: programa.nombre,
+  tipo: programa.tipo,
+  descripcion: programa.descripcion,
+  ubicacion: programa.ubicacion,
+  fechaInicio: programa.fechaInicio,
+  horaInicio: programa.horaInicio,
+  fechaFin: programa.fechaFin,
+  horaFin: programa.horaFin,
+  cupoMaximo: programa.cupoMaximo,
+});
+
 export const esEditable = (programa, ahora) =>
   programa.estado !== "Cancelado" && finDe(programa) > ahora;
 
@@ -89,7 +102,8 @@ export async function editarPrograma(req, res) {
       );
     }
 
-    const campos = tomarCamposEditables(req.body);
+    // Lo que no venga en el cuerpo conserva su valor actual, y se valida el programa completo
+    const campos = { ...camposActuales(actual), ...tomarCamposEditables(req.body) };
     // Si no cambia el inicio, se permite conservarlo aunque ya haya pasado (programa ya iniciado)
     const cambiaInicio =
       combinarFechaHora(campos.fechaInicio, campos.horaInicio) !== inicioDe(actual);
