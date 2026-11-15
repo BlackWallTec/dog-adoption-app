@@ -195,11 +195,14 @@ function mostrarMensajeGuardado() {
   if (parametros.get("guardado") !== "1") return;
 
   const avisar = Number(parametros.get("avisar") ?? 0);
-  mostrarExito(
-    avisar > 0
-      ? `Cambios guardados. Hay ${avisar} inscritos, avísales del cambio con esta lista.`
-      : "Cambios guardados.",
-  );
+
+  let texto = "Cambios guardados.";
+  if (avisar === 1) {
+    texto = "Cambios guardados. Hay 1 persona inscrita, avísale del cambio con esta lista.";
+  } else if (avisar > 1) {
+    texto = `Cambios guardados. Hay ${avisar} personas inscritas, avísales del cambio con esta lista.`;
+  }
+  mostrarExito(texto);
 
   // Se limpia la URL para que el mensaje no vuelva a salir al recargar
   window.history.replaceState(null, "", `?id=${encodeURIComponent(idPrograma)}`);
