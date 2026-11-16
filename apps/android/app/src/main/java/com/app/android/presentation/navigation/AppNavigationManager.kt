@@ -23,8 +23,10 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
+import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
 import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
@@ -328,6 +330,40 @@ fun AppNavigation() {
                     },
                 )
             }
+            CompromisoRoute(
+                onBack = { navController.navigateUp() },
+                onIrADocumentoss = {
+                    // navegar a documentos
+                    navController.navigate(Screen.Documentos.ruta)
+                },
+            )
+        }
+        // Paso 5 - Documentos
+        composable(route = Screen.Documentos.ruta) {
+            UploadDocumentsRoute(
+                onBackClick = { navController.navigateUp() },
+                onContinuarClick = {
+                    navController.navigate(Screen.Confirmar.ruta)
+                },
+            )
+        }
+
+        // Paso 6 - Confirmar
+        composable(route = Screen.Confirmar.ruta) {
+            ConfirmarRoute(
+                onBack = { navController.navigateUp() },
+                onEditarSeccion = { seccion ->
+                    when (seccion) {
+                        SeccionSolicitud.DATOS_GENERALES -> navController.navigate(Screen.DatosGenerales.ruta)
+                        SeccionSolicitud.TU_HOGAR -> navController.navigate(Screen.TuHogar.ruta)
+                        SeccionSolicitud.COMPROMISO -> navController.navigate(Screen.Compromiso.ruta)
+                        SeccionSolicitud.DOCUMENTOS -> navController.navigate(Screen.Documentos.ruta)
+                    }
+                },
+                onEnviarExitoso = {
+                    // Acción al enviar solicitud exitosamente
+                },
+            )
         }
 
         // SOLICITUDES - HU04: Mis solicitudes (solo lectura)

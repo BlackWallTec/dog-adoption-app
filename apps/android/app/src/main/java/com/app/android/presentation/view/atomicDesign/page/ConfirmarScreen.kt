@@ -82,7 +82,24 @@ data class ConfirmarSolicitudUiState(
     val enviando: Boolean = false,
 )
 
-// ---------- Screen ----------
+// ---------- Route & Screen ----------
+@Composable
+fun ConfirmarRoute(
+    onBack: () -> Unit,
+    onEditarSeccion: (SeccionSolicitud) -> Unit,
+    onEnviarExitoso: () -> Unit = {},
+) {
+    var aceptaTerminos by remember { mutableStateOf(false) }
+
+    ConfirmarSolicitudScreen(
+        state = previewState,
+        aceptaTerminos = aceptaTerminos,
+        onAceptaTerminosChange = { aceptaTerminos = it },
+        onBackClick = onBack,
+        onEditarClick = onEditarSeccion,
+        onEnviarClick = onEnviarExitoso,
+    )
+}
 
 // PAGE: paso 6 de 6 (Confirmar). Sin estado propio: todo entra por parametros.
 @Composable
@@ -125,7 +142,7 @@ fun ConfirmarSolicitudScreen(
                 Text(
                     text =
                         "Revisa tus datos antes de enviar. " +
-                                "¡Estás a un paso de conocer a ${state.mascota.nombre}!",
+                            "¡Estás a un paso de conocer a ${state.mascota.nombre}!",
                     color = InverseSurface,
                     fontSize = 16.sp,
                 )
