@@ -59,6 +59,8 @@ class InscripcionDatosTest {
             api =
                 object : InscripcionApi {
                     override suspend fun inscribirse(idPrograma: String) = accion(idPrograma)
+
+                    override suspend fun cancelarInscripcion(idPrograma: String) = accion(idPrograma)
                 },
             gson = gson,
         )

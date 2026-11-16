@@ -19,4 +19,10 @@ class InscripcionRepositoryImpl @Inject constructor(
             val respuesta = api.inscribirse(idPrograma)
             checkNotNull(respuesta.data) { "La respuesta no trae data" }.toDomain()
         }
+
+    override suspend fun cancelarInscripcion(idPrograma: String): Resultado<Inscripcion> =
+        safeApiCall(gson) {
+            val respuesta = api.cancelarInscripcion(idPrograma)
+            checkNotNull(respuesta.data) { "La respuesta no trae data" }.toDomain()
+        }
 }

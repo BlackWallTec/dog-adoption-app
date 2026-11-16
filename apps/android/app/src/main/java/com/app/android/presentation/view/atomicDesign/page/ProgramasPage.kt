@@ -43,6 +43,7 @@ fun ProgramasPage(
     onReintentar: () -> Unit,
     onBackClick: () -> Unit,
     onInscribirse: (Programa) -> Unit = {},
+    onCancelar: (Programa) -> Unit = {},
     modifier: Modifier = Modifier,
     navSeleccionado: Int = 1,
     onNavSelect: (Int) -> Unit = {},
@@ -107,6 +108,7 @@ fun ProgramasPage(
                         ListaProgramas(
                             programas = uiState.programas,
                             onInscribirse = onInscribirse,
+                            onCancelar = onCancelar,
                         )
                     }
                 }
