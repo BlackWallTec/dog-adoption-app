@@ -45,12 +45,12 @@ fun ConfirmacionInscripcionRoute(
 
     VolunteeringConfirmationScreen(
         tipoBadge = programa.tipo,
-        tituloPrograma = programa.nombre,
-        fecha = programa.fechaTexto(),
-        horario = programa.horarioTexto(),
-        ubicacion = programa.ubicacionTexto(),
-        textoCupo = "",
-        progresoCupo = 0f,
+        tituloPrograma = programa.titulo,
+        fecha = programa.fecha,
+        horario = programa.horario,
+        ubicacion = programa.ubicacion,
+        textoCupo = programa.textoCupo,
+        progresoCupo = programa.progresoCupo,
         onBackClick = onBack,
         onExplorarProgramasClick = onExplorarProgramas,
         onNavSelect = onNavSelect,
@@ -62,10 +62,10 @@ fun ConfirmacionInscripcionRoute(
     if (confirmandoCancelacion) {
         ConfirmActionDialog(
             titulo = "¿Cancelar tu inscripción?",
-            descripcion = "Si cancelas, liberarás tu lugar en ${programa.nombre}. ¿Quieres continuar?",
+            descripcion = "Si cancelas, liberarás tu lugar en ${programa.titulo}. ¿Quieres continuar?",
             textoConfirmar = "Sí, cancelar",
             onConfirmar = {
-                viewModel.cancelarInscripcion(programa)
+                viewModel.cancelarInscripcion(programa.id)
                 confirmandoCancelacion = false
             },
             onDismiss = { confirmandoCancelacion = false },

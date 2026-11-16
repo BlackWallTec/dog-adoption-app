@@ -1,14 +1,32 @@
 import programModel from "./modelosVoluntariado/program.model.js";
-import { getIdsProgramasInscritosModel } from "./modelosVoluntariado/inscripcion.model.js";
+import {
+  getIdsProgramasInscritosModel,
+  contarInscritosPorProgramasModel,
+} from "./modelosVoluntariado/inscripcion.model.js";
 
 export const getProgramasVigentes = async (req, res) => {
   try {
     const programas = await programModel.getCurrentPrograms();
     // TEMPORAL: mismo usuario que inscribirse(). Cuando llegue el login, cambiar ambos juntos.
     const idUsuario = process.env.DEV_USUARIO_ID;
-    const inscritos = idUsuario ? await getIdsProgramasInscritosModel(idUsuario) : new Set();
+    // Solo los programas con límite necesitan conteo
+    const idsConLimite = programas.filter((p) => p.cupo_maximo != null).map((p) => p.id_programa);
+
+    const [inscritos, ocupadosPorPrograma] = await Promise.all([
+      idUsuario ? getIdsProgramasInscritosModel(idUsuario) : new Set(),
+      contarInscritosPorProgramasModel(idsConLimite),
+    ]);
+
     const data = programas.map((programa) => ({
       ...programa,
+      // null = sin límite, igual que cupo_maximo
+      cupo_disponible:
+        programa.cupo_maximo == null
+          ? null
+          : Math.max(
+              programa.cupo_maximo - (ocupadosPorPrograma.get(programa.id_programa) ?? 0),
+              0,
+            ),
       usuario_inscrito: inscritos.has(programa.id_programa),
     }));
 

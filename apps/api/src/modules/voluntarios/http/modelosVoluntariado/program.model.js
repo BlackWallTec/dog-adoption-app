@@ -17,7 +17,8 @@ class ProgramModel {
         nombre,
         estado_del_programa,
         fecha_inicio,
-        fecha_fin
+        fecha_fin,
+        cupo_maximo
       `)
       .gte("fecha_fin", ahora)
       .order("fecha_inicio", { ascending: true });

@@ -1,17 +1,25 @@
 import {
   getProgramaInscripcionModel,
-  contarInscritosModel,
-  existeInscripcionModel,
-  crearInscripcionModel,
   cancelarInscripcionModel,
+  inscribirEnProgramaModel,
 } from "./modelosVoluntariado/inscripcion.model.js";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ESTADO_DISPONIBLE = "disponible";
 
 // Hora actual de México en el mismo formato que guarda la BD: "2026-10-29T19:37:00"
+// La inscripción ya valida la fecha en SQL; la cancelación (HU37) la sigue validando aquí.
 const ahoraEnMexico = () =>
   new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" }).replace(" ", "T");
+
+// Respuesta HTTP para cada código que regresa inscribir_en_programa.
+// Los mensajes son los mismos que ya mostraba la app.
+const RESPUESTAS_POR_CODIGO = {
+  PROGRAMA_NO_ENCONTRADO: { status: 404, message: "No encontramos este programa." },
+  PROGRAMA_NO_DISPONIBLE: { status: 409, message: "El programa no está abierto a inscripciones." },
+  PROGRAMA_INICIADO: { status: 409, message: "El programa ya comenzó." },
+  YA_INSCRITO: { status: 409, message: "Ya estás inscrito en este programa." },
+  SIN_CUPO: { status: 409, message: "El programa ya no tiene lugares." },
+};
 
 const responderError = (res, status, code, message) =>
   res.status(status).json({ sucess: false, code, message });
@@ -25,55 +33,30 @@ export const inscribirse = async (req, res) => {
     return responderError(res, 401, "NO_AUTENTICADO", "No hay un usuario configurado.");
   }
 
+  // Un id que no es UUID haría fallar a Postgres; se responde 404 antes de llamar a la BD
   if (!UUID_REGEX.test(idPrograma)) {
     return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");
   }
 
   try {
-    // Regla 1: el programa debe existir
-    const programa = await getProgramaInscripcionModel(idPrograma);
-    if (!programa) {
-      return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");
+    // Valida las reglas 1-5 e inscribe en una sola transacción (ver inscribir_en_programa)
+    const resultado = await inscribirEnProgramaModel(idPrograma, idUsuario);
+
+    if (resultado?.codigo === "OK") {
+      const { id_programa, fecha_inscripcion, estado } = resultado;
+      return res
+        .status(201)
+        .json({ sucess: true, data: { id_programa, fecha_inscripcion, estado } });
     }
 
-    // Regla 2: debe estar abierto a inscripciones. Sin fecha de inicio no se puede aplicar la regla 3.
-    const estado = programa.estado_del_programa?.trim().toLowerCase();
-    if (estado !== ESTADO_DISPONIBLE || programa.fecha_inicio == null) {
-      return responderError(
-        res,
-        409,
-        "PROGRAMA_NO_DISPONIBLE",
-        "El programa no está abierto a inscripciones.",
-      );
+    const respuesta = RESPUESTAS_POR_CODIGO[resultado?.codigo];
+    if (respuesta) {
+      return responderError(res, respuesta.status, resultado.codigo, respuesta.message);
     }
 
-    // Regla 3: no debe haber iniciado
-    const ahora = ahoraEnMexico();
-    if (programa.fecha_inicio <= ahora) {
-      return responderError(res, 409, "PROGRAMA_INICIADO", "El programa ya comenzó.");
-    }
-
-    // Regla 4: el usuario no debe estar inscrito ya
-    if (await existeInscripcionModel(idPrograma, idUsuario)) {
-      return responderError(res, 409, "YA_INSCRITO", "Ya estás inscrito en este programa.");
-    }
-
-    // Regla 5: debe haber cupo (null = sin límite)
-    if (programa.cupo_maximo != null) {
-      const inscritos = await contarInscritosModel(idPrograma);
-      if (inscritos >= programa.cupo_maximo) {
-        return responderError(res, 409, "SIN_CUPO", "El programa ya no tiene lugares.");
-      }
-    }
-
-    // Todo bien: crear la inscripción
-    const inscripcion = await crearInscripcionModel(idPrograma, idUsuario, ahora);
-    return res.status(201).json({ sucess: true, data: inscripcion });
+    // Código desconocido: la función SQL cambió y este mapa no
+    throw new Error(`Código inesperado de inscribir_en_programa: ${resultado?.codigo}`);
   } catch (error) {
-    // 23505: la llave primaria (id_usuario, id_programa) ya existe → doble toque simultáneo
-    if (error.code === "23505") {
-      return responderError(res, 409, "YA_INSCRITO", "Ya estás inscrito en este programa.");
-    }
     // 23503: llave foránea inválida → el DEV_USUARIO_ID no existe en la tabla usuario
     if (error.code === "23503") {
       return responderError(res, 401, "NO_AUTENTICADO", "El usuario configurado no existe.");
