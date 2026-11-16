@@ -73,8 +73,11 @@ val TODOS_LOS_ERRORES: List<VoluntariadoError> =
 class RepositorioFalso(
     private val respuesta: Resultado<Inscripcion> = Resultado.Exito(INSCRIPCION_OK),
     private val compuerta: CompletableDeferred<Unit>? = null,
+    // HU37: lo que responde al cancelar (por defecto, éxito)
+    private val respuestaCancelacion: Resultado<Inscripcion> = Resultado.Exito(INSCRIPCION_OK),
 ) : InscripcionRepository {
     val llamadas = mutableListOf<String>()
+    val cancelaciones = mutableListOf<String>()
 
     override suspend fun inscribirse(idPrograma: String): Resultado<Inscripcion> {
         llamadas.add(idPrograma)
@@ -83,6 +86,8 @@ class RepositorioFalso(
     }
 
     override suspend fun cancelarInscripcion(idPrograma: String): Resultado<Inscripcion> {
-        TODO("Not yet implemented") // or return a default Resultado.Exito(...)
+        cancelaciones.add(idPrograma)
+        compuerta?.await()
+        return respuestaCancelacion
     }
 }
