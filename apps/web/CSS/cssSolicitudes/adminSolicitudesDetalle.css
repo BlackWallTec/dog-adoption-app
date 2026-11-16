@@ -1,0 +1,255 @@
+/* HU05: Pop-up de detalle de solicitud */
+
+.detalle-modal {
+  margin: auto;
+  width: min(920px, 92vw);
+  max-height: 90vh;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--font-body);
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.detalle-modal[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.detalle-modal::backdrop {
+  background: rgba(30, 28, 24, 0.45);
+}
+
+.detalle-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.detalle-titulo {
+  margin: 0;
+  font: 800 24px var(--font-headline);
+}
+
+.detalle-subtitulo {
+  margin: 4px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.detalle-header-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detalle-cerrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+
+.detalle-cerrar:hover {
+  background: var(--md-sys-color-outline-variant);
+}
+
+.detalle-cerrar:focus-visible {
+  outline: 2px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+.detalle-contenido {
+  overflow-y: auto;
+  padding: 20px 28px 28px;
+}
+
+.detalle-expediente {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 22px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  background: #fff;
+}
+
+/* --- Perro --- */
+.detalle-perro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--md-sys-color-surface-container);
+}
+
+.detalle-perro-foto {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.detalle-perro-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.detalle-perro-nombre {
+  font: 800 18px var(--font-headline);
+}
+
+.detalle-chip {
+  border-radius: 14px;
+  padding: 5px 12px;
+  background: #e4f3e8;
+  color: #26734d;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* --- Adoptante --- */
+.detalle-adoptante {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+.detalle-nombre {
+  margin: 0 0 6px;
+  font: 800 18px var(--font-headline);
+}
+
+.detalle-domicilio p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+/* --- Respuestas --- */
+.detalle-seccion-titulo {
+  margin: 0 0 6px;
+  font: 800 16px var(--font-headline);
+}
+
+.detalle-subseccion {
+  margin: 14px 0 8px;
+  color: var(--md-sys-color-secondary);
+  font: 700 13px var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.detalle-respuestas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px 28px;
+  margin: 0;
+}
+
+.detalle-respuesta dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.detalle-etiqueta {
+  display: block;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+}
+
+.detalle-muted {
+  margin: 2px 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+}
+
+.detalle-sin-respuesta {
+  color: var(--md-sys-color-on-surface-variant);
+  font-style: italic;
+}
+
+/* --- Documentos --- */
+.detalle-seccion-encabezado {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.detalle-documentos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.detalle-documento {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+}
+
+.detalle-documento-icono {
+  color: var(--md-sys-color-secondary);
+}
+
+.detalle-documento-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.detalle-documento-info .detalle-muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detalle-nota {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+}
+
+/* --- Cargando / error --- */
+.detalle-mensaje {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* El botón "Ver detalle" ahora es <button>: que se vea como antes */
+button.detail-button {
+  cursor: pointer;
+}
+
+/* Pantallas angostas: todo en una columna */
+@media (max-width: 720px) {
+  .detalle-adoptante,
+  .detalle-respuestas,
+  .detalle-documentos {
+    grid-template-columns: 1fr;
+  }
+}

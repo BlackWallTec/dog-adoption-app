@@ -7,6 +7,7 @@ import {
   pluralizeSolicitud,
 } from "./adminSolicitudes.utils.js";
 import { getMockDogs, getMockResponse } from "./adminSolicitudes.mock.js";
+import { abrirDetalle } from "./adminSolicitudes.detalle.js";
 
 const API_URL = "/api/solicitudes/admin/solicitudes";
 const DOGS_API_URL = "/api/catalogo/admin/perros";
@@ -137,10 +138,11 @@ function renderRows(rows) {
     badge.textContent = estadoLabel(row.estado);
     statusCell.append(badge);
     const actionCell = document.createElement("td");
-    const detail = document.createElement("a");
+    const detail = document.createElement("button");
+    detail.type = "button";
     detail.className = "detail-button";
-    detail.href = `/HTML/htmlSolicitudes/adminSolicitudDetalle.html?id=${encodeURIComponent(row.id)}`;
     detail.textContent = "Ver detalle";
+    detail.addEventListener("click", () => abrirDetalle(row.id)); // HU05: abre el pop-up del detalle
     actionCell.append(detail);
     tableRow.append(folioCell, adopterCell, dogCell, dateCell, statusCell, actionCell);
     elements.body.append(tableRow);
