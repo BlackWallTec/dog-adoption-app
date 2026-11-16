@@ -13,6 +13,7 @@
     />
     <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
     <link rel="stylesheet" href="../../CSS/cssSolicitudes/adminSolicitudes.css" />
+    <link rel="stylesheet" href="../../CSS/cssSolicitudes/adminSolicitudesDetalle.css" />
     <script type="module" src="../../components/admin-sidebar.js"></script>
     <script type="module" src="../../components/admin-topbar.js"></script>
   </head>
@@ -89,6 +90,27 @@
         </main>
       </div>
     </div>
+    <!-- HU05: Pop-up de detalle de solicitud -->
+    <dialog id="modal-detalle" class="detalle-modal" aria-labelledby="detalle-titulo">
+      <header class="detalle-header">
+        <div>
+          <h2 id="detalle-titulo" class="detalle-titulo">Solicitud</h2>
+          <p id="detalle-subtitulo" class="detalle-subtitulo"></p>
+        </div>
+        <div class="detalle-header-acciones">
+          <span id="detalle-estado" class="badge-estado"></span>
+          <button
+            type="button"
+            id="detalle-cerrar"
+            class="detalle-cerrar"
+            aria-label="Cerrar detalle"
+          >
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+      </header>
+      <div id="detalle-contenido" class="detalle-contenido"></div>
+    </dialog>
     <script type="module" src="../../JS/jsSolicitudes/adminSolicitudes.view.js"></script>
   </body>
 </html>
