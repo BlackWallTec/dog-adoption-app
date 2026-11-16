@@ -1,6 +1,5 @@
 package com.app.android.data.dtos.dtosPerfiles
 
-import com.app.android.domain.entities.entitiesPerfiles.CodigoError
 import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.entities.entitiesPerfiles.Usuario
@@ -29,7 +28,7 @@ data class UserDTO(
 )
 
 private fun respuestaInvalida(): Nothing =
-    throw ErrorApi(CodigoError.RESPUESTA_INVALIDA)
+    throw ErrorApi("No pudimos interpretar la respuesta del servidor.")
 
 // Receptor nullable: sirve también para RegisterResponseDTO.user y MeResponseDTO.user.
 // Solo valida la forma de la respuesta; la regla "solo Cliente" vive en LoginUseCase.

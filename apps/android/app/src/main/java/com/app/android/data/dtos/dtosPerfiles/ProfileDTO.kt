@@ -1,6 +1,5 @@
 package com.app.android.data.dtos.dtosPerfiles
 
-import com.app.android.domain.entities.entitiesPerfiles.CodigoError
 import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.entities.entitiesPerfiles.Perfil
 import com.google.gson.annotations.SerializedName
@@ -31,4 +30,4 @@ fun ProfileResponseDTO.toDomain(): Perfil = Perfil(
 )
 
 fun ProfileEnvelopeDTO.toDomain(): Perfil =
-    (profile ?: throw ErrorApi(CodigoError.RESPUESTA_INVALIDA)).toDomain()
+    (profile ?: throw ErrorApi("No pudimos interpretar la respuesta del servidor.")).toDomain()

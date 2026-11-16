@@ -1,7 +1,6 @@
 package com.app.android.data.dtos.dtosPerfiles
 
 import com.app.android.domain.entities.entitiesPerfiles.Registro
-import com.app.android.domain.entities.entitiesPerfiles.limpiarTelefono
 import com.google.gson.annotations.SerializedName
 
 data class RegisterRequestDTO(
@@ -35,5 +34,5 @@ fun Registro.toRequest() = RegisterRequestDTO(
     contrasena = contrasena,
     confirmContrasena = confirmContrasena,
     correo = correo.trim().lowercase(),
-    telefono = limpiarTelefono(telefono),
+    telefono = telefono.trim().removePrefix("+"),
 )

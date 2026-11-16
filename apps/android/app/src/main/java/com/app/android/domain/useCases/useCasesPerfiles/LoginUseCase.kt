@@ -1,29 +1,21 @@
 package com.app.android.domain.useCases.useCasesPerfiles
 
-import com.app.android.domain.entities.entitiesPerfiles.CodigoError
 import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
 import javax.inject.Inject
 
-class LoginUseCase @Inject constructor(
-    private val repoInt: PerfilesRepositoryInt,
-) {
-    suspend operator fun invoke(correo: String, contrasena: String): Sesion {
-        require(correo.isNotBlank() && contrasena.isNotBlank()) {
-            "Correo y contraseña requeridos"
+class LoginUseCase @Inject constructor(private val repo: PerfilesRepositoryInt) {
+    suspend operator fun invoke(correo: String, contrasena: String): Result<Sesion> {
+        if (correo.isBlank() || contrasena.isBlank()) {
+            return Result.failure(ErrorApi("Correo y contraseña requeridos."))
         }
-        val sesion = repoInt.login(correo.trim(), contrasena)
-        // Android solo acepta Cliente (los administradores entran por la web).
-        // El repositorio ya guardó el token, así que se borra antes de rechazar.
-        if (sesion.usuario.rol != ROL_CLIENTE) {
-            repoInt.logout()
-            throw ErrorApi(CodigoError.FORBIDDEN)
-        }
-        return sesion
-    }
-
-    private companion object {
-        const val ROL_CLIENTE = "Cliente"
+        val resultado = repo.login(correo.trim(), contrasena)
+        val sesion = resultado.getOrNull() ?: return resultado
+        if (sesion.usuario.rol == "Cliente") return resultado
+        // Conserva la política existente: administradores acceden desde la web.
+        val cierre = repo.logout()
+        return Result.failure(cierre.exceptionOrNull()
+            ?: ErrorApi("Esta aplicación es para cuentas de Cliente. Accede desde la web."))
     }
 }

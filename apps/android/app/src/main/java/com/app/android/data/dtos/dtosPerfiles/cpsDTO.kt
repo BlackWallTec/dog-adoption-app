@@ -1,6 +1,5 @@
 package com.app.android.data.dtos.dtosPerfiles
 
-import com.app.android.domain.entities.entitiesPerfiles.CodigoError
 import com.app.android.domain.entities.entitiesPerfiles.CodigoPostal
 import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.google.gson.annotations.SerializedName
@@ -32,5 +31,5 @@ fun cpsResponseDTO.toDomain(): CodigoPostal? {
 }
 
 fun CodigosPostalesResponseDTO.toDomain(): List<CodigoPostal> =
-    (data ?: throw ErrorApi(CodigoError.RESPUESTA_INVALIDA))
+    (data ?: throw ErrorApi("No pudimos interpretar la respuesta del servidor."))
         .mapNotNull { it.toDomain() }

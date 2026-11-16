@@ -6,6 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -25,8 +28,8 @@ import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
 import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
-import com.app.android.presentation.view.viewsPerfiles.LoginRoute
-import com.app.android.presentation.view.viewsPerfiles.RegistroRoute
+import com.app.android.presentation.view.viewsPerfiles.LoginScreen
+import com.app.android.presentation.view.viewsPerfiles.RegistroScreen
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
@@ -89,6 +92,7 @@ private fun ConSesion(
     estado: SesionUiState,
     navController: NavController,
     sesionViewModel: SesionViewModel,
+    recordarDestino: (String?) -> Unit,
     content: @Composable (Sesion) -> Unit,
 ) {
     val sesion = estado.sesion
@@ -99,11 +103,17 @@ private fun ConSesion(
             onGuest = navController::irAlCatalogo,
         )
         sesion != null -> content(sesion)
+        // No convertir un fallo de red al restaurar en una sesión cerrada.
+        estado.error != null -> InicioSesionScreen(
+            state = estado,
+            onRetry = sesionViewModel::restaurar,
+            onGuest = navController::irAlCatalogo,
+        )
         // Esto también se ejecuta si la sesión vence o se cierra.
         else -> LaunchedEffect(Unit) {
             // Recuerdo a dónde iba (salvo Cuenta, que es también el destino al cerrar sesión).
             val ruta = navController.currentBackStackEntry?.rutaConcreta()
-            sesionViewModel.recordarDestino(ruta?.takeIf { it != Screen.Cuenta.ruta })
+            recordarDestino(ruta?.takeIf { it != Screen.Cuenta.ruta })
             navController.irAlLogin()
         }
     }
@@ -114,6 +124,7 @@ fun AppNavigation() {
     // 1. El NavController que controla el estado de la navegación
     val navController = rememberNavController()
     val context = LocalContext.current
+    var destinoTrasLogin by rememberSaveable { mutableStateOf<String?>(null) }
     // Sesión compartida entre las pantallas de la aplicación.
     val sesionViewModel: SesionViewModel = hiltViewModel()
     val estadoSesion by sesionViewModel.state.collectAsStateWithLifecycle()
@@ -126,16 +137,17 @@ fun AppNavigation() {
     ) {
         // El login entrega la sesión al mismo ViewModel que usa la cuenta.
         composable(route = Screen.Login.ruta) {
-            LoginRoute(
-                onBackToCatalog = navController::irAlCatalogo,
-                onExploreWithoutAccount = navController::irAlCatalogo,
+            LoginScreen(
+                onBackToCatalog = { destinoTrasLogin = null; navController.irAlCatalogo() },
+                onExploreWithoutAccount = { destinoTrasLogin = null; navController.irAlCatalogo() },
                 onRegister = {
                     navController.navigate(Screen.Registro.ruta) { launchSingleTop = true }
                 },
                 onAuthenticated = { sesion ->
                     sesionViewModel.autenticado(sesion)
                     // Si venía de una pantalla protegida (p. ej. adoptar un perro), vuelve ahí.
-                    val destino = sesionViewModel.consumirDestino() ?: Screen.Cuenta.ruta
+                    val destino = destinoTrasLogin ?: Screen.Cuenta.ruta
+                    destinoTrasLogin = null
                     navController.navigate(destino) {
                         popUpTo(Screen.Catalogo.ruta) { inclusive = false }
                         launchSingleTop = true
@@ -146,7 +158,7 @@ fun AppNavigation() {
 
         // Crear una cuenta termina en el login; el registro no trae un token.
         composable(route = Screen.Registro.ruta) {
-            RegistroRoute(
+            RegistroScreen(
                 onCancel = navController::irAlLogin,
                 onRegistered = {
                     Toast.makeText(context, "Cuenta creada. Inicia sesión.", Toast.LENGTH_LONG).show()
@@ -157,12 +169,12 @@ fun AppNavigation() {
 
         // Conecto los botones de cuenta sin meter peticiones de red en la vista.
         composable(route = Screen.Cuenta.ruta) {
-            ConSesion(estadoSesion, navController, sesionViewModel) {
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) {
                 CuentaScreen(
                     state = estadoSesion,
                     onRetry = sesionViewModel::consultarPerfil,
                     onCatalog = navController::irAlCatalogo,
-                    onLogout = { sesionViewModel.salir() },
+                    onLogout = { destinoTrasLogin = null; sesionViewModel.salir() },
                     onLogin = navController::irAlLogin,
                 )
             }
@@ -212,7 +224,7 @@ fun AppNavigation() {
                 ),
         ) { backStackEntry ->
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { sesion ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { sesion ->
                 val idPerro = backStackEntry.arguments?.getString("idPerro") ?: ""
 
                 RequisitosRoute(
@@ -229,7 +241,7 @@ fun AppNavigation() {
         // SOLICITUDES: Paso 2 - Datos generales
         composable(route = Screen.DatosGenerales.ruta) {
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { _ ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
                 DatosGeneralesRoute(
                     onBack = { navController.navigateUp() },
                     onIrATuHogar = {
@@ -242,7 +254,7 @@ fun AppNavigation() {
         // SOLICITUDES: Paso 3 - Tu Hogar
         composable(route = Screen.TuHogar.ruta) {
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { _ ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
                 TuHogarRoute(
                     onBack = { navController.navigateUp() },
                     onIrACompromiso = {
@@ -255,7 +267,7 @@ fun AppNavigation() {
         // Paso 4 - Compromiso
         composable(route = Screen.Compromiso.ruta) {
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { _ ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
                 CompromisoRoute(
                     onBack = { navController.navigateUp() },
                     onIrADocumentoss = {
@@ -270,7 +282,7 @@ fun AppNavigation() {
         // DONATIVOS - HU46: registrar donativo económico
         composable(route = Screen.DonarDinero.ruta) {
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { sesion ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { sesion ->
                 DonarDineroRoute(
                     idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.popBackStack() },
@@ -293,7 +305,7 @@ fun AppNavigation() {
                 ),
         ) { backStackEntry ->
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { _ ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
                 val monto = backStackEntry.arguments?.getString("monto") ?: ""
                 DonativoEnviadoScreen(
                     monto = "\$$monto MXN",
@@ -308,7 +320,7 @@ fun AppNavigation() {
         // DONATIVOS - HU45: datos fiscales del donante
         composable(route = Screen.DatosFiscales.ruta) {
             // Estos datos necesitan una sesión válida.
-            ConSesion(estadoSesion, navController, sesionViewModel) { sesion ->
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { sesion ->
                 DatosFiscalesRoute(
                     idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.navigateUp() },

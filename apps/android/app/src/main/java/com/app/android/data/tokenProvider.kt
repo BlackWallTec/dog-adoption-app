@@ -27,14 +27,14 @@ class EncryptedTokenProvider @Inject constructor(
     private val prefs: SharedPreferences? by lazy { abrir() }
 
     override fun token(): String? =
-        try { prefs?.getString(KEY_TOKEN, null) } catch (_: Exception) { null }
+        checkNotNull(prefs) { "No se pudo abrir el almacenamiento de sesión" }.getString(KEY_TOKEN, null)
 
     // commit() (síncrono) para saber si realmente se guardó
     override fun save(token: String): Boolean =
         try { prefs?.edit()?.putString(KEY_TOKEN, token)?.commit() == true } catch (_: Exception) { false }
 
     override fun clear() {
-        try { prefs?.edit()?.remove(KEY_TOKEN)?.commit() } catch (_: Exception) { }
+        check(prefs?.edit()?.remove(KEY_TOKEN)?.commit() == true) { "No se pudo borrar la sesión" }
     }
 
     private fun crear(): SharedPreferences = EncryptedSharedPreferences.create(

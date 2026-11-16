@@ -2,7 +2,6 @@ package com.app.android.presentation.viewmodel.viewModelPerfiles
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.android.domain.entities.entitiesPerfiles.CodigoError
 import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.entities.entitiesPerfiles.Perfil
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
@@ -11,7 +10,6 @@ import com.app.android.domain.useCases.useCasesPerfiles.ObtenerPerfilUseCase
 import com.app.android.domain.useCases.useCasesPerfiles.RestaurarSesionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,96 +31,63 @@ class SesionViewModel @Inject constructor(
     private val obtenerPerfil: ObtenerPerfilUseCase,
     private val cerrarSesion: CerrarSesionUseCase,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(SesionUiState())
     val state = _state.asStateFlow()
-
-    private var restoreJob: Job? = null
-    private var profileJob: Job? = null
-    private var logoutJob: Job? = null
-
-    // Ruta protegida a la que volver después de iniciar sesión.
-    private var destinoTrasLogin: String? = null
+    private var sesionJob: Job? = null
+    private var perfilJob: Job? = null
 
     init { restaurar() }
 
-    fun recordarDestino(ruta: String?) { destinoTrasLogin = ruta }
-
-    fun consumirDestino(): String? = destinoTrasLogin.also { destinoTrasLogin = null }
-
     fun restaurar() {
         if (_state.value.cerrando) return
-
-        // Cancelamos cualquier trabajo anterior antes de empezar uno nuevo.
-        restoreJob?.cancel()
-        profileJob?.cancel()
+        sesionJob?.cancel()
+        perfilJob?.cancel()
         _state.value = SesionUiState()
-
-        restoreJob = viewModelScope.launch {
-            try {
-                val sesion = restaurarSesion()
-                _state.value = SesionUiState(sesion = sesion, comprobando = false)
-                if (sesion != null) consultarPerfil()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _state.value = SesionUiState(comprobando = false, error = e.mensajePerfiles())
-            }
+        sesionJob = viewModelScope.launch {
+            restaurarSesion().fold(
+                onSuccess = { sesion ->
+                    _state.value = SesionUiState(sesion = sesion, comprobando = false)
+                    if (sesion != null) consultarPerfil()
+                },
+                onFailure = { _state.value = SesionUiState(comprobando = false, error = it.message) },
+            )
         }
     }
 
     fun autenticado(sesion: Sesion) {
-        // Cancelamos restauraciones o logout que pudieran seguir corriendo.
-        restoreJob?.cancel()
-        profileJob?.cancel()
-        logoutJob?.cancel()
+        sesionJob?.cancel()
+        perfilJob?.cancel()
         _state.value = SesionUiState(sesion = sesion, comprobando = false)
         consultarPerfil()
     }
 
     fun consultarPerfil() {
-        if (_state.value.sesion == null) return
-        if (_state.value.cerrando) return
-        if (profileJob?.isActive == true) return
-
-        profileJob = viewModelScope.launch {
-            _state.update { it.copy(cargandoPerfil = true, error = null) }
-            try {
-                val perfil = obtenerPerfil()
-                _state.update { it.copy(perfil = perfil) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                // Si la sesión venció, volvemos a la pantalla de login.
-                if (e is ErrorApi && e.codigo == CodigoError.UNAUTHENTICATED) {
-                    _state.value = SesionUiState(comprobando = false, error = e.mensajePerfiles())
-                } else {
-                    _state.update { it.copy(error = e.mensajePerfiles()) }
-                }
-            } finally {
-                // Solo actualizamos cargandoPerfil si este job no fue cancelado.
-                if (profileJob?.isCancelled == false) {
-                    _state.update { it.copy(cargandoPerfil = false) }
-                }
-            }
+        if (_state.value.sesion == null || _state.value.cerrando || perfilJob?.isActive == true) return
+        _state.update { it.copy(cargandoPerfil = true, error = null) }
+        perfilJob = viewModelScope.launch {
+            obtenerPerfil().fold(
+                onSuccess = { perfil -> _state.update { it.copy(perfil = perfil, cargandoPerfil = false) } },
+                onFailure = { error ->
+                    if ((error as? ErrorApi)?.sesionExpirada == true) {
+                        _state.value = SesionUiState(comprobando = false, error = error.message)
+                    } else {
+                        _state.update { it.copy(cargandoPerfil = false, error = error.message) }
+                    }
+                },
+            )
         }
     }
 
     fun salir() {
         if (_state.value.cerrando) return
-        destinoTrasLogin = null
-        restoreJob?.cancel()
-        profileJob?.cancel()
+        sesionJob?.cancel()
+        perfilJob?.cancel()
         _state.update { it.copy(cerrando = true, cargandoPerfil = false, error = null) }
-
-        logoutJob = viewModelScope.launch {
-            try {
-                cerrarSesion()
-                _state.value = SesionUiState(comprobando = false)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _state.update { it.copy(cerrando = false, error = e.mensajePerfiles()) }
-            }
+        sesionJob = viewModelScope.launch {
+            cerrarSesion().fold(
+                onSuccess = { _state.value = SesionUiState(comprobando = false) },
+                onFailure = { error -> _state.update { it.copy(cerrando = false, error = error.message) } },
+            )
         }
     }
+}
