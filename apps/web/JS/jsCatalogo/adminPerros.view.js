@@ -5,6 +5,17 @@ import { initDogSummaryModal } from "./ModalsJS/summaryModal.controller.js";
 import { abrirEdicion } from "./adminPerros.edit.js";
 import { escaparHtml } from "./perroForm.js";
 import * as apiService from "./ModalsJS/Api.service.js";
+import {
+  FOTO_RESPALDO,
+  NO_ESPECIFICADO,
+  listadoDeRespuesta,
+  marcadoErrorListado,
+  textoContador,
+  textoDato,
+  textoEdad,
+  textoPaginacion,
+  urlFoto,
+} from "./adminPerros.fila.js";
 
 // referencias globales de modulo
 let feedback = null;
@@ -134,22 +145,31 @@ function obtenerClaseBadge(estado) {
   const normalizado = (estado || "").toLowerCase().trim();
   if (normalizado === "disponible") return "badge-disponible";
   if (normalizado === "adoptado" || normalizado === "adoptada") return "badge-adoptado";
-  return "badge-tratamiento";
+  if (normalizado === "en tratamiento") return "badge-tratamiento";
+  return "";
 }
 
-function textoRelacion(valor, fallback) {
-  if (!valor) return fallback;
-  if (typeof valor === "object") return valor.nombre || fallback;
-  return valor;
+function mostrarCarga() {
+  if (counterSubtitle) counterSubtitle.textContent = "Cargando perfiles registrados...";
+  if (paginationInfo) paginationInfo.textContent = "Mostrando 0 de 0 perros";
+  if (!tablaBody) return;
+  tablaBody.innerHTML = `
+        <tr>
+            <td colspan="7" class="empty-cell">Cargando perfiles registrados...</td>
+        </tr>
+    `;
 }
 
-function textoEdad(perro) {
-  const edad = perro.edad ?? perro.edad_aprox;
-  if (edad === null || edad === undefined || edad === "") return "No especificada";
-  if (typeof edad === "number" || /^\d+(\.\d+)?$/.test(String(edad).trim())) {
-    return `${edad} años`;
-  }
-  return String(edad);
+function mostrarErrorCarga() {
+  catalogoPerros = [];
+  if (counterSubtitle) counterSubtitle.textContent = "No se pudieron cargar los perros.";
+  if (paginationInfo) paginationInfo.textContent = "Mostrando 0 de 0 perros";
+  if (!tablaBody) return;
+  tablaBody.innerHTML = `
+        <tr>
+            <td colspan="7">${marcadoErrorListado()}</td>
+        </tr>
+    `;
 }
 
 // Función para renderizar la tabla de perros
@@ -159,9 +179,7 @@ function renderizarTabla(perros) {
   if (perros.length === 0) {
     tablaBody.innerHTML = `
            <tr>
-                <td colspan="7" style="text-align: center; padding: 32px; color: var(--md-sys-color-on-surface-variant);">
-                No se encontraron perros registrados.
-                </td>
+                <td colspan="7" class="empty-cell">No se encontraron perros registrados.</td>
             </tr>
         `;
     return;
@@ -169,15 +187,15 @@ function renderizarTabla(perros) {
 
   tablaBody.innerHTML = perros
     .map((perro) => {
-      // Foto fallback en caso de no tener URL cargada
-      const fotoUrl = escaparHtml(perro.foto_url || perro.foto || "/public/favicon.svg");
-      const raza = escaparHtml(textoRelacion(perro.raza, "Mestizo"));
+      const fotoUrl = escaparHtml(urlFoto(perro));
+      const raza = escaparHtml(textoDato(perro.raza));
       const edadTexto = escaparHtml(textoEdad(perro));
-      const tamano = escaparHtml(textoRelacion(perro.tamano || perro.tamanio, "Mediano"));
-      const estado = escaparHtml(perro.estado || "Disponible");
-      const badgeClase = obtenerClaseBadge(estado);
+      const tamano = escaparHtml(textoDato(perro.tamano || perro.tamanio));
+      const estadoVisible = textoDato(perro.estado);
+      const estado = escaparHtml(estadoVisible);
+      const badgeClase = obtenerClaseBadge(estadoVisible === NO_ESPECIFICADO ? "" : estadoVisible);
       const id = escaparHtml(perro.id ?? perro.id_perro ?? "");
-      const nombre = escaparHtml(perro.nombre);
+      const nombre = escaparHtml(textoDato(perro.nombre));
 
       return `
       <tr data-id="${id}">
@@ -185,7 +203,7 @@ function renderizarTabla(perros) {
           <input type="checkbox" class="perro-select-checkbox" value="${id}">
         </td>
         <td>
-          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.onerror=null; this.src='/public/favicon.svg'">
+          <img src="${fotoUrl}" alt="${nombre}" class="dog-photo" onerror="this.onerror=null; this.src='${FOTO_RESPALDO}'">
         </td>
         <td>
           <div class="dog-name-cell">
@@ -217,6 +235,8 @@ function renderizarTabla(perros) {
 }
 
 async function cargarPerros() {
+  mostrarCarga();
+
   try {
     const respuesta = await fetch("/api/catalogo/admin/perros");
 
@@ -225,35 +245,30 @@ async function cargarPerros() {
       throw new Error(`La ruta /api/catalogo/admin/perros no devolvió JSON (${respuesta.status}).`);
     }
 
-    const data = await respuesta.json();
-    catalogoPerros = Array.isArray(data) ? data : data.data || data.perros || [];
+    const listado = listadoDeRespuesta(await respuesta.json());
+    if (!listado) {
+      throw new Error("La consulta de perros no devolvió un listado.");
+    }
 
-    // Actualizar contador en el encabezado y paginación
+    catalogoPerros = listado;
+
     const total = catalogoPerros.length;
-    if (counterSubtitle) {
-      counterSubtitle.textContent = `Mostrando ${total} perro${total === 1 ? "" : "s"} bajo cuidado`;
-    }
-    if (paginationInfo) {
-      paginationInfo.textContent =
-        total === 0 ? "Mostrando 0 de 0 perros" : `Mostrando 1-${total} de ${total} perros`;
-    }
+    if (counterSubtitle) counterSubtitle.textContent = textoContador(total);
+    if (paginationInfo) paginationInfo.textContent = textoPaginacion(total);
 
     renderizarTabla(catalogoPerros);
   } catch (error) {
     console.error("Error al cargar los perros:", error);
-    if (tablaBody) {
-      tablaBody.innerHTML = `
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 28px; color: var(--md-sys-color-error);">
-                        Error al conectar con la base de datos. Asegúrate de que el servidor backend esté corriendo.
-                    </td>
-                </tr>
-            `;
-    }
+    mostrarErrorCarga();
   }
 }
 
 tablaBody?.addEventListener("click", async (event) => {
+  if (event.target.closest("#btn-reintentar-perros")) {
+    void cargarPerros();
+    return;
+  }
+
   const boton = event.target.closest(".action-delete");
   if (!boton) return;
 
