@@ -122,12 +122,24 @@ export async function fetchBulkActivationToggle(idList, action) {
 
     const response = await fetch(`${API_BASE_URL}/perros/bulk/activar`, {
       method: "PATCH",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payloadBackend),
     });
+
+    const data = await response.json().catch(() => ({}));
+
+    // Si el backend responde 401, 403, 400 o 500, forzamos el salto al catch
+    if (!response.ok) {
+      const error = new Error(data.error || data.message || "Error en la petición");
+      error.status = response.status; // Guardamos el 401 o 403 para leerlo en el catch
+      throw error;
+    }
+    return data;
   } catch (error) {
     console.log("Error en bulk update: ", error);
+    throw error;
   }
 }

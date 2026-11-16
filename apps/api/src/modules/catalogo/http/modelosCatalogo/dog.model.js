@@ -211,7 +211,7 @@ class DogModel {
     return null;
   }
 
-  static async activarPerroBulk(idList, action) {
+  static async activarPerroBulk(idList, action, authToken) {
     const { data, error } = await supabase
       .from("perro")
       .update({ activo: action })

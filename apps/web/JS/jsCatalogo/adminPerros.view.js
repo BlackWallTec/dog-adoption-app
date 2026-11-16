@@ -454,13 +454,7 @@ btnBulkActivar.addEventListener("click", () => {
         });
       } catch (error) {
         console.log("Error al hacer Bulk: ", error);
-        feedback.show({
-          mode: "error",
-          titleText: "No se pudo completar la acción",
-          messageText: error instanceof Error ? error.message : String(error),
-          iconName: "error",
-          actionText: "Cerrar",
-        });
+        mostrarErrorFeedback(error, "No se pudo completar la acción");
       }
     },
   );
@@ -531,3 +525,45 @@ function showConfirmModal(title, content, buttonText, isActivate = false, onConf
 }
 
 // ======== FIN DE HU27 ===== //
+
+// ====== Funciones Globales  ====== //
+// En el archivo de tu vista (donde tienes `let feedback;`)
+function mostrarErrorFeedback(error, tituloPorDefecto = "Ocurrió un error") {
+  if (!feedback) {
+    console.error("El modal de feedback aún no está inicializado:", error);
+    return;
+  }
+
+  // 1. AuthN (is_auth.js -> 401)
+  if (error?.status === 401) {
+    feedback.show({
+      mode: "error",
+      titleText: "Sesión no iniciada",
+      messageText: "Tu sesión ha expirado o no has iniciado sesión. Por favor, inicia sesión.",
+      iconName: "lock",
+      actionText: "Entendido",
+    });
+    return;
+  }
+
+  // 2. AuthZ (requireRole -> 403)
+  if (error?.status === 403) {
+    feedback.show({
+      mode: "error",
+      titleText: "Acceso denegado",
+      messageText: "No tienes los permisos necesarios para realizar esta acción.",
+      iconName: "block",
+      actionText: "Cerrar",
+    });
+    return;
+  }
+
+  // 3. Cualquier otro error (500 BD, 400 validación, caída de red)
+  feedback.show({
+    mode: "error",
+    titleText: tituloPorDefecto,
+    messageText: error instanceof Error ? error.message : String(error),
+    iconName: "error",
+    actionText: "Cerrar",
+  });
+}

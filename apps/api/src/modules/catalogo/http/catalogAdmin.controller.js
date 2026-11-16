@@ -6,6 +6,7 @@ import sizeModel from "./modelosCatalogo/size.model.js";
 import breedModel from "./modelosCatalogo/breed.model.js";
 import { validarCambiosPerro } from "./dogValidation.js";
 
+import { getTokenFromReq } from "../../../utils/getTokenFromReq.js";
 import { supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
 //===== Funciones de Subida de Documentos SUPEROPTIMIZADOS ====
@@ -420,7 +421,7 @@ export const updatePerroAdmin = async (req, res) => {
   }
 };
 
-// ======= HU27: Bulking dog desactivation ======
+// ======= HU27: Bulking dog desactivation/Activation ======
 
 export const patchActivateBulkDog = async (req, res) => {
   console.log("Bulking dog in backend.....");
@@ -431,12 +432,15 @@ export const patchActivateBulkDog = async (req, res) => {
     const action = request.action; //true or false
     console.log(`Setting ${action} on following dogs: ${idList} `);
 
+    //0. Auth de usuario
+    const authToken = getTokenFromReq(req);
+
     if (request == null) {
       return res.status(404).json({ success: false, message: "bulk vacío" });
     }
 
     //1. llamada a la BD de bulk
-    const result = await dogModel.activarPerroBulk(idList, action);
+    const result = await dogModel.activarPerroBulk(idList, action, authToken);
 
     console.log("Bulking done correctly");
     return res.status(200).json({
