@@ -35,22 +35,28 @@ export async function fetchRegisterData() {
 }
 
 export async function obtenerUrlFirmadaSupabase(idPerroTemporal, nombreArchivo, tipoMime) {
-  const response = await fetch(`${API_BASE_URL}/solicitar-subida`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id_perro_temporal: idPerroTemporal,
-      nombreArchivo,
-      tipoMime,
-    }),
-  });
-  const data = await leerRespuesta(response);
+  console.log("Consiguiendo URL firmada de Back previo a subir imagen a Bucket");
+  try {
+    const response = await fetch(`${API_BASE_URL}/solicitar-subida`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_perro_temporal: idPerroTemporal,
+        nombreArchivo,
+        tipoMime,
+      }),
+    });
+    const data = await leerRespuesta(response);
 
-  if (!data.uploadUrl || !data.publicUrl) {
-    throw new Error("El servidor no devolvió las URLs necesarias para subir el archivo.");
+    if (!data.uploadUrl || !data.publicUrl) {
+      throw new Error("El servidor no devolvió las URLs necesarias para subir el archivo.");
+    }
+
+    return { uploadUrl: data.uploadUrl, publicUrl: data.publicUrl };
+  } catch (error) {
+    console.log("Error al conseguir URL firmada");
+    throw error;
   }
-
-  return { uploadUrl: data.uploadUrl, publicUrl: data.publicUrl };
 }
 
 export async function subirArchivoASupabase(uploadUrl, file) {
@@ -101,15 +107,21 @@ export async function guardarPerroBD(datosFrontend) {
   );
   console.groupEnd();
 
-  const response = await fetch(`${API_BASE_URL}/perros`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payloadBackend),
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/perros`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payloadBackend),
+    });
 
-  return leerRespuesta(response);
+    return leerRespuesta(response);
+  } catch (error) {
+    console.log("Error al cargar perro");
+    throw error;
+  }
 }
 
 export async function fetchBulkActivationToggle(idList, action) {
