@@ -20,7 +20,7 @@ import java.net.URI
 /** Android 17 exige permiso para el servidor local usado durante desarrollo. */
 @Composable
 fun LocalBackendAccess(content: @Composable () -> Unit) {
-    val host = URI(BuildConfig.API_BASE_URL).host.orEmpty()
+    val host = URI(BuildConfig.BASE_URL).host.orEmpty()
     val local = host == "localhost" || host.startsWith("10.") || host.startsWith("127.") || host.startsWith("192.168.") || Regex("172\\.(1[6-9]|2[0-9]|3[01])\\..*").matches(host) || host.endsWith(".local")
     if (!BuildConfig.DEBUG || Build.VERSION.SDK_INT < 37 || !local) { content(); return }
     val context = LocalContext.current

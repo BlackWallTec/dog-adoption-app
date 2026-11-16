@@ -57,8 +57,6 @@ form.addEventListener("submit", async (event) => {
         const input = byId(`register-${field}`);
         if (input && typeof message === "string") fieldError(input, message);
       }
-    } else if (error instanceof EMAIL_EXISTS) {
-      fieldError(byId("register-correo"), error.message);
     }
     showError(error.message || "No pudimos crear tu cuenta. Inténtalo de nuevo.");
     return;
@@ -67,7 +65,7 @@ form.addEventListener("submit", async (event) => {
   busy(true, "Creando tu cuenta…");
 
   try {
-    await perfilesApi.register(values);
+    await perfilesApi.registerAdmin(values);
     form.reset();
     window.location.replace("login.html");
   } catch (error) {
@@ -83,13 +81,22 @@ form.addEventListener("submit", async (event) => {
 
 initCodigoPostal();
 
+// Esta página es sólo para Root: sin sesión, o con otro rol, se regresa al login.
+// (El backend también lo exige: /register-admin devuelve 401/403.)
 async function checkSession() {
   busy(true, "Comprobando sesión…");
   try {
-    await perfilesApi.getSession();
-    window.location.replace("login.html");
+    const { user } = await perfilesApi.getSession();
+    if (user.rol !== "Root") {
+      window.location.replace("login.html");
+      return;
+    }
   } catch (error) {
-    if (!(error instanceof UNAUTHENTICATED)) showError(error.message);
+    if (error instanceof UNAUTHENTICATED) {
+      window.location.replace("login.html");
+      return;
+    }
+    showError(error.message);
   } finally {
     busy(false, "Crear mi cuenta");
   }

@@ -14,7 +14,7 @@ Ejemplo de una ruta:
 router.post("/logout", authController.postLogout);
 
 Ahora un ruta que verifica el token:
-router.post("/me", verificarToken, authController.getMe);
+router.get("/me", verificarToken, authController.getMe);
 */
 
 export default function verificarToken(req, res, next) {

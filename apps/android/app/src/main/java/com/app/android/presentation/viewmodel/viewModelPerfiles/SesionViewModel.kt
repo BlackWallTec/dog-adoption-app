@@ -2,11 +2,13 @@ package com.app.android.presentation.viewmodel.viewModelPerfiles
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.android.domain.entities.entitiesPerfiles.CodigoError
+import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.entities.entitiesPerfiles.Perfil
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
-import com.app.android.domain.entities.entitiesPerfiles.SesionVencidaException
-import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
-import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
+import com.app.android.domain.useCases.useCasesPerfiles.CerrarSesionUseCase
+import com.app.android.domain.useCases.useCasesPerfiles.ObtenerPerfilUseCase
+import com.app.android.domain.useCases.useCasesPerfiles.RestaurarSesionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -27,107 +29,100 @@ data class SesionUiState(
 
 @HiltViewModel
 class SesionViewModel @Inject constructor(
-    private val repository: PerfilesRepositoryInt,
-    private val borrador: BorradorRepositoryInt,
+    private val restaurarSesion: RestaurarSesionUseCase,
+    private val obtenerPerfil: ObtenerPerfilUseCase,
+    private val cerrarSesion: CerrarSesionUseCase,
 ) : ViewModel() {
+
     private val _state = MutableStateFlow(SesionUiState())
     val state = _state.asStateFlow()
+
     private var restoreJob: Job? = null
     private var profileJob: Job? = null
     private var logoutJob: Job? = null
 
-    // Este número me ayuda a reconocer respuestas de una sesión anterior.
-    private var versionSesion = 0
+    // Ruta protegida a la que volver después de iniciar sesión.
+    private var destinoTrasLogin: String? = null
 
     init { restaurar() }
 
+    fun recordarDestino(ruta: String?) { destinoTrasLogin = ruta }
+
+    fun consumirDestino(): String? = destinoTrasLogin.also { destinoTrasLogin = null }
+
     fun restaurar() {
         if (_state.value.cerrando) return
-        val version = ++versionSesion
+
+        // Cancelamos cualquier trabajo anterior antes de empezar uno nuevo.
         restoreJob?.cancel()
         profileJob?.cancel()
         _state.value = SesionUiState()
 
-        // Recupero la sesión sin guardar tokens ni hacer peticiones desde la vista.
         restoreJob = viewModelScope.launch {
             try {
-                val sesion = repository.restaurarSesion()
-                if (version != versionSesion) return@launch
-                limpiarBorradorAjeno(sesion?.usuario?.id)
+                val sesion = restaurarSesion()
                 _state.value = SesionUiState(sesion = sesion, comprobando = false)
                 if (sesion != null) consultarPerfil()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                if (version == versionSesion) {
-                    _state.value = SesionUiState(comprobando = false, error = e.mensajePerfiles())
-                }
+                _state.value = SesionUiState(comprobando = false, error = e.mensajePerfiles())
             }
         }
     }
 
     fun autenticado(sesion: Sesion) {
-        // Si termina una restauración vieja después del login, ya no debe reemplazarlo.
-        versionSesion++
+        // Cancelamos restauraciones o logout que pudieran seguir corriendo.
         restoreJob?.cancel()
         profileJob?.cancel()
         logoutJob?.cancel()
-        limpiarBorradorAjeno(sesion.usuario.id)
         _state.value = SesionUiState(sesion = sesion, comprobando = false)
         consultarPerfil()
     }
 
     fun consultarPerfil() {
-        if (_state.value.sesion == null || _state.value.cerrando || profileJob?.isActive == true) return
-        val version = versionSesion
+        if (_state.value.sesion == null) return
+        if (_state.value.cerrando) return
+        if (profileJob?.isActive == true) return
 
         profileJob = viewModelScope.launch {
             _state.update { it.copy(cargandoPerfil = true, error = null) }
             try {
-                val perfil = repository.consultarPerfil()
-                // Ignoro el perfil si mientras llegaba se cambió o se cerró la sesión.
-                if (version == versionSesion) _state.update { it.copy(perfil = perfil) }
+                val perfil = obtenerPerfil()
+                _state.update { it.copy(perfil = perfil) }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: SesionVencidaException) {
-                if (version == versionSesion) {
-                    versionSesion++
-                    borrador.limpiar()
-                    _state.value = SesionUiState(comprobando = false, error = e.mensajePerfiles())
-                }
             } catch (e: Exception) {
-                if (version == versionSesion) _state.update { it.copy(error = e.mensajePerfiles()) }
+                // Si la sesión venció, volvemos a la pantalla de login.
+                if (e is ErrorApi && e.codigo == CodigoError.UNAUTHENTICATED) {
+                    _state.value = SesionUiState(comprobando = false, error = e.mensajePerfiles())
+                } else {
+                    _state.update { it.copy(error = e.mensajePerfiles()) }
+                }
             } finally {
-                if (version == versionSesion) _state.update { it.copy(cargandoPerfil = false) }
+                // Solo actualizamos cargandoPerfil si este job no fue cancelado.
+                if (profileJob?.isCancelled == false) {
+                    _state.update { it.copy(cargandoPerfil = false) }
+                }
             }
         }
     }
 
-    fun salir(notificarServidor: Boolean = true) {
+    fun salir() {
         if (_state.value.cerrando) return
-        val version = ++versionSesion
+        destinoTrasLogin = null
         restoreJob?.cancel()
         profileJob?.cancel()
-        borrador.limpiar()
         _state.update { it.copy(cerrando = true, cargandoPerfil = false, error = null) }
 
-        // El ViewModel cambia el estado; la navegación se encarga de volver al login.
         logoutJob = viewModelScope.launch {
             try {
-                repository.cerrarSesion(notificarServidor)
-                if (version == versionSesion) _state.value = SesionUiState(comprobando = false)
+                cerrarSesion()
+                _state.value = SesionUiState(comprobando = false)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                if (version == versionSesion) {
-                    _state.update { it.copy(cerrando = false, error = e.mensajePerfiles()) }
-                }
+                _state.update { it.copy(cerrando = false, error = e.mensajePerfiles()) }
             }
         }
     }
-
-    private fun limpiarBorradorAjeno(idUsuario: String?) {
-        // Un usuario nuevo no debe continuar el borrador de otra cuenta.
-        if (borrador.borrador.value?.idUsuario != idUsuario) borrador.limpiar()
-    }
-}

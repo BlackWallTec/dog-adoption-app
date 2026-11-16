@@ -60,14 +60,13 @@ fun RegistroScreen(
     val focus = LocalFocusManager.current
     var visible by remember { mutableStateOf(false) }
     var noticeVisible by remember { mutableStateOf(false) }
-    var enfocarError by remember { mutableStateOf(false) }
     val fields = listOf(
         Triple("nombre", "Nombre(s)", state.datos.nombre), Triple("apellidos", "Apellidos", state.datos.apellidos),
-        Triple("email", "Correo", state.datos.email), Triple("telefono", "Teléfono", state.datos.telefono),
+        Triple("correo", "Correo", state.datos.correo), Triple("telefono", "Teléfono", state.datos.telefono),
         Triple("fechaNacimiento", "Fecha de nacimiento", state.datos.fechaNacimiento),
         Triple("calle", "Calle", state.datos.calle), Triple("numeroExterior", "Número exterior", state.datos.numeroExterior),
-        Triple("codigoPostal", "Código postal", state.datos.codigoPostal),
-        Triple("passwd", "Contraseña", state.datos.passwd), Triple("confirmPasswd", "Confirmar contraseña", state.datos.confirmPasswd),
+        Triple("codigoPostal", "Código postal", state.codigoPostal),
+        Triple("contrasena", "Contraseña", state.datos.contrasena), Triple("confirmContrasena", "Confirmar contraseña", state.datos.confirmContrasena),
     )
     // Solo preparo el foco de colonia si ese selector se está mostrando.
     val requesters = remember(onCodigoPostalSeleccionado != null) {
@@ -79,13 +78,10 @@ fun RegistroScreen(
         (fields.map { it.first } + extras).associateWith { FocusRequester() }
     }
 
-    // La validación ya la hace el ViewModel; aquí solo llevo el foco al primer error.
-    LaunchedEffect(enfocarError, state.campos, state.isLoading, state.error) {
-        if (enfocarError && state.campos.isNotEmpty()) {
-            requesters[state.campos.keys.first()]?.requestFocus()
-            enfocarError = false
-        } else if (state.isLoading || state.error != null) {
-            enfocarError = false
+    // El caso de uso valida; aquí solo llevo el foco al primer campo con error cada vez que llega uno nuevo.
+    LaunchedEffect(state.versionErrores) {
+        if (state.versionErrores > 0) {
+            state.campos.keys.firstOrNull()?.let { requesters[it]?.requestFocus() }
         }
     }
     Scaffold(
@@ -98,19 +94,19 @@ fun RegistroScreen(
             Text("Tu próxima historia de cariño empieza aquí.", style = MaterialTheme.typography.titleLarge)
             Text("Completa tus datos. Todos los campos son obligatorios.", style = MaterialTheme.typography.bodyMedium)
             fields.forEach { (name, label, value) ->
-                val password = name in listOf("passwd", "confirmPasswd")
+                val password = name in listOf("contrasena", "confirmContrasena")
                 val hint = when (name) {
-                    "email" -> "Gmail, Outlook, Yahoo, Hotmail o iCloud."
+                    "correo" -> "Gmail, Outlook, Yahoo, Hotmail o iCloud."
                     "fechaNacimiento" -> "AAAA-MM-DD · Debes tener 18 años o más."
                     "calle" -> "Escribe el nombre de la calle; la colonia se elige con el código postal."
-                    "passwd" -> "Usa al menos 8 caracteres."
+                    "contrasena" -> "Usa al menos 8 caracteres."
                     else -> null
                 }
                 val keyboard = when (name) {
-                    "email" -> KeyboardType.Email
+                    "correo" -> KeyboardType.Email
                     "telefono" -> KeyboardType.Phone
                     "numeroExterior", "codigoPostal" -> KeyboardType.Number
-                    "passwd", "confirmPasswd" -> KeyboardType.Password
+                    "contrasena", "confirmContrasena" -> KeyboardType.Password
                     else -> KeyboardType.Text
                 }
                 OutlinedTextField(
@@ -123,7 +119,7 @@ fun RegistroScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = keyboard, imeAction = ImeAction.Next, autoCorrectEnabled = false),
                     keyboardActions = KeyboardActions(onNext = { focus.moveFocus(FocusDirection.Down) }),
                     visualTransformation = if (password && !visible) PasswordVisualTransformation() else VisualTransformation.None,
-                    trailingIcon = if (name == "passwd") {{ IconButton(onClick = { visible = !visible }, enabled = !state.isLoading) {
+                    trailingIcon = if (name == "contrasena") {{ IconButton(onClick = { visible = !visible }, enabled = !state.isLoading) {
                         Icon(if (visible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, if (visible) "Ocultar contraseñas" else "Mostrar contraseñas")
                     } }} else if (name == "fechaNacimiento") {{ IconButton(onClick = {
                         focus.clearFocus()
@@ -139,7 +135,7 @@ fun RegistroScreen(
                 // Muestro el selector cuando el ViewModel tenga conectada esta función.
                 if (name == "codigoPostal" && onCodigoPostalSeleccionado != null) {
                     SelectorColonia(
-                        codigoPostal = state.datos.codigoPostal,
+                        codigoPostal = state.codigoPostal,
                         opciones = opcionesCodigoPostal,
                         idSeleccionado = idCodigoPostalSeleccionado,
                         cargando = cargandoColonias,
@@ -163,8 +159,6 @@ fun RegistroScreen(
             state.error?.let { PerfilesError(it) }
             AppButton("Crear mi cuenta", {
                 focus.clearFocus()
-                // Espero los errores del ViewModel en lugar de validar otra vez aquí.
-                enfocarError = true
                 onRegister()
             }, Modifier.fillMaxWidth().testTag("register_submit"), isLoading = state.isLoading)
             TextButton(onClick = onCancel, modifier = Modifier.align(Alignment.CenterHorizontally)) { Text("Ya tengo cuenta. Iniciar sesión") }
@@ -206,7 +200,7 @@ private fun SelectorColonia(
             supportingText = {
                 Text(
                     error ?: when {
-                        cargando -> "Buscando coloniasí"
+                        cargando -> "Buscando colonias…"
                         codigoPostal.trim().length != 5 -> "Escribe un código postal de 5 dígitos."
                         opcionesActuales.isEmpty() -> "No hay colonias disponibles para seleccionar."
                         else -> "Selecciona la colonia que corresponde a tu dirección."

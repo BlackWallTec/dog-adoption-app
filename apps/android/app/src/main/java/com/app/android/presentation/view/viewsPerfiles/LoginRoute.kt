@@ -2,17 +2,13 @@ package com.app.android.presentation.view.viewsPerfiles
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.presentation.viewmodel.viewModelPerfiles.LoginViewModel
+
 /** Punto de conexión con la navegación: la vista previa usa LoginScreen directamente. */
 @Composable
 fun LoginRoute(
@@ -23,14 +19,12 @@ fun LoginRoute(
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val currentOnAuthenticated by rememberUpdatedState(onAuthenticated)
-    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Recibo el resultado mientras esta pantalla está activa.
-    LaunchedEffect(viewModel, lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            viewModel.authenticatedSessions.collect { currentOnAuthenticated(it) }
-        }
+    // Cuando el ViewModel pone una sesión lista, navegamos y limpiamos el evento.
+    LaunchedEffect(state.sesionLista) {
+        val sesion = state.sesionLista ?: return@LaunchedEffect
+        viewModel.consumirSesion()
+        onAuthenticated(sesion)
     }
 
     // El botón de atrás del teléfono también cancela el intento de login.
@@ -39,17 +33,12 @@ fun LoginRoute(
         onBackToCatalog()
     }
 
-    // Al salir, limpio la contraseña y cancelo la petición que pudiera seguir.
-    DisposableEffect(viewModel) {
-        onDispose { viewModel.cancelLogin() }
-    }
-
     LoginScreen(
-        state = state,
-        onEmailChange = viewModel::onEmailChange,
-        onPasswordChange = viewModel::onPasswordChange,
-        onLogin = viewModel::login,
-        onBackToCatalog = {
+        state             = state,
+        onEmailChange     = viewModel::onEmailChange,
+        onPasswordChange  = viewModel::onPasswordChange,
+        onLogin           = viewModel::login,
+        onBackToCatalog   = {
             viewModel.cancelLogin()
             onBackToCatalog()
         },
@@ -57,7 +46,7 @@ fun LoginRoute(
             viewModel.cancelLogin()
             onExploreWithoutAccount()
         },
-        onRegister = {
+        onRegister        = {
             viewModel.cancelLogin()
             onRegister()
         },

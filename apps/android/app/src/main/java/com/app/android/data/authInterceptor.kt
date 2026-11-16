@@ -4,18 +4,14 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
 
-class AuthInterceptor @Inject constructor (
+
+// Establece el header para todas las peticiones
+class AuthInterceptor @Inject constructor(
     private val tokenProvider: TokenProvider,
 ) : Interceptor {
-    override fun intercept (chain: Interceptor.Chain): Response {
-        val token = tokenProvider.token()
-        val request = if (token.isNullOrBlank()) {
-            chain.request()
-        } else {
-            chain.request().newBuilder()
-                .header("Autorization", "Bearer $token")
-                .build()
-        }
-        return chain.proceed(request)
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val b = chain.request().newBuilder().header("x-client", "mobile")
+        tokenProvider.token()?.takeIf { it.isNotBlank() }?.let { b.header("Authorization", "Bearer $it") }
+        return chain.proceed(b.build())
     }
 }

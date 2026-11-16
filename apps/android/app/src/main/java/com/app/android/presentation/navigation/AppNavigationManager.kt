@@ -1,5 +1,6 @@
 package com.app.android.presentation.navigation
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -71,6 +73,16 @@ private fun NavController.irAOpcionBarra(opcion: Int) {
     }
 }
 
+// Ruta con sus argumentos ya sustituidos (p. ej. solicitud_requisitos/123), para volver a ella tras el login.
+private fun NavBackStackEntry.rutaConcreta(): String? {
+    var ruta = destination.route ?: return null
+    val args = arguments ?: return ruta
+    args.keySet().forEach { clave ->
+        args.getString(clave)?.let { ruta = ruta.replace("{$clave}", Uri.encode(it)) }
+    }
+    return ruta
+}
+
 // Espero la revisión de sesión antes de mostrar datos de una cuenta.
 @Composable
 private fun ConSesion(
@@ -88,7 +100,12 @@ private fun ConSesion(
         )
         sesion != null -> content(sesion)
         // Esto también se ejecuta si la sesión vence o se cierra.
-        else -> LaunchedEffect(Unit) { navController.irAlLogin() }
+        else -> LaunchedEffect(Unit) {
+            // Recuerdo a dónde iba (salvo Cuenta, que es también el destino al cerrar sesión).
+            val ruta = navController.currentBackStackEntry?.rutaConcreta()
+            sesionViewModel.recordarDestino(ruta?.takeIf { it != Screen.Cuenta.ruta })
+            navController.irAlLogin()
+        }
     }
 }
 
@@ -117,7 +134,9 @@ fun AppNavigation() {
                 },
                 onAuthenticated = { sesion ->
                     sesionViewModel.autenticado(sesion)
-                    navController.navigate(Screen.Cuenta.ruta) {
+                    // Si venía de una pantalla protegida (p. ej. adoptar un perro), vuelve ahí.
+                    val destino = sesionViewModel.consumirDestino() ?: Screen.Cuenta.ruta
+                    navController.navigate(destino) {
                         popUpTo(Screen.Catalogo.ruta) { inclusive = false }
                         launchSingleTop = true
                     }

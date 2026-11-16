@@ -11,9 +11,6 @@ Considerar que desde el cliente, se declara el x-client. Si esto no se
 mandara desde android, se le enviaría como respuesta la cookie en
 lugar del token
 
-También, no se especificó un algoritmo ni aquí ni en el
-is-auth.js, por defecto está usando HS256.
-
 En el middleware también debe usarse el mismo header.
 */
 
@@ -119,13 +116,15 @@ export const postLogout = (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const { uuid, rol } = req.user; // lo puso verificarToken
+    // Sólo se usa para comprobar que la cuenta sigue existiendo;
+    // el correo no se devuelve.
     const correo = await Usuario.fetchEmailByUUID(uuid);
 
     // Token válido pero la cuenta ya no existe
     if (!correo) throw new UNAUTHENTICATED();
 
     return res.status(200).json({
-      user: { id: uuid, correo, rol },
+      user: { uuid, rol },
     });
   } catch (error) {
     if (error instanceof UNAUTHENTICATED) {

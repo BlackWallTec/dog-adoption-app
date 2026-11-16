@@ -60,6 +60,15 @@ export default class Usuario {
     if (error) instanciarError(`Error al crear cuenta (${error.code})`, error.code);
   }
 
+  // Revierte un registro incompleto. Las FK con ON DELETE CASCADE
+  // (cliente, admin, direcciones_fisicas y, vía cliente,
+  // datos_confidenciales) se borran junto con el usuario.
+  static async deleteAccount(id) {
+    const { error } = await supabaseAdmin.from("usuario").delete().eq("id_usuario", id);
+
+    if (error) instanciarError("Error al revertir la cuenta", error.code);
+  }
+
   static async fetchProfileByUUID(id) {
     // Tres tablas distintas, se consultan en paralelo
     const [usuario, contacto, direccion] = await Promise.all([

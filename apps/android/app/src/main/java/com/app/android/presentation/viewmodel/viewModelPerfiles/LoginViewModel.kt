@@ -2,18 +2,16 @@ package com.app.android.presentation.viewmodel.viewModelPerfiles
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.android.domain.entities.entitiesPerfiles.CredencialesInvalidasException
-import com.app.android.domain.entities.entitiesPerfiles.FalloAutenticacion
+import com.app.android.domain.entities.entitiesPerfiles.CodigoError
+import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.useCases.useCasesPerfiles.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -21,12 +19,10 @@ import kotlinx.coroutines.launch
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
 
-    // Comunica la sesión obtenida para que la navegación procese el acceso.
-    private val sessions = Channel<Sesion>(Channel.BUFFERED)
-    val authenticatedSessions = sessions.receiveAsFlow()
     private var loginJob: Job? = null
     private var requestId = 0
 
@@ -52,30 +48,36 @@ class LoginViewModel @Inject constructor(
 
         val request = ++requestId
         _uiState.update { it.copy(isLoading = true) }
+
         loginJob = viewModelScope.launch {
             try {
                 val session = loginUseCase(validated.email, validated.password)
                 if (request != requestId) return@launch
-                _uiState.update { it.copy(password = "", isSignedIn = true) }
-                sessions.send(session)
+                // Guardamos la sesión en el estado para que LoginRoute la consuma y navegue.
+                _uiState.update { it.copy(password = "", isLoading = false, sesionLista = session) }
             } catch (error: CancellationException) {
                 throw error
-            } catch (_: CredencialesInvalidasException) {
+            } catch (error: ErrorApi) {
                 if (request == requestId) {
                     _uiState.update {
-                        it.copy(error = "Correo o contraseña incorrectos.", credentialsRejected = true)
+                        it.copy(
+                            isLoading = false,
+                            error = error.mensajePerfiles(),
+                            credentialsRejected = error.codigo == CodigoError.INVALID_CREDENTIALS,
+                        )
                     }
                 }
-            } catch (error: FalloAutenticacion) {
-                if (request == requestId) _uiState.update { it.copy(error = error.mensajePerfiles()) }
             } catch (_: Exception) {
                 if (request == requestId) {
-                    _uiState.update { it.copy(error = "No pudimos iniciar sesión. Inténtalo más tarde.") }
+                    _uiState.update { it.copy(isLoading = false, error = "No pudimos iniciar sesión. Inténtalo más tarde.") }
                 }
-            } finally {
-                if (request == requestId) _uiState.update { it.copy(isLoading = false) }
             }
         }
+    }
+
+    // La Route llama esto después de leer sesionLista y navegar, para limpiar el evento.
+    fun consumirSesion() {
+        _uiState.update { it.copy(sesionLista = null) }
     }
 
     fun cancelLogin() {

@@ -17,9 +17,16 @@ import {
   limpiarTelefono,
 } from "@qarino/shared/perfiles/registro.validation.js";
 
-// Creación de cuenta (rol Cliente)
+/*
+Ahora dispone de dos maneras de crear cuenta, una pública, para crear Cliente desde el móvil y otra para el usuario Root, que crea Administradores desde el panel web.
 
-export const postRegister = async (req, res) => {
+Ahora mismo, los administradores llevan fila en "cliente" porque
+datos_confidenciales.id_usuario referencia a cliente (FK) y las consultas de Solicitudes navegan usuario -> cliente -> datos_confidenciales.
+
+El rol real se distingue por usuario.rol, no por la existencia de la fila y esto será corregido de cara al siguiente sprint.
+*/
+
+const crearCuenta = (rol, tablasDeRol) => async (req, res) => {
   // Fuera del try para que el catch pueda revertir lo ya creado
   let idUsuario = null;
 
@@ -67,14 +74,16 @@ export const postRegister = async (req, res) => {
     await Usuario.registerAccount(
       idUsuario,
       {
-        rol: ROLES.CLIENT,
+        rol,
         ...regUsuario,
         contrasena: hashContrasena,
       },
       "usuario",
     );
 
-    await Usuario.registerAccount(idUsuario, {}, "cliente");
+    for (const tabla of tablasDeRol) {
+      await Usuario.registerAccount(idUsuario, {}, tabla);
+    }
 
     await Usuario.registerAccount(idUsuario, { correo, telefono }, "datos_confidenciales");
 
@@ -82,9 +91,8 @@ export const postRegister = async (req, res) => {
 
     return res.status(201).json({
       user: {
-        id: idUsuario,
-        correo,
-        rol: ROLES.CLIENT,
+        uuid: idUsuario,
+        rol,
       },
     });
   } catch (error) {
@@ -120,3 +128,7 @@ export const postRegister = async (req, res) => {
     return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
   }
 };
+
+export const postRegister = crearCuenta(ROLES.CLIENT, ["cliente"]);
+
+export const postRegisterAdmin = crearCuenta(ROLES.ADMIN, ["cliente", "admin"]);

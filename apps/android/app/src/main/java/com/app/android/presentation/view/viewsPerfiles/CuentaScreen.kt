@@ -52,16 +52,15 @@ fun CuentaScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("¡Qué gusto tenerte aquí!", style = MaterialTheme.typography.headlineSmall)
-            DatoCuenta("Correo", sesion.usuario.email, "account_email")
             DatoCuenta("Tipo de cuenta", sesion.usuario.rol)
             HorizontalDivider()
             Text("Mis datos", style = MaterialTheme.typography.titleLarge)
             if (state.cargandoPerfil) CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
             state.perfil?.let { p ->
                 DatoCuenta("Nombre", "${p.nombre} ${p.apellidos}".trim(), "account_name")
-                DatoCuenta("Teléfono", p.telefono)
-                DatoCuenta("Fecha de nacimiento", p.fechaNacimiento.split('-').reversed().joinToString("/"))
-                DatoCuenta("Dirección", listOf(p.calle, p.numeroExterior, p.codigoPostal.takeIf { it.isNotBlank() }?.let { "C. P. $it" }.orEmpty()).filter { it.isNotBlank() }.joinToString(", "))
+                DatoCuenta("Teléfono", p.telefono.orEmpty())
+                DatoCuenta("Fecha de nacimiento", p.fechaNacimiento.orEmpty().split('-').reversed().joinToString("/"))
+                DatoCuenta("Dirección", listOf(p.calle.orEmpty(), p.numeroExterior?.toString().orEmpty(), p.codigoPostal.orEmpty().takeIf { it.isNotBlank() }?.let { "C. P. $it" }.orEmpty()).filter { it.isNotBlank() }.joinToString(", "))
             }
             // Evito otra consulta mientras ya se está cargando o cerrando la sesión.
             state.error?.let {
@@ -105,7 +104,7 @@ fun InicioSesionScreen(state: SesionUiState, onRetry: () -> Unit, onGuest: () ->
 private fun CuentaPreview() {
     // Estos datos son solo para ver el diseño; no hacen una llamada al servidor.
     val sesion = Sesion(
-        usuario = Usuario(id = "preview", email = "correo@ejemplo.com", rol = "cliente"),
+        usuario = Usuario(id = "preview", rol = "Cliente"),
         token = "",
     )
     AndroidTheme {
@@ -115,3 +114,7 @@ private fun CuentaPreview() {
         )
     }
 }
+
+
+
+

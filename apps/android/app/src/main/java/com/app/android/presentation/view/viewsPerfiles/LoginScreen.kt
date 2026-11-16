@@ -1,48 +1,35 @@
 package com.app.android.presentation.view.viewsPerfiles
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -57,7 +44,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -70,6 +56,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.android.R
+import com.app.android.presentation.view.atomicDesign.atomic.AppButton
+import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
+import com.app.android.presentation.view.atomicDesign.atomic.SupportingText
+import com.app.android.presentation.view.atomicDesign.molecule.FormField
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.viewmodel.viewModelPerfiles.LoginUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.validateLogin
@@ -131,67 +121,53 @@ fun LoginScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                TextButton(
-                    onClick = onBackToCatalog,
-                    contentPadding = PaddingValues(vertical = 8.dp),
-                    colors = ButtonDefaults.textButtonColors(contentColor = colors.inverseSurface),
-                ) {
-                    Text("Volver al catálogo", fontSize = 12.sp)
+                BrandMark(modifier = Modifier.align(Alignment.CenterHorizontally))
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "¡Bienvenido!",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = colors.inverseSurface,
+                    )
+                    Text(
+                        "Tu próxima historia de cariño empieza aquí.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.inverseSurface,
+                    )
                 }
 
-                BrandMark(modifier = Modifier.align(Alignment.CenterHorizontally))
-                Spacer(Modifier.height(24.dp))
-                Text(
-                    "¡Bienvenido!",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.inverseSurface,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    "Tu próxima historia de cariño empieza aquí.",
-                    fontSize = 14.sp,
-                    color = colors.inverseSurface,
-                )
-                Spacer(Modifier.height(20.dp))
-
-                Text("Correo", fontSize = 14.sp, color = colors.inverseSurface)
-                Spacer(Modifier.height(6.dp))
-                OutlinedTextField(
+                FormField(
                     value = state.email,
                     onValueChange = onEmailChange,
-                    modifier = Modifier.fillMaxWidth().testTag("login_email").semantics { contentDescription = "Correo" },
+                    label = "Correo",
                     enabled = !state.isLoading,
-                    singleLine = true,
-                    placeholder = { Text("tu@correo.com", fontSize = 14.sp) },
-                    leadingIcon = {
-                        Icon(Icons.Outlined.Email, contentDescription = null, tint = colors.secondary)
-                    },
+                    isError = state.emailError != null || state.credentialsRejected,
+                    errorText = state.emailError,
+                    fieldModifier = Modifier.testTag("login_email"),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next,
                         autoCorrectEnabled = false,
                     ),
-                    isError = state.emailError != null || state.credentialsRejected,
-                    supportingText = state.emailError?.let { message -> { Text(message) } },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = loginFieldColors(),
                 )
-                Spacer(Modifier.height(16.dp))
 
-                Text("Contraseña", fontSize = 14.sp, color = colors.inverseSurface)
-                Spacer(Modifier.height(6.dp))
-                OutlinedTextField(
+                FormField(
                     value = state.password,
                     onValueChange = onPasswordChange,
-                    modifier = Modifier.fillMaxWidth().testTag("login_password").semantics { contentDescription = "Contraseña" },
+                    label = "Contraseña",
                     enabled = !state.isLoading,
-                    singleLine = true,
-                    placeholder = { Text("Escribe tu contraseña", fontSize = 14.sp) },
-                    leadingIcon = {
-                        Icon(Icons.Outlined.Lock, contentDescription = null, tint = colors.secondary)
-                    },
+                    isError = state.passwordError != null || state.credentialsRejected,
+                    errorText = state.passwordError,
+                    fieldModifier = Modifier.testTag("login_password"),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                        autoCorrectEnabled = false,
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { if (!state.isLoading) submit() }),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
@@ -201,111 +177,51 @@ fun LoginScreen(
                             )
                         }
                     },
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                        autoCorrectEnabled = false,
-                    ),
-                    keyboardActions = KeyboardActions(onDone = { if (!state.isLoading) submit() }),
-                    isError = state.passwordError != null || state.credentialsRejected,
-                    supportingText = state.passwordError?.let { message -> { Text(message) } },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = loginFieldColors(),
                 )
 
-                Spacer(Modifier.height(18.dp))
-
-                state.error?.let { message ->
-                    Surface(
-                        color = colors.errorContainer,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                    ) {
-                        Text(
-                            message,
-                            color = colors.onErrorContainer,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(12.dp).semantics { liveRegion = LiveRegionMode.Polite },
-                        )
-                    }
-                }
+                state.error?.let { PerfilesError(it) }
                 if (state.isSignedIn) {
                     Text(
                         "Sesión iniciada correctamente.",
                         color = colors.secondary,
-                        modifier = Modifier.padding(bottom = 12.dp).semantics { liveRegion = LiveRegionMode.Polite },
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     )
                 }
 
-                Button(
+                AppButton(
+                    text = "Iniciar sesión",
                     onClick = { submit() },
-                    enabled = !state.isLoading,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 50.dp).testTag("login_submit"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.primary,
-                        contentColor = colors.inverseSurface,
-                    ),
-                ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = colors.inverseSurface,
-                            strokeWidth = 2.dp,
-                        )
-                        Spacer(Modifier.size(10.dp))
-                    }
-                    Text(
-                        if (state.isLoading) "Iniciando sesión…" else "Iniciar sesión",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                }
+                    modifier = Modifier.fillMaxWidth().testTag("login_submit"),
+                    isLoading = state.isLoading,
+                    loadingDescription = "Iniciando sesión",
+                )
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    Text("¿Aún no tienes cuenta?", fontSize = 14.sp, color = colors.inverseSurface)
-                    TextButton(onClick = onRegister, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                        Text("Regístrate", color = colors.secondary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    }
+                    Text("¿Aún no tienes cuenta?", style = MaterialTheme.typography.bodyMedium, color = colors.inverseSurface)
+                    AppButton(text = "Regístrate", onClick = onRegister, variant = ButtonVariant.Clear)
                 }
 
-                Surface(
-                    onClick = onExploreWithoutAccount,
-                    modifier = Modifier.fillMaxWidth().testTag("login_guest"),
-                    color = colors.surfaceContainerLow,
-                    border = BorderStroke(1.dp, colors.outlineVariant),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text("Explorar sin cuenta", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = colors.inverseSurface)
-                        Spacer(Modifier.height(2.dp))
-                        Text("Conoce a nuestros peludos sin registrarte.", fontSize = 13.sp, textAlign = TextAlign.Center, color = colors.inverseSurface)
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    AppButton(
+                        text = "Explorar sin cuenta",
+                        onClick = onExploreWithoutAccount,
+                        modifier = Modifier.fillMaxWidth().testTag("login_guest"),
+                        variant = ButtonVariant.Outlined,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    SupportingText(
+                        text = "Conoce a nuestros peludos sin registrarte.",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }
     }
 }
-
-@Composable
-private fun loginFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-    focusedBorderColor = MaterialTheme.colorScheme.secondary,
-    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-    focusedTextColor = MaterialTheme.colorScheme.inverseSurface,
-    unfocusedTextColor = MaterialTheme.colorScheme.inverseSurface,
-    cursorColor = MaterialTheme.colorScheme.secondary,
-)
 
 @Composable
 private fun BrandMark(modifier: Modifier = Modifier) {
