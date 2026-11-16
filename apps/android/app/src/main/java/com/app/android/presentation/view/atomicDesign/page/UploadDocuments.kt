@@ -40,6 +40,7 @@ import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCard
 import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
 import com.app.android.presentation.view.atomicDesign.atomic.HeatherSection
 import com.app.android.presentation.view.atomicDesign.atomic.HelperText
+import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.DocumentSlot
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsViewModel
@@ -152,6 +153,7 @@ fun UploadDocuments(
             .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             //More functions needed
+            IndicadorPasos(pasoActual = 4)
             HeatherSection(
                 titulo = "Documentos",
                 descripcion = "Adjunta tus documentos. La información se usará únicamente para tu proceso de adopción."
