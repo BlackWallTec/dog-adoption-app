@@ -12,13 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class LoginUiState(
-    val email: String = "",
-    val password: String = "",
-    val error: String? = null,
-    val isLoading: Boolean = false,
-    val sesionLista: Sesion? = null,
-)
+//// se borro la  doble declaracion de LoginUiState
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase) : ViewModel() {
