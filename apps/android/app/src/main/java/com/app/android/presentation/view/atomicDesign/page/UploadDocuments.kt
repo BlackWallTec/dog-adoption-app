@@ -47,30 +47,27 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumen
 
 @Composable
 fun UploadDocumentsRoute(
-    //Paramters that we are going to recieve
-    solicitudId: String,
     onBackClick: () -> Unit = {},
     onNotificacionesClick: () -> Unit = {},
     onContinuarClick: () -> Unit = {},
-    onNavSelect: (Int) -> Unit,
-    viewModel: UploadDocumentsViewModel = hiltViewModel()
+    onNavSelect: (Int) -> Unit = {},
+    viewModel: UploadDocumentsViewModel = hiltViewModel(),
 ) {
-    //We observe the state of the card: each change it restructures the screen
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    //We save which of the two cards was used, while the user chooses a file
-    var pendingType by rememberSaveable {mutableStateOf<DocumentType?>(null)}
-    val filePicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        val type = pendingType
-        if (uri != null && type != null){
-            //We send the link made by hilt to the viewModel
-            viewModel.onFileSelected(type, context.readPickedFile(uri))
+    var pendingType by rememberSaveable { mutableStateOf<DocumentType?>(null) }
+    val filePicker =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument(),
+        ) { uri ->
+            val type = pendingType
+            if (uri != null && type != null) {
+                viewModel.onFileSelected(type, context.readPickedFile(uri))
+            }
+            pendingType = null
         }
-        pendingType = null
-    }
+
     AndroidTheme {
         UploadDocuments(
             uiState = uiState,
@@ -82,12 +79,9 @@ fun UploadDocumentsRoute(
             onBackClick = onBackClick,
             onNotificacionesClick = onNotificacionesClick,
             onContinuarClick = {
-                viewModel.onContinuarClicked(
-                    solicitudId = solicitudId,
-                    onSuccess = onContinuarClick
-                )
+                viewModel.onContinuarClicked(onSuccess = onContinuarClick)
             },
-            onNavSelect = onNavSelect
+            onNavSelect = onNavSelect,
         )
     }
 }
