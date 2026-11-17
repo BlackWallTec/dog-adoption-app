@@ -25,9 +25,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
@@ -52,6 +58,7 @@ import com.app.android.presentation.view.ui.theme.Surface
 import com.app.android.presentation.view.ui.theme.SurfaceContainer
 import com.app.android.presentation.view.ui.theme.SurfaceContainerHigh
 import com.app.android.presentation.view.ui.theme.SurfaceContainerLow
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.ConfirmarSolicitudViewModel
 
 // ---------- UI state (plain data, no ViewModel yet) ----------
 
@@ -87,18 +94,39 @@ data class ConfirmarSolicitudUiState(
 fun ConfirmarRoute(
     onBack: () -> Unit,
     onEditarSeccion: (SeccionSolicitud) -> Unit,
-    onEnviarExitoso: () -> Unit = {},
+    onEnviarExitoso: (String) -> Unit = {},
+    viewModel: ConfirmarSolicitudViewModel = hiltViewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     var aceptaTerminos by remember { mutableStateOf(false) }
 
-    ConfirmarSolicitudScreen(
-        state = previewState,
-        aceptaTerminos = aceptaTerminos,
-        onAceptaTerminosChange = { aceptaTerminos = it },
-        onBackClick = onBack,
-        onEditarClick = onEditarSeccion,
-        onEnviarClick = onEnviarExitoso,
-    )
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onErrorShown()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Surface,
+    ) { innerPadding ->
+        ConfirmarSolicitudScreen(
+            state = uiState,
+            aceptaTerminos = aceptaTerminos,
+            onAceptaTerminosChange = { aceptaTerminos = it },
+            onBackClick = onBack,
+            onEditarClick = onEditarSeccion,
+            onEnviarClick = {
+                viewModel.enviarSolicitud { solicitudId ->
+                    onEnviarExitoso(solicitudId)
+                }
+            },
+            modifier = Modifier.padding(innerPadding),
+        )
+    }
 }
 
 // PAGE: paso 6 de 6 (Confirmar). Sin estado propio: todo entra por parametros.

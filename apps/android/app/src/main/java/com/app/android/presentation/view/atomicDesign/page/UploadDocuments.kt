@@ -1,6 +1,5 @@
 package com.app.android.presentation.view.atomicDesign.page
 
-//Necessary libraries for the design part
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -28,19 +27,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
 import com.app.android.presentation.util.utilSolicitudes.readPickedFile
-import com.app.android.presentation.view.ui.theme.AndroidTheme
-
-//imports of atoms and molecules
-import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
-import com.app.android.presentation.view.atomicDesign.organism.NavBar
-import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCardEmpty
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCard
-import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
+import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCardEmpty
 import com.app.android.presentation.view.atomicDesign.atomic.HeatherSection
 import com.app.android.presentation.view.atomicDesign.atomic.HelperText
+import com.app.android.presentation.view.atomicDesign.atomic.InfoCard
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
+import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
+import com.app.android.presentation.view.atomicDesign.organism.NavBar
+import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.DocumentSlot
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsViewModel
@@ -85,9 +82,10 @@ fun UploadDocumentsRoute(
         )
     }
 }
-//Main function that calls the atoms and molecules
+
+// Main function that calls the atoms and molecules
+// Parameters that we are going to recieve
 @Composable
-//Parameters that we are going to recieve
 fun UploadDocuments(
     uiState: UploadDocumentsUiState,
     onPickFile: (DocumentType) -> Unit,
@@ -97,30 +95,30 @@ fun UploadDocuments(
     onContinuarClick: () -> Unit = {},
     onNavSelect: (Int) -> Unit = {},
 ) {
-    //We create a variable for errors
+    // We create a variable for errors
     val snackbarHostState = remember { SnackbarHostState() }
-    //Show the error one time and alerts the viewModel to clean the mistake
+    // Show the error one time and alerts the viewModel to clean the mistake
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
-            //cleaning of the error
+            // cleaning of the error
             snackbarHostState.showSnackbar(it)
             onErrorShown()
         }
     }
-    //We Use scaffold to make it according to the screen
+    // We Use scaffold to make it according to the screen
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            //We use the top bar and give different values
+            // We use the top bar and give different values
             AppTopBar(
                 titulo = "Solicitud de adopción",
                 onBackClick = onBackClick,
-                onNotificacionesClick = onNotificacionesClick
+                onNotificacionesClick = onNotificacionesClick,
             )
         },
-        //We show the mistake in top of the app
+        // We show the mistake in top of the app
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        //We locate the bottom bar
+        // We locate the bottom bar
         bottomBar = {
             Column {
                 AppButton(
@@ -128,57 +126,61 @@ fun UploadDocuments(
                     onClick = onContinuarClick,
                     enabled = uiState.canContinue,
                     variant = ButtonVariant.Primary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
                 )
 
                 NavBar(
                     selected = 3,
-                    onSelect = onNavSelect
+                    onSelect = onNavSelect,
                 )
             }
-        }
+        },
     ) { innerPadding ->
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(innerPadding)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            //More functions needed
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            // More functions needed
             IndicadorPasos(pasoActual = 4)
             HeatherSection(
                 titulo = "Documentos",
-                descripcion = "Adjunta tus documentos. La información se usará únicamente para tu proceso de adopción."
+                descripcion = "Adjunta tus documentos. La información se usará únicamente para tu proceso de adopción.",
             )
             DocumentCard(
                 title = "Identificación Oficial",
                 slot = uiState.slots.getValue(DocumentType.INE),
-                onPick = {onPickFile (DocumentType.INE)}
+                onPick = { onPickFile(DocumentType.INE) },
             )
             DocumentCard(
                 title = "Comprobante de domicilio",
                 slot = uiState.slots.getValue(DocumentType.DOMICILIO),
-                onPick = {onPickFile (DocumentType.DOMICILIO)}
+                onPick = { onPickFile(DocumentType.DOMICILIO) },
             )
 
             HelperText(
-                text = "PDF, JPG o PNG · Máximo 5 MB por archivo. Asegúrate de que los datos sean legibles."
+                text = "PDF, JPG o PNG · Máximo 5 MB por archivo. Asegúrate de que los datos sean legibles.",
             )
             InfoCard(
-                text = "Tus documentos están protegidos y solo los revisará el equipo de adopciones"
+                text = "Tus documentos están protegidos y solo los revisará el equipo de adopciones",
             )
         }
     }
 }
 
-//It chooses the card that is going to display based on the state
+// It chooses the card that is going to display based on the state
 @Composable
 private fun DocumentCard(
     title: String,
     slot: DocumentSlot,
-    onPick: () -> Unit
+    onPick: () -> Unit,
 ) {
     if (slot.isLoaded) {
         FileUploadCard(
@@ -187,42 +189,45 @@ private fun DocumentCard(
             fileInfo = slot.fileInfo,
             onClick = onPick,
             onChangeClick = onPick,
-            enabled = !slot.isUploading
+            enabled = !slot.isUploading,
         )
     } else {
         FileUploadCardEmpty(
             title = title,
             onClick = onPick,
-            enabled = !slot.isUploading
+            enabled = !slot.isUploading,
         )
     }
 }
 
-//To load the preview
+// To load the preview
 @Preview(
     showBackground = true,
     name = "Subir documentos",
-    device = "spec:width=411dp,height=891dp"
+    device = "spec:width=411dp,height=891dp",
 )
 @Composable
 fun UploadDocumentsPreview() {
     AndroidTheme {
         UploadDocuments(
-            uiState = UploadDocumentsUiState(
-                slots = mapOf(
-                    DocumentType.INE to DocumentSlot(
-                        fileName = "INE_Sofia_Garcia.pdf",
-                        fileInfo = "1.2 MB · Listo para subir"
-                    ),
-                    DocumentType.DOMICILIO to DocumentSlot()
-                )
-            ),
+            uiState =
+                UploadDocumentsUiState(
+                    slots =
+                        mapOf(
+                            DocumentType.INE to
+                                DocumentSlot(
+                                    fileName = "INE_Sofia_Garcia.pdf",
+                                    fileInfo = "1.2 MB · Listo para subir",
+                                ),
+                            DocumentType.DOMICILIO to DocumentSlot(),
+                        ),
+                ),
             onPickFile = {},
             onErrorShown = {},
             onBackClick = {},
             onNotificacionesClick = {},
             onContinuarClick = {},
-            onNavSelect = {}
+            onNavSelect = {},
         )
     }
 }

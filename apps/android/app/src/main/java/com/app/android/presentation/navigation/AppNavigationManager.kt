@@ -353,15 +353,19 @@ fun AppNavigation() {
             ConfirmarRoute(
                 onBack = { navController.navigateUp() },
                 onEditarSeccion = { seccion ->
-                    when (seccion) {
-                        SeccionSolicitud.DATOS_GENERALES -> navController.navigate(Screen.DatosGenerales.ruta)
-                        SeccionSolicitud.TU_HOGAR -> navController.navigate(Screen.TuHogar.ruta)
-                        SeccionSolicitud.COMPROMISO -> navController.navigate(Screen.Compromiso.ruta)
-                        SeccionSolicitud.DOCUMENTOS -> navController.navigate(Screen.Documentos.ruta)
-                    }
+                    val rutaDestino =
+                        when (seccion) {
+                            SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.ruta
+                            SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.ruta
+                            SeccionSolicitud.COMPROMISO -> Screen.Compromiso.ruta
+                            SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.ruta
+                        }
+                    navController.popBackStack(rutaDestino, inclusive = false)
                 },
-                onEnviarExitoso = {
-                    // Acción al enviar solicitud exitosamente
+                onEnviarExitoso = { solicitudId ->
+                    navController.navigate(Screen.SolicitudEnviada.crearRuta(solicitudId)) {
+                        popUpTo(Screen.Catalogo.ruta) { inclusive = false }
+                    }
                 },
             )
         }
