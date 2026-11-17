@@ -102,7 +102,6 @@ function renderRows(rows) {
     folioCell.append(folio);
 
     const adopterCell = document.createElement("td");
-    adopterCell.className = "adopter-cell";
     const adopterName = document.createElement("strong");
     adopterName.className = "adopter-name";
     adopterName.textContent =
@@ -113,7 +112,8 @@ function renderRows(rows) {
     adopterCell.append(adopterName, email);
 
     const dogCell = document.createElement("td");
-    dogCell.className = "dog-cell";
+    const dogInfo = document.createElement("div");
+    dogInfo.className = "dog-info";
     const photo = document.createElement("img");
     photo.className = "dog-photo";
     photo.src = row.perro?.foto_url || "/favicon.svg";
