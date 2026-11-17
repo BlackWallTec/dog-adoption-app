@@ -186,4 +186,52 @@ describe("SolicitudCfdiModel", () => {
     });
     expect(crearUrlFirmadaMock).toHaveBeenCalledWith("user-1", "user-1/constancia.pdf");
   });
+
+  it("mantiene el detalle si falla el enlace firmado y lo señala para revisión", async () => {
+    const idSolicitud = "b2e87183-0b85-4840-a5e7-5eae19dce391";
+    fromMock.mockImplementation((table) => {
+      if (table === "solicitud_cfdi") {
+        return crearQuery({
+          data: {
+            id_solicitud_cfdi: idSolicitud,
+            id_donativo: "f5348be0-4b19-4bf8-b72b-5721b51c5e93",
+            estado: "Pendiente de atención",
+            fecha_solicitud: "2026-11-14T10:00:00Z",
+          },
+          error: null,
+        });
+      }
+      if (table === "donativo") {
+        return crearQuery({
+          data: {
+            id_donativo: "f5348be0-4b19-4bf8-b72b-5721b51c5e93",
+            id_usuario: "user-1",
+            monto: 250,
+            fecha: "2026-11-13T10:00:00Z",
+            estado: "Validado",
+            usuario: { id_usuario: "user-1", nombre: "Ana", apellidos: "Luna" },
+          },
+          error: null,
+        });
+      }
+      throw new Error(`Tabla inesperada: ${table}`);
+    });
+    DatosFiscalesModel.getByUsuario.mockResolvedValue({
+      rfc: "XAXX010101000",
+      razon_social: "Ana Luna",
+      regimen_fiscal: "601",
+      codigo_postal: "76000",
+      correo_facturacion: "facturacion@example.com",
+      constancia_url: "user-1/constancia.pdf",
+    });
+    crearUrlFirmadaMock.mockRejectedValueOnce(new Error("Archivo no encontrado"));
+
+    const detalle = await SolicitudCfdiModel.getDetallePendiente(idSolicitud);
+
+    expect(detalle.datos_fiscales.constancia_url).toBeNull();
+    expect(detalle.listo_para_emitir).toBe(false);
+    expect(detalle.motivos_revision).toContain(
+      "No se pudo generar el acceso temporal a la constancia fiscal.",
+    );
+  });
 });

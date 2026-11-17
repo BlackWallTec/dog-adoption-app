@@ -17,18 +17,7 @@ function tieneContenido(valor) {
   return typeof valor === "string" && valor.trim().length > 0;
 }
 
-function datosFiscalesCompletos(idUsuario, datosFiscales) {
-  return (
-    tieneContenido(datosFiscales?.rfc) &&
-    tieneContenido(datosFiscales?.razon_social) &&
-    tieneContenido(datosFiscales?.regimen_fiscal) &&
-    tieneContenido(datosFiscales?.codigo_postal) &&
-    tieneContenido(datosFiscales?.correo_facturacion) &&
-    DatosFiscalesModel.esRutaConstanciaValida(idUsuario, datosFiscales?.constancia_url)
-  );
-}
-
-function obtenerMotivosRevision(donativo, datosFiscales) {
+function obtenerMotivosRevision(donativo, idUsuario, datosFiscales) {
   const motivos = [];
 
   if (!donativo || donativo.estado !== ESTADO_DONATIVO_VALIDADO) {
@@ -45,9 +34,7 @@ function obtenerMotivosRevision(donativo, datosFiscales) {
     motivos.push("Faltan datos fiscales obligatorios.");
   }
 
-  if (
-    !DatosFiscalesModel.esRutaConstanciaValida(donativo?.id_usuario, datosFiscales?.constancia_url)
-  ) {
+  if (!DatosFiscalesModel.esRutaConstanciaValida(idUsuario, datosFiscales?.constancia_url)) {
     motivos.push("No hay una constancia fiscal disponible.");
   }
 
@@ -115,6 +102,7 @@ class SolicitudCfdiModel {
       const datosFiscales = usuario?.id_usuario
         ? datosFiscalesPorUsuario.get(String(usuario.id_usuario))
         : null;
+      const motivosRevision = obtenerMotivosRevision(donativo, usuario?.id_usuario, datosFiscales);
 
       return {
         id_solicitud_cfdi: solicitud.id_solicitud_cfdi,
@@ -122,10 +110,7 @@ class SolicitudCfdiModel {
         fecha_solicitud: solicitud.fecha_solicitud,
         estado: solicitud.estado,
         donante: obtenerNombreUsuario(usuario),
-        requiere_revision:
-          !donativo ||
-          donativo.estado !== ESTADO_DONATIVO_VALIDADO ||
-          !datosFiscalesCompletos(usuario?.id_usuario, datosFiscales),
+        requiere_revision: motivosRevision.length > 0,
       };
     });
   }
@@ -161,16 +146,20 @@ class SolicitudCfdiModel {
     const datosFiscales = donativo?.id_usuario
       ? await DatosFiscalesModel.getByUsuario(donativo.id_usuario)
       : null;
-    const motivosRevision = obtenerMotivosRevision(donativo, datosFiscales);
+    const motivosRevision = obtenerMotivosRevision(donativo, donativo?.id_usuario, datosFiscales);
 
     let constanciaUrl = null;
     if (
       DatosFiscalesModel.esRutaConstanciaValida(donativo?.id_usuario, datosFiscales?.constancia_url)
     ) {
-      constanciaUrl = await DatosFiscalesModel.crearUrlFirmadaConstancia(
-        donativo.id_usuario,
-        datosFiscales.constancia_url,
-      );
+      try {
+        constanciaUrl = await DatosFiscalesModel.crearUrlFirmadaConstancia(
+          donativo.id_usuario,
+          datosFiscales.constancia_url,
+        );
+      } catch {
+        motivosRevision.push("No se pudo generar el acceso temporal a la constancia fiscal.");
+      }
     }
 
     return {
