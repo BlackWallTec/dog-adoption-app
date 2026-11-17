@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("../../src/config/supabaseClient.js", () => ({
 <<<<<<< HEAD
+<<<<<<< HEAD
   supabase: { from: vi.fn(), rpc: vi.fn() },
   supabaseAdmin: { from: vi.fn(), rpc: vi.fn() },
 }));
@@ -19,6 +20,13 @@ import { supabase, supabaseAdmin } from "../../src/config/supabaseClient.js";
 
 import { supabaseAdmin } from "../../src/config/supabaseClient.js";
 >>>>>>> 37c39bc (fix(api): revert inscripcion.model.test.js to the original develop code)
+=======
+  supabase: { from: vi.fn(), rpc: vi.fn() },
+  supabaseAdmin: { from: vi.fn(), rpc: vi.fn() },
+}));
+
+import { supabase, supabaseAdmin } from "../../src/config/supabaseClient.js";
+>>>>>>> 5e644f7 (fix(api): intento de fix de inscripcion.model.test.js)
 import {
   cancelarInscripcionModel,
   contarInscritosModel,
@@ -29,11 +37,15 @@ import {
 
 /*
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5e644f7 (fix(api): intento de fix de inscripcion.model.test.js)
  * Supabase se usa "encadenando" llamadas:
  *     await supabase.from("tabla").select("x").eq("y", 1)
  * Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
  * entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
  * para revisar con qué argumentos se llamaron.
+<<<<<<< HEAD
 =======
 - Supabase se usa "encadenando" llamadas:
 -     await supabaseAdmin.from("tabla").select("x").eq("y", 1).maybeSingle()
@@ -41,6 +53,8 @@ import {
 - entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
 - para revisar con qué argumentos se llamaron.
 >>>>>>> 37c39bc (fix(api): revert inscripcion.model.test.js to the original develop code)
+=======
+>>>>>>> 5e644f7 (fix(api): intento de fix de inscripcion.model.test.js)
  */
 const simularConsulta = (resultado) => {
   const consulta = {
@@ -49,7 +63,7 @@ const simularConsulta = (resultado) => {
     // La cadena termina en `.eq()`: la hacemos "esperable" con await.
     then: (resolver) => resolver(resultado),
   };
-  supabaseAdmin.from.mockReturnValue(consulta);
+  supabase.from.mockReturnValue(consulta);
   return consulta;
 };
 
@@ -66,12 +80,17 @@ describe("contarInscritosModel", () => {
     await contarInscritosModel("p1");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     expect(supabase.rpc).toHaveBeenCalledWith("contar_inscritos", { p_id_programa: "p1" });
     expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
 =======
     expect(supabaseAdmin.from).toHaveBeenCalledWith("programa");
     expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
 >>>>>>> 37c39bc (fix(api): revert inscripcion.model.test.js to the original develop code)
+=======
+    expect(supabase.rpc).toHaveBeenCalledWith("contar_inscritos", { p_id_programa: "p1" });
+    expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
+>>>>>>> 5e644f7 (fix(api): intento de fix de inscripcion.model.test.js)
   });
 
   // Rangos y límites: el conteo más pequeño posible, uno normal y uno muy grande.
