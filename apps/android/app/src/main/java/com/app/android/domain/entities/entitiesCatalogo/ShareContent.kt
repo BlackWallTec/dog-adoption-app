@@ -13,4 +13,4 @@ class ShareContent (
         "Sexo: $sexo \n"+
         "Descripcion: $descripcion \n"+
         "Ádoptalo aqui: $enlace"
-}   
+}
