@@ -34,22 +34,43 @@ import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.viewmodel.viewModelPerfiles.LoginUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.LoginViewModel
 
+// Pantalla del login
+
 @Composable
+// Sólo dibuja, recibe estado y lambdas
 fun LoginScreen(
     onBackToCatalog: () -> Unit,
     onExploreWithoutAccount: () -> Unit,
     onRegister: () -> Unit,
     onAuthenticated: (Sesion) -> Unit,
+    // ViewModel por default
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
+
+    // Apegándose al ciclo de vida de la pantalla recoge uiState como un State observable
+    // para el motor, pausa cuando la pantalla no está activa
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Ahora se recolecta todo cambio del uiState de ViewModel
+
+    // Con LaunchedEffect, sólo una recomposición
+    // referente astate.sesionLista vuelve a lanzar el bloque
     LaunchedEffect(state.sesionLista) {
-        state.sesionLista?.let { sesion ->
+        // El bloque sólo ejecuta si state.sesionLista no es null
+        state.sesionLista?.let{ sesion ->
+            // Consume la sesión
             viewModel.consumirSesion()
+            // y navega a la pantalla de inicio
             onAuthenticated(sesion)
         }
     }
-    BackHandler { viewModel.cancelLogin(); onBackToCatalog() }
+
+    // Define el comportamiento a seguir al pulsar el botón de atrás de la system navbar
+    BackHandler {
+        viewModel.cancelLogin();
+        onBackToCatalog()
+    }
+
     LoginContent(
         state, viewModel::onEmailChange, viewModel::onPasswordChange, viewModel::login,
         onBackToCatalog = { viewModel.cancelLogin(); onBackToCatalog() },
@@ -61,7 +82,7 @@ fun LoginScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun LoginContent(
-    state: LoginUiState,
+    state: LoginUiState,    // Datos y estados de la pantalla
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onLogin: () -> Unit,
@@ -69,19 +90,39 @@ internal fun LoginContent(
     onExploreWithoutAccount: () -> Unit,
     onRegister: () -> Unit,
 ) {
+    // Obtiene el control para quitar el foco de los campos que obtienen el foco
+    // (por ejemplo al ser tocados, gracias a esto se puede controlar ese foco)
     val focus = LocalFocusManager.current
-    var visible by rememberSaveable { mutableStateOf(false) }
-    val submit = { focus.clearFocus(); onLogin() }
+
+    // Controla la visibilidad de la contraseña
+    var visible by rememberSaveable {
+        mutableStateOf(false)
+    }
+    
+    // Quita el foco para llamar a onLogin
+    val submit = {
+        focus.clearFocus();
+        onLogin()
+    }
+
+    // Contenido de la pantalla
+    // Se utiliza trailing lambda para pasar al parámetro content una función para dibujar
+    // el contenido. Básicamente la notación mencionada equivale a poner toda la función de padding
+    // (el content) entre los paréntesis del Scaffold, para que este la use con algún paddingValue
+    // Ver documentación de Scaffold para más info.
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(title = { Text("Iniciar sesión") }, navigationIcon = {
                 IconButton(onClick = onBackToCatalog) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Volver al catálogo")
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack,"Volver al catálogo")
                 }
-            })
+            }
+            )
         },
-    ) { padding ->
+    ) {
+        // El paddingValues que especifique Scaffold se utilizará como padding en esta función
+        padding ->
         Box(Modifier.fillMaxSize().padding(padding).imePadding(), contentAlignment = Alignment.TopCenter) {
             Column(
                 Modifier.widthIn(max = 480.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -92,13 +133,16 @@ internal fun LoginContent(
                     Image(painterResource(R.drawable.perfiles_brand_mark), "Qariño Animal, labor con amor", Modifier.size(76.dp, 50.dp))
                     Text("labor con amor", fontSize = 10.sp)
                 }
+
                 Text("¡Bienvenido!", style = MaterialTheme.typography.titleLarge)
                 Text("Tu próxima historia de cariño empieza aquí.")
+
                 OutlinedTextField(
                     value = state.email, onValueChange = onEmailChange, label = { Text("Correo") },
                     enabled = !state.isLoading, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("login_email"),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next, autoCorrectEnabled = false),
                 )
+
                 OutlinedTextField(
                     value = state.password, onValueChange = onPasswordChange, label = { Text("Contraseña") },
                     enabled = !state.isLoading, singleLine = true, modifier = Modifier.fillMaxWidth().testTag("login_password"),
@@ -112,6 +156,7 @@ internal fun LoginContent(
                         }
                     },
                 )
+
                 state.error?.let { PerfilesError(it) }
                 AppButton("Iniciar sesión", submit, Modifier.fillMaxWidth().testTag("login_submit"),
                     isLoading = state.isLoading, loadingDescription = "Iniciando sesión")
@@ -129,7 +174,11 @@ internal fun LoginContent(
 
 @Preview(name = "Login", showBackground = true, widthDp = 360, heightDp = 800)
 @Preview(name = "Login pequeño", showBackground = true, widthDp = 320, heightDp = 740, fontScale = 1.15f)
+
 @Composable
 private fun LoginPreview() {
     AndroidTheme { LoginContent(LoginUiState(), {}, {}, {}, {}, {}, {}) }
 }
+
+// * Me refiero al runtime de Compose como el motor
+// porque observa estado y decide qué se recompone y lo dibuja
