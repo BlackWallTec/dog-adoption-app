@@ -34,7 +34,7 @@ const simularConsulta = (resultado) => {
     // La cadena termina en `.eq()`: la hacemos "esperable" con await.
     then: (resolver) => resolver(resultado),
   };
-  supabase.from.mockReturnValue(consulta);
+  supabaseAdmin.from.mockReturnValue(consulta);
   return consulta;
 };
 
@@ -172,7 +172,7 @@ describe("getIdsProgramasInscritosModel", () => {
 
     const resultado = await getIdsProgramasInscritosModel("u1");
 
-    expect(supabase.from).toHaveBeenCalledWith("se_inscribe");
+    expect(supabaseAdmin.from).toHaveBeenCalledWith("se_inscribe");
     expect(consulta.eq).toHaveBeenCalledWith("id_usuario", "u1");
     expect(consulta.eq).toHaveBeenCalledWith("estado", "Aceptado");
     expect(resultado).toEqual(new Set(["p1", "p2"]));
@@ -208,7 +208,11 @@ describe("cancelarInscripcionModel", () => {
   };
 
   it("cambia el estado a Pendiente solo de la inscripción activa de ese usuario y programa", async () => {
-    const fila = { id_programa: "p1", fecha_inscripcion: "2026-11-05T12:00:00", estado: "Pendiente" };
+    const fila = {
+      id_programa: "p1",
+      fecha_inscripcion: "2026-11-05T12:00:00",
+      estado: "Pendiente",
+    };
     const consulta = simularUpdate({ data: fila, error: null });
 
     await expect(cancelarInscripcionModel("p1", "u1")).resolves.toEqual(fila);

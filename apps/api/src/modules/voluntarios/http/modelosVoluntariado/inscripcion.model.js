@@ -12,7 +12,7 @@ const lanzarError = (contexto, error) => {
 
 // Datos del programa necesarios para validar la cancelación (HU37)
 export const getProgramaInscripcionModel = async (idPrograma) => {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("programa")
     .select("id_programa, fecha_inicio, cupo_maximo, estado_del_programa")
     .eq("id_programa", idPrograma)
@@ -67,7 +67,7 @@ export const getInscritosByProgramaModel = async (idPrograma) => {
 
 // Ids de los programas en los que el usuario está inscrito (activo), para el botón del catálogo
 export const getIdsProgramasInscritosModel = async (idUsuario) => {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_usuario", idUsuario)
