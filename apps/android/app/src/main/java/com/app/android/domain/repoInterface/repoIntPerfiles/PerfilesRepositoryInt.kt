@@ -2,6 +2,8 @@ package com.app.android.domain.repoInterface.repoIntPerfiles
 
 import com.app.android.domain.entities.entitiesPerfiles.*
 
+/**
+ * **/
 interface PerfilesRepositoryInt {
     // Autentica y guarda exclusivamente el token cifrado.
     suspend fun login(correo: String, contrasena: String): Result<Sesion>

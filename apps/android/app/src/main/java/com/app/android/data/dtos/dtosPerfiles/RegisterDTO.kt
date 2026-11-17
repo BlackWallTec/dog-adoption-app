@@ -9,6 +9,7 @@ import com.google.gson.annotations.SerializedName
  * El repositorio utiliza este DTO para enviar Registro al endpoint POST /register.
  */
 data class RegisterRequestDTO(
+    // SerializedName relaciona la propiedad de Kotlin con la clave JSON que espera el backend.
     @SerializedName("nombre") val nombre: String,
     @SerializedName("apellidos") val apellidos: String,
     @SerializedName("fecha_nacimiento") val fechaNacimiento: String,
@@ -25,6 +26,7 @@ data class RegisterRequestDTO(
 
 /** Representa el usuario que devuelve el backend cuando la cuenta se creó correctamente. */
 data class RegisterResponseDTO(
+    // ? permite un valor nulo; el repositorio comprueba este usuario al convertir la respuesta.
     @SerializedName("user") val user: UserDTO?,
 )
 
@@ -32,6 +34,7 @@ data class RegisterResponseDTO(
  * Convierte el modelo de domain al envío JSON y normaliza espacios, correo y teléfono.
  * Ambas contraseñas se envían tal como se capturaron, sin recortarlas ni cambiarlas.
  */
+// Es una función de extensión: permite convertir el modelo llamando registro.toRequest().
 fun Registro.toRequest() = RegisterRequestDTO(
     nombre = nombre.trim(),
     apellidos = apellidos.trim(),

@@ -34,17 +34,23 @@ import com.app.android.presentation.viewmodel.viewModelPerfiles.RegistroViewMode
  * Cancelar detiene el trabajo del formulario y notifica la salida mediante onCancel.
  */
  
+// @Composable declara una función que Compose utiliza para construir la interfaz.
 @Composable
 fun RegistroScreen(
     onCancel: () -> Unit,
     onRegistered: () -> Unit,
+    // Hilt obtiene el ViewModel de esta pantalla y resuelve sus dependencias.
     viewModel: RegistroViewModel = hiltViewModel(),
 ) {
+    // Observa el flujo mientras la pantalla está activa y actualiza la UI con sus cambios.
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // LaunchedEffect reacciona al cambio de esta clave; consumir el éxito evita repetir la navegación.
     LaunchedEffect(state.registroExitoso) {
         if (state.registroExitoso) { viewModel.consumirRegistro(); onRegistered() }
     }
+    // Intercepta el botón o gesto de atrás del teléfono para cancelar también el trabajo pendiente.
     BackHandler { viewModel.cancelar(); onCancel() }
+    // :: pasa referencias a funciones del ViewModel para ejecutarlas cuando la vista notifique una acción.
     RegistroContent(state, viewModel::actualizar, viewModel::privacidad, viewModel::registrar,
         onCancel = { viewModel.cancelar(); onCancel() },
         onColonia = viewModel::seleccionarColonia)
@@ -65,6 +71,7 @@ internal fun RegistroContent(
     onColonia: (String) -> Unit,
 ) {
     val focus = LocalFocusManager.current
+    // rememberSaveable conserva estas opciones visuales al recrear la pantalla, por ejemplo al girarla.
     var visible by rememberSaveable { mutableStateOf(false) }
     var avisoVisible by rememberSaveable { mutableStateOf(false) }
     val d = state.datos
@@ -81,9 +88,12 @@ internal fun RegistroContent(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = { TopAppBar(title = { Text("Crear cuenta") }, actions = {
+            // testTag asigna un identificador que las pruebas de Compose pueden buscar con onNodeWithTag(...).
+            // No es texto visible: permite localizar el control aunque cambie su etiqueta en pantalla.
             TextButton(onClick = onCancel, modifier = Modifier.testTag("register_cancel")) { Text("Cancelar") }
         }) },
     ) { padding ->
+        // imePadding añade espacio para el teclado; verticalScroll permite recorrer el formulario.
         Column(Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text("Tu próxima historia de cariño empieza aquí.", style = MaterialTheme.typography.titleLarge)
@@ -103,6 +113,7 @@ internal fun RegistroContent(
                         value = valor, onValueChange = { onChange(clave, it) }, label = { Text(etiqueta) },
                         enabled = !state.isLoading, singleLine = true, isError = state.campos[clave] != null,
                         supportingText = state.campos[clave]?.let { mensaje -> { Text(mensaje) } },
+                        // Genera etiquetas como register_nombre y register_correo para identificar cada campo en pruebas.
                         modifier = Modifier.fillMaxWidth().testTag("register_$clave"), shape = RoundedCornerShape(16.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = teclado, imeAction = ImeAction.Next, autoCorrectEnabled = false),
                         visualTransformation = if (password && !visible) PasswordVisualTransformation() else VisualTransformation.None,
@@ -121,6 +132,7 @@ internal fun RegistroContent(
             }
             TextButton(onClick = { avisoVisible = !avisoVisible }) { Text("Aviso de privacidad del registro") }
             if (avisoVisible) Text("Tus datos se utilizarán para crear tu cuenta, permitirte acceder a ella y gestionar tus trámites con Qariño Animal. El personal autorizado podrá consultar la información necesaria para atenderlos.")
+            // toggleable hace pulsable toda la fila; el Checkbox refleja el valor controlado por esa fila.
             Row(Modifier.fillMaxWidth().testTag("register_privacidad")
                 .toggleable(d.privacidad, enabled = !state.isLoading, role = Role.Checkbox, onValueChange = onPrivacyChange),
                 verticalAlignment = Alignment.CenterVertically) {
@@ -138,6 +150,7 @@ internal fun RegistroContent(
     }
 }
 
+// Preview muestra el diseño con un estado de ejemplo y callbacks vacíos; no envía un registro a la API.
 @Preview(name = "Crear cuenta", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 private fun RegistroPreview() {

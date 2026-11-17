@@ -5,7 +5,9 @@ package com.app.android.domain.entities.entitiesPerfiles
  * RegistroViewModel los actualiza y RegisterDTO los convierte al formato de POST /register.
  * Conserva el ID de la colonia seleccionada, los datos personales y la aceptación de privacidad.
  */
+// data class genera copy, que el ViewModel usa para actualizar los datos del formulario.
 data class Registro(
+    // val impide reasignar cada propiedad; para modificar datos se crea una nueva copia de Registro.
     val nombre: String = "",
     val apellidos: String = "",
     val correo: String = "",

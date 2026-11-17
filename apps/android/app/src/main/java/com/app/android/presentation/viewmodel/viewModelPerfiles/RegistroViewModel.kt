@@ -36,6 +36,7 @@ data class RegistroUiState(
  * Consulta colonias con BuscarCodigosPostalesUseCase y publica sus resultados para la pantalla.
  * Los errores de validación que devuelve el backend se muestran en los campos correspondientes.
  */
+// Estas anotaciones permiten que Hilt cree el ViewModel con los casos de uso que necesita.
 @HiltViewModel
 class RegistroViewModel @Inject constructor(
     private val registrar: RegistrarUseCase,
@@ -49,6 +50,7 @@ class RegistroViewModel @Inject constructor(
     fun actualizar(campo: String, valor: String) {
         if (_uiState.value.isLoading) return
         if (campo == "codigoPostal") { actualizarCodigoPostal(valor); return }
+        // update publica el nuevo estado; copy cambia el campo elegido conservando los demás valores.
         _uiState.update { state ->
             val d = state.datos
             val datos = when (campo) {
@@ -82,6 +84,7 @@ class RegistroViewModel @Inject constructor(
     /** Cambiar el CP descarta la colonia anterior y cancela la consulta que ya no corresponde. */
     private fun actualizarCodigoPostal(valor: String) {
         val cp = valor.filter(Char::isDigit).take(5)
+        // ?. llama a cancel sólo si ya existe una búsqueda: la anterior deja de corresponder al CP escrito.
         cpJob?.cancel()
         _uiState.update { it.copy(
             codigoPostal = cp, colonias = emptyList(), datos = it.datos.copy(idCodigoPostal = ""),
@@ -105,12 +108,15 @@ class RegistroViewModel @Inject constructor(
         val state = _uiState.value
         if (state.isLoading || state.registroExitoso) return
         _uiState.update { it.copy(isLoading = true, campos = emptyMap(), error = null) }
+        // launch inicia una corrutina ligada al ViewModel; al destruirse éste, se cancela su alcance.
         registroJob = viewModelScope.launch {
+            // fold separa el Result en éxito (onSuccess) o fallo (onFailure).
             registrar(state.datos).fold(
                 onSuccess = { _uiState.update { it.copy(
                     isLoading = false, registroExitoso = true,
                     datos = it.datos.copy(contrasena = "", confirmContrasena = ""),
                 ) } },
+                // as? convierte si el error es ErrorApi; ?. y orEmpty dejan un mapa vacío en otro caso.
                 onFailure = { error -> _uiState.update { it.copy(
                     isLoading = false, error = error.message, campos = (error as? ErrorApi)?.campos.orEmpty(),
                 ) } },
@@ -118,6 +124,7 @@ class RegistroViewModel @Inject constructor(
         }
     }
 
+    // Retira la señal de éxito después de atenderla para que la pantalla no repita la navegación.
     fun consumirRegistro() { _uiState.update { it.copy(registroExitoso = false) } }
 
     /** Cancela registro y búsqueda de colonias, y retira las contraseñas del estado del formulario. */
