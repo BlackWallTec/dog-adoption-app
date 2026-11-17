@@ -12,10 +12,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-//// se borro la  doble declaracion de LoginUiState
+// se borró una doble declaración de LoginUiState
+
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase) : ViewModel() {
+class LoginViewModel
+@Inject constructor(
+    // El viewmodel sólo recibe casos de uso
+    private val loginUseCase: LoginUseCase
+) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState = _uiState.asStateFlow()
     private var loginJob: Job? = null
@@ -44,7 +49,12 @@ class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase)
         }
     }
 
-    fun consumirSesion() { _uiState.update { it.copy(sesionLista = null) } }
+    //
+    fun consumirSesion() {
+        _uiState.update {
+            it.copy(sesionLista = null)
+        }
+    }
 
     fun cancelLogin() {
         loginJob?.cancel()

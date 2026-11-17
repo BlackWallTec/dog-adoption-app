@@ -31,4 +31,5 @@ internal fun validateLogin(state: LoginUiState): LoginUiState {
     )
 }
 
+// Gracias IA por otro día en que me das el regex como lo quería
 private val EMAIL_PATTERN = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
