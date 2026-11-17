@@ -7,11 +7,18 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("../../src/config/supabaseClient.js", () => ({
+<<<<<<< HEAD
   supabase: { from: vi.fn(), rpc: vi.fn() },
   supabaseAdmin: { from: vi.fn(), rpc: vi.fn() },
 }));
 
 import { supabase, supabaseAdmin } from "../../src/config/supabaseClient.js";
+=======
+  supabaseAdmin: { from: vi.fn() },
+}));
+
+import { supabaseAdmin } from "../../src/config/supabaseClient.js";
+>>>>>>> 37c39bc (fix(api): revert inscripcion.model.test.js to the original develop code)
 import {
   cancelarInscripcionModel,
   contarInscritosModel,
@@ -21,11 +28,19 @@ import {
 } from "../../src/modules/voluntarios/http/modelosVoluntariado/inscripcion.model.js";
 
 /*
+<<<<<<< HEAD
  * Supabase se usa "encadenando" llamadas:
  *     await supabase.from("tabla").select("x").eq("y", 1)
  * Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
  * entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
  * para revisar con qué argumentos se llamaron.
+=======
+- Supabase se usa "encadenando" llamadas:
+-     await supabaseAdmin.from("tabla").select("x").eq("y", 1).maybeSingle()
+- Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
+- entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
+- para revisar con qué argumentos se llamaron.
+>>>>>>> 37c39bc (fix(api): revert inscripcion.model.test.js to the original develop code)
  */
 const simularConsulta = (resultado) => {
   const consulta = {
@@ -34,7 +49,7 @@ const simularConsulta = (resultado) => {
     // La cadena termina en `.eq()`: la hacemos "esperable" con await.
     then: (resolver) => resolver(resultado),
   };
-  supabase.from.mockReturnValue(consulta);
+  supabaseAdmin.from.mockReturnValue(consulta);
   return consulta;
 };
 
@@ -50,8 +65,13 @@ describe("contarInscritosModel", () => {
 
     await contarInscritosModel("p1");
 
+<<<<<<< HEAD
     expect(supabase.rpc).toHaveBeenCalledWith("contar_inscritos", { p_id_programa: "p1" });
     expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
+=======
+    expect(supabaseAdmin.from).toHaveBeenCalledWith("programa");
+    expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
+>>>>>>> 37c39bc (fix(api): revert inscripcion.model.test.js to the original develop code)
   });
 
   // Rangos y límites: el conteo más pequeño posible, uno normal y uno muy grande.
