@@ -15,6 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * Estado del formulario: reúne datos capturados, colonias disponibles, errores y señales de carga/éxito.
+ * codigoPostal es el número escrito para buscar; datos.idCodigoPostal identifica la colonia elegida.
+ */
 data class RegistroUiState(
     val datos: Registro = Registro(),
     val codigoPostal: String = "",
@@ -27,6 +31,11 @@ data class RegistroUiState(
     val registroExitoso: Boolean = false,
 )
 
+/**
+ * Coordina la creación de cuenta desde presentation mediante RegistrarUseCase.
+ * Consulta colonias con BuscarCodigosPostalesUseCase y publica sus resultados para la pantalla.
+ * Los errores de validación que devuelve el backend se muestran en los campos correspondientes.
+ */
 @HiltViewModel
 class RegistroViewModel @Inject constructor(
     private val registrar: RegistrarUseCase,
@@ -70,6 +79,7 @@ class RegistroViewModel @Inject constructor(
         _uiState.update { it.copy(datos = it.datos.copy(idCodigoPostal = id), campos = it.campos - "id_codigo_postal", error = null) }
     }
 
+    /** Cambiar el CP descarta la colonia anterior y cancela la consulta que ya no corresponde. */
     private fun actualizarCodigoPostal(valor: String) {
         val cp = valor.filter(Char::isDigit).take(5)
         cpJob?.cancel()
@@ -90,6 +100,7 @@ class RegistroViewModel @Inject constructor(
         }
     }
 
+    /** Envía los datos al caso de uso, evita envíos duplicados y limpia las contraseñas tras el éxito. */
     fun registrar() {
         val state = _uiState.value
         if (state.isLoading || state.registroExitoso) return
@@ -109,6 +120,7 @@ class RegistroViewModel @Inject constructor(
 
     fun consumirRegistro() { _uiState.update { it.copy(registroExitoso = false) } }
 
+    /** Cancela registro y búsqueda de colonias, y retira las contraseñas del estado del formulario. */
     fun cancelar() {
         registroJob?.cancel()
         cpJob?.cancel()

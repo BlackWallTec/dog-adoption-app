@@ -3,6 +3,11 @@ package com.app.android.data.dtos.dtosPerfiles
 import com.app.android.domain.entities.entitiesPerfiles.Registro
 import com.google.gson.annotations.SerializedName
 
+/**
+ * Formato JSON de creación de cuenta: SerializedName conserva los nombres que espera la API.
+ * Incluye confirmación de contraseña e ID de la colonia, además de los datos personales.
+ * El repositorio utiliza este DTO para enviar Registro al endpoint POST /register.
+ */
 data class RegisterRequestDTO(
     @SerializedName("nombre") val nombre: String,
     @SerializedName("apellidos") val apellidos: String,
@@ -18,10 +23,15 @@ data class RegisterRequestDTO(
     @SerializedName("telefono") val telefono: String,
 )
 
+/** Representa el usuario que devuelve el backend cuando la cuenta se creó correctamente. */
 data class RegisterResponseDTO(
     @SerializedName("user") val user: UserDTO?,
 )
 
+/**
+ * Convierte el modelo de domain al envío JSON y normaliza espacios, correo y teléfono.
+ * Ambas contraseñas se envían tal como se capturaron, sin recortarlas ni cambiarlas.
+ */
 fun Registro.toRequest() = RegisterRequestDTO(
     nombre = nombre.trim(),
     apellidos = apellidos.trim(),

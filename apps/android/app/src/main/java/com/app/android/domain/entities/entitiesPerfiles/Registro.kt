@@ -1,6 +1,10 @@
 package com.app.android.domain.entities.entitiesPerfiles
 
-// Datos del formulario de registro (POST /register crea una cuenta Cliente).
+/**
+ * Datos de domain que la persona captura para crear una cuenta Cliente.
+ * RegistroViewModel los actualiza y RegisterDTO los convierte al formato de POST /register.
+ * Conserva el ID de la colonia seleccionada, los datos personales y la aceptación de privacidad.
+ */
 data class Registro(
     val nombre: String = "",
     val apellidos: String = "",

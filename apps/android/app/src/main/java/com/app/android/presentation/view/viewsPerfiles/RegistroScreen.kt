@@ -33,6 +33,7 @@ import com.app.android.presentation.viewmodel.viewModelPerfiles.RegistroViewMode
  * Al recibir registroExitoso, consume la señal y avisa a la navegación mediante onRegistered.
  * Cancelar detiene el trabajo del formulario y notifica la salida mediante onCancel.
  */
+ 
 @Composable
 fun RegistroScreen(
     onCancel: () -> Unit,
@@ -49,6 +50,10 @@ fun RegistroScreen(
         onColonia = viewModel::seleccionarColonia)
 }
 
+/**
+ * Dibuja los datos, las colonias y los errores por campo recibidos en RegistroUiState.
+ * Comunica cambios mediante callbacks; la vista no envía peticiones a la API.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RegistroContent(
