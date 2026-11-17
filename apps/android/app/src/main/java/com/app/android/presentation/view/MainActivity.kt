@@ -29,6 +29,8 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewMo
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
+import com.app.android.presentation.view.viewsCatalogo.CompartirScreen
+import com.app.android.domain.entities.entitiesCatalogo.Perro
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -42,7 +44,16 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // El enrutador toma el control total de la app desde aquí
                     //PerroScreen()
-                    AppNavigation()
+                    //AppNavigation()
+                    CompartirScreen(
+                        perro = Perro(
+                            id = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
+                            nombre = "Kira",
+                            edad = 3,
+                            sexo = "Hembra",
+                        )
+
+                    )
                 }
             }
         }
