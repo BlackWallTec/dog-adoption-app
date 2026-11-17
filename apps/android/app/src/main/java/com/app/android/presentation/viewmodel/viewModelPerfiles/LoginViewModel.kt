@@ -35,7 +35,8 @@ class LoginViewModel
     fun onEmailChange(email: String) {
         // Si no está cargando, actualiza el email pasándose el estado a sí mismo a la lambda
         if (!_uiState.value.isLoading)
-            // La función especificada para update, es la lambda que refiere al método copy del estado mismo
+            // La función especificada para update, es la lambda que refiere al método
+            // copy del estado mismo
             _uiState.update {
                 it.copy(email = email, error = null)
             }
@@ -44,7 +45,8 @@ class LoginViewModel
     fun onPasswordChange(password: String) {
         // Si no está cargando, actualiza password pasándose el estado a sí mismo a la lambda
         if (!_uiState.value.isLoading)
-        // La función especificada para update, es la lambda que refiere al método copy del estado mismo
+        // La función especificada para update, es la lambda que refiere al método
+        // copy del estado mismo
         _uiState.update {
             it.copy(password = password, error = null)
         }
@@ -58,7 +60,8 @@ class LoginViewModel
         if (datos.isLoading || datos.sesionLista != null) return
 
         // Establece que está cargando
-        // La función especificada para update, es la lambda que refiere al método copy del estado mismo
+        // La función especificada para update, es la lambda que refiere
+        // al método copy del estado mismo
         _uiState.update {
             it.copy(isLoading = true, error = null)
         }
@@ -84,13 +87,14 @@ class LoginViewModel
         }
     }
 
-    //
+    // Limpia la sesión
     fun consumirSesion() {
         _uiState.update {
             it.copy(sesionLista = null)
         }
     }
 
+    // Cancela la corrutina de login
     fun cancelLogin() {
         // Como se recomienda en la documentación de CoroutineScope, cancela
         // toda ejecución, por parte de la corrutina ahora que no se necesita hacer un Login

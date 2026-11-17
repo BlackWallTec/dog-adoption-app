@@ -15,7 +15,7 @@ data class LoginUiState(
     val sesionLista: Sesion? = null,
 )
 
-/** Validación de interfaz; las reglas de autenticación siguen perteneciendo al servidor. */
+// Validación de interfaz; las reglas de autenticación siguen perteneciendo al servidor
 internal fun validateLogin(state: LoginUiState): LoginUiState {
     val email = state.email.trim()
     val emailError = when {
