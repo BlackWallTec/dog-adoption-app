@@ -1,7 +1,5 @@
 package com.app.android.presentation.view.atomicDesign.page
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,6 +59,13 @@ fun ProgramasPage(
 ) {
     val colores = MaterialTheme.colorScheme
 
+    val programas: List<ProgramaUi> =
+        if (uiState is ProgramasUiState.Success) {
+            uiState.programas
+        } else {
+            emptyList()
+        }
+
     Scaffold(
         modifier = modifier,
         containerColor = colores.surface,
@@ -80,115 +85,110 @@ fun ProgramasPage(
             SnackbarHost(snackbarHostState)
         },
     ) { paddingInterno ->
-        Column(
+        ListaProgramas(
+            programas = programas,
+            onInscribirse = onInscribirse,
+            onCancelar = onCancelar,
+            onVerDetalle = onVerDetalle,
             modifier =
                 Modifier
                     .fillMaxSize()
                     .padding(paddingInterno)
                     .padding(horizontal = 16.dp),
-        ) {
-            Text(
-                text = titulo,
-                color = colores.inverseSurface,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 16.dp),
-            )
+            encabezado = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = titulo,
+                        color = colores.inverseSurface,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 16.dp),
+                    )
 
-            Text(
-                text = descripcion,
-                color = colores.inverseSurface,
-                fontSize = 16.sp,
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
-            )
+                    Text(
+                        text = descripcion,
+                        color = colores.inverseSurface,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
+                    )
 
-            onMisVoluntariados?.let { alTocar ->
-                AppButton(
-                    text = "Mis voluntariados",
-                    onClick = alTocar,
-                    variant = ButtonVariant.Outlined,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                )
-            }
-
-            if (
-                uiState is ProgramasUiState.Success ||
-                uiState is ProgramasUiState.Empty
-            ) {
-                FiltrosProgramasPanel(
-                    estado = filtrosState,
-                    onFiltrosChange = onFiltrosChange,
-                    onAplicarFiltros = onAplicarFiltros,
-                    onLimpiarFiltros = onLimpiarFiltros,
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            Box(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-            ) {
-                when (uiState) {
-                    is ProgramasUiState.Loading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
+                    onMisVoluntariados?.let { alTocar ->
+                        AppButton(
+                            text = "Mis voluntariados",
+                            onClick = alTocar,
+                            variant = ButtonVariant.Outlined,
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 16.dp),
                         )
                     }
 
-                    is ProgramasUiState.Empty -> {
-                        InfoMessageCard(
-                            mensaje = mensajeVacio,
-                            icono = Icons.Outlined.Info,
+                    if (
+                        uiState is ProgramasUiState.Success ||
+                        uiState is ProgramasUiState.Empty
+                    ) {
+                        FiltrosProgramasPanel(
+                            estado = filtrosState,
+                            onFiltrosChange = onFiltrosChange,
+                            onAplicarFiltros = onAplicarFiltros,
+                            onLimpiarFiltros = onLimpiarFiltros,
                         )
+
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    is ProgramasUiState.Error -> {
-                        Column(
-                            modifier = Modifier.align(Alignment.Center),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                        ) {
-                            ErrorMessage(text = uiState.mensaje)
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            AppButton(
-                                text = "Reintentar",
-                                onClick = onReintentar,
+                    when (uiState) {
+                        is ProgramasUiState.Loading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.CenterHorizontally),
                             )
                         }
-                    }
 
-                    is ProgramasUiState.Success -> {
-                        if (filtrosState.sinCoincidencias) {
+                        is ProgramasUiState.Empty -> {
+                            InfoMessageCard(
+                                mensaje = mensajeVacio,
+                                icono = Icons.Outlined.Info,
+                            )
+                        }
+
+                        is ProgramasUiState.Error -> {
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
+                                ErrorMessage(text = uiState.mensaje)
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                AppButton(
+                                    text = "Reintentar",
+                                    onClick = onReintentar,
+                                )
+                            }
+                        }
+
+                        is ProgramasUiState.Success -> {
+                            if (filtrosState.sinCoincidencias) {
                                 InfoMessageCard(
                                     mensaje = "No hay programas en esas fechas u horario.",
                                     icono = Icons.Outlined.Info,
                                 )
+
+                                Spacer(modifier = Modifier.height(8.dp))
 
                                 AppButton(
                                     text = "Limpiar filtros",
                                     onClick = onLimpiarFiltros,
                                 )
                             }
-                        } else {
-                            ListaProgramas(
-                                programas = uiState.programas,
-                                onInscribirse = onInscribirse,
-                                onCancelar = onCancelar,
-                                onVerDetalle = onVerDetalle,
-                            )
                         }
                     }
                 }
-            }
-        }
+            },
+        )
     }
 }
 
@@ -258,9 +258,10 @@ private fun ProgramasPageEmptyPreview() {
 private fun ProgramasPageErrorPreview() {
     AndroidTheme {
         ProgramasPage(
-            uiState = ProgramasUiState.Error(
-                "No se pudieron cargar los programas",
-            ),
+            uiState =
+                ProgramasUiState.Error(
+                    "No se pudieron cargar los programas",
+                ),
             onReintentar = {},
             onBackClick = {},
         )

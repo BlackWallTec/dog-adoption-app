@@ -11,11 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.app.android.domain.entities.entitiesVoluntariado.FiltrosProgramas
-import com.app.android.presentation.view.atomicDesign.atomic.AppButton
-import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
+import com.app.android.presentation.view.atomicDesign.atomic.FilterButton
+import com.app.android.presentation.view.atomicDesign.molecule.FilterActionBar
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.FiltrosProgramasUiState
 import java.time.LocalDate
 import java.time.LocalTime
@@ -83,6 +84,14 @@ fun FiltrosProgramasPanel(
             text = "Filtrar Programa",
             style = MaterialTheme.typography.titleMedium,
         )
+        Text(
+            text = "Selecciona las fechas y el horario de tu preferencia.",
+            style = MaterialTheme.typography.titleSmall
+        )
+        Text(
+            text = "Dia: ",
+            style = MaterialTheme.typography.titleSmall
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -116,6 +125,11 @@ fun FiltrosProgramasPanel(
             )
         }
 
+        Text(
+            text = "Hora: ",
+            style = MaterialTheme.typography.titleSmall
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -148,23 +162,10 @@ fun FiltrosProgramasPanel(
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            AppButton(
-                text = "Aplicar Filtros",
-                onClick = onAplicarFiltros,
-                variant = ButtonVariant.Secondary,
-                modifier = Modifier.weight(1f),
-            )
-            AppButton(
-                text = "Limpiar Filtros",
-                onClick = onLimpiarFiltros,
-                variant = ButtonVariant.Clear,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        FilterActionBar(
+            onClear = onLimpiarFiltros,
+            onApply = onAplicarFiltros,
+        )
     }
 }
 
@@ -185,11 +186,12 @@ private fun CampoFiltro(
             style = MaterialTheme.typography.labelMedium,
         )
 
-        AppButton(
+        FilterButton(
             text = valor ?: "Seleccionar",
+            selected = valor != null,
             onClick = onClick,
-            variant = ButtonVariant.Outlined,
             modifier = Modifier.fillMaxWidth(),
+            role = Role.Button,
         )
 
         if (error != null) {

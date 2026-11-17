@@ -10,6 +10,7 @@ import com.app.android.domain.entities.entitiesVoluntariado.Resultado
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
 import com.app.android.domain.repoInterface.repoIntVoluntariado.InscripcionRepository
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
+import com.app.android.domain.useCases.useCasesVoluntariado.FiltrarProgramasUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.InscribirseProgramaUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.ObtenerProgramasVigentesUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.CancelarInscripcionUseCase
@@ -85,10 +86,17 @@ class ProgramasViewModelTest {
         catalogo: ProgramaRepository = CatalogoFalso(),
         inscripciones: InscripcionRepository = RepositorioFalso(),
     ) = ProgramasViewModel(
-        ObtenerProgramasVigentesUseCase(catalogo),
-        InscribirseProgramaUseCase(inscripciones, RELOJ_FIJO),
-        CancelarInscripcionUseCase(inscripciones, RELOJ_FIJO),
-        RELOJ_FIJO,
+        obtenerProgramasVigentes = ObtenerProgramasVigentesUseCase(catalogo),
+        inscribirseEnPrograma = InscribirseProgramaUseCase(
+            inscripciones,
+            RELOJ_FIJO,
+        ),
+        cancelarInscripcionEnPrograma = CancelarInscripcionUseCase(
+            inscripciones,
+            RELOJ_FIJO,
+        ),
+        clock = RELOJ_FIJO,
+        filtrarProgramas = FiltrarProgramasUseCase(RELOJ_FIJO),
     )
 
     /*
