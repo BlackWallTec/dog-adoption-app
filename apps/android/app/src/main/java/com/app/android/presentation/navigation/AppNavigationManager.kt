@@ -5,10 +5,10 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,6 +22,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
+import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
+import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
@@ -38,7 +40,6 @@ import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripci
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
-
 
 // Regreso al catálogo sin dejar pantallas anteriores encima.
 private fun NavController.irAlCatalogo() {
@@ -62,12 +63,13 @@ private fun NavController.irAOpcionBarra(opcion: Int) {
         irAlCatalogo()
         return
     }
-    val destino = when (opcion) {
-        1 -> Screen.GrafoVoluntariado.ruta
-        2 -> Screen.DonarDinero.ruta
-        4 -> Screen.Cuenta.ruta
-        else -> null
-    }
+    val destino =
+        when (opcion) {
+            1 -> Screen.GrafoVoluntariado.ruta
+            2 -> Screen.DonarDinero.ruta
+            4 -> Screen.Cuenta.ruta
+            else -> null
+        }
     destino?.let {
         navigate(it) {
             popUpTo(Screen.Catalogo.ruta) { inclusive = false }
@@ -97,24 +99,35 @@ private fun ConSesion(
 ) {
     val sesion = estado.sesion
     when {
-        estado.comprobando -> InicioSesionScreen(
-            state = estado,
-            onRetry = sesionViewModel::restaurar,
-            onGuest = navController::irAlCatalogo,
-        )
-        sesion != null -> content(sesion)
+        estado.comprobando -> {
+            InicioSesionScreen(
+                state = estado,
+                onRetry = sesionViewModel::restaurar,
+                onGuest = navController::irAlCatalogo,
+            )
+        }
+
+        sesion != null -> {
+            content(sesion)
+        }
+
         // No convertir un fallo de red al restaurar en una sesión cerrada.
-        estado.error != null -> InicioSesionScreen(
-            state = estado,
-            onRetry = sesionViewModel::restaurar,
-            onGuest = navController::irAlCatalogo,
-        )
+        estado.error != null -> {
+            InicioSesionScreen(
+                state = estado,
+                onRetry = sesionViewModel::restaurar,
+                onGuest = navController::irAlCatalogo,
+            )
+        }
+
         // Esto también se ejecuta si la sesión vence o se cierra.
-        else -> LaunchedEffect(Unit) {
-            // Recuerdo a dónde iba (salvo Cuenta, que es también el destino al cerrar sesión).
-            val ruta = navController.currentBackStackEntry?.rutaConcreta()
-            recordarDestino(ruta?.takeIf { it != Screen.Cuenta.ruta })
-            navController.irAlLogin()
+        else -> {
+            LaunchedEffect(Unit) {
+                // Recuerdo a dónde iba (salvo Cuenta, que es también el destino al cerrar sesión).
+                val ruta = navController.currentBackStackEntry?.rutaConcreta()
+                recordarDestino(ruta?.takeIf { it != Screen.Cuenta.ruta })
+                navController.irAlLogin()
+            }
         }
     }
 }
@@ -132,14 +145,20 @@ fun AppNavigation() {
     // 2. El NavHost donde defines la pantalla de inicio (startDestination)
     NavHost(
         navController = navController,
-        //startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
+        // startDestination = Screen.DetallePerro.crearRuta("0edfe707-cc43-4bcf-bd43-a7f61e312e17"),
         startDestination = Screen.Catalogo.ruta,
     ) {
         // El login entrega la sesión al mismo ViewModel que usa la cuenta.
         composable(route = Screen.Login.ruta) {
             LoginScreen(
-                onBackToCatalog = { destinoTrasLogin = null; navController.irAlCatalogo() },
-                onExploreWithoutAccount = { destinoTrasLogin = null; navController.irAlCatalogo() },
+                onBackToCatalog = {
+                    destinoTrasLogin = null
+                    navController.irAlCatalogo()
+                },
+                onExploreWithoutAccount = {
+                    destinoTrasLogin = null
+                    navController.irAlCatalogo()
+                },
                 onRegister = {
                     navController.navigate(Screen.Registro.ruta) { launchSingleTop = true }
                 },
@@ -174,18 +193,21 @@ fun AppNavigation() {
                     state = estadoSesion,
                     onRetry = sesionViewModel::consultarPerfil,
                     onCatalog = navController::irAlCatalogo,
-                    onLogout = { destinoTrasLogin = null; sesionViewModel.salir() },
+                    onLogout = {
+                        destinoTrasLogin = null
+                        sesionViewModel.salir()
+                    },
                     onLogin = navController::irAlLogin,
                 )
             }
         }
 
         // ========= Pantallas Catalogo ========
-        composable(route=Screen.Catalogo.ruta){
+        composable(route = Screen.Catalogo.ruta) {
             PerroScreen(
                 onDogClick = { dogId ->
                     navController.navigate(
-                        Screen.DetallePerro.crearRuta(dogId)
+                        Screen.DetallePerro.crearRuta(dogId),
                     )
                 },
                 // Ajustes abre la cuenta o pide login según el estado de sesión.
@@ -207,6 +229,7 @@ fun AppNavigation() {
             DogDetailScreenView(
                 dogId = dogId,
                 onNavSelect = navController::irAOpcionBarra,
+                onBackClick = { navController.navigateUp() },
                 onAdoptClick = { dogId ->
                     navController.navigate(Screen.Requisitos.crearRuta(dogId))
                 },
@@ -330,6 +353,7 @@ fun AppNavigation() {
         }
 
         // ========= Pantallas Voluntariado ========
+
 // Programas y Confirmación comparten la misma instancia de ProgramasViewModel
         navigation(
             startDestination = Screen.Programas.ruta,
