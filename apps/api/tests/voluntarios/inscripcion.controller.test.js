@@ -3,7 +3,7 @@
  *
  * Las reglas (programa existe, está disponible, no ha iniciado, no inscrito, hay cupo) las
  * valida la función SQL `inscribir_en_programa` en una sola transacción. El controlador solo:
- *   1. Revisa que haya usuario y que el id sea UUID (sin tocar la BD).
+ *   1. Revisa que el id sea UUID (sin tocar la BD). El usuario llega en req.user (verificarToken).
  *   2. Llama a `inscribirEnProgramaModel`.
  *   3. Traduce el `codigo` que regresa la BD a un status HTTP.
  *
@@ -34,7 +34,7 @@ const ejecutar = async (idPrograma = ID_PROGRAMA) => {
   res.status = vi.fn(() => res);
   res.json = vi.fn();
 
-  await inscribirse({ params: { idPrograma } }, res);
+  await inscribirse({ params: { idPrograma }, user: { uuid: ID_USUARIO } }, res);
 
   return { status: res.status.mock.calls[0][0], cuerpo: res.json.mock.calls[0][0] };
 };
@@ -49,32 +49,14 @@ const conCodigo = (codigo) => Object.assign(new Error("x"), { code: codigo });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubEnv("DEV_USUARIO_ID", ID_USUARIO);
   inscribirEnProgramaModel.mockResolvedValue(RESULTADO_OK);
 });
 
 afterEach(() => {
-  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
 describe("validaciones previas (sin tocar la BD)", () => {
-  it.each([[undefined], [""]])("DEV_USUARIO_ID=%j da 401 NO_AUTENTICADO", async (valor) => {
-    vi.stubEnv("DEV_USUARIO_ID", valor);
-
-    const respuesta = await ejecutar();
-
-    expectError(respuesta, 401, "NO_AUTENTICADO");
-    expect(respuesta.cuerpo.message).toBe("No hay un usuario configurado.");
-    expect(inscribirEnProgramaModel).not.toHaveBeenCalled();
-  });
-
-  it("sin usuario gana sobre un id inválido", async () => {
-    vi.stubEnv("DEV_USUARIO_ID", "");
-
-    expectError(await ejecutar("id-invalido"), 401, "NO_AUTENTICADO");
-  });
-
   it.each([
     "no-es-un-uuid",
     "123",
@@ -96,7 +78,7 @@ describe("validaciones previas (sin tocar la BD)", () => {
   it.each([[undefined], [null]])("idPrograma=%j da 404 sin llamar al modelo", async (id) => {
     const res = { status: vi.fn(() => res), json: vi.fn() };
 
-    await inscribirse({ params: { idPrograma: id } }, res);
+    await inscribirse({ params: { idPrograma: id }, user: { uuid: ID_USUARIO } }, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(inscribirEnProgramaModel).not.toHaveBeenCalled();
@@ -168,13 +150,13 @@ describe("respuesta de inscribir_en_programa", () => {
 });
 
 describe("errores de la BD", () => {
-  it("23503 (el usuario configurado no existe) da 401 NO_AUTENTICADO", async () => {
+  it("23503 (la cuenta no tiene perfil en usuario) da 401 NO_AUTENTICADO", async () => {
     inscribirEnProgramaModel.mockRejectedValue(conCodigo("23503"));
 
     const respuesta = await ejecutar();
 
     expectError(respuesta, 401, "NO_AUTENTICADO");
-    expect(respuesta.cuerpo.message).toBe("El usuario configurado no existe.");
+    expect(respuesta.cuerpo.message).toBe("Tu cuenta no tiene un perfil registrado.");
   });
 
   // 23505 ya no tiene trato especial: la función SQL regresa YA_INSCRITO en su lugar.

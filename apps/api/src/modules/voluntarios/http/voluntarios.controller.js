@@ -27,11 +27,7 @@ const responderError = (res, status, code, message) =>
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 export const inscribirse = async (req, res) => {
   const { idPrograma } = req.params;
-  const idUsuario = process.env.DEV_USUARIO_ID; // Cambiar aqui lo del login
-
-  if (!idUsuario) {
-    return responderError(res, 401, "NO_AUTENTICADO", "No hay un usuario configurado.");
-  }
+  const idUsuario = req.user.uuid;
 
   // Un id que no es UUID haría fallar a Postgres; se responde 404 antes de llamar a la BD
   if (!UUID_REGEX.test(idPrograma)) {
@@ -57,9 +53,9 @@ export const inscribirse = async (req, res) => {
     // Código desconocido: la función SQL cambió y este mapa no
     throw new Error(`Código inesperado de inscribir_en_programa: ${resultado?.codigo}`);
   } catch (error) {
-    // 23503: llave foránea inválida → el DEV_USUARIO_ID no existe en la tabla usuario
+    // 23503: llave foránea inválida
     if (error.code === "23503") {
-      return responderError(res, 401, "NO_AUTENTICADO", "El usuario configurado no existe.");
+      return responderError(res, 401, "NO_AUTENTICADO", "Tu cuenta no tiene un perfil registrado.");
     }
 
     console.error("[voluntarios] inscribirse:", error);
@@ -71,11 +67,7 @@ export const inscribirse = async (req, res) => {
 // No borra la fila: cambia su estado de "Aceptado" a "Pendiente".
 export const cancelarInscripcion = async (req, res) => {
   const { idPrograma } = req.params;
-  const idUsuario = process.env.DEV_USUARIO_ID; // Cambiar aqui lo del login
-
-  if (!idUsuario) {
-    return responderError(res, 401, "NO_AUTENTICADO", "No hay un usuario configurado.");
-  }
+  const idUsuario = req.user.uuid;
 
   if (!UUID_REGEX.test(idPrograma)) {
     return responderError(res, 404, "PROGRAMA_NO_ENCONTRADO", "No encontramos este programa.");

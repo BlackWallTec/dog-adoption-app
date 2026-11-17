@@ -7,13 +7,13 @@ import {
 export const getProgramasVigentes = async (req, res) => {
   try {
     const programas = await programModel.getCurrentPrograms();
-    // TEMPORAL: mismo usuario que inscribirse(). Cuando llegue el login, cambiar ambos juntos.
-    const idUsuario = process.env.DEV_USUARIO_ID;
+
+    const idUsuario = req.user.uuid;
     // Solo los programas con límite necesitan conteo
     const idsConLimite = programas.filter((p) => p.cupo_maximo != null).map((p) => p.id_programa);
 
     const [inscritos, ocupadosPorPrograma] = await Promise.all([
-      idUsuario ? getIdsProgramasInscritosModel(idUsuario) : new Set(),
+      getIdsProgramasInscritosModel(idUsuario),
       contarInscritosPorProgramasModel(idsConLimite),
     ]);
 

@@ -12,7 +12,7 @@ const lanzarError = (contexto, error) => {
 
 // Datos del programa necesarios para validar la cancelación (HU37)
 export const getProgramaInscripcionModel = async (idPrograma) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("programa")
     .select("id_programa, fecha_inicio, cupo_maximo, estado_del_programa")
     .eq("id_programa", idPrograma)
@@ -38,7 +38,7 @@ export const contarInscritosModel = async (idPrograma) => {
 // Regresa la fila actualizada, o null si el usuario no tenía una inscripción activa.
 // Al volver a inscribirse, inscribir_en_programa reactiva esta misma fila.
 export const cancelarInscripcionModel = async (idPrograma, idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .update({ estado: ESTADO_NO_INSCRITO })
     .eq("id_programa", idPrograma)
@@ -67,7 +67,7 @@ export const getInscritosByProgramaModel = async (idPrograma) => {
 
 // Ids de los programas en los que el usuario está inscrito (activo), para el botón del catálogo
 export const getIdsProgramasInscritosModel = async (idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_usuario", idUsuario)
@@ -100,9 +100,8 @@ export const contarInscritosPorProgramasModel = async (idsProgramas) => {
 // Inscribe al usuario de forma atómica: la función SQL bloquea el programa, valida las reglas,
 // cuenta el cupo e inscribe en una sola transacción (así dos personas no ocupan el último lugar).
 // Si el usuario había cancelado (fila "Pendiente"), la función reactiva esa misma fila.
-// Usa supabaseAdmin porque inscribir_en_programa solo tiene permiso para service_role.
 export const inscribirEnProgramaModel = async (idPrograma, idUsuario) => {
-  const { data, error } = await supabaseAdmin.rpc("inscribir_en_programa", {
+  const { data, error } = await supabase.rpc("inscribir_en_programa", {
     p_id_programa: idPrograma,
     p_id_usuario: idUsuario,
   });

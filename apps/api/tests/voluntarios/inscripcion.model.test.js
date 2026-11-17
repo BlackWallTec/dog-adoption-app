@@ -34,7 +34,7 @@ const simularConsulta = (resultado) => {
     // La cadena termina en `.eq()`: la hacemos "esperable" con await.
     then: (resolver) => resolver(resultado),
   };
-  supabaseAdmin.from.mockReturnValue(consulta);
+  supabase.from.mockReturnValue(consulta);
   return consulta;
 };
 
@@ -125,17 +125,17 @@ describe("contarInscritosPorProgramasModel", () => {
 });
 
 describe("inscribirEnProgramaModel", () => {
-  it("llama a inscribir_en_programa con supabaseAdmin y los dos ids", async () => {
-    supabaseAdmin.rpc.mockResolvedValue({ data: { codigo: "OK" }, error: null });
+  it("llama a inscribir_en_programa con supabase (RLS) y los dos ids", async () => {
+    supabase.rpc.mockResolvedValue({ data: { codigo: "OK" }, error: null });
 
     await inscribirEnProgramaModel("p1", "u1");
 
-    expect(supabaseAdmin.rpc).toHaveBeenCalledWith("inscribir_en_programa", {
+    expect(supabase.rpc).toHaveBeenCalledWith("inscribir_en_programa", {
       p_id_programa: "p1",
       p_id_usuario: "u1",
     });
-    // Solo service_role tiene permiso: nunca debe usar el cliente anon
-    expect(supabase.rpc).not.toHaveBeenCalled();
+    // Nunca debe usar service_role: pasa por RLS
+    expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -148,13 +148,13 @@ describe("inscribirEnProgramaModel", () => {
     { codigo: "SIN_CUPO" },
     { codigo: "YA_INSCRITO" },
   ])("regresa data tal cual ($codigo)", async (data) => {
-    supabaseAdmin.rpc.mockResolvedValue({ data, error: null });
+    supabase.rpc.mockResolvedValue({ data, error: null });
 
     await expect(inscribirEnProgramaModel("p1", "u1")).resolves.toEqual(data);
   });
 
   it("estructural: el error conserva el código, que el controlador usa para decidir", async () => {
-    supabaseAdmin.rpc.mockResolvedValue({ data: null, error: { message: "fk", code: "23503" } });
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "fk", code: "23503" } });
 
     await expect(inscribirEnProgramaModel("p1", "u1")).rejects.toMatchObject({
       message: "Error al inscribir en el programa: fk",
@@ -172,7 +172,7 @@ describe("getIdsProgramasInscritosModel", () => {
 
     const resultado = await getIdsProgramasInscritosModel("u1");
 
-    expect(supabaseAdmin.from).toHaveBeenCalledWith("se_inscribe");
+    expect(supabase.from).toHaveBeenCalledWith("se_inscribe");
     expect(consulta.eq).toHaveBeenCalledWith("id_usuario", "u1");
     expect(consulta.eq).toHaveBeenCalledWith("estado", "Aceptado");
     expect(resultado).toEqual(new Set(["p1", "p2"]));
@@ -203,7 +203,7 @@ describe("cancelarInscripcionModel", () => {
       select: vi.fn(() => consulta),
       maybeSingle: vi.fn(async () => resultado),
     };
-    supabaseAdmin.from.mockReturnValue(consulta);
+    supabase.from.mockReturnValue(consulta);
     return consulta;
   };
 
@@ -217,7 +217,7 @@ describe("cancelarInscripcionModel", () => {
 
     await expect(cancelarInscripcionModel("p1", "u1")).resolves.toEqual(fila);
 
-    expect(supabaseAdmin.from).toHaveBeenCalledWith("se_inscribe");
+    expect(supabase.from).toHaveBeenCalledWith("se_inscribe");
     expect(consulta.update).toHaveBeenCalledWith({ estado: "Pendiente" });
     expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
     expect(consulta.eq).toHaveBeenCalledWith("id_usuario", "u1");

@@ -4,7 +4,7 @@
  * Cada tarjeta del catálogo muestra los lugares disponibles en tiempo real. El controlador
  * agrega a cada programa:
  *   - cupo_disponible: null si no hay límite; si no, max(cupo_maximo - ocupados, 0).
- *   - usuario_inscrito: si el usuario actual ya está inscrito (estado "Aceptado").
+ *   - usuario_inscrito: si el usuario del token (req.user) ya está inscrito (estado "Aceptado").
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -41,7 +41,7 @@ const ejecutar = async () => {
   res.status = vi.fn(() => res);
   res.json = vi.fn();
 
-  await getProgramasVigentes({}, res);
+  await getProgramasVigentes({ user: { uuid: ID_USUARIO } }, res);
 
   return { status: res.status.mock.calls[0][0], cuerpo: res.json.mock.calls[0][0] };
 };
@@ -57,11 +57,9 @@ const cupoDe = (cuerpo, id) => cuerpo.data.find((p) => p.id_programa === id).cup
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubEnv("DEV_USUARIO_ID", ID_USUARIO);
 });
 
 afterEach(() => {
-  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
@@ -164,22 +162,6 @@ describe("usuario_inscrito", () => {
       ["p3", false],
     ]);
   });
-
-  it.each([[undefined], [""]])(
-    "DEV_USUARIO_ID=%j: usuario_inscrito false y no consulta inscripciones",
-    async (valor) => {
-      vi.stubEnv("DEV_USUARIO_ID", valor);
-      preparar([programa("p1", 15), programa("p2", null)], { p1: 3 });
-
-      const { status, cuerpo } = await ejecutar();
-
-      expect(status).toBe(200);
-      expect(getIdsProgramasInscritosModel).not.toHaveBeenCalled();
-      expect(cuerpo.data.every((p) => p.usuario_inscrito === false)).toBe(true);
-      // El cupo se sigue calculando aunque no haya usuario
-      expect(cupoDe(cuerpo, "p1")).toBe(12);
-    },
-  );
 });
 
 describe("errores", () => {
