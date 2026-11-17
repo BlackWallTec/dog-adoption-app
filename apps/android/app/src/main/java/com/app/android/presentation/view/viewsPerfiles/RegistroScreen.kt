@@ -28,6 +28,11 @@ import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.viewmodel.viewModelPerfiles.RegistroUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.RegistroViewModel
 
+/**
+ * Pantalla de creación de cuenta: observa RegistroViewModel y conecta las acciones del formulario.
+ * Al recibir registroExitoso, consume la señal y avisa a la navegación mediante onRegistered.
+ * Cancelar detiene el trabajo del formulario y notifica la salida mediante onCancel.
+ */
 @Composable
 fun RegistroScreen(
     onCancel: () -> Unit,
