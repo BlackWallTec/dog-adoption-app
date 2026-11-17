@@ -51,8 +51,8 @@ class GuardarTuHogarUseCase
 
             val errores =
                 TuHogarErrors(
-                    hadPet = if (hasPets && limpios.hadPet == null) "Selecciona una opción" else null,
-                    otherPets = if (hasPets && limpios.otherPets == null) "Selecciona una opción" else null,
+                    hadPet = if (limpios.hadPet == null) "Selecciona una opción" else null,
+                    otherPets = if (limpios.otherPets == null) "Selecciona una opción" else null,
                     whyAdopt = if (limpios.whyAdopt.isBlank()) "Cuéntanos por qué quieres adoptar" else null,
                     whereLive = if (limpios.whereLive.isBlank()) "Cuéntanos dónde vivirá y dormirá" else null,
                     peopleInHouse = if (limpios.peopleInHouse < 1) "Debe de haber al menos 1 persona" else null,
