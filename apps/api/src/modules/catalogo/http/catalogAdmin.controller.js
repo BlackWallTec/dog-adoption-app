@@ -7,7 +7,7 @@ import breedModel from "./modelosCatalogo/breed.model.js";
 import { validarCambiosPerro } from "./dogValidation.js";
 
 import { getTokenFromReq } from "../../../utils/getTokenFromReq.js";
-import { supabase } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
+import { supabaseAdmin } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
 //===== Funciones de Subida de Documentos SUPEROPTIMIZADOS ====
 // Nosotros en Catalogo neceistamos que la subida de documentos sea lo más rápida posible, por eso no hacemos validaciones de tipo ni de tamaño ni de extensión.
@@ -28,12 +28,12 @@ export const obtenerUrlSubidaMultimedia = async (req, res) => {
     const rutaArchivo = `perros/${id_perro_temporal}/${Date.now()}_${nombreArchivo}`;
 
     //4. Solcitiamos a Supabase la URL de subida (Expira en 5 minutos / 300 segundos)
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabaseAdmin.storage
       .from("multimedia_perros") //Nombre del bucket en Supabase
       .createSignedUploadUrl(rutaArchivo, 300); // URL válida por 300 segundos
 
     if (error) throw error;
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = supabaseAdmin.storage
       .from("multimedia_perros")
       .getPublicUrl(rutaArchivo);
 
