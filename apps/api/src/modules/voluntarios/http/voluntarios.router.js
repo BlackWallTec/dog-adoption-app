@@ -15,6 +15,10 @@ export const router = Router();
 // GET /api/voluntarios/cliente/programas
 router.get("/cliente/programas", clientController.getProgramasVigentes);
 
+// GET /api/voluntarios/cliente/programas/:idPrograma
+// HU36 detalle publico del programa sin token de momento igual que catalogo
+router.get("/cliente/programas/:idPrograma", clientController.getDetallePrograma);
+
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 router.post("/programas/:idPrograma/inscripciones", inscribirse);
 
