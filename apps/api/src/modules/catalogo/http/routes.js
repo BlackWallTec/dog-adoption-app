@@ -9,12 +9,15 @@ import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 
+// HU19C: edición de fichas (solo Administrador o Root con sesión activa)
+const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+
 // ===== Rutas Especiales =======
 
 //POST api/catalogo/admin/solicitar-subida
 //Esta ruta permite a un administrador solicitar una URL de subida para un archivo multimedia (imagen o video) que se asociará a un perro en el catálogo.
 //Es necesario llamar despues a la ruta POST /api/catalogo/admin/perros para registrar el perro y asociar la URL de subida generada.
-router.post("/admin/solicitar-subida", adminController.obtenerUrlSubidaMultimedia);
+router.post("/admin/solicitar-subida", soloAdmin, adminController.obtenerUrlSubidaMultimedia);
 
 // ====== Fin Rutas Especiales =======
 
@@ -23,10 +26,7 @@ router.post("/admin/solicitar-subida", adminController.obtenerUrlSubidaMultimedi
 router.get("/admin/perros", adminController.getPerrosAdmin);
 
 // POST /api/catalogo/admin/perros
-router.post("/admin/perros", adminController.postNuevoPerro);
-
-// HU19C: edición de fichas (solo Administrador o Root con sesión activa)
-const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+router.post("/admin/perros", soloAdmin, adminController.postNuevoPerro);
 
 // GET /api/catalogo/admin/perros/:id
 router.get("/admin/perros/:id", ...soloAdmin, adminController.getPerroAdminById);
@@ -35,7 +35,7 @@ router.get("/admin/perros/:id", ...soloAdmin, adminController.getPerroAdminById)
 router.patch("/admin/perros/:id", ...soloAdmin, adminController.updatePerroAdmin);
 
 // PATCH /api/catalogo/admin/perros/:id/desactivar
-router.patch("/admin/perros/:id/desactivar", adminController.desactivarPerro);
+router.patch("/admin/perros/:id/desactivar", soloAdmin, adminController.desactivarPerro);
 
 // GET /api/catalogo/admin/tamanos
 router.get("/admin/tamanos", adminController.getTamanos);
@@ -51,7 +51,7 @@ router.get("/admin/razas", adminController.getRazas);
 
 //Desactivar bulk de perros
 // PATCH /api/catalogo/admin/perros/bulk/activar
-router.patch("/admin/perros/bulk/activar", adminController.patchActivateBulkDog);
+router.patch("/admin/perros/bulk/activar", soloAdmin, adminController.patchActivateBulkDog);
 
 // ==== Fin Rutas Admin ======
 

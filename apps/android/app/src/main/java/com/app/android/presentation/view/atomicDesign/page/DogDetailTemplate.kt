@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.atomicDesign.template
+package com.app.android.presentation.view.atomicDesign.page
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
