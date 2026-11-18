@@ -188,50 +188,6 @@ fun AppNavigation() {
             )
         }
 
-        // ========= Pantallas Donativos ========
-
-        // DONATIVOS - HU46: registrar donativo económico
-        composable(route = Screen.DonarDinero.ruta) {
-            DonarDineroRoute(
-                idUsuario = ID_USUARIO_PRUEBA,
-                onBack = { navController.popBackStack() },
-                onNavSelect = navController::irAOpcionBarra,
-                onEnviado = { monto ->
-                    navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
-                        // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
-                        popUpTo(Screen.DonarDinero.ruta) { inclusive = true }
-                    }
-                },
-            )
-        }
-
-        composable(
-            route = Screen.DonativoEnviado.ruta,
-            arguments =
-                listOf(
-                    navArgument("monto") { type = NavType.StringType },
-                ),
-        ) { backStackEntry ->
-            val monto = backStackEntry.arguments?.getString("monto") ?: ""
-            DonativoEnviadoScreen(
-                monto = "\$$monto MXN",
-                onBackClick = { navController.popBackStack() },
-                onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
-                onVerMisDonativosClick = {}, // Mis donativos todavía no existe
-                onNavSelect = navController::irAOpcionBarra,
-            )
-        }
-
-        // DONATIVOS - HU45: datos fiscales del donante
-        composable(route = Screen.DatosFiscales.ruta) {
-            DatosFiscalesRoute(
-                idUsuario = ID_USUARIO_PRUEBA,
-                onBack = { navController.navigateUp() },
-                onNavSelect = navController::irAOpcionBarra,
-            )
-        }
-
-
 // ========= Pantallas Voluntariado ========
 // Programas y Confirmación comparten la misma instancia de ProgramasViewModel
         navigation(
