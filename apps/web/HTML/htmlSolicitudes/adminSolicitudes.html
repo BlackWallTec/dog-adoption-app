@@ -90,7 +90,8 @@
         </main>
       </div>
     </div>
-    <!-- HU05: Pop-up de detalle de solicitud -->
+
+    <!-- HU05: Pop-up unificado de detalle y gestión de solicitud -->
     <dialog id="modal-detalle" class="detalle-modal" aria-labelledby="detalle-titulo">
       <header class="detalle-header">
         <div>
@@ -109,69 +110,60 @@
           </button>
         </div>
       </header>
+
+      <!-- Aquí se renderizan todos los datos, cuestionario, documentos y al final el bloque de resolución -->
       <div id="detalle-contenido" class="detalle-contenido"></div>
-    </dialog>
-    <!-- Modal para ver quien es el adoptante, rechazar o aceptar la solicitud-->
-    <div id="modal-detalle-solicitud" class="modal-overlay" hidden>
-      <div class="modal-caja">
-        <div class="modal-cabecera">
-          <h3>Solicitud <span id="modal-folio"></span></h3>
-          <button type="button" id="btn-cerrar-modal" class="modal-close-btn" aria-label="Cerrar">
-            &times;
-          </button>
+
+      <!-- Sección de cambio de estado (se mueve al final del expediente al cargar el detalle) -->
+      <section id="bloque-resolucion" class="gestion-card" data-solicitud-id="" hidden>
+        <h4 class="gestion-title">Gestionar solicitud</h4>
+
+        <div class="gestion-field">
+          <label for="select-nuevo-estado" class="gestion-label">Estado de la solicitud</label>
+          <div class="custom-select-wrapper">
+            <span id="estado-dot" class="status-dot dot-revision"></span>
+            <select id="select-nuevo-estado" class="gestion-select">
+              <option value="en_revision">En revisión</option>
+              <option value="periodo_prueba">Periodo de prueba</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </select>
+          </div>
         </div>
 
-        <div id="modal-datos-solicitud" class="modal-info-grid"></div>
-
-        <section id="bloque-resolucion" class="gestion-card" data-solicitud-id="">
-          <h4 class="gestion-title">Gestionar solicitud</h4>
-
-          <div class="gestion-field">
-            <label for="select-nuevo-estado" class="gestion-label">Estado de la solicitud</label>
-            <div class="custom-select-wrapper">
-              <span id="estado-dot" class="status-dot dot-revision"></span>
-              <select id="select-nuevo-estado" class="gestion-select">
-                <option value="en_revision">En revisión</option>
-                <option value="periodo_prueba">Periodo de prueba</option>
-                <option value="aprobada">Aprobada</option>
-                <option value="rechazada">Rechazada</option>
-              </select>
-            </div>
+        <div id="contenedor-comentario-rechazo" class="gestion-field gestion-divider" hidden>
+          <label for="comentario-resolucion" class="gestion-label">Comentario interno</label>
+          <textarea
+            id="comentario-resolucion"
+            class="gestion-textarea"
+            rows="4"
+            maxlength="1000"
+            placeholder="Añade observaciones sobre el motivo del rechazo..."
+          ></textarea>
+          <div class="gestion-meta">
+            <span>Solo visible para el equipo</span>
+            <span id="contador-caracteres">0 / 1.000</span>
           </div>
+        </div>
 
-          <div id="contenedor-comentario-rechazo" class="gestion-field gestion-divider" hidden>
-            <label for="comentario-resolucion" class="gestion-label">Comentario interno</label>
-            <textarea
-              id="comentario-resolucion"
-              class="gestion-textarea"
-              rows="4"
-              maxlength="1000"
-              placeholder="Añade observaciones sobre el motivo del rechazo..."
-            ></textarea>
-            <div class="gestion-meta">
-              <span>Solo visible para el equipo</span>
-              <span id="contador-caracteres">0 / 1.000</span>
-            </div>
-          </div>
+        <p id="error-resolucion" class="gestion-error" hidden></p>
 
-          <p id="error-resolucion" class="gestion-error" hidden></p>
+        <div class="gestion-footer gestion-divider">
+          <p class="gestion-footer-title">Tú decides el siguiente paso</p>
+          <p class="gestion-footer-desc">
+            El estado y el comentario se actualizarán al guardar los cambios.
+          </p>
+        </div>
 
-          <div class="gestion-footer gestion-divider">
-            <p class="gestion-footer-title">Tú decides el siguiente paso</p>
-            <p class="gestion-footer-desc">
-              El estado y el comentario se actualizarán al guardar los cambios.
-            </p>
-          </div>
+        <div class="modal-botones">
+          <button type="button" id="btn-cancelar-modal" class="outline-button">Cancelar</button>
+          <button type="button" id="btn-guardar-estado" class="btn-primary-solid">
+            Guardar cambios
+          </button>
+        </div>
+      </section>
+    </dialog>
 
-          <div class="modal-botones">
-            <button type="button" id="btn-cancelar-modal" class="outline-button">Cancelar</button>
-            <button type="button" id="btn-guardar-estado" class="btn-primary-solid">
-              Guardar cambios
-            </button>
-          </div>
-        </section>
-      </div>
-    </div>
     <div id="modal-confirmacion-estado" class="modal-overlay" hidden>
       <div
         class="modal-caja modal-confirmacion-caja"
@@ -195,6 +187,7 @@
         </button>
       </div>
     </div>
+
     <script type="module" src="../../JS/jsSolicitudes/adminSolicitudes.view.js"></script>
   </body>
 </html>

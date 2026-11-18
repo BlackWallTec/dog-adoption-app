@@ -199,7 +199,7 @@ function resetFilters(shouldLoad = true) {
 }
 
 async function fetchJson(url, signal) {
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { signal, cache: "no-store" });
   const contentType = response.headers.get("content-type") || "";
   let payload = {};
   if (contentType.includes("application/json")) payload = await response.json();
@@ -311,14 +311,6 @@ function bindEvents() {
     state.page += 1;
     void load();
   });
-  //When you click the button y opens the modal
-  elements.body.addEventListener("click", (event) => {
-    const button = event.target.closest(".detail-button");
-    if (!button) return;
-    const solicitudId = button.dataset.id;
-    //based on the id
-    if (solicitudId) void abrirDetalleSolicitud(solicitudId);
-  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -328,9 +320,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (title) title.textContent = "Solicitudes";
   void load();
 });
+
 // <----------------- Begin Detail modal --------------------->
-//we assign a variable to everything that we get from the view }
-const modal = document.getElementById("modal-detalle-solicitud");
+//we assign a variable to everything that we get from the view
+const modal = document.getElementById("modal-detalle");
 const bloqueResolucion = document.getElementById("bloque-resolucion");
 const selectEstado = document.getElementById("select-nuevo-estado");
 const estadoDot = document.getElementById("estado-dot");
@@ -411,61 +404,11 @@ function validarResolucion() {
   };
 }
 
-//Function to open modal of details
-async function abrirDetalleSolicitud(solicitudId) {
-  try {
-    const respuesta = await fetchJson(`${API_URL}/${solicitudId}`);
-    const solicitud = respuesta.data || respuesta;
-
-    document.getElementById("modal-folio").textContent =
-      solicitud.folio || `QA-${String(solicitudId).slice(0, 8).toUpperCase()}`;
-
-    const nombreAdoptante =
-      typeof solicitud.adoptante === "object" && solicitud.adoptante !== null
-        ? `${solicitud.adoptante.nombre || ""} ${solicitud.adoptante.apellidos || ""}`.trim()
-        : solicitud.adoptante || "Sin nombre";
-    const correoAdoptante = solicitud.adoptante?.email || solicitud.correo || "Sin correo";
-    const nombrePerro =
-      typeof solicitud.perro === "object" && solicitud.perro !== null
-        ? solicitud.perro.nombre
-        : solicitud.perro || "Sin perro";
-
-    document.getElementById("modal-datos-solicitud").innerHTML = `
-      <p><strong>Adoptante:</strong> ${nombreAdoptante}</p>
-      <p><strong>Correo:</strong> ${correoAdoptante}</p>
-      <p><strong>Perro:</strong> ${nombrePerro}</p>
-      <p><strong>Estado actual:</strong> ${estadoLabel(solicitud.estado)}</p>
-    `;
-
-    bloqueResolucion.dataset.solicitudId = solicitudId;
-
-    const estadoRaw = String(solicitud.estado || "").toLowerCase();
-    if (estadoRaw.includes("aprob")) selectEstado.value = "aprobada";
-    else if (estadoRaw.includes("rechaz")) selectEstado.value = "rechazada";
-    else if (estadoRaw.includes("prueba")) selectEstado.value = "periodo_prueba";
-    else selectEstado.value = "en_revision";
-
-    textareaComentario.value = solicitud.comentario_admin || "";
-    sincronizarFormularioEstado();
-
-    modal.hidden = false;
-    modal.style.display = "flex";
-  } catch (err) {
-    setMessage(err.message || "No se pudo cargar el detalle de la solicitud.", "error");
-  }
-}
-
 selectEstado?.addEventListener("change", sincronizarFormularioEstado);
 textareaComentario?.addEventListener("input", actualizarContador);
 
-document.getElementById("btn-cerrar-modal")?.addEventListener("click", () => {
-  modal.hidden = true;
-  modal.style.display = "none";
-});
-
 document.getElementById("btn-cancelar-modal")?.addEventListener("click", () => {
-  modal.hidden = true;
-  modal.style.display = "none";
+  modal?.close();
 });
 
 //Modal to show confirmation
@@ -487,6 +430,7 @@ function mostrarModalConfirmacion(estadoGuardado) {
   modalConfirmacion.hidden = false;
   modalConfirmacion.style.display = "flex";
 }
+
 document.getElementById("btn-cerrar-confirmacion")?.addEventListener("click", () => {
   modalConfirmacion.hidden = true;
   modalConfirmacion.style.display = "none";
@@ -501,7 +445,6 @@ modalConfirmacion?.addEventListener("click", (event) => {
 
 document.getElementById("btn-guardar-estado")?.addEventListener("click", async () => {
   const resultado = validarResolucion();
-  //
   if (!resultado.ok) {
     errorResolucion.textContent = resultado.mensaje;
     errorResolucion.hidden = false;
@@ -524,8 +467,7 @@ document.getElementById("btn-guardar-estado")?.addEventListener("click", async (
     }
 
     //We close the modal of detail
-    modal.hidden = true;
-    modal.style.display = "none";
+    modal?.close();
 
     //We get the modal of confirmation when the update has been done succesfully
     mostrarModalConfirmacion(resultado.datos.state);
