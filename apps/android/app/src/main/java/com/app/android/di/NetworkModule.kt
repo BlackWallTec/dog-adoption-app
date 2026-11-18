@@ -2,6 +2,12 @@ package com.app.android.di
 
 import android.content.Context
 import com.app.android.BuildConfig
+import com.app.android.data.AuthInterceptor
+import com.app.android.data.EncryptedTokenProvider
+import com.app.android.data.TokenProvider
+import com.app.android.data.dataSource.dataSourcesPerfiles.UsuarioAPIservice
+import com.app.android.data.repoImp.repoImpPerfiles.UsuarioRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.dataSource.dataSourcesSolicitudes.DocumentApi
 import com.app.android.data.dataSource.dataSourcesSolicitudes.SolicitudApiService
@@ -41,8 +47,13 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            // El nivel BODY imprime: URL, cabeceras, códigos de error y el JSON CRUDO completo
-            level = HttpLoggingInterceptor.Level.BODY
+            // Solo en debug y sin cuerpos: BODY imprimiría la contraseña del login y el token del JSON.
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.HEADERS
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
+            redactHeader("Authorization")
         }
 
     @Provides
@@ -56,12 +67,16 @@ object NetworkModule {
     // Dificultad para conectar backend con Android en iOS
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        authInterceptor: AuthInterceptor,
+    ): OkHttpClient =
         OkHttpClient
             .Builder()
             .connectTimeout(30, TimeUnit.SECONDS) // 30 segundos de margen para conectar
             .readTimeout(30, TimeUnit.SECONDS) // 30 segundos para leer datos
             .writeTimeout(30, TimeUnit.SECONDS) // 30 segundos para enviar
+            .addInterceptor(authInterceptor) // x-client: mobile + Authorization: Bearer
             .addInterceptor(loggingInterceptor)
             .build()
     // ====== Fin Codigo agregado con IA =====
@@ -136,4 +151,23 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideProgramaRepository(apiService: ProgramaApiService): ProgramaRepository = ProgramaRepositoryImpl(apiService)
+
+    // ====== Perfiles ======
+    @Provides
+    @Singleton
+    fun provideTokenProvider(@ApplicationContext context: Context): TokenProvider =
+        EncryptedTokenProvider(context)
+
+    @Provides
+    @Singleton
+    fun provideUsuarioApiService(retrofit: Retrofit): UsuarioAPIservice =
+        retrofit.create(UsuarioAPIservice::class.java)
+
+    @Provides
+    @Singleton
+    fun providePerfilesRepository(
+        api: UsuarioAPIservice,
+        tokens: TokenProvider,
+        gson: Gson,
+    ): PerfilesRepositoryInt = UsuarioRepositoryImpl(api, tokens, gson)
 }

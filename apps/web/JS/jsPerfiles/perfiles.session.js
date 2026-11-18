@@ -40,7 +40,6 @@ export function createSessionView(api, root = document) {
   function show({ user }) {
     byId("login-panel").hidden = true;
     byId("session-panel").hidden = false;
-    byId("session-email").textContent = user.correo;
     byId("session-role").textContent = user.rol;
     byId("session-feedback").hidden = true;
     byId("session-title").focus();
@@ -58,7 +57,6 @@ export function createSessionView(api, root = document) {
       byId("login-form").reset();
       byId("login-feedback").hidden = true;
       byId("session-panel").hidden = true;
-      byId("session-email").textContent = "";
       byId("session-role").textContent = "";
       for (const id of profileIds) byId(id).textContent = "";
       byId("profile-feedback").hidden = true;
