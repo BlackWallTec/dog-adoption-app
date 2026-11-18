@@ -37,9 +37,11 @@ import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
+import com.app.android.presentation.view.viewsVoluntariado.DetalleProgramaScreen
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
+import com.app.android.presentation.viewmodel.viewModelVoluntariado.DetalleProgramaViewModel
 
 // Regreso al catálogo sin dejar pantallas anteriores encima.
 private fun NavController.irAlCatalogo() {
@@ -354,7 +356,7 @@ fun AppNavigation() {
 
         // ========= Pantallas Voluntariado ========
 
-// Programas y Confirmación comparten la misma instancia de ProgramasViewModel
+// Programas, Detalle y Confirmación comparten la misma instancia de ProgramasViewModel
         navigation(
             startDestination = Screen.Programas.ruta,
             route = Screen.GrafoVoluntariado.ruta,
@@ -380,6 +382,25 @@ fun AppNavigation() {
                         navController.popBackStack(Screen.Programas.ruta, inclusive = false)
                     },
                     onNavSelect = navController::irAOpcionBarra,
+                )
+            }
+
+            // HU36: detalle del programa. Comparte ProgramasViewModel para inscribirse (HU33)
+            composable(
+                route = Screen.DetallePrograma.ruta,
+                arguments =
+                    listOf(
+                        navArgument(DetalleProgramaViewModel.ARG_ID_PROGRAMA) { type = NavType.StringType },
+                    ),
+            ) { entry ->
+                val grafo = remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
+                DetalleProgramaScreen(
+                    programasViewModel = hiltViewModel(grafo),
+                    onBackClick = { navController.navigateUp() },
+                    onNavSelect = navController::irAOpcionBarra,
+                    onInscripcionExitosa = {
+                        navController.navigate(Screen.ConfirmacionInscripcion.ruta) { launchSingleTop = true }
+                    },
                 )
             }
         }
