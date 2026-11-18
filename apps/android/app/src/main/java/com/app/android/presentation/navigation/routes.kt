@@ -7,6 +7,11 @@ sealed class Screen(
     val ruta: String,
 ) {
     object Catalogo : Screen("catalogo_screen")
+    // Pantallas de perfiles
+    object Login : Screen("login_screen")
+    object Registro : Screen("registro_screen")
+    object Cuenta : Screen("cuenta_screen")
+
 
     object DetallePerro : Screen("detalle_perro_screen/{dogId}") {
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID

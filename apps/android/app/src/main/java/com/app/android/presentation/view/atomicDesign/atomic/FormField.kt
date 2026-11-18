@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
@@ -25,6 +28,11 @@ fun FormField(
     supportingText: String? = null,
     isError: Boolean = false,
     errorText: String? = null,
+    fieldModifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     Column(modifier) {
         FloatingLabelTextField(
@@ -33,9 +41,14 @@ fun FormField(
             onValueChange = onValueChange,
             label = label,
             isError = isError,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            visualTransformation = visualTransformation,
+            trailingIcon = trailingIcon,
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .then(fieldModifier)
                     .semantics {
                         if (isError && errorText != null) {
                             error(errorText)
