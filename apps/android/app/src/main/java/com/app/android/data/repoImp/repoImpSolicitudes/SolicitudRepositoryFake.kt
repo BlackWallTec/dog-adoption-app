@@ -34,17 +34,17 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
                 estado = EstadoSolicitud.PENDIENTE_REVISION,
                 nombrePerro = "Bruno",
                 fotoUrl = null,
-                documentoRechazado = false,
+                edicionHabilitada = false,
                 comentarioAdmin = null,
             ),
             SolicitudCliente(
                 idSolicitud = "2",
                 folio = "QA-00000002",
                 fechaSolicitud = "2026-10-10T16:00:00Z",
-                estado = EstadoSolicitud.PENDIENTE_REVISION,
+                estado = EstadoSolicitud.RECHAZADA,
                 nombrePerro = "Luna",
                 fotoUrl = null,
-                documentoRechazado = true,
+                edicionHabilitada = true,
                 comentarioAdmin = "La foto de tu INE sale borrosa, súbela de nuevo por favor.",
             ),
             SolicitudCliente(
@@ -54,7 +54,7 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
                 estado = EstadoSolicitud.APROBADA,
                 nombrePerro = null, // el perro ya no está en el catálogo
                 fotoUrl = null,
-                documentoRechazado = false,
+                edicionHabilitada = false,
                 comentarioAdmin = null,
             ),
         )

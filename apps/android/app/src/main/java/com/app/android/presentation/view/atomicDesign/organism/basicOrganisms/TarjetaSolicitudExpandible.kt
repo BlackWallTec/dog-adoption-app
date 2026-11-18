@@ -99,13 +99,13 @@ private fun TarjetaSolicitudExpandiblePreview() {
                     fecha = "12 oct 2026",
                     estado = estado,
                     comentarioAdmin =
-                        if (estado == EstadoTarjeta.DOCUMENTO_RECHAZADO) {
+                        if (estado == EstadoTarjeta.RECHAZADA) {
                             "La foto de tu INE sale borrosa, súbela de nuevo por favor."
                         } else {
                             null
                         },
-                    puedeEditar = estado == EstadoTarjeta.DOCUMENTO_RECHAZADO,
-                    expandida = estado == EstadoTarjeta.DOCUMENTO_RECHAZADO,
+                    puedeEditar = estado == EstadoTarjeta.RECHAZADA,
+                    expandida = estado == EstadoTarjeta.RECHAZADA,
                     onToggleDetalles = {},
                 )
             }

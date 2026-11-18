@@ -89,7 +89,7 @@ class MisSolicitudesUnitTest {
         estado: EstadoSolicitud = EstadoSolicitud.PENDIENTE_REVISION,
         nombrePerro: String? = "Bruno",
         fotoUrl: String? = "https://example.com/foto.jpg",
-        documentoRechazado: Boolean = false,
+        edicionHabilitada: Boolean = false,
         comentarioAdmin: String? = null,
     ): SolicitudCliente =
         SolicitudCliente(
@@ -99,7 +99,7 @@ class MisSolicitudesUnitTest {
             estado = estado,
             nombrePerro = nombrePerro,
             fotoUrl = fotoUrl,
-            documentoRechazado = documentoRechazado,
+            edicionHabilitada = edicionHabilitada,
             comentarioAdmin = comentarioAdmin,
         )
 
@@ -139,8 +139,7 @@ class MisSolicitudesUnitTest {
                 fechaSolicitud = "2026-10-12T18:30:00Z",
                 estado = "Aprobada Definitiva",
                 perro = PerroSolicitudDto(nombre = "Bruno", fotoUrl = "https://example.com/bruno.jpg"),
-                fotoUrl = null,
-                documentoRechazado = true,
+                puedeEditar = true,
                 comentarioAdmin = "Todo en orden",
             ).toDomain()
 
@@ -150,7 +149,8 @@ class MisSolicitudesUnitTest {
         assertEquals(EstadoSolicitud.APROBADA, entity.estado)
         assertEquals("Bruno", entity.nombrePerro)
         assertEquals("https://example.com/bruno.jpg", entity.fotoUrl)
-        assertTrue(entity.documentoRechazado)
+        assertTrue(entity.edicionHabilitada)
+        assertFalse("Aprobada no se puede editar aunque tenga el permiso", entity.puedeEditar)
         assertEquals("Todo en orden", entity.comentarioAdmin)
     }
 
@@ -163,8 +163,7 @@ class MisSolicitudesUnitTest {
                 fechaSolicitud = null,
                 estado = null,
                 perro = null,
-                fotoUrl = null,
-                documentoRechazado = null,
+                puedeEditar = null,
                 comentarioAdmin = null,
             ).toDomain()
 
@@ -173,7 +172,7 @@ class MisSolicitudesUnitTest {
         assertEquals("", entity.folio)
         assertEquals("", entity.fechaSolicitud)
         assertEquals(EstadoSolicitud.DESCONOCIDO, entity.estado)
-        assertFalse(entity.documentoRechazado)
+        assertFalse(entity.edicionHabilitada)
         // Lo opcional sigue siendo null
         assertNull(entity.nombrePerro)
         assertNull(entity.fotoUrl)
@@ -190,8 +189,7 @@ class MisSolicitudesUnitTest {
                 fechaSolicitud = "2026-10-12T18:30:00Z",
                 estado = "Rechazada",
                 perro = PerroSolicitudDto(nombre = "   ", fotoUrl = ""),
-                fotoUrl = null,
-                documentoRechazado = false,
+                puedeEditar = false,
                 comentarioAdmin = "   ",
             ).toDomain()
 
@@ -331,58 +329,34 @@ class MisSolicitudesUnitTest {
      * SECCIÓN 4: COBERTURA ESTRUCTURAL Y DE DECISIONES (DECISION COVERAGE)
      * ---------------------------------------------------------------------------------
      * Evalúa la matriz de decisión completa de la regla de negocio `puedeEditar`:
-     * requiere documentoRechazado = true Y estado == PENDIENTE_REVISION.
+     * requiere edicionHabilitada = true (la administradora lo marcó) Y estado == RECHAZADA.
      */
     @Test
     fun `decision_condition_coverage_tabla_de_verdad_regla_puede_editar`() {
-        val casoTrueTrue =
-            crearSolicitudCliente(
-                documentoRechazado = true,
-                estado = EstadoSolicitud.PENDIENTE_REVISION,
-            )
-        assertTrue(casoTrueTrue.puedeEditar)
+        // Las dos condiciones verdaderas: el único caso que da true
+        val casoTrueRechazada = crearSolicitudCliente(edicionHabilitada = true, estado = EstadoSolicitud.RECHAZADA)
+        assertTrue(casoTrueRechazada.puedeEditar)
 
-        val casoTrueAprobada =
-            crearSolicitudCliente(
-                documentoRechazado = true,
-                estado = EstadoSolicitud.APROBADA,
-            )
+        // Permiso habilitado pero no está Rechazada: falla la condición del estado
+        val casoTruePendiente = crearSolicitudCliente(edicionHabilitada = true, estado = EstadoSolicitud.PENDIENTE_REVISION)
+        assertFalse(casoTruePendiente.puedeEditar)
+
+        val casoTrueAprobada = crearSolicitudCliente(edicionHabilitada = true, estado = EstadoSolicitud.APROBADA)
         assertFalse(casoTrueAprobada.puedeEditar)
 
-        val casoTrueRechazada =
-            crearSolicitudCliente(
-                documentoRechazado = true,
-                estado = EstadoSolicitud.RECHAZADA,
-            )
-        assertFalse(casoTrueRechazada.puedeEditar)
-
-        val casoTruePrueba =
-            crearSolicitudCliente(
-                documentoRechazado = true,
-                estado = EstadoSolicitud.EN_PERIODO_PRUEBA,
-            )
+        val casoTruePrueba = crearSolicitudCliente(edicionHabilitada = true, estado = EstadoSolicitud.EN_PERIODO_PRUEBA)
         assertFalse(casoTruePrueba.puedeEditar)
 
-        val casoTrueDesconocido =
-            crearSolicitudCliente(
-                documentoRechazado = true,
-                estado = EstadoSolicitud.DESCONOCIDO,
-            )
+        val casoTrueDesconocido = crearSolicitudCliente(edicionHabilitada = true, estado = EstadoSolicitud.DESCONOCIDO)
         assertFalse(casoTrueDesconocido.puedeEditar)
 
-        val casoFalsePendiente =
-            crearSolicitudCliente(
-                documentoRechazado = false,
-                estado = EstadoSolicitud.PENDIENTE_REVISION,
-            )
-        assertFalse(casoFalsePendiente.puedeEditar)
-
-        val casoFalseRechazada =
-            crearSolicitudCliente(
-                documentoRechazado = false,
-                estado = EstadoSolicitud.RECHAZADA,
-            )
+        // Rechazada pero sin permiso de la administradora: falla la condición del permiso
+        val casoFalseRechazada = crearSolicitudCliente(edicionHabilitada = false, estado = EstadoSolicitud.RECHAZADA)
         assertFalse(casoFalseRechazada.puedeEditar)
+
+        // Fallan las dos condiciones a la vez
+        val casoFalsePendiente = crearSolicitudCliente(edicionHabilitada = false, estado = EstadoSolicitud.PENDIENTE_REVISION)
+        assertFalse(casoFalsePendiente.puedeEditar)
     }
 
     /**
@@ -399,8 +373,8 @@ class MisSolicitudesUnitTest {
                 crearSolicitudCliente(
                     id = "sol-$index",
                     folio = "QA-%08d".format(index),
-                    estado = if (index % 2 == 0) EstadoSolicitud.PENDIENTE_REVISION else EstadoSolicitud.APROBADA,
-                    documentoRechazado = (index % 5 == 0),
+                    estado = if (index % 2 == 0) EstadoSolicitud.RECHAZADA else EstadoSolicitud.APROBADA,
+                    edicionHabilitada = (index % 5 == 0),
                 )
             }
         repositoryFake.solicitudesARetornar = solicitudesMasivas
@@ -411,8 +385,8 @@ class MisSolicitudesUnitTest {
         assertEquals(1000, state.solicitudes.size)
         assertEquals("sol-1", state.solicitudes.first().idSolicitud)
         assertEquals("sol-1000", state.solicitudes.last().idSolicitud)
-        // NUEVO: la regla también se cumple a escala. Pueden editar los pares (en revisión)
-        // que además son múltiplos de 5, o sea los múltiplos de 10: 100 solicitudes.
+        // la regla también se cumple a escala. Ahora son los pares rechazadas
+        // que también son multiplos de 5
         assertEquals(100, state.solicitudes.count { it.puedeEditar })
     }
 
@@ -425,8 +399,8 @@ class MisSolicitudesUnitTest {
                 crearSolicitudCliente(
                     id = "3",
                     nombrePerro = "Toby",
-                    documentoRechazado = true,
-                    estado = EstadoSolicitud.PENDIENTE_REVISION,
+                    edicionHabilitada = true,
+                    estado = EstadoSolicitud.RECHAZADA,
                 ),
             )
         repositoryFake.solicitudesARetornar = datosMixtos

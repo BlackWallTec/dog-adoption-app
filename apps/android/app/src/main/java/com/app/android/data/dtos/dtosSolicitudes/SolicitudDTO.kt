@@ -36,8 +36,7 @@ data class SolicitudClienteDto(
     @SerializedName("fecha_solicitud") val fechaSolicitud: String?,
     @SerializedName("estado") val estado: String?,
     @SerializedName("perro") val perro: PerroSolicitudDto?,
-    @SerializedName("foto_url") val fotoUrl: String?,
-    @SerializedName("documento_rechazado") val documentoRechazado: Boolean?,
+    @SerializedName("puede_editar") val puedeEditar: Boolean?,
     @SerializedName("comentario_admin") val comentarioAdmin: String?,
 )
 
@@ -121,6 +120,6 @@ fun SolicitudClienteDto.toDomain(): SolicitudCliente =
         estado = estado.toEstadoSolicitud(),
         nombrePerro = perro?.nombre?.takeIf { it.isNotBlank() },
         fotoUrl = perro?.fotoUrl?.takeIf { it.isNotBlank() },
-        documentoRechazado = documentoRechazado ?: false,
+        edicionHabilitada = puedeEditar ?: false,
         comentarioAdmin = comentarioAdmin?.takeIf { it.isNotBlank() },
     )

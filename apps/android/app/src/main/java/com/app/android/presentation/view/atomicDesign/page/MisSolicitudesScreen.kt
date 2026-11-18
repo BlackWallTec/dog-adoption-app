@@ -152,16 +152,12 @@ fun MisSolicitudesScreen(
 // Traduce lo que manda el ViewModel (sin nada visual) al estilo de la tarjeta.
 // El documento rechazado solo cuenta mientras la solicitud sigue en revisión.
 private fun SolicitudItem.toEstadoTarjeta(): EstadoTarjeta =
-    if (documentoRechazado && estado == EstadoSolicitud.PENDIENTE_REVISION) {
-        EstadoTarjeta.DOCUMENTO_RECHAZADO
-    } else {
-        when (estado) {
-            EstadoSolicitud.PENDIENTE_REVISION -> EstadoTarjeta.EN_REVISION
-            EstadoSolicitud.EN_PERIODO_PRUEBA -> EstadoTarjeta.EN_PERIODO_PRUEBA
-            EstadoSolicitud.APROBADA -> EstadoTarjeta.APROBADA
-            EstadoSolicitud.RECHAZADA -> EstadoTarjeta.RECHAZADA
-            EstadoSolicitud.DESCONOCIDO -> EstadoTarjeta.EN_PROCESO
-        }
+    when (estado) {
+        EstadoSolicitud.PENDIENTE_REVISION -> EstadoTarjeta.EN_REVISION
+        EstadoSolicitud.EN_PERIODO_PRUEBA -> EstadoTarjeta.EN_PERIODO_PRUEBA
+        EstadoSolicitud.APROBADA -> EstadoTarjeta.APROBADA
+        EstadoSolicitud.RECHAZADA -> EstadoTarjeta.RECHAZADA
+        EstadoSolicitud.DESCONOCIDO -> EstadoTarjeta.EN_PROCESO
     }
 
 // Título + subtítulo (privado: solo lo usa esta pantalla)
@@ -234,48 +230,14 @@ private fun SinSolicitudes(
 
 private val solicitudesPrueba =
     listOf(
+        SolicitudItem("1", "Bruno", null, "QA-0248", "12 oct 2026", EstadoSolicitud.PENDIENTE_REVISION, false, null),
         SolicitudItem(
-            "1",
-            "Bruno",
-            null,
-            "QA-0248",
-            "12 oct 2026",
-            EstadoSolicitud.PENDIENTE_REVISION,
-            false,
-            false,
-            null,
-        ),
-        SolicitudItem(
-            "2",
-            "Luna",
-            null,
-            "QA-0231",
-            "10 oct 2026",
-            EstadoSolicitud.PENDIENTE_REVISION,
-            true,
-            true,
+            "2", "Luna", null, "QA-0231", "10 oct 2026", EstadoSolicitud.RECHAZADA, true,
             "La foto de tu INE sale borrosa, súbela de nuevo por favor.",
         ),
+        SolicitudItem("3", "Milo", null, "QA-0210", "28 sep 2026", EstadoSolicitud.APROBADA, false, null),
         SolicitudItem(
-            "3",
-            "Milo",
-            null,
-            "QA-0210",
-            "28 sep 2026",
-            EstadoSolicitud.APROBADA,
-            false,
-            false,
-            null,
-        ),
-        SolicitudItem(
-            "4",
-            "Nala",
-            null,
-            "QA-0185",
-            "20 sep 2026",
-            EstadoSolicitud.RECHAZADA,
-            false,
-            false,
+            "4", "Nala", null, "QA-0185", "20 sep 2026", EstadoSolicitud.RECHAZADA, false,
             "Por ahora no cumples con el espacio requerido para esta mascota.",
         ),
     )

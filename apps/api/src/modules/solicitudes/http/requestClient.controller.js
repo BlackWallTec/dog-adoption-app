@@ -57,11 +57,6 @@ const fotoDe = (perro) => {
 
 // Checa si alguno de los documentos fue rechazado en el proceso de solicitud
 
-const tieneDocumentoRechazado = (documentos) =>
-  (documentos || []).some((relacion) =>
-    first(relacion.documento)?.estado_revision?.trim().toLowerCase().startsWith("rechaz"),
-  );
-
 // Fila de datos que solo el cliente puede ver
 const formatMiSolicitud = (fila) => {
   const perro = first(fila.perro);
@@ -73,7 +68,7 @@ const formatMiSolicitud = (fila) => {
     estado: first(fila.estado)?.descripcion?.trim() ?? null,
     // null = no hay perro
     perro: perro ? { nombre: perro.nombre, foto_url: fotoDe(perro) } : null,
-    documento_rechazado: tieneDocumentoRechazado(fila.documentos),
+    puede_editar: fila.puede_editar === true,
     comentario_admin: fila.comentario_admin?.trim() || null,
   };
 };

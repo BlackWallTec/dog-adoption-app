@@ -68,7 +68,7 @@ private fun DetalleSolicitudPreview() {
                 comentarioAdmin = null,
             )
             DetalleSolicitud(
-                mensaje = EstadoTarjeta.DOCUMENTO_RECHAZADO.mensaje,
+                mensaje = EstadoTarjeta.RECHAZADA.mensaje,
                 comentarioAdmin = "La foto de tu INE sale borrosa, súbela de nuevo por favor.",
             )
         }

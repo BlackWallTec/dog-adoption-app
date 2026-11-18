@@ -53,15 +53,13 @@ class AdoptionRequestModel {
       id_solicitud,
       fecha_solicitud,
       comentario_admin,
+      puede_editar,
       perro:perro!solicitud_adopcion_id_perro_fkey (
         nombre,
         multimedia ( url, tipo )
         ),
         estado:estado_solicitud!solicitud_adopcion_id_estado_fkey (
           descripcion
-        ),
-        documentos:documento_tiene_solicitud_adopcion (
-          documento ( estado_revision)
         )
       `)
       .eq("id_usuario", idUsuario)

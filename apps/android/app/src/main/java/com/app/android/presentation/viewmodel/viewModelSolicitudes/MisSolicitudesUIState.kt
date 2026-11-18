@@ -8,9 +8,8 @@ data class SolicitudItem(
     val nombrePerro: String, // el ViewModel pone "Mascota no disponible" si el perro ya no está
     val fotoUrl: String?, // null = la pantalla usa la imagen de prueba
     val folio: String,
-    val fecha: String, // esta fecha ya esta formateada al pasar por el VM
+    val fecha: String, // esta fecha ya está formateada al pasar por el VM
     val estado: EstadoSolicitud,
-    val documentoRechazado: Boolean,
     val puedeEditar: Boolean, // regla de negocio: la decide el ViewModel, no la vista
     val comentarioAdmin: String?, // solo el texto pensado para el cliente
 )

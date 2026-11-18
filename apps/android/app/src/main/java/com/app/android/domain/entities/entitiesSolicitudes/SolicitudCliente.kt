@@ -7,11 +7,11 @@ data class SolicitudCliente(
     val estado: EstadoSolicitud,
     val nombrePerro: String?, // null = el perro ya no está disponible
     val fotoUrl: String?,
-    val documentoRechazado: Boolean,
     val comentarioAdmin: String?, // solo el texto pensado para el cliente
+    val edicionHabilitada: Boolean, // edición que lanza el administrador
 ) {
     // REGLA: solo se puede editar mientras tenga un documento rechazado
     // (la HU de editar documentos va a usar esta misma regla)
     val puedeEditar: Boolean
-        get() = documentoRechazado && estado == EstadoSolicitud.PENDIENTE_REVISION
+        get() = edicionHabilitada && estado == EstadoSolicitud.RECHAZADA
 }

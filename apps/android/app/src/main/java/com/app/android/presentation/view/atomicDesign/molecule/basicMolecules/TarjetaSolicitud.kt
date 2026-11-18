@@ -20,7 +20,6 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -65,13 +64,6 @@ enum class EstadoTarjeta(
         SecondaryContainer,
         Secondary,
         "Tu solicitud está en revisión, pronto nos contactaremos contigo.",
-    ),
-    DOCUMENTO_RECHAZADO(
-        "Documento rechazado",
-        Icons.Outlined.WarningAmber,
-        Color(0xFFFFDDB0),
-        Color(0xFF8A4F00),
-        "Uno de tus documentos fue rechazado. Edítalo para que podamos continuar con tu solicitud.",
     ),
     EN_PERIODO_PRUEBA(
         "En periodo de prueba",
@@ -202,7 +194,7 @@ fun TarjetaSolicitudPreview() {
                 folio = "QA-0248",
                 fecha = "12 oct 2026",
                 estado = estado,
-                puedeEditar = estado == EstadoTarjeta.DOCUMENTO_RECHAZADO,
+                puedeEditar = estado == EstadoTarjeta.RECHAZADA,
             )
         }
     }

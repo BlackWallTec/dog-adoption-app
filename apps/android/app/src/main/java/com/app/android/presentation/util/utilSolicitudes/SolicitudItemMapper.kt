@@ -18,7 +18,6 @@ fun SolicitudCliente.toItem(): SolicitudItem =
         folio = folio,
         fecha = formatearFecha(fechaSolicitud),
         estado = estado,
-        documentoRechazado = documentoRechazado,
         puedeEditar = puedeEditar,
         comentarioAdmin = comentarioAdmin,
     )
