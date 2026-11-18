@@ -15,6 +15,8 @@ const LOGIN_URL = "/HTML/htmlPerfiles/login.html";
 const USAR_MOCK = false;
 
 const state = { perro: "todos", estado: "todos", fecha: "todas", page: 1 };
+//We get the cache of the page
+const solicitudesCache = new Map();
 let abortController;
 let requestId = 0;
 let lastLoad;
@@ -94,6 +96,8 @@ function renderChips(summary = {}) {
 function renderRows(rows) {
   elements.body.replaceChildren();
   rows.forEach((row) => {
+    //We load the cache
+    solicitudesCache.set(String(row.id), row);
     const tableRow = document.createElement("tr");
     const folio = document.createElement("strong");
     folio.className = "folio";
@@ -141,6 +145,7 @@ function renderRows(rows) {
     const detail = document.createElement("button");
     detail.type = "button";
     detail.className = "detail-button";
+    detail.dataset.id = row.id;
     detail.textContent = "Ver detalle";
     detail.addEventListener("click", () => abrirDetalle(row.id)); // HU05: abre el pop-up del detalle
     actionCell.append(detail);
@@ -194,7 +199,7 @@ function resetFilters(shouldLoad = true) {
 }
 
 async function fetchJson(url, signal) {
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { signal, cache: "no-store" });
   const contentType = response.headers.get("content-type") || "";
   let payload = {};
   if (contentType.includes("application/json")) payload = await response.json();
@@ -316,4 +321,163 @@ document.addEventListener("DOMContentLoaded", () => {
   void load();
 });
 
+// <----------------- Begin Detail modal --------------------->
+//we assign a variable to everything that we get from the view
+const modal = document.getElementById("modal-detalle");
+const bloqueResolucion = document.getElementById("bloque-resolucion");
+const selectEstado = document.getElementById("select-nuevo-estado");
+const estadoDot = document.getElementById("estado-dot");
+const contenedorComentario = document.getElementById("contenedor-comentario-rechazo");
+const textareaComentario = document.getElementById("comentario-resolucion");
+const contadorCaracteres = document.getElementById("contador-caracteres");
+const errorResolucion = document.getElementById("error-resolucion");
+const modalConfirmacion = document.getElementById("modal-confirmacion-estado");
+const iconoConfirmacion = document.getElementById("confirmacion-icono");
+const tituloConfirmacion = document.getElementById("titulo-confirmacion-estado");
+const mensajeConfirmacion = document.getElementById("mensaje-confirmacion-estado");
+
+//It acompanies the color of the state
+function actualizarIndicadorEstado(valor) {
+  //It updates the view of colors
+  estadoDot.className = "status-dot";
+  if (valor === "aprobada") estadoDot.classList.add("dot-aprobada");
+  else if (valor === "rechazada") estadoDot.classList.add("dot-rechazada");
+  else if (valor === "periodo_prueba") estadoDot.classList.add("dot-prueba");
+  else estadoDot.classList.add("dot-revision");
+}
+
+//Comentary when an adoption is not accepted
+function actualizarContador() {
+  const longitud = textareaComentario.value.length;
+  contadorCaracteres.textContent = `${longitud.toLocaleString("es-MX")} / 1,000`;
+}
+
+//We update the state of the adoption in the main dashboard
+function sincronizarFormularioEstado() {
+  //reads the value that it is selected in the menu
+  const estado = selectEstado.value;
+  //we get a boolean value to see if the adoption status is actually rejected
+  const esRechazada = estado === "rechazada";
+  //Function to change of color
+  actualizarIndicadorEstado(estado);
+  contenedorComentario.hidden = !esRechazada;
+  //If it is rejected then you show the comentary box
+  if (!esRechazada) {
+    textareaComentario.value = "";
+  }
+
+  //Recalculates the length of the text that is written
+  actualizarContador();
+  //We hide every other message of validation before
+  errorResolucion.hidden = true;
+  errorResolucion.textContent = "";
+}
+
+//Filter of security befire the data is sent, we verify that everything has been written correctly
+function validarResolucion() {
+  const estado = selectEstado.value;
+  const comentario = textareaComentario.value.trim();
+  const estadosValidos = ["en_revision", "periodo_prueba", "aprobada", "rechazada"];
+
+  if (!estadosValidos.includes(estado)) {
+    return { ok: false, mensaje: "Selecciona un estado válido." };
+  }
+  //If a comment is not written you need to show an error
+  if (estado === "rechazada" && !comentario) {
+    return {
+      ok: false,
+      mensaje: "Debes escribir un comentario interno cuando la solicitud es rechazada.",
+    };
+  }
+
+  //If it is bigger than a 1000 characters it shows an error
+  if (comentario.length > 1000) {
+    return { ok: false, mensaje: "El comentario no puede superar los 1,000 caracteres." };
+  }
+
+  return {
+    ok: true,
+    datos: {
+      state: estado,
+      comment: estado === "rechazada" ? comentario : null,
+    },
+  };
+}
+
+selectEstado?.addEventListener("change", sincronizarFormularioEstado);
+textareaComentario?.addEventListener("input", actualizarContador);
+
+document.getElementById("btn-cancelar-modal")?.addEventListener("click", () => {
+  modal?.close();
+});
+
+//Modal to show confirmation
+function mostrarModalConfirmacion(estadoGuardado) {
+  if (!modalConfirmacion) return;
+
+  iconoConfirmacion.className = "confirmacion-icono";
+  iconoConfirmacion.textContent = "✓";
+
+  if (estadoGuardado === "rechazada") {
+    iconoConfirmacion.classList.add("rechazada");
+  } else if (estadoGuardado === "en_revision") {
+    iconoConfirmacion.classList.add("revision");
+  }
+
+  tituloConfirmacion.textContent = "El estado de la solicitud se actualizó correctamente";
+  mensajeConfirmacion.textContent = "Los cambios ya se reflejan en el listado de solicitudes.";
+
+  modalConfirmacion.hidden = false;
+  modalConfirmacion.style.display = "flex";
+}
+
+document.getElementById("btn-cerrar-confirmacion")?.addEventListener("click", () => {
+  modalConfirmacion.hidden = true;
+  modalConfirmacion.style.display = "none";
+});
+
+modalConfirmacion?.addEventListener("click", (event) => {
+  if (event.target === modalConfirmacion) {
+    modalConfirmacion.hidden = true;
+    modalConfirmacion.style.display = "none";
+  }
+});
+
+document.getElementById("btn-guardar-estado")?.addEventListener("click", async () => {
+  const resultado = validarResolucion();
+  if (!resultado.ok) {
+    errorResolucion.textContent = resultado.mensaje;
+    errorResolucion.hidden = false;
+    if (selectEstado.value === "rechazada") textareaComentario.focus();
+    return;
+  }
+
+  const solicitudId = bloqueResolucion.dataset.solicitudId;
+  //Start of the promise, we send the data to be updated in the modal
+  try {
+    const response = await fetch(`${API_URL}/${solicitudId}/resolucion`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(resultado.datos),
+    });
+    const payload = await response.json().catch(() => ({}));
+    //If there is an error or it has been done incorrectly
+    if (!response.ok) {
+      throw new Error(payload.error || "No se pudo guardar el cambio.");
+    }
+
+    //We close the modal of detail
+    modal?.close();
+
+    //We get the modal of confirmation when the update has been done succesfully
+    mostrarModalConfirmacion(resultado.datos.state);
+
+    //3. The page is reoloaded, and the numbers are updated
+    await load();
+  } catch (err) {
+    errorResolucion.textContent = err.message || "No se pudo guardar el cambio.";
+    errorResolucion.hidden = false;
+  }
+});
+// <----------------- End Detail modal --------------------->
 export { state, renderRows, load };
