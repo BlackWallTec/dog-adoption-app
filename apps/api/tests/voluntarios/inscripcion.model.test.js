@@ -1,8 +1,8 @@
 /*
- * PRUEBAS DEL MODELO: las funciones que hablan con Supabase.
+- PRUEBAS DEL MODELO: las funciones que hablan con Supabase.
  *
- * Tienen poca lógica, pero importante: cómo reaccionan cuando Supabase responde con un
- * error, con null o con una lista vacía. No nos conectamos a Supabase de verdad.
+- Tienen poca lógica, pero importante: cómo reaccionan cuando Supabase responde con un
+- error, con null o con una lista vacía. No nos conectamos a Supabase de verdad.
  */
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -19,17 +19,18 @@ import {
 } from "../../src/modules/voluntarios/http/modelosVoluntariado/inscripcion.model.js";
 
 /*
- * Supabase se usa "encadenando" llamadas:
- *     await supabaseAdmin.from("tabla").select("x").eq("y", 1).maybeSingle()
- * Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
- * entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
- * para revisar con qué argumentos se llamaron.
+- Supabase se usa "encadenando" llamadas:
+-     await supabaseAdmin.from("tabla").select("x").eq("y", 1).maybeSingle()
+- Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
+- entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
+- para revisar con qué argumentos se llamaron.
  */
 const simularSupabase = (resultado) => {
   const consulta = {
     select: vi.fn(() => consulta),
     eq: vi.fn(() => consulta),
     insert: vi.fn(() => consulta),
+    upsert: vi.fn(() => consulta),
     maybeSingle: vi.fn(async () => resultado),
     single: vi.fn(async () => resultado),
     // `contarInscritosModel` termina en `.eq()`: hacemos la cadena "esperable" con await.
@@ -128,11 +129,17 @@ describe("crearInscripcionModel", () => {
     await expect(crearInscripcionModel("p1", "u1", "2026-11-05T12:00:00")).resolves.toEqual(fila);
 
     expect(supabaseAdmin.from).toHaveBeenCalledWith("se_inscribe");
-    expect(consulta.insert).toHaveBeenCalledWith({
-      id_usuario: "u1",
-      id_programa: "p1",
-      fecha_inscripcion: "2026-11-05T12:00:00",
-    });
+    expect(consulta.upsert).toHaveBeenCalledWith(
+      {
+        id_usuario: "u1",
+        id_programa: "p1",
+        fecha_inscripcion: "2026-11-05T12:00:00",
+        estado: "Aceptado",
+      },
+      {
+        onConflict: "id_usuario,id_programa",
+      },
+    );
   });
 
   it("estructural: el error conserva el código, que el controlador usa para decidir", async () => {

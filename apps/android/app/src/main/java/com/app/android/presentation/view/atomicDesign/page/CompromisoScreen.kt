@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.useCases.useCasesSolicitudes.CompromisoErrors
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
+import com.app.android.presentation.view.atomicDesign.atomic.CheckBox
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
 import com.app.android.presentation.view.atomicDesign.molecule.LabeledOptionPicker
 import com.app.android.presentation.view.atomicDesign.molecule.LabeledWritableCard
@@ -35,6 +36,7 @@ import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Surface
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.Acceptances
 
 // PAGE: paso 4 de la solicitud de adopcion
 @Composable
@@ -44,6 +46,8 @@ fun CompromisoScreen(
     datos: Compromiso?,
     errores: CompromisoErrors?,
     onDatosChange: (Compromiso) -> Unit,
+    acceptances: Acceptances, // los 3 checkbox de compromiso
+    onAcceptancesChange: (Acceptances) -> Unit,
     guardando: Boolean,
     errorGuardar: String?,
     onReintentar: () -> Unit,
@@ -95,6 +99,8 @@ fun CompromisoScreen(
                         datos = datos,
                         errores = errores,
                         onDatosChange = onDatosChange,
+                        acceptances = acceptances,
+                        onAcceptancesChange = onAcceptancesChange,
                         guardando = guardando,
                         errorGuardar = errorGuardar,
                         onContinuarClick = onContinuarClick,
@@ -113,6 +119,8 @@ private fun FormularioCompromiso(
     datos: Compromiso,
     errores: CompromisoErrors?,
     onDatosChange: (Compromiso) -> Unit,
+    acceptances: Acceptances,
+    onAcceptancesChange: (Acceptances) -> Unit,
     guardando: Boolean,
     errorGuardar: String?,
     onContinuarClick: () -> Unit,
@@ -148,7 +156,7 @@ private fun FormularioCompromiso(
                 label = "Menciona los cuidados básicos de una mascota",
                 value = datos.petNeeds,
                 onValueChange = { onDatosChange(datos.copy(petNeeds = it)) },
-                placeholder = "Escribe tu respuesta...",
+                placeholder = "Escribe los cuidados que le darías día a día...",
                 minLines = 3,
             )
             errores?.petNeeds?.let { ErrorMessage(text = it) }
@@ -158,7 +166,7 @@ private fun FormularioCompromiso(
                 label = "¿Qué opinas de la esterilización?",
                 value = datos.petSterilization,
                 onValueChange = { onDatosChange(datos.copy(petSterilization = it)) },
-                placeholder = "Escribe tu respuesta...",
+                placeholder = "Cuéntanos qué opinas y por qué...",
                 minLines = 3,
             )
             errores?.petSterilization?.let { ErrorMessage(text = it) }
@@ -166,19 +174,91 @@ private fun FormularioCompromiso(
 
         Column {
             LabeledOptionPicker(
-                label = "¿Nos permites dar seguimiento (visitas o fotos)?",
+                label = "¿Tienes un veterinario de confianza?",
                 options = listOf("Sí", "No"),
                 // true = Sí (0), false = No (1), null = nada seleccionado (-1)
                 selectedIndex =
-                    when (datos.petFollowing) {
+                    when (datos.hasVet) {
                         true -> 0
                         false -> 1
                         null -> -1
                     },
-                onOptionSelected = { onDatosChange(datos.copy(petFollowing = it == 0)) },
+                onOptionSelected = { onDatosChange(datos.copy(hasVet = it == 0)) },
             )
-            errores?.petFollowing?.let { ErrorMessage(text = it) }
+            errores?.hasVet?.let { ErrorMessage(text = it) }
         }
+
+        Column {
+            LabeledWritableCard(
+                label = "Si tienes veterinario, ¿cuál es? Si no, ¿cómo piensas conseguir uno?",
+                value = datos.vetDetail,
+                onValueChange = { onDatosChange(datos.copy(vetDetail = it)) },
+                placeholder = "Nombre del veterinario o clínica, o cómo lo buscarías...",
+                minLines = 3,
+            )
+            errores?.vetDetail?.let { ErrorMessage(text = it) }
+        }
+
+        Column {
+            LabeledWritableCard(
+                label = "¿Cuántas horas al día estaría sola tu mascota y quién la cuidaría si viajas o sales de vacaciones?",
+                value = datos.timeAlone,
+                onValueChange = { onDatosChange(datos.copy(timeAlone = it)) },
+                placeholder = "Indica cuántas horas y quién la cuidaría cuando no estés...",
+                minLines = 3,
+            )
+            errores?.timeAlone?.let { ErrorMessage(text = it) }
+        }
+
+        Column {
+            LabeledWritableCard(
+                label = "Describe un día normal para tu mascota (paseos, comida, juego, dónde duerme)",
+                value = datos.dailyRoutine,
+                onValueChange = { onDatosChange(datos.copy(dailyRoutine = it)) },
+                placeholder = "Cuéntanos cómo sería su día, de la mañana a la noche...",
+                minLines = 3,
+            )
+            errores?.dailyRoutine?.let { ErrorMessage(text = it) }
+        }
+
+        Column {
+            LabeledWritableCard(
+                label = "Si tu mascota ladra mucho, rompe cosas o se porta agresiva con otros perros, ¿qué harías?",
+                value = datos.dogManagement,
+                onValueChange = { onDatosChange(datos.copy(dogManagement = it)) },
+                placeholder = "Cuéntanos qué harías, paso a paso...",
+                minLines = 3,
+            )
+            errores?.dogManagement?.let { ErrorMessage(text = it) }
+        }
+
+        Text(
+            text = "Mis compromisos",
+            color = InverseSurface,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        CheckBox(
+            checked = acceptances.acceptsReturn,
+            onCheckedChange = { onAcceptancesChange(acceptances.copy(acceptsReturn = it)) },
+            text = @Suppress("ktlint:standard:max-line-length")
+            "Si en algún momento no puedo quedarme con mi mascota, me comprometo a devolverla a la organización y no regalarla, venderla ni abandonarla.",
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        CheckBox(
+            checked = acceptances.petSpending,
+            onCheckedChange = { onAcceptancesChange(acceptances.copy(petSpending = it)) },
+            text = "Entiendo que la adopción implica gastos continuos (alimento, vacunas, desparasitación y consultas veterinarias).",
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        CheckBox(
+            checked = acceptances.petFollowing,
+            onCheckedChange = { onAcceptancesChange(acceptances.copy(petFollowing = it)) },
+            text = "Acepto que me den seguimiento (visitas o fotos) después de la adopción.",
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         if (errorGuardar != null) {
             Text(
@@ -191,6 +271,7 @@ private fun FormularioCompromiso(
         AppButton(
             text = "Continuar a Documentos",
             onClick = onContinuarClick,
+            enabled = acceptances.allAccepted, // gris hasta que palomeen los 3
             modifier =
                 Modifier
                     .fillMaxWidth()
@@ -199,10 +280,11 @@ private fun FormularioCompromiso(
     }
 }
 
-@Preview(showBackground = true, name = "Paso 4 - Compromiso")
+@Preview(showBackground = true, name = "Paso 4 - Interactivo")
 @Composable
-fun CompromisoScreenPreview() {
+fun CompromisoInteractivoPreview() {
     var datos by remember { mutableStateOf(Compromiso()) }
+    var acceptances by remember { mutableStateOf(Acceptances()) }
     AndroidTheme {
         CompromisoScreen(
             cargando = false,
@@ -210,6 +292,8 @@ fun CompromisoScreenPreview() {
             datos = datos,
             errores = null,
             onDatosChange = { datos = it }, // el estado vive en el preview
+            acceptances = acceptances,
+            onAcceptancesChange = { acceptances = it },
             guardando = false,
             errorGuardar = null,
             onReintentar = {},
@@ -229,10 +313,17 @@ fun CompromisoConErroresPreview() {
             datos = Compromiso(),
             errores =
                 CompromisoErrors(
-                    petNeeds = "Menciona al menos un cuidado básico",
-                    petSterilization = "Selecciona una opción",
+                    petNeeds = "Escribe tu respuesta",
+                    hasVet = "Selecciona una opción",
+                    vetDetail = "Escribe tu respuesta",
+                    timeAlone = "Escribe tu respuesta",
+                    dailyRoutine = "Escribe tu respuesta",
+                    dogManagement = "Escribe tu respuesta",
+                    petSterilization = "Escribe tu respuesta",
                 ),
             onDatosChange = {},
+            acceptances = Acceptances(acceptsReturn = true, petSpending = true, petFollowing = true),
+            onAcceptancesChange = {},
             guardando = false,
             errorGuardar = null,
             onReintentar = {},
@@ -252,6 +343,8 @@ fun CompromisoCargandoPreview() {
             datos = null,
             errores = null,
             onDatosChange = {},
+            acceptances = Acceptances(),
+            onAcceptancesChange = {},
             guardando = false,
             errorGuardar = null,
             onReintentar = {},

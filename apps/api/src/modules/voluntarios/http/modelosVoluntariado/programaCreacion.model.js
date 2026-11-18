@@ -2,7 +2,7 @@ import { supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const TABLA = "programa";
 
-function combinarFechaHora(fecha, hora) {
+export function combinarFechaHora(fecha, hora) {
   return `${fecha} ${hora}:00`;
 }
 
@@ -15,7 +15,7 @@ function separarFechaHora(fechaHora) {
 }
 
 // Se normalizan los nombres en los cuales se utilizan en el FrontEnd
-function normalizarPrograma(r) {
+export function normalizarPrograma(r) {
   const inicio = separarFechaHora(r.fecha_inicio);
   const fin = separarFechaHora(r.fecha_fin);
   return {

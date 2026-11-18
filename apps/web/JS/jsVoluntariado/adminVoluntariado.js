@@ -1,3 +1,5 @@
+import { rutaDe } from "../rutas.js";
+
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const form = document.getElementById("form-inscritos");
@@ -15,5 +17,5 @@ form.addEventListener("submit", (event) => {
   }
 
   error.hidden = true;
-  window.location.href = `./adminInscritos.html?id=${encodeURIComponent(id)}`;
+  window.location.href = `${rutaDe("inscritos")}?id=${encodeURIComponent(id)}`;
 });

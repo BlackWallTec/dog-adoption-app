@@ -12,6 +12,7 @@ import com.app.android.domain.repoInterface.repoIntVoluntariado.InscripcionRepos
 import com.app.android.domain.repoInterface.repoIntVoluntariado.ProgramaRepository
 import com.app.android.domain.useCases.useCasesVoluntariado.InscribirseProgramaUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.ObtenerProgramasVigentesUseCase
+import com.app.android.domain.useCases.useCasesVoluntariado.CancelarInscripcionUseCase
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiState
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasViewModel
 import com.google.gson.Gson
@@ -77,6 +78,7 @@ class ProgramasViewModelTest {
     ) = ProgramasViewModel(
         ObtenerProgramasVigentesUseCase(catalogo),
         InscribirseProgramaUseCase(inscripciones, RELOJ_FIJO),
+        CancelarInscripcionUseCase(inscripciones, RELOJ_FIJO),
     )
 
     /*
@@ -282,6 +284,9 @@ class ProgramasViewModelTest {
                     if (intentos == 1) throw CancellationException("cancelada")
                     return Resultado.Exito(INSCRIPCION_OK)
                 }
+
+                override suspend fun cancelarInscripcion(idPrograma: String): Resultado<Inscripcion> =
+                    Resultado.Exito(INSCRIPCION_OK)
             }
         val vm = viewModel(inscripciones = inscripciones)
 

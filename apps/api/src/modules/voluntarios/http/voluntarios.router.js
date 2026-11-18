@@ -2,10 +2,11 @@ import { Router } from "express";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
-import { inscribirse } from "./voluntarios.controller.js";
+import { inscribirse, cancelarInscripcion } from "./voluntarios.controller.js";
 import * as clientController from "./voluntariadoClient.controller.js";
 import { getInscritos } from "./inscritosAdmin.controller.js";
 import { router as programas } from "./programas.routes.js";
+import * as edicionController from "./programaEdicion.controller.js";
 
 export const router = Router();
 
@@ -17,6 +18,9 @@ router.get("/cliente/programas", clientController.getProgramasVigentes);
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 router.post("/programas/:idPrograma/inscripciones", inscribirse);
 
+// PATCH /api/voluntarios/programas/:idPrograma/inscripciones
+router.patch("/programas/:idPrograma/inscripciones", cancelarInscripcion);
+
 // Rutas Admin
 
 // GET /api/voluntarios/admin/programas/:idPrograma/inscritos
@@ -26,6 +30,22 @@ router.get(
   verificarToken,
   requireRole(ROLES.ADMIN, ROLES.ROOT),
   getInscritos,
+);
+
+// HU38 editar y cancelar programas solo para administador o root
+const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+
+// GET /api/voluntarios/admin/programas/:idPrograma
+router.get("/admin/programas/:idPrograma", ...soloAdmin, edicionController.obtenerParaEditar);
+
+// PUT /api/voluntarios/admin/programas/:idPrograma
+router.put("/admin/programas/:idPrograma", ...soloAdmin, edicionController.editarPrograma);
+
+// POST /api/voluntarios/admin/programas/:idPrograma/cancelacion
+router.post(
+  "/admin/programas/:idPrograma/cancelacion",
+  ...soloAdmin,
+  edicionController.cancelarPrograma,
 );
 
 // Rutas de creación de programas (HU31)

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.domain.entities.entitiesVoluntariado.Resultado
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
+import com.app.android.domain.useCases.useCasesVoluntariado.CancelarInscripcionUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.InscribirseProgramaUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.ObtenerProgramasVigentesUseCase
 import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
@@ -24,12 +25,13 @@ import javax.inject.Inject
 class ProgramasViewModel @Inject constructor(
     private val obtenerProgramasVigentes: ObtenerProgramasVigentesUseCase,
     private val inscribirseEnPrograma: InscribirseProgramaUseCase,
+    private val cancelarInscripcionEnPrograma: CancelarInscripcionUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProgramasUiState>(ProgramasUiState.Loading)
     val uiState: StateFlow<ProgramasUiState> = _uiState.asStateFlow()
 
-    // Mensajes de una sola vez (snackbar): error al inscribirse
+    // Mensajes de una sola vez (snackbar): errores al inscribirse o cancelar, y aviso de cancelación
     private val _mensajes = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val mensajes: SharedFlow<String> = _mensajes.asSharedFlow()
 
@@ -41,8 +43,12 @@ class ProgramasViewModel @Inject constructor(
     private val _inscripcionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val inscripcionExitosa: SharedFlow<Unit> = _inscripcionExitosa.asSharedFlow()
 
-    // Evita doble toque mientras una inscripción sigue en curso
-    private var inscribiendo = false
+    // Evento de una sola vez: la cancelación salió bien (la confirmación lo usa para regresar a la lista)
+    private val _cancelacionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val cancelacionExitosa: SharedFlow<Unit> = _cancelacionExitosa.asSharedFlow()
+
+    // Evita doble toque mientras una inscripción o cancelación sigue en curso
+    private var procesando = false
 
     init {
         cargarProgramas()
@@ -63,34 +69,58 @@ class ProgramasViewModel @Inject constructor(
     }
 
     fun inscribirse(programa: Programa) {
-        if (inscribiendo) return
-        inscribiendo = true
+        if (procesando) return
+        procesando = true
         viewModelScope.launch {
             try {
                 when (val resultado = inscribirseEnPrograma(programa)) {
                     is Resultado.Exito -> {
-                        marcarInscrito(programa.id)
+                        marcarInscrito(programa.id, true)
                         _programaConfirmado.value = programa.conInscripcionConfirmada()
                         _inscripcionExitosa.emit(Unit)
                     }
                     is Resultado.Error -> {
                         // Si ya estaba inscrito, la tarjeta también debe reflejarlo
-                        if (resultado.error == VoluntariadoError.YaInscrito) marcarInscrito(programa.id)
+                        if (resultado.error == VoluntariadoError.YaInscrito) marcarInscrito(programa.id, true)
                         _mensajes.emit(mensajeDe(resultado.error))
                     }
                 }
             } finally {
-                inscribiendo = false
+                procesando = false
             }
         }
     }
 
-    private fun marcarInscrito(idPrograma: String) {
+    // HU37: cancela la inscripción (el backend cambia el estado de la fila a "Pendiente")
+    fun cancelarInscripcion(programa: Programa) {
+        if (procesando) return
+        procesando = true
+        viewModelScope.launch {
+            try {
+                when (val resultado = cancelarInscripcionEnPrograma(programa)) {
+                    is Resultado.Exito -> {
+                        marcarInscrito(programa.id, false)
+                        _mensajes.emit("Cancelaste tu inscripción en ${programa.nombre}.")
+                        _cancelacionExitosa.emit(Unit)
+                    }
+                    is Resultado.Error -> {
+                        // Si ya no estaba inscrito, la tarjeta también debe reflejarlo
+                        if (resultado.error == VoluntariadoError.NoInscrito) marcarInscrito(programa.id, false)
+                        _mensajes.emit(mensajeCancelacionDe(resultado.error))
+                    }
+                }
+            } finally {
+                procesando = false
+            }
+        }
+    }
+
+    private fun marcarInscrito(idPrograma: String, inscrito: Boolean) {
         val actual = _uiState.value
         if (actual is ProgramasUiState.Success) {
             _uiState.value =
                 ProgramasUiState.Success(
-                    actual.programas.map { if (it.id == idPrograma) it.copy(usuarioInscrito = true) else it },
+                    actual.programas.map { if (it.id == idPrograma) it.copy(usuarioInscrito = inscrito) else it },
                 )
         }
     }
@@ -99,11 +129,20 @@ class ProgramasViewModel @Inject constructor(
         when (error) {
             VoluntariadoError.SinCupo -> "Este programa ya no tiene lugares disponibles."
             VoluntariadoError.YaInscrito -> "Ya estás inscrito en este programa."
+            VoluntariadoError.NoInscrito -> "No tienes una inscripción activa en este programa."
             VoluntariadoError.ProgramaIniciado -> "Este programa ya comenzó, ya no es posible inscribirse."
             VoluntariadoError.ProgramaNoDisponible -> "Este programa no está disponible por ahora."
             VoluntariadoError.ProgramaNoEncontrado -> "No encontramos este programa. Actualiza la lista."
             VoluntariadoError.NoAutenticado -> "Inicia sesión para inscribirte."
             VoluntariadoError.SinConexion -> "Sin conexión. Revisa tu internet e inténtalo de nuevo."
             VoluntariadoError.Desconocido -> "Ocurrió un error. Inténtalo de nuevo."
+        }
+
+    // Igual que mensajeDe, salvo el programa ya iniciado (aquí no se puede cancelar)
+    private fun mensajeCancelacionDe(error: VoluntariadoError): String =
+        if (error == VoluntariadoError.ProgramaIniciado) {
+            "Este programa ya comenzó, ya no es posible cancelar."
+        } else {
+            mensajeDe(error)
         }
 }
