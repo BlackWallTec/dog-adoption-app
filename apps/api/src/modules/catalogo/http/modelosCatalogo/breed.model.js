@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 class BreedModel {
   static async getBreeds() {

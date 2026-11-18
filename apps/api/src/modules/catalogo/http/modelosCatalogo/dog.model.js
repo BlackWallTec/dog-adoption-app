@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const FICHA_ADMIN = `
   id_perro, nombre, sexo, edad_aprox, tamano_medida, descripcion,
@@ -169,7 +169,7 @@ class DogModel {
   }
 
   static async createFullDog(dogData) {
-    const { data, error } = await supabase.rpc("insert_full_dog", { payload: dogData });
+    const { data, error } = await supabaseAdmin.rpc("insert_full_dog", { payload: dogData });
 
     if (error) {
       throw new Error(`Error al crear el perro: ${error.message}`);
@@ -212,7 +212,7 @@ class DogModel {
   }
 
   static async activarPerroBulk(idList, action) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("perro")
       .update({ activo: action })
       .in("id_perro", idList);

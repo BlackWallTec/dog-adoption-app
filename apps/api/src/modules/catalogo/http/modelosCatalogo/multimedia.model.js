@@ -1,4 +1,4 @@
-import { supabase } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 class MultimediaModel {
   static async getDogMultimediaById(id) {
@@ -21,7 +21,7 @@ class MultimediaModel {
 
   //POST
   static async addDogMultimedia(id_perro, url, tipo, fecha_subida) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("multimedia")
       .insert([{ id_perro, url, tipo, fecha_subida }]);
 
