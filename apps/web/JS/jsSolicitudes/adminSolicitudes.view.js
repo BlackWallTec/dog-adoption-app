@@ -11,7 +11,7 @@ import { abrirDetalle } from "./adminSolicitudes.detalle.js";
 
 const API_URL = "/api/solicitudes/admin/solicitudes";
 const DOGS_API_URL = "/api/catalogo/admin/perros";
-const LOGIN_URL = "/login";
+const LOGIN_URL = "/HTML/htmlPerfiles/login.html";
 const USAR_MOCK = false;
 
 const state = { perro: "todos", estado: "todos", fecha: "todas", page: 1 };
