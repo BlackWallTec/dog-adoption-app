@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { supabase } from "../../../../config/supabaseClient.js";
 
 class ProgramModel {
   // Solo programas cuya fecha_fin aun no ha pasado.
@@ -9,7 +9,7 @@ class ProgramModel {
       .toLocaleString("sv-SE", { timeZone: "America/Mexico_City" })
       .replace(" ", "T");
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("programa")
       .select(`
         id_programa,
@@ -17,7 +17,8 @@ class ProgramModel {
         nombre,
         estado_del_programa,
         fecha_inicio,
-        fecha_fin
+        fecha_fin,
+        cupo_maximo
       `)
       .gte("fecha_fin", ahora)
       .order("fecha_inicio", { ascending: true });

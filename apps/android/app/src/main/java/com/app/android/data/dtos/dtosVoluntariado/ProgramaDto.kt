@@ -15,5 +15,9 @@ data class ProgramaDto(
     @SerializedName("estado_del_programa") val estadoDelPrograma: String?,
     @SerializedName("fecha_inicio") val fechaInicio: String,
     @SerializedName("fecha_fin") val fechaFin: String,
+    // null = sin límite de lugares
+    @SerializedName("cupo_maximo") val cupoMaximo: Int? = null,
+    // Lugares que quedan; lo calcula el backend (cupo_maximo - inscritos Aceptado). null = sin límite
+    @SerializedName("cupo_disponible") val cupoDisponible: Int? = null,
     @SerializedName("usuario_inscrito") val usuarioInscrito: Boolean? = null,
 )

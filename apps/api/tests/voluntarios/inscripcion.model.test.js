@@ -1,42 +1,40 @@
 /*
-- PRUEBAS DEL MODELO: las funciones que hablan con Supabase.
+ * PRUEBAS DEL MODELO: las funciones que hablan con Supabase.
  *
-- Tienen poca lógica, pero importante: cómo reaccionan cuando Supabase responde con un
-- error, con null o con una lista vacía. No nos conectamos a Supabase de verdad.
+ * Tienen poca lógica, pero importante: cómo reaccionan cuando Supabase responde con un
+ * error, con null o con una lista vacía. No nos conectamos a Supabase de verdad.
  */
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("../../src/config/supabaseClient.js", () => ({
-  supabaseAdmin: { from: vi.fn() },
+  supabase: { from: vi.fn(), rpc: vi.fn() },
+  supabaseAdmin: { from: vi.fn(), rpc: vi.fn() },
 }));
 
-import { supabaseAdmin } from "../../src/config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../src/config/supabaseClient.js";
 import {
+  cancelarInscripcionModel,
   contarInscritosModel,
-  crearInscripcionModel,
-  existeInscripcionModel,
-  getProgramaInscripcionModel,
+  contarInscritosPorProgramasModel,
+  getIdsProgramasInscritosModel,
+  inscribirEnProgramaModel,
 } from "../../src/modules/voluntarios/http/modelosVoluntariado/inscripcion.model.js";
 
 /*
-- Supabase se usa "encadenando" llamadas:
--     await supabaseAdmin.from("tabla").select("x").eq("y", 1).maybeSingle()
-- Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
-- entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
-- para revisar con qué argumentos se llamaron.
+ * Supabase se usa "encadenando" llamadas:
+ *     await supabase.from("tabla").select("x").eq("y", 1)
+ * Este objeto imita esa cadena: cada método se regresa a sí mismo, y al final la consulta
+ * entrega el `resultado` que le indicamos. También guardamos los métodos en `consulta`
+ * para revisar con qué argumentos se llamaron.
  */
-const simularSupabase = (resultado) => {
+const simularConsulta = (resultado) => {
   const consulta = {
     select: vi.fn(() => consulta),
     eq: vi.fn(() => consulta),
-    insert: vi.fn(() => consulta),
-    upsert: vi.fn(() => consulta),
-    maybeSingle: vi.fn(async () => resultado),
-    single: vi.fn(async () => resultado),
-    // `contarInscritosModel` termina en `.eq()`: hacemos la cadena "esperable" con await.
+    // La cadena termina en `.eq()`: la hacemos "esperable" con await.
     then: (resolver) => resolver(resultado),
   };
-  supabaseAdmin.from.mockReturnValue(consulta);
+  supabase.from.mockReturnValue(consulta);
   return consulta;
 };
 
@@ -46,108 +44,198 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("getProgramaInscripcionModel", () => {
-  it("regresa el programa y consulta el id correcto", async () => {
-    const programa = { id_programa: "p1" };
-    const consulta = simularSupabase({ data: programa, error: null });
+describe("contarInscritosModel", () => {
+  it("llama a contar_inscritos con el id del programa (cliente con RLS, no admin)", async () => {
+    supabase.rpc.mockResolvedValue({ data: 3, error: null });
 
-    await expect(getProgramaInscripcionModel("p1")).resolves.toEqual(programa);
+    await contarInscritosModel("p1");
 
-    expect(supabaseAdmin.from).toHaveBeenCalledWith("programa");
-    expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
+    expect(supabase.rpc).toHaveBeenCalledWith("contar_inscritos", { p_id_programa: "p1" });
+    expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
   });
 
-  it("nulos: un programa inexistente regresa null", async () => {
-    simularSupabase({ data: null, error: null });
+  // Rangos y límites: el conteo más pequeño posible, uno normal y uno muy grande.
+  it.each([0, 1, 10, Number.MAX_SAFE_INTEGER])("regresa el conteo %i", async (conteo) => {
+    supabase.rpc.mockResolvedValue({ data: conteo, error: null });
 
-    await expect(getProgramaInscripcionModel("p1")).resolves.toBeNull();
+    await expect(contarInscritosModel("p1")).resolves.toBe(conteo);
+  });
+
+  // Postgres puede regresar bigint como texto: Number() lo convierte.
+  it("convierte un conteo en texto a número", async () => {
+    supabase.rpc.mockResolvedValue({ data: "8", error: null });
+
+    await expect(contarInscritosModel("p1")).resolves.toBe(8);
+  });
+
+  // `data ?? 0`: "usa data, pero si es null o undefined usa 0".
+  it.each([[null], [undefined]])("nulos: un conteo %j se convierte en 0", async (data) => {
+    supabase.rpc.mockResolvedValue({ data, error: null });
+
+    await expect(contarInscritosModel("p1")).resolves.toBe(0);
   });
 
   it("estructural: un error lanza una excepción con contexto y código", async () => {
-    simularSupabase({ data: null, error: ERROR_BD });
+    supabase.rpc.mockResolvedValue({ data: null, error: ERROR_BD });
 
-    await expect(getProgramaInscripcionModel("p1")).rejects.toMatchObject({
-      message: "Error al consultar el programa: se cayó",
+    await expect(contarInscritosModel("p1")).rejects.toMatchObject({
+      message: "Error al contar inscritos: se cayó",
       code: "XX000",
     });
   });
 });
 
-describe("contarInscritosModel", () => {
-  // Rangos y límites: el conteo más pequeño posible, uno normal y uno muy grande.
-  it.each([0, 1, 10, Number.MAX_SAFE_INTEGER])("regresa el conteo %i", async (count) => {
-    simularSupabase({ count, error: null });
+describe("contarInscritosPorProgramasModel", () => {
+  it("regresa un Map con el conteo de cada programa", async () => {
+    const conteos = { p1: 8, p2: 0, p3: 15 };
+    supabase.rpc.mockImplementation(async (_fn, { p_id_programa }) => ({
+      data: conteos[p_id_programa],
+      error: null,
+    }));
 
-    await expect(contarInscritosModel("p1")).resolves.toBe(count);
+    const resultado = await contarInscritosPorProgramasModel(["p1", "p2", "p3"]);
+
+    expect(resultado).toBeInstanceOf(Map);
+    expect([...resultado]).toEqual([
+      ["p1", 8],
+      ["p2", 0],
+      ["p3", 15],
+    ]);
+    // Una llamada por programa
+    expect(supabase.rpc).toHaveBeenCalledTimes(3);
   });
 
-  // `count ?? 0`: "usa count, pero si es null o undefined usa 0".
-  it.each([[null], [undefined]])("nulos: un conteo %j se convierte en 0", async (count) => {
-    simularSupabase({ count, error: null });
+  it("vacíos: con una lista vacía regresa un Map vacío y no llama a la BD", async () => {
+    const resultado = await contarInscritosPorProgramasModel([]);
 
-    await expect(contarInscritosModel("p1")).resolves.toBe(0);
+    expect(resultado).toBeInstanceOf(Map);
+    expect(resultado.size).toBe(0);
+    expect(supabase.rpc).not.toHaveBeenCalled();
   });
 
-  it("estructural: un error lanza una excepción", async () => {
-    simularSupabase({ count: null, error: ERROR_BD });
+  it("estructural: si un conteo falla, la función entera falla", async () => {
+    supabase.rpc
+      .mockResolvedValueOnce({ data: 1, error: null })
+      .mockResolvedValueOnce({ data: null, error: ERROR_BD });
 
-    await expect(contarInscritosModel("p1")).rejects.toThrow("Error al contar inscritos: se cayó");
-  });
-});
-
-describe("existeInscripcionModel", () => {
-  it("estructural: con una fila encontrada regresa true", async () => {
-    const consulta = simularSupabase({ data: { id_programa: "p1" }, error: null });
-
-    await expect(existeInscripcionModel("p1", "u1")).resolves.toBe(true);
-
-    // Debe filtrar por AMBOS campos: el programa y el usuario.
-    expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
-    expect(consulta.eq).toHaveBeenCalledWith("id_usuario", "u1");
-  });
-
-  it("nulos: sin fila encontrada regresa false", async () => {
-    simularSupabase({ data: null, error: null });
-
-    await expect(existeInscripcionModel("p1", "u1")).resolves.toBe(false);
-  });
-
-  it("estructural: un error lanza una excepción", async () => {
-    simularSupabase({ data: null, error: ERROR_BD });
-
-    await expect(existeInscripcionModel("p1", "u1")).rejects.toThrow(
-      "Error al verificar la inscripción: se cayó",
-    );
+    await expect(contarInscritosPorProgramasModel(["p1", "p2"])).rejects.toMatchObject({
+      code: "XX000",
+    });
   });
 });
 
-describe("crearInscripcionModel", () => {
-  it("inserta la fila con los datos correctos y la regresa", async () => {
-    const fila = { id_programa: "p1", fecha_inscripcion: "2026-11-05T12:00:00", estado: "Activa" };
-    const consulta = simularSupabase({ data: fila, error: null });
+describe("inscribirEnProgramaModel", () => {
+  it("llama a inscribir_en_programa con supabase (RLS) y los dos ids", async () => {
+    supabase.rpc.mockResolvedValue({ data: { codigo: "OK" }, error: null });
 
-    await expect(crearInscripcionModel("p1", "u1", "2026-11-05T12:00:00")).resolves.toEqual(fila);
+    await inscribirEnProgramaModel("p1", "u1");
 
-    expect(supabaseAdmin.from).toHaveBeenCalledWith("se_inscribe");
-    expect(consulta.upsert).toHaveBeenCalledWith(
-      {
-        id_usuario: "u1",
-        id_programa: "p1",
-        fecha_inscripcion: "2026-11-05T12:00:00",
-        estado: "Aceptado",
-      },
-      {
-        onConflict: "id_usuario,id_programa",
-      },
-    );
+    expect(supabase.rpc).toHaveBeenCalledWith("inscribir_en_programa", {
+      p_id_programa: "p1",
+      p_id_usuario: "u1",
+    });
+    // Nunca debe usar service_role: pasa por RLS
+    expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {
+      codigo: "OK",
+      id_programa: "p1",
+      fecha_inscripcion: "2026-11-05T12:00:00",
+      estado: "Aceptado",
+    },
+    { codigo: "SIN_CUPO" },
+    { codigo: "YA_INSCRITO" },
+  ])("regresa data tal cual ($codigo)", async (data) => {
+    supabase.rpc.mockResolvedValue({ data, error: null });
+
+    await expect(inscribirEnProgramaModel("p1", "u1")).resolves.toEqual(data);
   });
 
   it("estructural: el error conserva el código, que el controlador usa para decidir", async () => {
-    simularSupabase({ data: null, error: { message: "duplicado", code: "23505" } });
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "fk", code: "23503" } });
 
-    await expect(crearInscripcionModel("p1", "u1", "x")).rejects.toMatchObject({
-      message: "Error al crear la inscripción: duplicado",
-      code: "23505",
+    await expect(inscribirEnProgramaModel("p1", "u1")).rejects.toMatchObject({
+      message: "Error al inscribir en el programa: fk",
+      code: "23503",
+    });
+  });
+});
+
+describe("getIdsProgramasInscritosModel", () => {
+  it("filtra por usuario y por estado Aceptado, y regresa un Set de ids", async () => {
+    const consulta = simularConsulta({
+      data: [{ id_programa: "p1" }, { id_programa: "p2" }],
+      error: null,
+    });
+
+    const resultado = await getIdsProgramasInscritosModel("u1");
+
+    expect(supabase.from).toHaveBeenCalledWith("se_inscribe");
+    expect(consulta.eq).toHaveBeenCalledWith("id_usuario", "u1");
+    expect(consulta.eq).toHaveBeenCalledWith("estado", "Aceptado");
+    expect(resultado).toEqual(new Set(["p1", "p2"]));
+  });
+
+  it("vacíos: sin inscripciones regresa un Set vacío", async () => {
+    simularConsulta({ data: [], error: null });
+
+    await expect(getIdsProgramasInscritosModel("u1")).resolves.toEqual(new Set());
+  });
+
+  it("estructural: un error lanza una excepción con código", async () => {
+    simularConsulta({ data: null, error: ERROR_BD });
+
+    await expect(getIdsProgramasInscritosModel("u1")).rejects.toMatchObject({
+      message: "Error al consultar las inscripciones del usuario: se cayó",
+      code: "XX000",
+    });
+  });
+});
+
+// HU37: cancelar no borra la fila, la pasa a "Pendiente". inscribir_en_programa la reactiva después.
+describe("cancelarInscripcionModel", () => {
+  const simularUpdate = (resultado) => {
+    const consulta = {
+      update: vi.fn(() => consulta),
+      eq: vi.fn(() => consulta),
+      select: vi.fn(() => consulta),
+      maybeSingle: vi.fn(async () => resultado),
+    };
+    supabase.from.mockReturnValue(consulta);
+    return consulta;
+  };
+
+  it("cambia el estado a Pendiente solo de la inscripción activa de ese usuario y programa", async () => {
+    const fila = {
+      id_programa: "p1",
+      fecha_inscripcion: "2026-11-05T12:00:00",
+      estado: "Pendiente",
+    };
+    const consulta = simularUpdate({ data: fila, error: null });
+
+    await expect(cancelarInscripcionModel("p1", "u1")).resolves.toEqual(fila);
+
+    expect(supabase.from).toHaveBeenCalledWith("se_inscribe");
+    expect(consulta.update).toHaveBeenCalledWith({ estado: "Pendiente" });
+    expect(consulta.eq).toHaveBeenCalledWith("id_programa", "p1");
+    expect(consulta.eq).toHaveBeenCalledWith("id_usuario", "u1");
+    expect(consulta.eq).toHaveBeenCalledWith("estado", "Aceptado");
+  });
+
+  it("nulos: sin inscripción activa regresa null", async () => {
+    simularUpdate({ data: null, error: null });
+
+    await expect(cancelarInscripcionModel("p1", "u1")).resolves.toBeNull();
+  });
+
+  it("estructural: un error lanza una excepción con contexto y código", async () => {
+    simularUpdate({ data: null, error: ERROR_BD });
+
+    await expect(cancelarInscripcionModel("p1", "u1")).rejects.toMatchObject({
+      message: "Error al cancelar la inscripción: se cayó",
+      code: "XX000",
     });
   });
 });

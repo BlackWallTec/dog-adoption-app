@@ -3,6 +3,7 @@ package com.app.android.voluntariado
 import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
 import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionConfirmada
+import com.app.android.domain.entities.entitiesVoluntariado.lugaresOcupados
 import com.app.android.domain.entities.entitiesVoluntariado.validarInscripcion
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -300,5 +301,63 @@ class ProgramaReglasTest {
             original,
             confirmado.copy(usuarioInscrito = false, cupoDisponible = original.cupoDisponible),
         )
+    }
+
+    // ------------------------------------------------------------------------------
+    // 5. lugaresOcupados(): lo que la tarjeta muestra como "8/15 lugares ocupados"
+    // ------------------------------------------------------------------------------
+
+    @Test
+    fun `nulos - sin limite de cupo no hay lugares ocupados que mostrar`() {
+        assertNull(programaValido().copy(cupoMaximo = null, cupoDisponible = null).lugaresOcupados())
+        // Aunque llegue un cupoDisponible, sin cupoMaximo no hay contra qué restar.
+        assertNull(programaValido().copy(cupoMaximo = null, cupoDisponible = 3).lugaresOcupados())
+    }
+
+    @Test
+    fun `rangos - 15 lugares con 7 disponibles son 8 ocupados`() {
+        assertEquals(8, programaValido().copy(cupoMaximo = 15, cupoDisponible = 7).lugaresOcupados())
+    }
+
+    @Test
+    fun `rangos - cualquier disponible dentro del rango da maximo menos disponible`() {
+        for (disponibles in 0..15) {
+            val programa = programaValido().copy(cupoMaximo = 15, cupoDisponible = disponibles)
+
+            assertEquals("disponibles=$disponibles", 15 - disponibles, programa.lugaresOcupados())
+        }
+    }
+
+    @Test
+    fun `nulos - cupoDisponible null con limite cuenta 0 ocupados`() {
+        assertEquals(0, programaValido().copy(cupoMaximo = 10, cupoDisponible = null).lugaresOcupados())
+    }
+
+    @Test
+    fun `limites - lleno y vacio`() {
+        assertEquals(10, programaValido().copy(cupoMaximo = 10, cupoDisponible = 0).lugaresOcupados())
+        assertEquals(0, programaValido().copy(cupoMaximo = 10, cupoDisponible = 10).lugaresOcupados())
+    }
+
+    @Test
+    fun `limites - valores fuera de rango se limitan entre 0 y cupoMaximo`() {
+        val casos =
+            listOf(
+                // (cupoMaximo, cupoDisponible) to ocupados esperados
+                (10 to 11) to 0, // más disponibles que el máximo: no hay ocupados negativos
+                (10 to 1000) to 0,
+                (10 to -1) to 10, // disponible negativo: no más ocupados que el máximo
+                (10 to -1000) to 10,
+                (0 to 0) to 0, // cupo cero
+                (0 to 5) to 0,
+                (-5 to 0) to 0, // máximo raro negativo: nunca ocupados negativos
+            )
+
+        for ((entrada, esperado) in casos) {
+            val (maximo, disponibles) = entrada
+            val programa = programaValido().copy(cupoMaximo = maximo, cupoDisponible = disponibles)
+
+            assertEquals("max=$maximo disp=$disponibles", esperado, programa.lugaresOcupados())
+        }
     }
 }

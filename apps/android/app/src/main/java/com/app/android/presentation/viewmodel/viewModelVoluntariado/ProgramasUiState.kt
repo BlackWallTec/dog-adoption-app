@@ -1,10 +1,9 @@
 package com.app.android.presentation.viewmodel.viewModelVoluntariado
 
-import com.app.android.domain.entities.entitiesVoluntariado.Programa
-
 sealed interface ProgramasUiState {
     data object Loading : ProgramasUiState
     data object Empty : ProgramasUiState
-    data class Success(val programas: List<Programa>) : ProgramasUiState
+    // Data de presentación: la View solo pinta las tarjetas, no conoce la entidad Programa
+    data class Success(val programas: List<ProgramaUi>) : ProgramasUiState
     data class Error(val mensaje: String) : ProgramasUiState
 }

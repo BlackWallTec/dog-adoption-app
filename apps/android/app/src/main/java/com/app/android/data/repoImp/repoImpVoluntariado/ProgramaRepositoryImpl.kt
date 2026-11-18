@@ -19,8 +19,9 @@ fun ProgramaDto.toDomain() =
         fechaInicio = fechaInicio.aInstant(),
         fechaFin = fechaFin.aInstant(),
         ubicacion = null,
-        cupoMaximo = null,
-        cupoDisponible = null,
+        cupoMaximo = cupoMaximo,
+        // Nunca negativo, aunque el backend mande algo raro (el backend ya lo limita con Math.max)
+        cupoDisponible = cupoDisponible?.coerceAtLeast(0),
         estado = EstadoPrograma.desdeTexto(estadoDelPrograma),
         usuarioInscrito = usuarioInscrito == true,
     )

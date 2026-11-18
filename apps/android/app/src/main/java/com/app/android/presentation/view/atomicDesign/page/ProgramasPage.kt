@@ -24,8 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
-import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
 import com.app.android.presentation.view.atomicDesign.molecule.InfoMessageCard
@@ -33,17 +31,16 @@ import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.ListaProgramas
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramaUi
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiState
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @Composable
 fun ProgramasPage(
     uiState: ProgramasUiState,
     onReintentar: () -> Unit,
     onBackClick: () -> Unit,
-    onInscribirse: (Programa) -> Unit = {},
-    onCancelar: (Programa) -> Unit = {},
+    onInscribirse: (String) -> Unit = {}, // evento: id del programa
+    onCancelar: (String) -> Unit = {}, // evento HU37: id del programa
     modifier: Modifier = Modifier,
     navSeleccionado: Int = 1,
     onNavSelect: (Int) -> Unit = {},
@@ -78,7 +75,6 @@ fun ProgramasPage(
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
             )
-
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (uiState) {
                     is ProgramasUiState.Loading -> {
@@ -125,8 +121,8 @@ private fun ProgramasPageSuccessPreview() {
             uiState =
                 ProgramasUiState.Success(
                     listOf(
-                        programaDePrueba("1", "Bazar de Donativos", "Cuidado de Perros", "2026-12-11T12:17:08", "2026-12-16T12:17:08"),
-                        programaDePrueba("2", "Jornada de limpieza", "Limpieza", "2026-12-20T09:00:00", "2026-12-20T13:00:00"),
+                        programaUiDePrueba("1", "Bazar de Donativos", "8/15 lugares ocupados · 7 disponibles", 8f / 15f, "Inscribirme", true),
+                        programaUiDePrueba("2", "Jornada de limpieza", "10/10 lugares ocupados · 0 disponibles", 1f, "Sin lugares", false),
                     ),
                 ),
             onReintentar = {},
@@ -155,22 +151,22 @@ private fun ProgramasPageErrorPreview() {
     }
 }
 
-private fun programaDePrueba(
+private fun programaUiDePrueba(
     id: String,
-    nombre: String,
-    tipo: String,
-    inicio: String,
-    fin: String,
-) = Programa(
+    titulo: String,
+    textoCupo: String,
+    progresoCupo: Float,
+    textoBoton: String,
+    botonHabilitado: Boolean,
+) = ProgramaUi(
     id = id,
-    nombre = nombre,
-    tipo = tipo,
-    descripcion = null,
-    fechaInicio = LocalDateTime.parse(inicio).toInstant(ZoneOffset.UTC),
-    fechaFin = LocalDateTime.parse(fin).toInstant(ZoneOffset.UTC),
-    ubicacion = null,
-    cupoMaximo = null,
-    cupoDisponible = null,
-    estado = EstadoPrograma.DISPONIBLE,
-    usuarioInscrito = false,
+    tipo = "Cuidado de Perros",
+    titulo = titulo,
+    fecha = "Vie. 11 dic. 2026",
+    horario = "12:17 – 15:17 h",
+    ubicacion = "Refugio Qariño · Querétaro",
+    textoCupo = textoCupo,
+    progresoCupo = progresoCupo,
+    textoBoton = textoBoton,
+    botonHabilitado = botonHabilitado,
 )
