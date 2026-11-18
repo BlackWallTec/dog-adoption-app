@@ -5,10 +5,14 @@ import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryInt
 import javax.inject.Inject
 
+// Reglas de negocio
 class LoginUseCase
 // Para inyectar en viewmodel
-@Inject constructor(private val repo: PerfilesRepositoryInt) {
-    // Permite invocar con el nombre de la clase
+@Inject constructor(
+    // Instancia el repositorio
+    private val repo: PerfilesRepositoryInt
+) {
+    // Permite invocar con el nombre de la clase, en este caso desde el ViewModel
     suspend operator fun invoke(correo: String, contrasena: String): Result<Sesion> {
 
         if (correo.isBlank() || contrasena.isBlank()) {

@@ -31,25 +31,41 @@ class SesionViewModel @Inject constructor(
     private val obtenerPerfil: ObtenerPerfilUseCase,
     private val cerrarSesion: CerrarSesionUseCase,
 ) : ViewModel() {
+    // Iniciando MutableStateFlow con un valor inicial de SesionUiState(),
+    // que será observado y actualizado conforme a cambios
+    // No quieres que tu _state quede expuesto más allá del viewmodel
     private val _state = MutableStateFlow(SesionUiState())
+    // Por eso se representa como un StateFlow READONLY
     val state = _state.asStateFlow()
+
+    // Rutinas a cargo de la sesión y el perfil
     private var sesionJob: Job? = null
     private var perfilJob: Job? = null
 
-    init { restaurar() }
+    // Esto se ejecuta cada vez que se crea una nueva instancia del objeto
+    init {
+        restaurar()
+    }
 
+    //
     fun restaurar() {
+
         if (_state.value.cerrando) return
+
         sesionJob?.cancel()
         perfilJob?.cancel()
+
         _state.value = SesionUiState()
+
         sesionJob = viewModelScope.launch {
             restaurarSesion().fold(
                 onSuccess = { sesion ->
                     _state.value = SesionUiState(sesion = sesion, comprobando = false)
                     if (sesion != null) consultarPerfil()
                 },
-                onFailure = { _state.value = SesionUiState(comprobando = false, error = it.message) },
+                onFailure = {
+                    _state.value = SesionUiState(comprobando = false, error = it.message)
+                },
             )
         }
     }
@@ -62,11 +78,18 @@ class SesionViewModel @Inject constructor(
     }
 
     fun consultarPerfil() {
-        if (_state.value.sesion == null || _state.value.cerrando || perfilJob?.isActive == true) return
+        if (_state.value.sesion == null || _state.value.cerrando || perfilJob?.isActive == true)
+            return
+
         _state.update { it.copy(cargandoPerfil = true, error = null) }
+
         perfilJob = viewModelScope.launch {
             obtenerPerfil().fold(
-                onSuccess = { perfil -> _state.update { it.copy(perfil = perfil, cargandoPerfil = false) } },
+                onSuccess = { perfil -> _state.update {
+                        it.copy(perfil = perfil, cargandoPerfil = false)
+                    }
+                },
+
                 onFailure = { error ->
                     if ((error as? ErrorApi)?.sesionExpirada == true) {
                         _state.value = SesionUiState(comprobando = false, error = error.message)
@@ -86,7 +109,10 @@ class SesionViewModel @Inject constructor(
         sesionJob = viewModelScope.launch {
             cerrarSesion().fold(
                 onSuccess = { _state.value = SesionUiState(comprobando = false) },
-                onFailure = { error -> _state.update { it.copy(cerrando = false, error = error.message) } },
+                onFailure = { error -> _state.update {
+                        it.copy(cerrando = false, error = error.message)
+                    }
+                },
             )
         }
     }

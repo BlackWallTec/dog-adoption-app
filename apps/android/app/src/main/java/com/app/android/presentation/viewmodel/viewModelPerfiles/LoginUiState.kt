@@ -18,11 +18,13 @@ data class LoginUiState(
 // Validación de interfaz; las reglas de autenticación siguen perteneciendo al servidor
 internal fun validateLogin(state: LoginUiState): LoginUiState {
     val email = state.email.trim()
+
     val emailError = when {
-        email.isBlank()                                       -> "Ingresa tu correo."
-        email.length > 254 || !EMAIL_PATTERN.matches(email)  -> "Ingresa un correo válido."
-        else                                                  -> null
+        email.isBlank() -> "Ingresa tu correo."
+        email.length > 254 || !EMAIL_PATTERN.matches(email) -> "Ingresa un correo válido."
+        else -> null
     }
+
     return state.copy(
         emailError         = emailError,
         passwordError      = if (state.password.isBlank()) "Ingresa tu contraseña." else null,

@@ -45,11 +45,11 @@ class LoginViewModel
     fun onPasswordChange(password: String) {
         // Si no está cargando, actualiza password pasándose el estado a sí mismo a la lambda
         if (!_uiState.value.isLoading)
-        // La función especificada para update, es la lambda que refiere al método
-        // copy del estado mismo
-        _uiState.update {
-            it.copy(password = password, error = null)
-        }
+             // La función especificada para update, es la lambda que refiere al método
+             // copy del estado mismo
+            _uiState.update {
+                it.copy(password = password, error = null)
+            }
     }
 
     fun login() {
