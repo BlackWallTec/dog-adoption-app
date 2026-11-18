@@ -432,15 +432,12 @@ export const patchActivateBulkDog = async (req, res) => {
     const action = request.action; //true or false
     console.log(`Setting ${action} on following dogs: ${idList} `);
 
-    //0. Auth de usuario
-    const authToken = getTokenFromReq(req);
-
     if (request == null) {
       return res.status(404).json({ success: false, message: "bulk vacío" });
     }
 
     //1. llamada a la BD de bulk
-    const result = await dogModel.activarPerroBulk(idList, action, authToken);
+    const result = await dogModel.activarPerroBulk(idList, action);
 
     console.log("Bulking done correctly");
     return res.status(200).json({
