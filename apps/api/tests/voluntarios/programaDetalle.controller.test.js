@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-// Mocks compartidos (vi.hoisted evita las advertencias de unbound-method del lint)
+// Mocks compartidos (vi.hoisted evita las advertencias de unbound-method del lint).
 const mocks = vi.hoisted(() => ({
   getDetalle: vi.fn(),
   getTipo: vi.fn(),
   tuvoInscripcion: vi.fn(),
   contarInscritos: vi.fn(),
-  existeInscripcion: vi.fn(),
+  idsInscritos: vi.fn(),
 }));
 
-// Modelos simulados
+// Modelos simulados: las pruebas no se conectan a Supabase.
 vi.mock("../../src/modules/voluntarios/http/modelosVoluntariado/programaDetalle.model.js", () => ({
   getProgramaDetalleModel: mocks.getDetalle,
   getDescripcionTipoModel: mocks.getTipo,
@@ -17,19 +17,14 @@ vi.mock("../../src/modules/voluntarios/http/modelosVoluntariado/programaDetalle.
 }));
 
 vi.mock("../../src/modules/voluntarios/http/modelosVoluntariado/inscripcion.model.js", () => ({
-  getIdsProgramasInscritosModel: vi.fn(),
+  getIdsProgramasInscritosModel: mocks.idsInscritos,
   contarInscritosModel: mocks.contarInscritos,
-  existeInscripcionModel: mocks.existeInscripcion,
-}));
-
-vi.mock("../../src/modules/voluntarios/http/modelosVoluntariado/program.model.js", () => ({
-  default: { getCurrentPrograms: vi.fn() },
 }));
 
 import {
   getDetallePrograma,
   esConsultaRestringida,
-} from "../../src/modules/voluntarios/http/voluntariadoClient.controller.js";
+} from "../../src/modules/voluntarios/http/programaDetalle.controller.js";
 
 const ID_PROGRAMA = "22222222-2222-4222-8222-222222222222";
 const USUARIO = "11111111-1111-4111-8111-111111111111";
@@ -54,20 +49,22 @@ const crearRespuesta = () => {
   return res;
 };
 
-const crearReq = (idPrograma = ID_PROGRAMA) => ({ params: { idPrograma } });
+// verificarToken deja el usuario del token en req.user
+const crearReq = (idPrograma = ID_PROGRAMA) => ({
+  params: { idPrograma },
+  user: { uuid: USUARIO },
+});
 
 beforeEach(() => {
-  vi.stubEnv("DEV_USUARIO_ID", USUARIO);
   mocks.getDetalle.mockResolvedValue(crearPrograma());
   mocks.getTipo.mockResolvedValue("Paseos con los perros");
   mocks.contarInscritos.mockResolvedValue(8);
-  mocks.existeInscripcion.mockResolvedValue(false);
+  mocks.idsInscritos.mockResolvedValue(new Set());
   mocks.tuvoInscripcion.mockResolvedValue(false);
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
-  vi.unstubAllEnvs();
   vi.clearAllMocks();
   vi.restoreAllMocks();
 });
@@ -86,12 +83,13 @@ describe("getDetallePrograma (HU36)", () => {
     expect(data.usuario_inscrito).toBe(false);
   });
 
-  it("marca usuario_inscrito si el usuario ya está inscrito", async () => {
-    mocks.existeInscripcion.mockResolvedValue(true);
+  it("marca usuario_inscrito si el usuario del token ya está inscrito", async () => {
+    mocks.idsInscritos.mockResolvedValue(new Set([ID_PROGRAMA]));
     const res = crearRespuesta();
 
     await getDetallePrograma(crearReq(), res);
 
+    expect(mocks.idsInscritos).toHaveBeenCalledWith(USUARIO);
     expect(res.json.mock.calls[0][0].data.usuario_inscrito).toBe(true);
   });
 
@@ -119,6 +117,7 @@ describe("getDetallePrograma (HU36)", () => {
 
     await getDetallePrograma(crearReq(), res);
 
+    expect(mocks.tuvoInscripcion).toHaveBeenCalledWith(ID_PROGRAMA, USUARIO);
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
@@ -132,15 +131,13 @@ describe("getDetallePrograma (HU36)", () => {
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  it("responde 404 si el programa ya terminó y no hay usuario", async () => {
-    vi.stubEnv("DEV_USUARIO_ID", "");
+  it("responde 404 si el programa ya terminó y el usuario nunca se inscribió", async () => {
     mocks.getDetalle.mockResolvedValue(crearPrograma({ fecha_fin: "2020-01-01T10:00:00" }));
     const res = crearRespuesta();
 
     await getDetallePrograma(crearReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(mocks.tuvoInscripcion).not.toHaveBeenCalled();
   });
 
   it("responde 500 sin exponer el error si falla la consulta", async () => {

@@ -7,6 +7,7 @@ import * as clientController from "./voluntariadoClient.controller.js";
 import { getInscritos } from "./inscritosAdmin.controller.js";
 import { router as programas } from "./programas.routes.js";
 import * as edicionController from "./programaEdicion.controller.js";
+import * as detalleController from "./programaDetalle.controller.js";
 
 export const router = Router();
 
@@ -16,8 +17,8 @@ export const router = Router();
 router.get("/cliente/programas", verificarToken, clientController.getProgramasVigentes);
 
 // GET /api/voluntarios/cliente/programas/:idPrograma
-// HU36 detalle publico del programa sin token de momento igual que catalogo
-router.get("/cliente/programas/:idPrograma", clientController.getDetallePrograma);
+// HU36: detalle del programa. Requiere sesión, igual que el catálogo.
+router.get("/cliente/programas/:idPrograma", verificarToken, detalleController.getDetallePrograma);
 
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 router.post("/programas/:idPrograma/inscripciones", verificarToken, inscribirse);
