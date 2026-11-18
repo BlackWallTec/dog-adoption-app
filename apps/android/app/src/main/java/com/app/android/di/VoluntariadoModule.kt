@@ -2,7 +2,9 @@ package com.app.android.di
 
 import com.app.android.data.dataSource.dataSourcesVoluntariado.DetalleProgramaApi
 import com.app.android.data.dataSource.dataSourcesVoluntariado.InscripcionApi
+import com.app.android.data.repoImp.repoImpVoluntariado.DetalleProgramaRepositoryImpl
 import com.app.android.data.repoImp.repoImpVoluntariado.InscripcionRepositoryImpl
+import com.app.android.domain.repoInterface.repoIntVoluntariado.DetalleProgramaRepository
 import com.app.android.domain.repoInterface.repoIntVoluntariado.InscripcionRepository
 import dagger.Binds
 import dagger.Module
@@ -31,4 +33,9 @@ abstract class VoluntariadoRepositoryModule {
     @Binds
     @Singleton
     abstract fun bindInscripcionRepository(impl: InscripcionRepositoryImpl): InscripcionRepository
+
+    // HU36
+    @Binds
+    @Singleton
+    abstract fun bindDetalleProgramaRepository(impl: DetalleProgramaRepositoryImpl): DetalleProgramaRepository
 }
