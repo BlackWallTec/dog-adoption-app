@@ -3,6 +3,7 @@ import multer from "multer";
 import { getSolicitudesAdmin } from "./solicitudAdmin.controller.js";
 import { MAX_SIZE_BYTES, manejarErrorSubida, subirDocumento } from "./documentos.controller.js";
 import clientRouter from "./request.router.js";
+import { getSolicitudAdminDetalle } from "./solicitudAdmin.controller.js";
 
 const router = Router();
 const upload = multer({
@@ -18,6 +19,8 @@ export { router };
 router.use(clientRouter);
 
 router.get("/admin/solicitudes", getSolicitudesAdmin);
+
+router.get("/admin/solicitudes/:id", getSolicitudAdminDetalle);
 
 router.get("/", (req, res) => {
   res.json({ module: "solicitudes", items: [] });

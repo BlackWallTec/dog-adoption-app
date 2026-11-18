@@ -141,15 +141,10 @@
   font-weight: 700;
 }
 
-.adopter-cell,
-.dog-cell {
+.dog-info {
   display: flex;
   align-items: center;
   gap: 9px;
-}
-
-.adopter-cell {
-  display: block;
 }
 
 .muted {
@@ -164,6 +159,7 @@
   height: 44px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .badge-estado {

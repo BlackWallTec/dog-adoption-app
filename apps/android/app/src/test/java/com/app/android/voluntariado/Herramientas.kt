@@ -81,4 +81,8 @@ class RepositorioFalso(
         compuerta?.await()
         return respuesta
     }
+
+    override suspend fun cancelarInscripcion(idPrograma: String): Resultado<Inscripcion> {
+        TODO("Not yet implemented") // or return a default Resultado.Exito(...)
+    }
 }

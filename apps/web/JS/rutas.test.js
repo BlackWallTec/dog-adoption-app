@@ -1,0 +1,22 @@
+import { expect, test } from "vite-plus/test";
+import { archivoDeRuta, idMenuActivo, pantallaPorUbicacion, rutaDe, tituloDe } from "./rutas.js";
+
+test("la pantalla de perros se abre en /admin/perros", () => {
+  expect(rutaDe("perros")).toBe("/admin/perros");
+  expect(archivoDeRuta("/admin/perros")).toBe("/HTML/htmlCatalogo/adminPerros.html");
+  expect(archivoDeRuta("/admin/perros/?id=1")).toBe("/HTML/htmlCatalogo/adminPerros.html?id=1");
+});
+
+test("reconoce la ruta publica y el archivo al marcar el menu", () => {
+  expect(pantallaPorUbicacion("/admin/perros")?.id).toBe("perros");
+  expect(pantallaPorUbicacion("/HTML/htmlCatalogo/adminPerros.html")?.id).toBe("perros");
+  expect(idMenuActivo("/admin/voluntariado/nueva")).toBe("voluntariado");
+  expect(tituloDe("/admin/perros")).toBe("Perros");
+  expect(tituloDe("/admin/voluntariado/inscritos")).toBe("Voluntariado");
+});
+
+test("una ruta ajena al panel no se reescribe", () => {
+  expect(archivoDeRuta("/login")).toBeNull();
+  expect(pantallaPorUbicacion("/login")).toBeNull();
+  expect(tituloDe("/login")).toBe("Panel");
+});

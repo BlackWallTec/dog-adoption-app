@@ -445,3 +445,23 @@ admin-topbar {
 }
 
 /* ==================== FIN MODAL BASE (GLOBAL) ==================== */
+
+.empty-cell {
+  padding: 32px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.estado-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--md-sys-color-error);
+}
+
+.estado-error .btn-primary {
+  color: #ffffff;
+}

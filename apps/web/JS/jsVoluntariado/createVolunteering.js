@@ -1,6 +1,35 @@
+import { rutaDe } from "../rutas.js";
+import { obtenerProgramaAdmin, editarProgramaAdmin } from "./programaAdmin.api.js";
+
 const API = "/api/voluntarios/programas";
-const URL_VOLUNTARIADO =
-  window.QARINO_VOLUNTARIADO_URL || "/HTML/htmlVoluntariado/adminVoluntariado.html";
+const URL_VOLUNTARIADO = window.QARINO_VOLUNTARIADO_URL || rutaDe("voluntariado");
+
+// HU38 con ?id=<id_programa> el formulario funciona en modo edicion
+const idEdicion = new URLSearchParams(window.location.search).get("id");
+const modoEdicion = Boolean(idEdicion);
+const URL_PROGRAMA = modoEdicion
+  ? `${rutaDe("inscritos")}?id=${encodeURIComponent(idEdicion)}`
+  : null;
+const URL_REGRESO = URL_PROGRAMA ?? URL_VOLUNTARIADO;
+
+const TEXTOS = modoEdicion
+  ? {
+      boton: "Guardar cambios",
+      guardando: "Guardando...",
+      confirmarEmpalme: "Guardar de todos modos",
+    }
+  : {
+      boton: "Publicar programa",
+      guardando: "Publicando...",
+      confirmarEmpalme: "Crear de todos modos",
+    };
+
+// HU38 mensajes para los errores de sesion y de programa inexistente
+const MENSAJES_ESTADO = {
+  401: "Tu sesión no está activa. Inicia sesión para continuar.",
+  403: "Necesitas permisos de administrador para realizar esta acción.",
+  404: "No encontramos este programa.",
+};
 
 const formulario = document.getElementById("programaForm");
 const mensajeForm = document.getElementById("alerta");
@@ -12,8 +41,12 @@ const botonConfirmarEmpalme = document.getElementById("confirmarEmpalmeBtn");
 let guardando = false;
 let datosConfirmados = null;
 
-document.getElementById("volverListado").href = URL_VOLUNTARIADO;
-document.getElementById("cancelarBtn").href = URL_VOLUNTARIADO;
+// HU38 datos del programa antes de editar e inscritos activos
+let programaOriginal = null;
+let inscritosActivos = 0;
+
+document.getElementById("volverListado").href = URL_REGRESO;
+document.getElementById("cancelarBtn").href = URL_REGRESO;
 
 // Se envia una peticion al backend. Se agrega el token si existe y devuelve el JSON, en caso de fallar manda el error correspondiente
 async function solicitarAPI(ruta, opciones = {}) {
@@ -76,6 +109,11 @@ const programasAPI = {
   crearPrograma: (datos) => solicitarAPI("", { metodo: "POST", datos }),
 };
 
+// HU38 mensaje legible para errores de la API de administracion
+function mensajeDeError(error) {
+  return MENSAJES_ESTADO[error.status] ?? error.message;
+}
+
 // Mensaje de exito debajo del formulario
 function mostrarMensaje(texto, exito = false) {
   mensajeForm.textContent = texto || "";
@@ -90,7 +128,7 @@ function cambiarEstadoGuardado(estado) {
   botonPublicar.disabled = estado;
   botonGuardarTipo.disabled = estado;
   botonConfirmarEmpalme.disabled = estado;
-  botonPublicar.textContent = estado ? "Publicando..." : "Publicar programa";
+  botonPublicar.textContent = estado ? TEXTOS.guardando : TEXTOS.boton;
 }
 
 // Captura los valores de las casillas del formulario
@@ -107,6 +145,15 @@ function obtenerDatosForm() {
     ubicacion: document.getElementById("ubicacion").value.trim(),
     cupoMaximo: cupo === "" ? NaN : Number(cupo),
   };
+}
+
+// HU38 al editar un programa en curso se permite conservar su inicio aunque ya haya pasado
+function debeValidarInicioFuturo(datos) {
+  if (!programaOriginal) return true;
+  return (
+    datos.fechaInicio !== programaOriginal.fechaInicio ||
+    datos.horaInicio !== programaOriginal.horaInicio
+  );
 }
 
 // Revisa los campos, cupos y el horario bajo las reglas y condiciones establecidas
@@ -132,12 +179,19 @@ function validarPrograma(datos) {
     return "El cupo máximo debe ser un número entero mayor que cero.";
   }
 
+  // HU38 el cupo no puede quedar por debajo de los inscritos
+  if (modoEdicion && datos.cupoMaximo < inscritosActivos) {
+    return `Hay ${inscritosActivos} inscritos, el cupo no puede ser menor.`;
+  }
+
   const inicio = new Date(`${datos.fechaInicio} ${datos.horaInicio}:00`);
   const fin = new Date(`${datos.fechaFin} ${datos.horaFin}:00`);
   if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
     return "Fecha u hora inválida.";
   }
-  if (inicio <= new Date()) return "La jornada debe iniciar en el futuro.";
+  if (debeValidarInicioFuturo(datos) && inicio <= new Date()) {
+    return "La jornada debe iniciar en el futuro.";
+  }
   if (fin <= inicio) return "La fecha de fin debe ser posterior al inicio.";
   return null;
 }
@@ -163,6 +217,11 @@ async function cargarTipos(seleccionado = "") {
   }
 }
 
+// HU38 en edicion, el propio programa no cuenta como empalme
+function sinProgramaActual(empalmes = []) {
+  return modoEdicion ? empalmes.filter((programa) => programa.idPrograma !== idEdicion) : empalmes;
+}
+
 // Muestra jornadas con empalmes en  el horario elegido
 function mostrarEmpalmes(empalmes) {
   const lista = document.getElementById("empalmesLista");
@@ -180,6 +239,14 @@ function mostrarEmpalmes(empalmes) {
 }
 
 async function guardarPrograma(datos, confirmarEmpalme = false) {
+  // HU38 en edicion se guarda con PUT y se regresa a la pantalla del programa
+  if (modoEdicion) {
+    const resultado = await editarProgramaAdmin(idEdicion, { ...datos, confirmarEmpalme });
+    const avisar = resultado.avisarInscritos ? resultado.inscritosActivos : 0;
+    window.location.href = `${URL_PROGRAMA}&guardado=1&avisar=${avisar}`;
+    return;
+  }
+
   await programasAPI.crearPrograma({ ...datos, confirmarEmpalme });
   datosConfirmados = null;
   panelEmpalmes.hidden = true;
@@ -189,12 +256,13 @@ async function guardarPrograma(datos, confirmarEmpalme = false) {
 }
 
 function manejarErrorGuardado(error, datos) {
-  if (error.code === "OVERLAP" && Array.isArray(error.empalmes) && error.empalmes.length) {
+  const empalmes = sinProgramaActual(error.empalmes);
+  if (error.code === "OVERLAP" && empalmes.length) {
     datosConfirmados = datos;
-    mostrarEmpalmes(error.empalmes);
+    mostrarEmpalmes(empalmes);
   } else {
-    console.error("Error al publicar jornada:", error);
-    mostrarMensaje(error.message);
+    console.error("Error al guardar la jornada:", error);
+    mostrarMensaje(mensajeDeError(error));
   }
 }
 
@@ -219,9 +287,11 @@ async function enviarForm(evento) {
       horaFin: datos.horaFin,
     });
 
-    if (empalmes.length > 0) {
+    const empalmesReales = sinProgramaActual(empalmes);
+
+    if (empalmesReales.length > 0) {
       datosConfirmados = datos;
-      mostrarEmpalmes(empalmes);
+      mostrarEmpalmes(empalmesReales);
     } else {
       await guardarPrograma(datos);
     }
@@ -238,7 +308,7 @@ async function confirmarPublicacionConEmpalme() {
   if (JSON.stringify(obtenerDatosForm()) !== JSON.stringify(datosConfirmados)) {
     panelEmpalmes.hidden = true;
     datosConfirmados = null;
-    return mostrarMensaje("Cambiaste los datos. Vuelve a presionar Publicar programa.");
+    return mostrarMensaje(`Cambiaste los datos. Vuelve a presionar ${TEXTOS.boton}.`);
   }
 
   cambiarEstadoGuardado(true);
@@ -289,6 +359,57 @@ async function guardarNuevoTipo() {
   }
 }
 
+// ==================== HU38 modo edicion ====================
+
+function aplicarTextosEdicion() {
+  document.title = "Editar Jornada de Voluntariado | Qariño Animal";
+  document.querySelector(".page-header h1").textContent = "Editar Jornada de Voluntariado";
+  document.querySelector(".page-header .intro").textContent =
+    "Actualiza los datos de la jornada. Si cambias la fecha, la hora o la ubicación, avisa a los inscritos.";
+  document.querySelector(".publish-badge").textContent = "Los cambios se aplican al guardar";
+  document.getElementById("volverListado").textContent = "Volver al programa";
+  botonPublicar.textContent = TEXTOS.boton;
+  botonConfirmarEmpalme.textContent = TEXTOS.confirmarEmpalme;
+}
+
+function llenarFormulario(programa) {
+  document.getElementById("nombre").value = programa.nombre ?? "";
+  document.getElementById("descripcion").value = programa.descripcion ?? "";
+  document.getElementById("fechaInicio").value = programa.fechaInicio ?? "";
+  document.getElementById("horaInicio").value = programa.horaInicio ?? "";
+  document.getElementById("fechaFin").value = programa.fechaFin ?? "";
+  document.getElementById("horaFin").value = programa.horaFin ?? "";
+  document.getElementById("ubicacion").value = programa.ubicacion ?? "";
+  document.getElementById("cupoMaximo").value = programa.cupoMaximo ?? "";
+  actualizarContadorDescripcion();
+}
+
+async function cargarProgramaParaEditar() {
+  aplicarTextosEdicion();
+  botonPublicar.disabled = true;
+
+  try {
+    const programa = await obtenerProgramaAdmin(idEdicion);
+    await cargarTipos(programa.tipo);
+
+    programaOriginal = programa;
+    inscritosActivos = programa.inscritosActivos ?? 0;
+    llenarFormulario(programa);
+
+    if (!programa.editable) {
+      mostrarMensaje("Este programa ya no se puede editar porque está cancelado o ya finalizó.");
+      return;
+    }
+
+    botonPublicar.disabled = false;
+  } catch (error) {
+    console.error("Error al cargar el programa:", error);
+    mostrarMensaje(mensajeDeError(error));
+  }
+}
+
+// ==================== Eventos ====================
+
 formulario.addEventListener("submit", enviarForm);
 document
   .getElementById("confirmarEmpalmeBtn")
@@ -303,4 +424,9 @@ document.getElementById("nuevoTipoBtn").addEventListener("click", alternarNuevoT
 document.getElementById("guardarTipoBtn").addEventListener("click", guardarNuevoTipo);
 
 actualizarContadorDescripcion();
-void cargarTipos();
+
+if (modoEdicion) {
+  void cargarProgramaParaEditar();
+} else {
+  void cargarTipos();
+}
