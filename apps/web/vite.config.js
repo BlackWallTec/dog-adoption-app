@@ -62,6 +62,7 @@ export default defineConfig({
         adminVoluntariado: r("HTML/htmlVoluntariado/adminVoluntariado.html"),
         adminInscritos: r("HTML/htmlVoluntariado/adminInscritos.html"),
         createVolunteering: r("HTML/htmlVoluntariado/createVolunteering.html"),
+        adminCalendario: r("HTML/htmlVoluntariado/adminCalendario.html"),
         adminSolicitudes: r("HTML/htmlSolicitudes/adminSolicitudes.html"),
       },
     },

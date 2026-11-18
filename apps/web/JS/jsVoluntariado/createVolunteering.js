@@ -7,10 +7,13 @@ const URL_VOLUNTARIADO = window.QARINO_VOLUNTARIADO_URL || rutaDe("voluntariado"
 // HU38 con ?id=<id_programa> el formulario funciona en modo edicion
 const idEdicion = new URLSearchParams(window.location.search).get("id");
 const modoEdicion = Boolean(idEdicion);
+// HU30 con ?fecha=AAAA-MM-DD (clic en un día del calendario) se precarga la fecha
+const fechaCalendario = new URLSearchParams(window.location.search).get("fecha");
+const vieneDelCalendario = !modoEdicion && /^\d{4}-\d{2}-\d{2}$/.test(fechaCalendario ?? "");
 const URL_PROGRAMA = modoEdicion
   ? `${rutaDe("inscritos")}?id=${encodeURIComponent(idEdicion)}`
   : null;
-const URL_REGRESO = URL_PROGRAMA ?? URL_VOLUNTARIADO;
+const URL_REGRESO = URL_PROGRAMA ?? (vieneDelCalendario ? rutaDe("calendario") : URL_VOLUNTARIADO);
 
 const TEXTOS = modoEdicion
   ? {
@@ -410,6 +413,13 @@ async function cargarProgramaParaEditar() {
 
 // ==================== Eventos ====================
 
+// HU30: la fecha elegida en el calendario se usa como inicio y fin; el Admin ajusta las horas
+function precargarFechaCalendario() {
+  if (!vieneDelCalendario) return;
+  document.getElementById("fechaInicio").value = fechaCalendario;
+  document.getElementById("fechaFin").value = fechaCalendario;
+}
+
 formulario.addEventListener("submit", enviarForm);
 document
   .getElementById("confirmarEmpalmeBtn")
@@ -428,5 +438,6 @@ actualizarContadorDescripcion();
 if (modoEdicion) {
   void cargarProgramaParaEditar();
 } else {
+  precargarFechaCalendario();
   void cargarTipos();
 }
