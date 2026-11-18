@@ -175,6 +175,10 @@ function seccionDocumentos(documentos) {
 // Estados del pop-up
 
 function mostrarMensaje(texto, accion) {
+  if (el.bloqueResolucion) {
+    el.bloqueResolucion.hidden = true;
+    el.modal.append(el.bloqueResolucion);
+  }
   el.contenido.replaceChildren();
   const mensaje = crear("div", "detalle-mensaje");
   mensaje.append(crear("p", "", texto));
@@ -187,7 +191,7 @@ function mostrarMensaje(texto, accion) {
   el.contenido.append(mensaje);
 }
 
-function pintarDetalle(detalle) {
+function pintarDetalle(id, detalle) {
   el.titulo.textContent = `Solicitud ${detalle.folio}`;
   el.subtitulo.textContent = `Recibida el ${formatSolicitudDate(detalle.fecha)}`;
   el.estado.className = `badge-estado ${estadoBadgeClass(detalle.estado)}`;
@@ -205,6 +209,31 @@ function pintarDetalle(detalle) {
       "El adoptante aceptó los requisitos de adopción y el compromiso de cuidado y seguimiento.",
     ),
   );
+
+  // 2. Movemos #bloque-resolucion DENTRO de expediente para que scrollee junto con todo lo demás
+  if (el.bloqueResolucion) {
+    el.bloqueResolucion.hidden = false;
+    el.bloqueResolucion.dataset.solicitudId = id;
+    expediente.append(el.bloqueResolucion);
+
+    const selectEstado = document.getElementById("select-nuevo-estado");
+    const textareaComentario = document.getElementById("comentario-resolucion");
+
+    if (selectEstado) {
+      const estadoRaw = String(detalle.estado || "").toLowerCase();
+      if (estadoRaw.includes("aprob")) selectEstado.value = "aprobada";
+      else if (estadoRaw.includes("rechaz")) selectEstado.value = "rechazada";
+      else if (estadoRaw.includes("prueba")) selectEstado.value = "periodo_prueba";
+      else selectEstado.value = "en_revision";
+
+      if (textareaComentario) {
+        textareaComentario.value = detalle.comentario_admin || detalle.comentario || "";
+      }
+
+      selectEstado.dispatchEvent(new Event("change"));
+    }
+  }
+
   el.contenido.replaceChildren(expediente);
 }
 
@@ -219,7 +248,7 @@ async function cargar(id) {
   try {
     const respuesta = await fetch(`${DETALLE_URL}/${encodeURIComponent(id)}`);
     const payload = await respuesta.json().catch(() => ({}));
-    if (peticion !== peticionActual) return; // el admin ya abrio otra
+    if (peticion !== peticionActual) return;
 
     if (!respuesta.ok) {
       const mensaje =
@@ -230,7 +259,7 @@ async function cargar(id) {
       return;
     }
 
-    pintarDetalle(payload.data);
+    pintarDetalle(id, payload.data);
   } catch (error) {
     if (peticion !== peticionActual) return;
     console.error("Error al cargar el detalle:", error);
@@ -248,9 +277,10 @@ function iniciar() {
   el.subtitulo = document.getElementById("detalle-subtitulo");
   el.estado = document.getElementById("detalle-estado");
   el.contenido = document.getElementById("detalle-contenido");
+  // Clic fuera de la tarjeta tambien cierra el pop up (como en Maree)
+  el.bloqueResolucion = document.getElementById("bloque-resolucion");
 
   document.getElementById("detalle-cerrar").addEventListener("click", () => el.modal.close());
-  // Clic fuera de la tarjeta tambien cierra el pop up (como en Maree)
   el.modal.addEventListener("click", (evento) => {
     if (evento.target === el.modal) el.modal.close();
   });

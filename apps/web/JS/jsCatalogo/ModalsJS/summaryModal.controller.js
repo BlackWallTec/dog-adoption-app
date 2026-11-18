@@ -1,5 +1,6 @@
 // summaryModalJS/summaryModal.controller.js
 import * as apiService from "./Api.service.js";
+import { mostrarErrorFeedback } from "../../utils/feedbackHelper.js";
 
 export function initDogSummaryModal({ onBack, onSuccess, onError }) {
   // 1. Centralización de referencias DOM (Estilo @export)

@@ -2,7 +2,6 @@
 
 package com.app.android.presentation.view.viewsCatalogo
 // 1. Estados y ciclos de vida de JetPack Compose
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -21,13 +20,14 @@ import androidx.compose.ui.unit.dp
 import com.app.android.domain.entities.entitiesCatalogo.Dog
 import com.app.android.domain.entities.entitiesCatalogo.toUiState
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.toMediaItems
+import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 
 // 4. Clases de VMStates y el VM
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailUiState
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 
-import com.app.android.presentation.view.atomicDesign.template.DogDetailTemplate
+import com.app.android.presentation.view.atomicDesign.page.DogDetailTemplate
 
 @Composable
 fun DogDetailScreenView(
@@ -37,6 +37,7 @@ fun DogDetailScreenView(
     dogId: String = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
     // 3. Acciones al hacer clic
     onNavSelect: (Int) -> Unit = {},
+    onBackClick: () -> Unit,
     onAdoptClick: (String) -> Unit,
 ) {
     // 2. Nos suscribimos al UiState (conectamos a la señal como en Godot)
@@ -74,7 +75,14 @@ fun DogDetailScreenView(
                 val context = LocalContext.current
 
                 Scaffold(
-                    // NavBar
+                    // Top Molecule: BackButton & Title
+                    topBar = {
+                        AppTopBar(
+                            titulo = dog.nombre,
+                            onBackClick = onBackClick,
+                        )
+                    },
+                    // Button: NavBar
                     bottomBar = {
                         // Asignamos NavBar al slot inferior del Scaffold
                         NavBar(

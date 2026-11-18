@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesVoluntariado.Programa
 import com.app.android.domain.entities.entitiesVoluntariado.Resultado
 import com.app.android.domain.entities.entitiesVoluntariado.VoluntariadoError
+import com.app.android.domain.entities.entitiesVoluntariado.conInscripcionCancelada
 import com.app.android.domain.useCases.useCasesVoluntariado.CancelarInscripcionUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.InscribirseProgramaUseCase
 import com.app.android.domain.useCases.useCasesVoluntariado.ObtenerProgramasVigentesUseCase
@@ -18,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.Clock
+import java.time.Instant
 import javax.inject.Inject
 
 
@@ -26,6 +29,7 @@ class ProgramasViewModel @Inject constructor(
     private val obtenerProgramasVigentes: ObtenerProgramasVigentesUseCase,
     private val inscribirseEnPrograma: InscribirseProgramaUseCase,
     private val cancelarInscripcionEnPrograma: CancelarInscripcionUseCase,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProgramasUiState>(ProgramasUiState.Loading)
@@ -36,8 +40,8 @@ class ProgramasViewModel @Inject constructor(
     val mensajes: SharedFlow<String> = _mensajes.asSharedFlow()
 
     // Programa recién inscrito: lo lee la pantalla de confirmación
-    private val _programaConfirmado = MutableStateFlow<Programa?>(null)
-    val programaConfirmado: StateFlow<Programa?> = _programaConfirmado.asStateFlow()
+    private val _programaConfirmado = MutableStateFlow<ProgramaUi?>(null)
+    val programaConfirmado: StateFlow<ProgramaUi?> = _programaConfirmado.asStateFlow()
 
     // Evento de una sola vez: la inscripción salió bien, hay que ir a la confirmación
     private val _inscripcionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
@@ -47,8 +51,13 @@ class ProgramasViewModel @Inject constructor(
     private val _cancelacionExitosa = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val cancelacionExitosa: SharedFlow<Unit> = _cancelacionExitosa.asSharedFlow()
 
-    // Evita doble toque mientras una inscripción o cancelación sigue en curso
-    private var procesando = false
+    // Entidades del dominio: las necesita el caso de uso; la View nunca las ve
+    private var programas: List<Programa> = emptyList()
+
+    // Programa con una inscripción o cancelación en curso: su botón muestra el texto de
+    // "procesando" y bloquea el doble toque (en cualquier tarjeta) hasta que termine
+    private var idProcesando: String? = null
+    private var textoProcesando: String = ""
 
     init {
         cargarProgramas()
@@ -57,71 +66,117 @@ class ProgramasViewModel @Inject constructor(
     fun cargarProgramas() {
         viewModelScope.launch {
             _uiState.value = ProgramasUiState.Loading
-            _uiState.value = try {
-                val programas = obtenerProgramasVigentes()
-                if (programas.isEmpty()) ProgramasUiState.Empty
-                else ProgramasUiState.Success(programas)
+            try {
+                programas = obtenerProgramasVigentes()
+                publicarProgramas()
             } catch (e: Exception) {
                 Log.e("HU39A", "Error loading programs", e)
-                ProgramasUiState.Error("No se pudieron cargar los programas")
+                _uiState.value = ProgramasUiState.Error("No se pudieron cargar los programas")
             }
         }
     }
 
-    fun inscribirse(programa: Programa) {
-        if (procesando) return
-        procesando = true
+    fun inscribirse(idPrograma: String) {
+        val programa = iniciarProceso(idPrograma, "Inscribiendo…") ?: return
+
         viewModelScope.launch {
             try {
                 when (val resultado = inscribirseEnPrograma(programa)) {
                     is Resultado.Exito -> {
-                        marcarInscrito(programa.id, true)
-                        _programaConfirmado.value = programa.conInscripcionConfirmada()
+                        // Descuenta el lugar y marca "Inscrito" sin volver a pedir la lista
+                        val confirmado = programa.conInscripcionConfirmada()
+                        reemplazar(confirmado)
+                        _programaConfirmado.value = confirmado.toUi(Instant.now(clock))
                         _inscripcionExitosa.emit(Unit)
                     }
                     is Resultado.Error -> {
-                        // Si ya estaba inscrito, la tarjeta también debe reflejarlo
-                        if (resultado.error == VoluntariadoError.YaInscrito) marcarInscrito(programa.id, true)
+                        when (resultado.error) {
+                            // Ya estaba inscrito: la tarjeta también debe reflejarlo
+                            VoluntariadoError.YaInscrito -> reemplazar(programa.copy(usuarioInscrito = true))
+                            // Alguien ocupó el último lugar: se trae el cupo real del servidor
+                            VoluntariadoError.SinCupo -> recargarSinIndicador()
+                            else -> Unit
+                        }
                         _mensajes.emit(mensajeDe(resultado.error))
                     }
                 }
             } finally {
-                procesando = false
+                terminarProceso()
             }
         }
     }
 
     // HU37: cancela la inscripción (el backend cambia el estado de la fila a "Pendiente")
-    fun cancelarInscripcion(programa: Programa) {
-        if (procesando) return
-        procesando = true
+    fun cancelarInscripcion(idPrograma: String) {
+        val programa = iniciarProceso(idPrograma, "Cancelando…") ?: return
+
         viewModelScope.launch {
             try {
                 when (val resultado = cancelarInscripcionEnPrograma(programa)) {
                     is Resultado.Exito -> {
-                        marcarInscrito(programa.id, false)
+                        // Libera el lugar y regresa el botón a "Inscribirme" sin volver a pedir la lista
+                        reemplazar(programa.conInscripcionCancelada())
                         _mensajes.emit("Cancelaste tu inscripción en ${programa.nombre}.")
                         _cancelacionExitosa.emit(Unit)
                     }
                     is Resultado.Error -> {
-                        // Si ya no estaba inscrito, la tarjeta también debe reflejarlo
-                        if (resultado.error == VoluntariadoError.NoInscrito) marcarInscrito(programa.id, false)
+                        // Ya no estaba inscrito: se trae el estado y el cupo reales del servidor
+                        if (resultado.error == VoluntariadoError.NoInscrito) recargarSinIndicador()
                         _mensajes.emit(mensajeCancelacionDe(resultado.error))
                     }
                 }
             } finally {
-                procesando = false
+                terminarProceso()
             }
         }
     }
 
-    private fun marcarInscrito(idPrograma: String, inscrito: Boolean) {
-        val actual = _uiState.value
-        if (actual is ProgramasUiState.Success) {
-            _uiState.value =
+    // Marca el programa como "en proceso". Regresa null si ya hay otro en curso o no existe.
+    private fun iniciarProceso(idPrograma: String, texto: String): Programa? {
+        if (idProcesando != null) return null
+        val programa = programas.find { it.id == idPrograma } ?: return null
+        idProcesando = idPrograma
+        textoProcesando = texto
+        publicarProgramas()
+        return programa
+    }
+
+    private fun terminarProceso() {
+        idProcesando = null
+        publicarProgramas()
+    }
+
+    // Entities -> data de presentación. Todas las tarjetas se evalúan con la misma hora.
+    private fun publicarProgramas() {
+        val ahora = Instant.now(clock)
+        _uiState.value =
+            if (programas.isEmpty()) {
+                ProgramasUiState.Empty
+            } else {
                 ProgramasUiState.Success(
-                    actual.programas.map { if (it.id == idPrograma) it.copy(usuarioInscrito = inscrito) else it },
+                    programas.map { programa ->
+                        val ui = programa.toUi(ahora)
+                        if (programa.id == idProcesando) {
+                            ui.copy(textoBoton = textoProcesando, botonHabilitado = false)
+                        } else {
+                            ui
+                        }
+                    },
                 )
+            }
+    }
+
+    private fun reemplazar(actualizado: Programa) {
+        programas = programas.map { if (it.id == actualizado.id) actualizado else it }
+    }
+
+    // Recarga sin mostrar el indicador de carga: la lista sigue visible mientras llega el dato real.
+    // Si falla, se queda la lista actual (el snackbar ya avisa del problema).
+    private suspend fun recargarSinIndicador() {
+        try {
+            programas = obtenerProgramasVigentes()
+        } catch (e: Exception) {
+            Log.e("HU39A", "Error refreshing programs", e)
         }
     }
 

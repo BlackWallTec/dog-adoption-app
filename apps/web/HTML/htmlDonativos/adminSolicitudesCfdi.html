@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solicitudes CFDI pendientes | Qariño Animal</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
+    />
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/cssDonativos/adminSolicitudesCfdi.css" />
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+  <body>
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
+        <main class="content-area cfdi-content">
+          <div class="section-header">
+            <div>
+              <h1 class="section-title">Solicitudes CFDI pendientes</h1>
+              <p id="solicitudes-cfdi-contador" class="section-subtitle" role="status">
+                Cargando solicitudes...
+              </p>
+            </div>
+            <div class="cfdi-header-actions">
+              <a class="cfdi-link" href="/admin/donativos">Volver a donativos</a>
+              <button id="solicitudes-cfdi-recargar" class="cfdi-reload" type="button">
+                Actualizar
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-scroll">
+              <table class="cfdi-table">
+                <thead>
+                  <tr>
+                    <th>Solicitud</th>
+                    <th>Donativo</th>
+                    <th>Donante</th>
+                    <th>Fecha de solicitud</th>
+                    <th>Estado</th>
+                    <th>Revisión</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="solicitudes-cfdi-body" aria-live="polite">
+                  <tr>
+                    <td colspan="7">Cargando solicitudes CFDI pendientes...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <dialog
+      id="solicitud-cfdi-detalle"
+      class="cfdi-dialog"
+      aria-labelledby="solicitud-cfdi-detalle-titulo"
+    >
+      <header class="cfdi-dialog-header">
+        <div>
+          <h2 id="solicitud-cfdi-detalle-titulo">Detalle de solicitud CFDI</h2>
+          <p id="solicitud-cfdi-detalle-estado" role="status"></p>
+        </div>
+        <button id="solicitud-cfdi-cerrar" class="cfdi-close" type="button" aria-label="Cerrar">
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </header>
+      <div class="cfdi-dialog-body">
+        <p id="solicitud-cfdi-aviso" class="cfdi-warning" role="alert" hidden></p>
+        <section>
+          <h3>Donativo y solicitud</h3>
+          <dl class="cfdi-fields">
+            <dt>Donante</dt>
+            <dd id="detalle-cfdi-donante">—</dd>
+            <dt>Donativo</dt>
+            <dd id="detalle-cfdi-donativo">—</dd>
+            <dt>Monto</dt>
+            <dd id="detalle-cfdi-monto">—</dd>
+            <dt>Fecha del donativo</dt>
+            <dd id="detalle-cfdi-fecha-donativo">—</dd>
+            <dt>Estado del donativo</dt>
+            <dd id="detalle-cfdi-estado-donativo">—</dd>
+          </dl>
+        </section>
+        <section>
+          <h3>Datos fiscales</h3>
+          <dl class="cfdi-fields">
+            <dt>RFC</dt>
+            <dd id="detalle-cfdi-rfc">—</dd>
+            <dt>Razón social</dt>
+            <dd id="detalle-cfdi-razon-social">—</dd>
+            <dt>Régimen fiscal</dt>
+            <dd id="detalle-cfdi-regimen">—</dd>
+            <dt>Código postal</dt>
+            <dd id="detalle-cfdi-codigo-postal">—</dd>
+            <dt>Correo de facturación</dt>
+            <dd id="detalle-cfdi-correo">—</dd>
+            <dt>Constancia de situación fiscal</dt>
+            <dd>
+              <a id="detalle-cfdi-constancia" href="#" target="_blank" rel="noopener" hidden>
+                Abrir constancia
+              </a>
+              <span id="detalle-cfdi-constancia-faltante">No disponible</span>
+            </dd>
+          </dl>
+        </section>
+      </div>
+      <footer class="cfdi-dialog-footer">
+        <button id="solicitud-cfdi-cerrar-pie" class="cfdi-reload" type="button">Cerrar</button>
+      </footer>
+    </dialog>
+
+    <script type="module" src="../../JS/jsDonativos/adminSolicitudesCfdi.view.js"></script>
+  </body>
+</html>

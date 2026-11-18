@@ -13,17 +13,17 @@ export const router = Router();
 // Rutas Cliente
 
 // GET /api/voluntarios/cliente/programas
-router.get("/cliente/programas", clientController.getProgramasVigentes);
+router.get("/cliente/programas", verificarToken, clientController.getProgramasVigentes);
 
 // GET /api/voluntarios/cliente/programas/:idPrograma
 // HU36 detalle publico del programa sin token de momento igual que catalogo
 router.get("/cliente/programas/:idPrograma", clientController.getDetallePrograma);
 
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
-router.post("/programas/:idPrograma/inscripciones", inscribirse);
+router.post("/programas/:idPrograma/inscripciones", verificarToken, inscribirse);
 
 // PATCH /api/voluntarios/programas/:idPrograma/inscripciones
-router.patch("/programas/:idPrograma/inscripciones", cancelarInscripcion);
+router.patch("/programas/:idPrograma/inscripciones", verificarToken, cancelarInscripcion);
 
 // Rutas Admin
 

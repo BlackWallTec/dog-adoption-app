@@ -35,8 +35,8 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
     if (!response.ok) throw toError(response.status, data);
 
     if (
-      ["login", "me", "register"].includes(action) &&
-      (!data?.user?.id || !data.user.correo || !data.user.rol)
+      ["login", "me", "register-admin"].includes(action) &&
+      (!data?.user?.uuid || !data.user.rol)
     ) {
       throw new INTERNAL("No pudimos comprobar la sesión. Inténtalo de nuevo.");
     }
@@ -54,7 +54,8 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
     login({ correo, contrasena }) {
       return request("login", { correo: correo.trim().toLowerCase(), contrasena });
     },
-    register(values) {
+    // Sólo Root puede crear cuentas (rol Administrador)
+    registerAdmin(values) {
       const payload = {
         nombre: values.nombre,
         apellidos: values.apellidos,
@@ -71,10 +72,10 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
         privacidad: values.privacidad,
       };
 
-      return request("register", payload);
+      return request("register-admin", payload);
     },
     getSession() {
-      return request("me");
+      return request("me", undefined, "GET");
     },
     getProfile() {
       return request("profile", undefined, "GET");

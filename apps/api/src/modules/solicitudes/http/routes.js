@@ -1,9 +1,15 @@
 import { Router } from "express";
 import multer from "multer";
-import { getSolicitudesAdmin } from "./solicitudAdmin.controller.js";
+import verificarToken from "../../../middleware/is-auth.js";
+import requireRole from "../../../middleware/require-role.js";
+import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
+import {
+  getSolicitudAdminDetalle,
+  getSolicitudesAdmin,
+  adoptionRequest,
+} from "./solicitudAdmin.controller.js";
 import { MAX_SIZE_BYTES, manejarErrorSubida, subirDocumento } from "./documentos.controller.js";
 import clientRouter from "./request.router.js";
-import { getSolicitudAdminDetalle } from "./solicitudAdmin.controller.js";
 
 const router = Router();
 const upload = multer({
@@ -11,17 +17,24 @@ const upload = multer({
   limits: { fileSize: MAX_SIZE_BYTES, files: 1 },
 });
 
-// La ruta únicamente recibe la petición, procesa el multipart con multer y delega al controlador
+// Solo Administrador o Root con sesion activa
+const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+
 router.post("/:id/documentos", upload.single("archivo"), subirDocumento, manejarErrorSubida);
 
-export { router };
 // Rutas de la app (cliente): /cliente/activa, /cliente/perfil/:idUsuario, ...
 router.use(clientRouter);
 
-router.get("/admin/solicitudes", getSolicitudesAdmin);
+// ===== Rutas Admin =====
+// GET /api/solicitudes/admin/solicitudes
+router.get("/admin/solicitudes", soloAdmin, getSolicitudesAdmin);
+router.post("/admin/solicitudes/:id/resolucion", soloAdmin, adoptionRequest);
 
-router.get("/admin/solicitudes/:id", getSolicitudAdminDetalle);
+// GET /api/solicitudes/admin/solicitudes/:id
+router.get("/admin/solicitudes/:id", soloAdmin, getSolicitudAdminDetalle);
 
 router.get("/", (req, res) => {
   res.json({ module: "solicitudes", items: [] });
 });
+
+export { router };

@@ -51,6 +51,13 @@ export const PANTALLAS = [
     archivo: "/HTML/htmlDonativos/adminDonativos.html",
   },
   {
+    id: "adminSolicitudesCfdi",
+    grupo: "donativos",
+    titulo: "Donativos",
+    ruta: "/admin/donativos/solicitudes-cfdi",
+    archivo: "/HTML/htmlDonativos/adminSolicitudesCfdi.html",
+  },
+  {
     id: "resumenDonativos",
     titulo: "Donativos",
     ruta: "/donativos/resumen",

@@ -3,6 +3,8 @@ package com.app.android.presentation.view.atomicDesign.atomic
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -26,6 +28,10 @@ fun FloatingLabelTextField(
     enabled: Boolean = true,
     isError: Boolean,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     BasicTextField(
         enabled = enabled,
@@ -33,6 +39,9 @@ fun FloatingLabelTextField(
         onValueChange = onValueChange,
         modifier = modifier,
         singleLine = true,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        visualTransformation = visualTransformation,
         textStyle = TextStyle(fontSize = 16.sp),
         interactionSource = interactionSource,
         decorationBox = { innerTextField ->
@@ -41,7 +50,8 @@ fun FloatingLabelTextField(
                 innerTextField = innerTextField,
                 enabled = enabled,
                 singleLine = true,
-                visualTransformation = VisualTransformation.None,
+                visualTransformation = visualTransformation,
+                trailingIcon = trailingIcon,
                 isError = isError,
                 interactionSource = interactionSource,
                 label = {

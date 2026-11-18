@@ -152,7 +152,7 @@ class DogModel {
 
   // HU19C: actualiza solo los campos recibidos. Devuelve la ficha actualizada o null si no existe.
   static async updateDog(id, valores) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabase
       .from("perro")
       .update(valores)
       .eq("id_perro", id)
@@ -169,7 +169,7 @@ class DogModel {
   }
 
   static async createFullDog(dogData) {
-    const { data, error } = await supabase.rpc("insert_full_dog", { payload: dogData });
+    const { data, error } = await supabaseAdmin.rpc("insert_full_dog", { payload: dogData });
 
     if (error) {
       throw new Error(`Error al crear el perro: ${error.message}`);
@@ -212,7 +212,7 @@ class DogModel {
   }
 
   static async activarPerroBulk(idList, action) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("perro")
       .update({ activo: action })
       .in("id_perro", idList);

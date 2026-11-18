@@ -7,6 +7,14 @@ test("la pantalla de perros se abre en /admin/perros", () => {
   expect(archivoDeRuta("/admin/perros/?id=1")).toBe("/HTML/htmlCatalogo/adminPerros.html?id=1");
 });
 
+test("las solicitudes CFDI usan una ruta del módulo de donativos", () => {
+  expect(rutaDe("adminSolicitudesCfdi")).toBe("/admin/donativos/solicitudes-cfdi");
+  expect(archivoDeRuta("/admin/donativos/solicitudes-cfdi")).toBe(
+    "/HTML/htmlDonativos/adminSolicitudesCfdi.html",
+  );
+  expect(idMenuActivo("/admin/donativos/solicitudes-cfdi")).toBe("donativos");
+});
+
 test("reconoce la ruta publica y el archivo al marcar el menu", () => {
   expect(pantallaPorUbicacion("/admin/perros")?.id).toBe("perros");
   expect(pantallaPorUbicacion("/HTML/htmlCatalogo/adminPerros.html")?.id).toBe("perros");

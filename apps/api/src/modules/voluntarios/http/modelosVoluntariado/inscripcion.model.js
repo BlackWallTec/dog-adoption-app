@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 // Valores de se_inscribe.estado
 const ESTADO_INSCRITO = "Aceptado";
@@ -10,9 +10,9 @@ const lanzarError = (contexto, error) => {
   throw err;
 };
 
-// Datos del programa necesarios para validar la inscripción
+// Datos del programa necesarios para validar la cancelación (HU37)
 export const getProgramaInscripcionModel = async (idPrograma) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("programa")
     .select("id_programa, fecha_inicio, cupo_maximo, estado_del_programa")
     .eq("id_programa", idPrograma)
@@ -23,57 +23,22 @@ export const getProgramaInscripcionModel = async (idPrograma) => {
 };
 
 // personas inscritas (activas) en el programa
+// Usa contar_inscritos con RLS, un count directo sobre se_inscribe con el cliente anon solo vería las filas propias y daría 0 o 1.
 export const contarInscritosModel = async (idPrograma) => {
-  const { count, error } = await supabaseAdmin
-    .from("se_inscribe")
-    .select("id_programa", { count: "exact", head: true })
-    .eq("id_programa", idPrograma)
-    .eq("estado", ESTADO_INSCRITO);
+  const { data, error } = await supabase.rpc("contar_inscritos", {
+    p_id_programa: idPrograma,
+  });
 
   if (error) lanzarError("Error al contar inscritos", error);
-  return count ?? 0;
-};
-
-// usuario ya está inscrito (activo) en este programa?
-export const existeInscripcionModel = async (idPrograma, idUsuario) => {
-  const { data, error } = await supabaseAdmin
-    .from("se_inscribe")
-    .select("id_programa")
-    .eq("id_programa", idPrograma)
-    .eq("id_usuario", idUsuario)
-    .eq("estado", ESTADO_INSCRITO)
-    .maybeSingle();
-
-  if (error) lanzarError("Error al verificar la inscripción", error);
-  return data !== null;
-};
-
-// Crear la inscripción y regresar la fila.
-// Si el usuario ya tenía una fila ("Pendiente", por una cancelación) se reactiva la misma fila.
-export const crearInscripcionModel = async (idPrograma, idUsuario, fechaInscripcion) => {
-  const { data, error } = await supabaseAdmin
-    .from("se_inscribe")
-    .upsert(
-      {
-        id_usuario: idUsuario,
-        id_programa: idPrograma,
-        fecha_inscripcion: fechaInscripcion,
-        estado: ESTADO_INSCRITO,
-      },
-      { onConflict: "id_usuario,id_programa" },
-    )
-    .select("id_programa, fecha_inscripcion, estado")
-    .single();
-
-  if (error) lanzarError("Error al crear la inscripción", error);
-  return data;
+  return Number(data ?? 0);
 };
 
 // HU37: cancelar = cambiar el estado de la fila, no borrarla.
 // El filtro por usuario + programa + estado asegura que solo se toca la inscripción activa de ESTE programa.
 // Regresa la fila actualizada, o null si el usuario no tenía una inscripción activa.
+// Al volver a inscribirse, inscribir_en_programa reactiva esta misma fila.
 export const cancelarInscripcionModel = async (idPrograma, idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .update({ estado: ESTADO_NO_INSCRITO })
     .eq("id_programa", idPrograma)
@@ -102,7 +67,7 @@ export const getInscritosByProgramaModel = async (idPrograma) => {
 
 // Ids de los programas en los que el usuario está inscrito (activo), para el botón del catálogo
 export const getIdsProgramasInscritosModel = async (idUsuario) => {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from("se_inscribe")
     .select("id_programa")
     .eq("id_usuario", idUsuario)
@@ -118,8 +83,29 @@ export const contarInscritosActivosModel = async (idPrograma) => {
     .from("se_inscribe")
     .select("id_usuario", { count: "exact", head: true })
     .eq("id_programa", idPrograma)
-    .eq("estado", "Aceptado");
+    .eq("estado", ESTADO_INSCRITO);
 
   if (error) lanzarError("Error al contar los inscritos", error);
   return count ?? 0;
+};
+
+// Lugares ocupados por programa (tarjetas del catálogo): Map<id_programa, número>
+export const contarInscritosPorProgramasModel = async (idsProgramas) => {
+  const conteos = await Promise.all(
+    idsProgramas.map(async (idPrograma) => [idPrograma, await contarInscritosModel(idPrograma)]),
+  );
+  return new Map(conteos);
+};
+
+// Inscribe al usuario de forma atómica: la función SQL bloquea el programa, valida las reglas,
+// cuenta el cupo e inscribe en una sola transacción (así dos personas no ocupan el último lugar).
+// Si el usuario había cancelado (fila "Pendiente"), la función reactiva esa misma fila.
+export const inscribirEnProgramaModel = async (idPrograma, idUsuario) => {
+  const { data, error } = await supabase.rpc("inscribir_en_programa", {
+    p_id_programa: idPrograma,
+    p_id_usuario: idUsuario,
+  });
+
+  if (error) lanzarError("Error al inscribir en el programa", error);
+  return data;
 };
