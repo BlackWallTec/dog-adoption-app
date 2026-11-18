@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.Clock
 import java.time.Instant
 import javax.inject.Inject
 
@@ -22,6 +23,8 @@ class DetalleProgramaViewModel
     constructor(
         savedStateHandle: SavedStateHandle,
         private val obtenerDetalle: ObtenerDetalleProgramaUseCase,
+        // El mismo Clock que provee NetworkModule para HU39, en los tests se fija la hora
+        private val clock: Clock,
     ) : ViewModel() {
         // El nombre debe coincidir con el argumento de la ruta (Screen.DetallePrograma)
         private val idPrograma: String = checkNotNull(savedStateHandle[ARG_ID_PROGRAMA])
@@ -42,7 +45,7 @@ class DetalleProgramaViewModel
                         is Resultado.Exito -> {
                             DetalleProgramaUiState.Success(
                                 detalle = resultado.data,
-                                accion = resultado.data.accion(Instant.now()),
+                                accion = resultado.data.accion(Instant.now(clock)),
                             )
                         }
 

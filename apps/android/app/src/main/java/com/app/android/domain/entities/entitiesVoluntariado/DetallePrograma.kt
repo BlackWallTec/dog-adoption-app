@@ -16,38 +16,38 @@ data class DetallePrograma(
 }
 
 // Que muestra la pantalla en lugar del boton
-sealed interface AccionPrograma {
-    data object Inscribirme : AccionPrograma
+sealed interface AccionDetalle {
+    data object Inscribirme : AccionDetalle
 
-    data object YaInscrito : AccionPrograma
+    data object YaInscrito : AccionDetalle
 
-    data object CupoLleno : AccionPrograma
+    data object CupoLleno : AccionDetalle
 
     data class SinAccion(
         val marca: MarcaPrograma,
-    ) : AccionPrograma
+    ) : AccionDetalle
 }
 
 enum class MarcaPrograma { CANCELADO, FINALIZADO, EN_CURSO, NO_DISPONIBLE }
 
 // Regla del boton parte del diseño HU36. Reutiliza validarInscripcion de HU33 para no duplicar reglas
-fun DetallePrograma.accion(ahora: Instant): AccionPrograma =
+fun DetallePrograma.accion(ahora: Instant): AccionDetalle =
     when {
         cancelado -> {
-            AccionPrograma.SinAccion(MarcaPrograma.CANCELADO)
+            AccionDetalle.SinAccion(MarcaPrograma.CANCELADO)
         }
 
         finalizado(ahora) -> {
-            AccionPrograma.SinAccion(MarcaPrograma.FINALIZADO)
+            AccionDetalle.SinAccion(MarcaPrograma.FINALIZADO)
         }
 
         else -> {
             when (programa.validarInscripcion(ahora)) {
-                null -> AccionPrograma.Inscribirme
-                VoluntariadoError.YaInscrito -> AccionPrograma.YaInscrito
-                VoluntariadoError.SinCupo -> AccionPrograma.CupoLleno
-                VoluntariadoError.ProgramaIniciado -> AccionPrograma.SinAccion(MarcaPrograma.EN_CURSO)
-                else -> AccionPrograma.SinAccion(MarcaPrograma.NO_DISPONIBLE)
+                null -> AccionDetalle.Inscribirme
+                VoluntariadoError.YaInscrito -> AccionDetalle.YaInscrito
+                VoluntariadoError.SinCupo -> AccionDetalle.CupoLleno
+                VoluntariadoError.ProgramaIniciado -> AccionDetalle.SinAccion(MarcaPrograma.EN_CURSO)
+                else -> AccionDetalle.SinAccion(MarcaPrograma.NO_DISPONIBLE)
             }
         }
     }

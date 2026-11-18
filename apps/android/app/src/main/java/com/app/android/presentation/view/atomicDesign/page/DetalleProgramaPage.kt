@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.android.domain.entities.entitiesVoluntariado.AccionPrograma
+import com.app.android.domain.entities.entitiesVoluntariado.AccionDetalle
 import com.app.android.domain.entities.entitiesVoluntariado.DetallePrograma
 import com.app.android.domain.entities.entitiesVoluntariado.EstadoPrograma
 import com.app.android.domain.entities.entitiesVoluntariado.MarcaPrograma
@@ -130,7 +130,7 @@ fun DetalleProgramaPage(
 @Composable
 private fun ContenidoDetalle(
     detalle: DetallePrograma,
-    accion: AccionPrograma,
+    accion: AccionDetalle,
     onVolver: () -> Unit,
     onInscribirse: () -> Unit,
 ) {
@@ -161,7 +161,7 @@ private fun ContenidoDetalle(
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             EtiquetaTipo(texto = programa.tipo)
-            if (accion is AccionPrograma.SinAccion) {
+            if (accion is AccionDetalle.SinAccion) {
                 EtiquetaEstado(
                     texto = accion.marca.texto(),
                     icono = Icons.Outlined.Info,
@@ -194,24 +194,24 @@ private fun ContenidoDetalle(
             progresoCupo = detalle.progresoCupo(),
         )
 
-        if (accion !is AccionPrograma.SinAccion) {
+        if (accion !is AccionDetalle.SinAccion) {
             InfoMessageCard(mensaje = AVISO_COMPROMISO, icono = Icons.Outlined.Info)
         }
 
         when (accion) {
-            AccionPrograma.Inscribirme -> {
+            AccionDetalle.Inscribirme -> {
                 AppButton(text = "Inscribirme", onClick = onInscribirse, modifier = Modifier.fillMaxWidth())
             }
 
-            AccionPrograma.YaInscrito -> {
+            AccionDetalle.YaInscrito -> {
                 AppButton(text = "Ya estás inscrito", onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth())
             }
 
-            AccionPrograma.CupoLleno -> {
+            AccionDetalle.CupoLleno -> {
                 AppButton(text = "Cupo lleno", onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth())
             }
 
-            is AccionPrograma.SinAccion -> {
+            is AccionDetalle.SinAccion -> {
                 Unit
             }
         }
@@ -248,7 +248,7 @@ private fun detalleEjemplo(): DetallePrograma {
 private fun DetalleProgramaPageInscribirmePreview() {
     AndroidTheme {
         DetalleProgramaPage(
-            uiState = DetalleProgramaUiState.Success(detalleEjemplo(), AccionPrograma.Inscribirme),
+            uiState = DetalleProgramaUiState.Success(detalleEjemplo(), AccionDetalle.Inscribirme),
             onBackClick = {},
             onReintentar = {},
             onInscribirse = {},
@@ -264,7 +264,7 @@ private fun DetalleProgramaPageCanceladoPreview() {
             uiState =
                 DetalleProgramaUiState.Success(
                     detalleEjemplo(),
-                    AccionPrograma.SinAccion(MarcaPrograma.CANCELADO),
+                    AccionDetalle.SinAccion(MarcaPrograma.CANCELADO),
                 ),
             onBackClick = {},
             onReintentar = {},
