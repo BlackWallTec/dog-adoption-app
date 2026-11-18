@@ -47,12 +47,12 @@ import com.app.android.domain.entities.entitiesCatalogo.Perro
 import com.app.android.domain.entities.entitiesCatalogo.ShareEvent
 import com.app.android.domain.entities.entitiesCatalogo.ShareUIState
 import com.app.android.presentation.viewmodel.viewModelCatalogo.CompartirViewModel
-
+import com.app.android.domain.entities.entitiesCatalogo.Dog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompartirScreen (
-    perro: Perro,
+    perro: Dog,
     viewModel: CompartirViewModel =hiltViewModel()
 ){
     val shareState by viewModel.shareState.collectAsState()
@@ -66,16 +66,13 @@ fun CompartirScreen (
             }
         }
     }
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ){padding->
-        Column(modifier=Modifier.padding(padding).padding(16.dp)){
-            Button(onClick={viewModel.onCompartirClick(perro)}, colors= ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC832), contentColor=Color(0xFF3E2723)
-            )
-            ){
-                Text("Compartir")
-            }
+    Column(modifier=Modifier.padding(8.dp)){
+        Button(onClick={viewModel.onCompartirClick(perro)}, colors= ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC832), contentColor=Color(0xFF3E2723)
+        )
+        ){
+            Text("Compartir")
         }
+        SnackbarHost(hostState=snackbarHostState)
     }
 
     val state = shareState
@@ -89,13 +86,14 @@ fun CompartirScreen (
                     viewModel.onFichaCompartida()
                 },
                 onCopiar={
-                    copiarTexto(context, state.content.texto())
+                    copiarTexto(context, state.content.enlace)
                     viewModel.onEnlaceCopiado()
                 }
             )
         }
     }
 }
+
 
 @Composable
 private fun ShareOption(
@@ -135,7 +133,7 @@ private fun ShareOption(
     }
 }
 @Composable
-private fun ShareMenuContent(
+internal fun ShareMenuContent(
     onCompartir:() -> Unit,
     onCopiar: () -> Unit
 ){
@@ -149,7 +147,7 @@ private fun ShareMenuContent(
     }
 }
 
-private fun  compartirTexto(context: Context, texto: String){
+internal fun  compartirTexto(context: Context, texto: String){
     val intent = Intent(Intent.ACTION_SEND).apply{
         type="text/plain"
         putExtra(Intent.EXTRA_TEXT, texto)
@@ -157,7 +155,7 @@ private fun  compartirTexto(context: Context, texto: String){
     context.startActivity(Intent.createChooser(intent, "Compartir ficha"))
 }
 
-private fun copiarTexto(context: Context, texto: String){
+internal fun copiarTexto(context: Context, texto: String){
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     clipboard.setPrimaryClip(ClipData.newPlainText("Ficha", texto))
 }

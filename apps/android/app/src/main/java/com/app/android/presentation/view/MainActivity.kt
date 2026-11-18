@@ -44,16 +44,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // El enrutador toma el control total de la app desde aquí
                     //PerroScreen()
-                    //AppNavigation()
-                    CompartirScreen(
+                    AppNavigation()
+                    /*CompartirScreen(
                         perro = Perro(
                             id = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
                             nombre = "Kira",
                             edad = 3,
                             sexo = "Hembra",
+                            descripcion = "Perro amigable"
                         )
 
-                    )
+                    )*/
                 }
             }
         }

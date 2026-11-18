@@ -12,5 +12,7 @@ data class PerroDto(
     @SerializedName("sexo")
     val sexo: String,
     @SerializedName("foto_url")
-    val foto_url: String? = null
+    val foto_url: String? = null,
+    @SerializedName("descripcion")
+    val descripcion: String?=null
 )
