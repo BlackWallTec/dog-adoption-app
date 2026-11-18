@@ -370,6 +370,10 @@ fun AppNavigation() {
                     onInscripcionExitosa = {
                         navController.navigate(Screen.ConfirmacionInscripcion.ruta) { launchSingleTop = true }
                     },
+                    // HU36: al tocar una tarjeta abre su detalle
+                    onVerDetalle = { idPrograma ->
+                        navController.navigate(Screen.DetallePrograma.crearRuta(idPrograma))
+                    },
                 )
             }
 

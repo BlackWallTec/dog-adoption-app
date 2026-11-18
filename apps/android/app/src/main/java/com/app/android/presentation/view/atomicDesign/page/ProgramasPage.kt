@@ -45,6 +45,7 @@ fun ProgramasPage(
     navSeleccionado: Int = 1,
     onNavSelect: (Int) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    onVerDetalle: ((String) -> Unit)? = null, // evento HU36: id del programa
 ) {
     val colores = MaterialTheme.colorScheme
 
@@ -105,6 +106,7 @@ fun ProgramasPage(
                             programas = uiState.programas,
                             onInscribirse = onInscribirse,
                             onCancelar = onCancelar,
+                            onVerDetalle = onVerDetalle, // HU36
                         )
                     }
                 }
@@ -121,7 +123,14 @@ private fun ProgramasPageSuccessPreview() {
             uiState =
                 ProgramasUiState.Success(
                     listOf(
-                        programaUiDePrueba("1", "Bazar de Donativos", "8/15 lugares ocupados · 7 disponibles", 8f / 15f, "Inscribirme", true),
+                        programaUiDePrueba(
+                            "1",
+                            "Bazar de Donativos",
+                            "8/15 lugares ocupados · 7 disponibles",
+                            8f / 15f,
+                            "Inscribirme",
+                            true,
+                        ),
                         programaUiDePrueba("2", "Jornada de limpieza", "10/10 lugares ocupados · 0 disponibles", 1f, "Sin lugares", false),
                     ),
                 ),
