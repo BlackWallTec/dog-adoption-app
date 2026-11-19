@@ -117,4 +117,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
+    //test
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
 }
