@@ -41,7 +41,7 @@ class GuardarDocumentosUseCase
             if (doc == null) return "Adjunta tu $nombreCampo"
             if (doc.mimeType !in FORMATOS_PERMITIDOS) return "Formato no permitido (usa PDF, JPG o PNG)"
             if (doc.tamanoBytes > TAMANO_MAX_BYTES) return "El archivo $nombreCampo supera los 5MB"
-            if (doc.tamanoBytes <= 0L) return "El archivo $nombreCampo no puede estar vacio"
+            if (doc.tamanoBytes < 0L) return "El archivo $nombreCampo no es válido"
             return null
         }
 

@@ -11,6 +11,9 @@ import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.inject.Inject
@@ -58,9 +61,6 @@ class EnviarSolicitudUseCase
                     ?: throw IllegalStateException("No hay una solicitud en borrador activa.")
 
             try {
-                // 1. Create or reuse draft
-                val solicitudId = solicitudRepo.crearOReutilizarBorrador(borrador)
-
                 val docs =
                     borrador.documentos
                         ?: throw IllegalStateException("Faltan los documentos adjuntos.")
@@ -72,9 +72,12 @@ class EnviarSolicitudUseCase
                     docs.comprobanteDomicilio
                         ?: throw IllegalStateException("Falta el comprobante de domicilio.")
 
-                // 2. Compress both files to no more than 2 MB with aligned metadata
+                // 1. Read and compress both files first (fail fast before hitting server)
                 val (ineCompressed, inePickedFile) = compressFileToMax2Mb(ineLocal.uri, ineLocal.mimeType, ineLocal.nombre)
                 val (domCompressed, domPickedFile) = compressFileToMax2Mb(domLocal.uri, domLocal.mimeType, domLocal.nombre)
+
+                // 2. Create or reuse draft on server
+                val solicitudId = solicitudRepo.crearOReutilizarBorrador(borrador)
 
                 // 3. Upload INE and Domicilio
                 solicitudRepo.subirDocumento(
@@ -107,62 +110,100 @@ class EnviarSolicitudUseCase
             }
         }
 
-        private fun compressFileToMax2Mb(
+        private suspend fun compressFileToMax2Mb(
             uriString: String,
             mimeType: String,
             originalName: String,
-        ): Pair<ByteArray, PickedFile> {
-            val bytes =
-                effectiveFileReader(uriString)
-                    ?: throw IOException("No se pudo leer el archivo: $uriString")
+        ): Pair<ByteArray, PickedFile> =
+            withContext(Dispatchers.IO) {
+                ensureActive()
+                val bytes =
+                    effectiveFileReader(uriString)
+                        ?: throw IOException("No se pudo leer el archivo: $uriString")
 
-            val maxBytes = 2 * 1024 * 1024 // 2 MB
-            val isImage = mimeType.contains("image", ignoreCase = true) || isImageUri(uriString)
+                if (bytes.isEmpty()) {
+                    throw IOException("El archivo $originalName está vacío.")
+                }
 
-            if (bytes.size <= maxBytes) {
-                return Pair(
-                    bytes,
-                    PickedFile(uri = uriString, name = originalName, sizeBytes = bytes.size.toLong(), mimeType = mimeType),
-                )
-            }
+                val maxBytes = 2 * 1024 * 1024 // 2 MB
+                val isImage = mimeType.contains("image", ignoreCase = true) || isImageUri(uriString)
 
-            if (!isImage) {
-                throw IllegalStateException("El archivo supera los 2 MB y no es una imagen. Por favor seleccione un archivo más pequeño.")
-            }
+                if (bytes.size <= maxBytes) {
+                    return@withContext Pair(
+                        bytes,
+                        PickedFile(uri = uriString, name = originalName, sizeBytes = bytes.size.toLong(), mimeType = mimeType),
+                    )
+                }
 
-            val bitmap =
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    ?: throw IllegalStateException("El archivo supera los 2 MB y no pudo procesarse como imagen. Por favor recapture o seleccione una imagen más pequeña.")
+                if (!isImage) {
+                    throw IllegalStateException("El archivo supera los 2 MB y no es una imagen. Por favor seleccione un archivo más pequeño.")
+                }
 
-            try {
-                var quality = 90
-                var stream = ByteArrayOutputStream()
-                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+                ensureActive()
+                val options =
+                    BitmapFactory.Options().apply {
+                        inJustDecodeBounds = true
+                    }
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
 
-                while (stream.size() > maxBytes && quality > 10) {
-                    stream = ByteArrayOutputStream()
-                    quality -= 10
+                ensureActive()
+                options.inSampleSize = calculateInSampleSize(options, 2048, 2048)
+                options.inJustDecodeBounds = false
+
+                val bitmap =
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+                        ?: throw IllegalStateException("El archivo supera los 2 MB y no pudo procesarse como imagen. Por favor recapture o seleccione una imagen más pequeña.")
+
+                try {
+                    ensureActive()
+                    var quality = 90
+                    var stream = ByteArrayOutputStream()
                     bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
-                }
 
-                if (stream.size() <= maxBytes) {
-                    val compressedBytes = stream.toByteArray()
-                    val nameWithoutExt = originalName.substringBeforeLast('.', originalName)
-                    val newName = "$nameWithoutExt.jpg"
-                    val newPickedFile =
-                        PickedFile(
-                            uri = uriString,
-                            name = newName,
-                            sizeBytes = compressedBytes.size.toLong(),
-                            mimeType = "image/jpeg",
-                        )
-                    return Pair(compressedBytes, newPickedFile)
-                } else {
-                    throw IllegalStateException("La imagen no pudo reducirse a menos de 2 MB. Por favor recapture o seleccione una imagen más pequeña.")
+                    while (stream.size() > maxBytes && quality > 10) {
+                        ensureActive()
+                        stream = ByteArrayOutputStream()
+                        quality -= 10
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+                    }
+
+                    if (stream.size() <= maxBytes) {
+                        val compressedBytes = stream.toByteArray()
+                        val nameWithoutExt = originalName.substringBeforeLast('.', originalName)
+                        val newName = "$nameWithoutExt.jpg"
+                        val newPickedFile =
+                            PickedFile(
+                                uri = uriString,
+                                name = newName,
+                                sizeBytes = compressedBytes.size.toLong(),
+                                mimeType = "image/jpeg",
+                            )
+                        return@withContext Pair(compressedBytes, newPickedFile)
+                    } else {
+                        throw IllegalStateException("La imagen no pudo reducirse a menos de 2 MB. Por favor recapture o seleccione una imagen más pequeña.")
+                    }
+                } finally {
+                    bitmap.recycle()
                 }
-            } finally {
-                bitmap.recycle()
             }
+
+        private fun calculateInSampleSize(
+            options: BitmapFactory.Options,
+            reqWidth: Int,
+            reqHeight: Int,
+        ): Int {
+            val (height: Int, width: Int) = options.outHeight to options.outWidth
+            var inSampleSize = 1
+
+            if (height > reqHeight || width > reqWidth) {
+                val halfHeight: Int = height / 2
+                val halfWidth: Int = width / 2
+
+                while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                    inSampleSize *= 2
+                }
+            }
+            return inSampleSize
         }
 
         private fun isImageUri(uriString: String): Boolean {

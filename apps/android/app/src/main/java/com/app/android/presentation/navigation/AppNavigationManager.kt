@@ -42,10 +42,11 @@ import com.app.android.presentation.view.viewsSolicitudes.MisSolicitudesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
+<<<<<<< HEAD
 import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
-import com.app.android.presentation.view.viewsVoluntariado.DetalleProgramaScreen
 =======
->>>>>>> 6ce769a (feat(android): updated atomic design, addded read only fields, updated app nav manager)
+>>>>>>> b9aec90 (feat(solicitudes): uses cases done, test cases pass)
+import com.app.android.presentation.view.viewsVoluntariado.DetalleProgramaScreen
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
