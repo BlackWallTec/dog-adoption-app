@@ -32,6 +32,7 @@ beforeEach(() => {
   const usuario = { id_usuario: "cliente", rol: "Cliente" };
   usuarios = {
     fetchByEmail: vi.fn().mockResolvedValue(usuario),
+    confirmarCorreo: vi.fn().mockResolvedValue(true),
     updatePassword: vi.fn(async (_id, hash) => {
       usuario.contrasena = hash;
     }),
@@ -81,6 +82,38 @@ describe("Códigos de correo para Clientes", () => {
     await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toMatchObject({
       status: 400,
     });
+  });
+  it("reenviar no extiende el plazo original de la cuenta", async () => {
+    await servicio.registrar("cliente", correo);
+    ahora += 71 * 60 * 60_000;
+    await servicio.solicitar(correo, "confirmar");
+    ahora += 60 * 60_000;
+    await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toThrow();
+    await servicio.solicitar(correo, "confirmar");
+    expect(enviar).toHaveBeenCalledTimes(2);
+    expect(usuarios.confirmarCorreo).not.toHaveBeenCalled();
+  });
+  it("conserva el código si falla Supabase y no confirma una cuenta eliminada o vencida", async () => {
+    await servicio.registrar("cliente", correo);
+    usuarios.confirmarCorreo.mockRejectedValueOnce(new Error("sin conexión"));
+    await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toThrow("sin conexión");
+    usuarios.confirmarCorreo.mockResolvedValueOnce(false);
+    await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toThrow("no es válido");
+    expect(servicio.estado("cliente").confirmado).toBe(false);
+    await expect(servicio.consumir(correo, "012345", "confirmar")).resolves.toEqual({ ok: true });
+  });
+  it("recupera la condición pendiente desde Supabase si no existe el archivo local", async () => {
+    usuarios.fetchByEmail.mockResolvedValue({
+      id_usuario: "cliente",
+      rol: "Cliente",
+      correo_pendiente_desde: new Date(ahora).toISOString(),
+    });
+    ahora += 71 * 60 * 60_000;
+    await servicio.solicitar(correo, "confirmar");
+    expect(servicio.estado("cliente").confirmado).toBe(false);
+    expect(enviar).toHaveBeenCalledTimes(1);
+    ahora += 60 * 60_000;
+    await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toThrow();
   });
   it("limita el reenvío, mantiene una respuesta genérica e invalida el código anterior", async () => {
     await servicio.registrar("cliente", correo);

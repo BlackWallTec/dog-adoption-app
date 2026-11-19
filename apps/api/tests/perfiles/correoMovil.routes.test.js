@@ -13,6 +13,7 @@ vi.mock("../../src/modules/perfiles/http/modelosPerfiles/user.model.js", () => (
     fetchByEmail: vi.fn(),
     fetchEmailByUUID: vi.fn(),
     updatePassword: vi.fn(),
+    confirmarCorreo: vi.fn(),
     registerAccount: vi.fn(),
     deleteAccount: vi.fn(),
   },
@@ -77,11 +78,22 @@ beforeAll(async () => {
   Usuario.updatePassword.mockImplementation(async (id, hash) => {
     porId.get(id).contrasena = hash;
   });
-  RegistroPublico.crearCliente.mockImplementation(async ({ idUsuario, rol, usuario, contacto }) => {
-    const cuenta = { id_usuario: idUsuario, rol, ...usuario };
-    porId.set(idUsuario, cuenta);
-    porEmail.set(contacto.correo, cuenta);
+  Usuario.confirmarCorreo.mockImplementation(async (id) => {
+    porId.get(id).correo_pendiente_desde = null;
+    return true;
   });
+  RegistroPublico.crearCliente.mockImplementation(
+    async ({ idUsuario, rol, usuario, contacto, requiereConfirmacion }) => {
+      const cuenta = {
+        id_usuario: idUsuario,
+        rol,
+        ...usuario,
+        correo_pendiente_desde: requiereConfirmacion ? new Date().toISOString() : null,
+      };
+      porId.set(idUsuario, cuenta);
+      porEmail.set(contacto.correo, cuenta);
+    },
+  );
   Usuario.registerAccount.mockImplementation(async (id, datos, tabla) => {
     if (tabla === "usuario") porId.set(id, { id_usuario: id, ...datos });
     if (tabla === "datos_confidenciales") porEmail.set(datos.correo, porId.get(id));
@@ -141,6 +153,9 @@ describe("Extensión móvil sin sustituir el login actual", () => {
     expect(respuesta.body.correoEnviado).toBe(true);
     expect(respuesta.body.codigo).toBeUndefined();
     expect(RegistroPublico.crearCliente).toHaveBeenCalled();
+    expect(RegistroPublico.crearCliente).toHaveBeenLastCalledWith(
+      expect.objectContaining({ requiereConfirmacion: true }),
+    );
     const codigo = codigoReciente();
     for (const movil of [false, true]) {
       let req = request(app).post(`${base}/login`);
@@ -182,6 +197,19 @@ describe("Extensión móvil sin sustituir el login actual", () => {
       .send({ correo: "nuevo@gmail.com", contrasena: "Anterior1234" });
     expect(login.status).toBe(200);
     nuevoToken = login.body.token;
+  });
+  it("la marca en Supabase impide entrar aunque falte el estado local", async () => {
+    porEmail.set("pendiente@gmail.com", {
+      id_usuario: "sin-archivo",
+      rol: "Cliente",
+      contrasena: await bcrypt.hash("Anterior1234", 4),
+      correo_pendiente_desde: new Date().toISOString(),
+    });
+    const login = await request(app)
+      .post(`${base}/login`)
+      .send({ correo: "pendiente@gmail.com", contrasena: "Anterior1234" });
+    expect(login.status).toBe(403);
+    expect(login.body.code).toBe("EMAIL_NOT_CONFIRMED");
   });
   it("cambia la contraseña sólo con código válido e invalida el JWT anterior", async () => {
     expect(
