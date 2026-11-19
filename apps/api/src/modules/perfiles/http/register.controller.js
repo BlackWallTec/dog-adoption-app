@@ -5,6 +5,7 @@ import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
 import CodigoPostal from "./modelosPerfiles/cps.model.js";
 import RegistroPublico from "./modelosPerfiles/registroPublico.model.js";
+import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
 import {
   ERROR_CODES,
   errorBody,
@@ -85,6 +86,9 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     // Valores ya validados, normalizados
     const correo = b.correo.toLowerCase();
     const telefono = limpiarTelefono(b.telefono);
+    // El alta administrativa conserva su comportamiento. Sólo Clientes nuevos pueden quedar pendientes.
+    const correoServicio =
+      rol === ROLES.CLIENT && correoMovilHabilitado() ? servicioCorreoMovil() : null;
 
     // Hashea la contraseña
     const hashContrasena = await bcrypt.hash(b.contrasena, 10);
@@ -111,11 +115,13 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
       },
     });
 
+    const entrega = correoServicio ? await correoServicio.registrar(idUsuario, correo) : null;
     return res.status(201).json({
       user: {
         uuid: idUsuario,
         rol,
       },
+      ...(entrega ? { requiereConfirmacion: true, correoEnviado: entrega.enviado } : {}),
     });
   } catch (error) {
     console.error(error);

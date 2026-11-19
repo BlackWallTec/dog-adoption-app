@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
+import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
 import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "@qarino/shared/errores.js";
 
 /*
@@ -59,12 +60,24 @@ export const postLogin = async (req, res) => {
         .json(errorBody(ERROR_CODES.INVALID_CREDENTIALS, "Credenciales inválidas"));
     }
 
+    // Extensión optativa: las cuentas anteriores y los roles web mantienen su acceso.
+    const estadoCorreo =
+      usuario.rol === ROLES.CLIENT && correoMovilHabilitado()
+        ? servicioCorreoMovil().estado(usuario.id_usuario)
+        : null;
+    if (estadoCorreo && !estadoCorreo.confirmado)
+      return res.status(403).json({
+        code: "EMAIL_NOT_CONFIRMED",
+        error: "Confirma tu correo antes de iniciar sesión.",
+      });
+
     const vida = vidaSeconds(usuario.rol);
 
     const token = jwt.sign(
       {
         uuid: usuario.id_usuario,
         rol: usuario.rol,
+        ...(estadoCorreo ? { correoVersionMovil: estadoCorreo.version } : {}),
       },
       process.env.JWT_SECRET,
       {

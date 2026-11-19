@@ -6,8 +6,10 @@ import * as authController from "./auth.controller.js";
 import * as registerController from "./register.controller.js";
 import * as profileController from "./profile.controller.js";
 import * as cpController from "./cps.controller.js";
+import correoMovilRouter from "./correoMovil.router.js";
 
 const router = express.Router();
+router.use("/correo-movil", correoMovilRouter);
 
 // Rutas Login
 router.post("/login", authController.postLogin);

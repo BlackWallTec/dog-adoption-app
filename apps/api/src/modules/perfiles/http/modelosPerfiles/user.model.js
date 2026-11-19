@@ -69,6 +69,15 @@ export default class Usuario {
     if (error) instanciarError("Error al revertir la cuenta", error.code);
   }
 
+  // La recuperación sólo sustituye el hash del usuario validado por el código de correo.
+  static async updatePassword(id, contrasena) {
+    const { error } = await supabaseAdmin
+      .from("usuario")
+      .update({ contrasena })
+      .eq("id_usuario", id);
+    if (error) instanciarError("Error al actualizar contraseña", error.code);
+  }
+
   static async fetchProfileByUUID(id) {
     // Tres tablas distintas, se consultan en paralelo
     const [usuario, contacto, direccion] = await Promise.all([
