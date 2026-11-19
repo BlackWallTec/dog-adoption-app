@@ -18,12 +18,13 @@ const extractStoragePath = (urlArchivo) => {
   return null;
 };
 
-//Upload the physical file to supabase storage and get the link
+// Sube el archivo físico a Supabase Storage y regresa { url_archivo, storagePath }
 export const subirArchivoStorage = async (id_solicitud, file) => {
-  const fileName = `${id_solicitud}/${Date.now()}_${file.originalname}`;
+  const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const fileName = `${id_solicitud}/${Date.now()}_${sanitizedName}`;
 
   const { error: storageError } = await supabase.storage
-    .from("documento")
+    .from(BUCKET_NAME)
     .upload(fileName, file.buffer, {
       contentType: file.mimetype,
       upsert: true,
@@ -31,9 +32,12 @@ export const subirArchivoStorage = async (id_solicitud, file) => {
 
   if (storageError) throw storageError;
 
-  const { data: publicUrlData } = supabase.storage.from("documento").getPublicUrl(fileName);
+  const { data: publicUrlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName);
 
-  return publicUrlData.publicUrl;
+  return {
+    url_archivo: publicUrlData.publicUrl,
+    storagePath: fileName,
+  };
 };
 
 export const eliminarArchivoStorage = async (storagePath) => {
@@ -44,20 +48,35 @@ export const eliminarArchivoStorage = async (storagePath) => {
   }
 };
 
-//Get de id of the user and get the request
-export const obtenerUsuarioPorSolicitud = async (id_solicitud) => {
+// Obtiene dueño, estado y bandera puede_editar de la solicitud
+export const obtenerSolicitudParaDocumentos = async (id_solicitud) => {
   const { data: solicitudData, error: solError } = await supabase
     .from("solicitud_adopcion")
-    .select("id_usuario")
+    .select(`
+      id_solicitud,
+      id_usuario,
+      puede_editar,
+      estado:estado_solicitud!solicitud_adopcion_id_estado_fkey (
+        descripcion
+      )
+    `)
     .eq("id_solicitud", id_solicitud)
-    .single();
+    .maybeSingle();
 
-  if (solError || !solicitudData) {
-    console.error("Búsqueda de solicitud:", { id_solicitud, solError, solicitudData });
+  if (solError) {
+    throw solError;
+  }
+
+  if (!solicitudData) {
     throw new Error("NOT_FOUND_SOLICITUD");
   }
 
-  return solicitudData.id_usuario;
+  return {
+    id_solicitud: solicitudData.id_solicitud,
+    id_usuario: solicitudData.id_usuario,
+    puede_editar: solicitudData.puede_editar === true,
+    estado: first(solicitudData.estado)?.descripcion?.trim() ?? null,
+  };
 };
 
 // Lista documentos previos del mismo tipo asociados a esta solicitud
@@ -82,15 +101,15 @@ export const obtenerDocumentosPreviosPorTipo = async (id_solicitud, tipo) => {
     .filter((doc) => doc && doc.tipo?.trim().toUpperCase() === targetTipo);
 };
 
-//Insert registry in table documents
+// Crea el registro en la tabla documento
 export const crearRegistroDocumento = async (id_usuario, tipo, url_archivo) => {
   const { data: docData, error: docError } = await supabase
     .from("documento")
     .insert([
       {
-        id_usuario: id_usuario,
-        tipo: tipo,
-        url_archivo: url_archivo,
+        id_usuario,
+        tipo: tipo.trim().toUpperCase(),
+        url_archivo,
         fecha_subida: new Date().toISOString(),
       },
     ])
@@ -101,12 +120,12 @@ export const crearRegistroDocumento = async (id_usuario, tipo, url_archivo) => {
   return docData.id_documento;
 };
 
-//Make dependacies between tables
+// Crea la relación en documento_tiene_solicitud_adopcion
 export const relacionarDocumentoSolicitud = async (id_documento, id_solicitud) => {
   const { error: relError } = await supabase.from("documento_tiene_solicitud_adopcion").insert([
     {
-      id_documento: id_documento,
-      id_solicitud: id_solicitud,
+      id_documento,
+      id_solicitud,
       fecha_agregado: new Date().toISOString(),
     },
   ]);

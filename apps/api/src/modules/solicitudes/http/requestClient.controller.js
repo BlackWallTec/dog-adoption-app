@@ -238,27 +238,27 @@ export const createDraft = async (req, res) => {
     const idUsuario = req.user.uuid;
     const rawBody = req.body && typeof req.body === "object" ? req.body : {};
 
-    // Solo extraer campos permitidos (ignorar extra fields y nunca aceptar idUsuario)
+    // Extraer solo campos permitidos (acepta camelCase y snake_case de Android; ignora extra fields y nunca acepta idUsuario)
     const allowedInput = {
-      idPerro: rawBody.idPerro,
+      idPerro: rawBody.idPerro ?? rawBody.id_perro,
       ocupacion: rawBody.ocupacion,
-      tuvoMascotas: rawBody.tuvoMascotas,
-      otrasMascotas: rawBody.otrasMascotas,
-      motivoAdopcion: rawBody.motivoAdopcion,
-      dondeVivira: rawBody.dondeVivira,
-      personasEnCasa: rawBody.personasEnCasa,
-      todosDeAcuerdo: rawBody.todosDeAcuerdo,
-      tipoVivienda: rawBody.tipoVivienda,
-      jardinPatio: rawBody.jardinPatio,
-      caseroAcepta: rawBody.caseroAcepta,
-      sobreMascotas: rawBody.sobreMascotas,
-      cuidadosBasicos: rawBody.cuidadosBasicos,
-      opinionEsterilizacion: rawBody.opinionEsterilizacion,
-      tieneVeterinario: rawBody.tieneVeterinario,
-      detalleVeterinario: rawBody.detalleVeterinario,
-      tiempoSolo: rawBody.tiempoSolo,
-      rutinaDiaria: rawBody.rutinaDiaria,
-      manejoComportamiento: rawBody.manejoComportamiento,
+      tuvoMascotas: rawBody.tuvoMascotas ?? rawBody.tuvo_mascotas,
+      otrasMascotas: rawBody.otrasMascotas ?? rawBody.otras_mascotas,
+      motivoAdopcion: rawBody.motivoAdopcion ?? rawBody.motivo_adopcion,
+      dondeVivira: rawBody.dondeVivira ?? rawBody.donde_vivira,
+      personasEnCasa: rawBody.personasEnCasa ?? rawBody.personas_en_casa,
+      todosDeAcuerdo: rawBody.todosDeAcuerdo ?? rawBody.todos_de_acuerdo,
+      tipoVivienda: rawBody.tipoVivienda ?? rawBody.tipo_vivienda,
+      jardinPatio: rawBody.jardinPatio ?? rawBody.jardin_patio,
+      caseroAcepta: rawBody.caseroAcepta ?? rawBody.casero_acepta,
+      sobreMascotas: rawBody.sobreMascotas ?? rawBody.sobre_mascotas,
+      cuidadosBasicos: rawBody.cuidadosBasicos ?? rawBody.cuidados_basicos,
+      opinionEsterilizacion: rawBody.opinionEsterilizacion ?? rawBody.opinion_esterilizacion,
+      tieneVeterinario: rawBody.tieneVeterinario ?? rawBody.tiene_veterinario,
+      detalleVeterinario: rawBody.detalleVeterinario ?? rawBody.detalle_veterinario,
+      tiempoSolo: rawBody.tiempoSolo ?? rawBody.tiempo_solo,
+      rutinaDiaria: rawBody.rutinaDiaria ?? rawBody.rutina_diaria,
+      manejoComportamiento: rawBody.manejoComportamiento ?? rawBody.manejo_comportamiento,
     };
 
     const validationErrors = validateDraftBody(allowedInput);
@@ -298,7 +298,7 @@ export const createDraft = async (req, res) => {
           : null,
       cuidados_basicos: allowedInput.cuidadosBasicos.trim(),
       opinion_esterilizacion: allowedInput.opinionEsterilizacion.trim(),
-      tiene_veterinaSubmitrio: allowedInput.tieneVeterinario,
+      tiene_veterinario: allowedInput.tieneVeterinario,
       detalle_veterinario: allowedInput.detalleVeterinario.trim(),
       tiempo_solo: allowedInput.tiempoSolo.trim(),
       rutina_diaria: allowedInput.rutinaDiaria.trim(),

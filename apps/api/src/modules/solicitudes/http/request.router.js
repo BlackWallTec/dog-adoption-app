@@ -8,11 +8,11 @@ const router = express.Router();
 router.post("/", clientController.createDraft);
 
 // GET /api/solicitudes/cliente/activa?idPerro=...
-router.get("/cliente/activa", clientController.getActive);
+router.get("/activa", clientController.getActive);
 
 // GET /api/solicitudes/cliente/mis-solicitudes
-router.get("/cliente/mis-solicitudes", clientController.getMisSolicitudes);
+router.get("/mis-solicitudes", clientController.getMisSolicitudes);
 
 // GET /api/solicitudes/cliente/perfil
-router.get("/cliente/perfil", clientController.getProfile);
+router.get("/perfil", clientController.getProfile);
 export default router;
