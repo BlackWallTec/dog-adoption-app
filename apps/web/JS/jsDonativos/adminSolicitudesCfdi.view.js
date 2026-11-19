@@ -1,12 +1,31 @@
 import {
+  cargarArchivosCfdi,
   obtenerDetalleSolicitudCfdi,
   obtenerSolicitudesCfdiPendientes,
+  reintentarCorreoCfdi,
+  validarArchivosCfdi,
 } from "./adminSolicitudesCfdi.js";
 
 const cuerpoTabla = document.getElementById("solicitudes-cfdi-body");
 const contador = document.getElementById("solicitudes-cfdi-contador");
 const dialogo = document.getElementById("solicitud-cfdi-detalle");
 const avisoDetalle = document.getElementById("solicitud-cfdi-aviso");
+const formCargaCfdi = document.getElementById("cfdi-upload-form");
+const inputPdf = document.getElementById("cfdi-pdf");
+const inputXml = document.getElementById("cfdi-xml");
+const previewCfdi = document.getElementById("cfdi-preview");
+const mensajeCarga = document.getElementById("cfdi-carga-mensaje");
+const botonValidar = document.getElementById("cfdi-validar");
+const botonGuardar = document.getElementById("cfdi-confirmar-carga");
+const confirmacionPdf = document.getElementById("cfdi-confirmar-pdf");
+const seccionCarga = document.getElementById("cfdi-upload-section");
+const seccionEntrega = document.getElementById("cfdi-delivery-section");
+const estadoCorreo = document.getElementById("cfdi-correo-estado");
+const botonReintentar = document.getElementById("cfdi-reintentar-correo");
+const visorPdf = document.getElementById("cfdi-pdf-preview");
+let solicitudSeleccionada = null;
+let pdfPreviewUrl = null;
+let validacionLista = false;
 
 function formatearFecha(fecha) {
   if (!fecha) return "Sin fecha";
@@ -120,7 +139,179 @@ function actualizarDetalle(detalle) {
     if (urlConstancia) enlaceConstancia.href = urlConstancia;
     else enlaceConstancia.removeAttribute("href");
   }
+
+  solicitudSeleccionada = detalle.id_solicitud_cfdi;
+  formCargaCfdi?.reset();
+  const archivosCargados = detalle.cfdi?.archivos_cargados === true;
+  if (seccionCarga) {
+    seccionCarga.hidden = archivosCargados || detalle.listo_para_emitir !== true;
+  }
+  if (seccionEntrega) seccionEntrega.hidden = !archivosCargados;
+  if (estadoCorreo) {
+    const estado = detalle.cfdi?.correo_estado;
+    estadoCorreo.textContent =
+      estado === "Enviado"
+        ? "El CFDI está guardado y se envió al correo de facturación."
+        : estado === "Error"
+          ? detalle.cfdi?.correo_error ||
+            "El CFDI está guardado, pero no se pudo enviar el correo. Puedes reintentarlo."
+          : "El CFDI está guardado y el envío por correo está pendiente.";
+    estadoCorreo.dataset.error = String(estado === "Error");
+  }
+  if (botonReintentar) {
+    botonReintentar.hidden = !["Error", "Pendiente de envío"].includes(detalle.cfdi?.correo_estado);
+  }
+  limpiarValidacionCfdi();
 }
+
+function limpiarValidacionCfdi() {
+  validacionLista = false;
+  if (previewCfdi) previewCfdi.hidden = true;
+  if (confirmacionPdf) confirmacionPdf.checked = false;
+  if (botonGuardar) botonGuardar.disabled = true;
+  if (mensajeCarga) {
+    mensajeCarga.textContent = "";
+    mensajeCarga.dataset.error = "";
+  }
+  if (visorPdf) visorPdf.removeAttribute("src");
+  if (pdfPreviewUrl) URL.revokeObjectURL(pdfPreviewUrl);
+  pdfPreviewUrl = null;
+}
+
+function obtenerFormData(confirmarPdf = false) {
+  const formData = new FormData();
+  if (inputPdf?.files?.[0]) formData.append("pdf", inputPdf.files[0]);
+  if (inputXml?.files?.[0]) formData.append("xml", inputXml.files[0]);
+  if (confirmarPdf) formData.append("confirmar_pdf", "true");
+  return formData;
+}
+
+function mostrarMensajeCarga(mensaje, esError = false) {
+  if (!mensajeCarga) return;
+  mensajeCarga.textContent = mensaje;
+  mensajeCarga.dataset.error = String(esError);
+}
+
+function formatearMonto(monto) {
+  return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(monto);
+}
+
+botonValidar?.addEventListener("click", async () => {
+  if (!solicitudSeleccionada || !inputPdf?.files?.[0] || !inputXml?.files?.[0]) {
+    mostrarMensajeCarga("Selecciona el PDF y el XML antes de validar.", true);
+    return;
+  }
+
+  botonValidar.disabled = true;
+  limpiarValidacionCfdi();
+  mostrarMensajeCarga("Validando archivos y comparando el XML con el donativo...");
+  try {
+    const resultado = await validarArchivosCfdi(solicitudSeleccionada, obtenerFormData());
+    document.getElementById("cfdi-preview-uuid").textContent = resultado.uuid;
+    document.getElementById("cfdi-preview-rfc").textContent = resultado.rfc_receptor;
+    document.getElementById("cfdi-preview-total").textContent = formatearMonto(resultado.monto);
+    pdfPreviewUrl = URL.createObjectURL(inputPdf.files[0]);
+    if (visorPdf) visorPdf.src = pdfPreviewUrl;
+    if (previewCfdi) previewCfdi.hidden = false;
+    validacionLista = true;
+    mostrarMensajeCarga(
+      `El XML coincide con el RFC y el monto del donativo (${formatearMonto(resultado.donativo.monto)}). Revisa el PDF antes de confirmar.`,
+    );
+  } catch (error) {
+    mostrarMensajeCarga(error.message, true);
+  } finally {
+    botonValidar.disabled = false;
+  }
+});
+
+for (const input of [inputPdf, inputXml]) {
+  input?.addEventListener("change", limpiarValidacionCfdi);
+}
+
+confirmacionPdf?.addEventListener("change", () => {
+  if (botonGuardar) botonGuardar.disabled = !validacionLista || !confirmacionPdf.checked;
+});
+
+formCargaCfdi?.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  if (!solicitudSeleccionada || !validacionLista || !confirmacionPdf?.checked) return;
+
+  if (botonGuardar) botonGuardar.disabled = true;
+  if (botonValidar) botonValidar.disabled = true;
+  mostrarMensajeCarga("Guardando los archivos y enviando el CFDI...");
+  try {
+    const resultado = await cargarArchivosCfdi(solicitudSeleccionada, obtenerFormData(true));
+    const archivosCargados = document.getElementById("cfdi-upload-section");
+    if (archivosCargados) archivosCargados.hidden = true;
+    if (seccionEntrega) seccionEntrega.hidden = false;
+    if (estadoCorreo) {
+      const enviado = resultado.correo.estado === "Enviado";
+      estadoCorreo.textContent = enviado
+        ? "El CFDI quedó guardado y se envió al correo de facturación."
+        : resultado.correo.mensaje;
+      estadoCorreo.dataset.error = String(!enviado);
+    }
+    if (botonReintentar) botonReintentar.hidden = resultado.correo.estado !== "Error";
+    mostrarMensajeCarga("Los archivos se guardaron correctamente.");
+    await cargarSolicitudes();
+  } catch (error) {
+    let detalleActualizado = null;
+    try {
+      detalleActualizado = await obtenerDetalleSolicitudCfdi(solicitudSeleccionada);
+      actualizarDetalle(detalleActualizado);
+    } catch (errorActualizacion) {
+      console.error("No se pudo actualizar el estado de la carga CFDI:", errorActualizacion);
+    }
+
+    if (detalleActualizado?.cfdi?.archivos_cargados) {
+      if (estadoCorreo) {
+        estadoCorreo.textContent =
+          "Los archivos quedaron guardados. Revisa el estado del correo y reinténtalo si sigue pendiente.";
+        estadoCorreo.dataset.error = "true";
+      }
+      if (botonReintentar) {
+        botonReintentar.hidden = !["Error", "Pendiente de envío"].includes(
+          detalleActualizado.cfdi.correo_estado,
+        );
+      }
+      if (seccionEntrega) seccionEntrega.hidden = false;
+      if (seccionCarga) seccionCarga.hidden = true;
+    } else {
+      mostrarMensajeCarga(error.message, true);
+      if (botonGuardar) botonGuardar.disabled = !confirmacionPdf.checked;
+    }
+  } finally {
+    if (botonValidar) botonValidar.disabled = false;
+  }
+});
+
+botonReintentar?.addEventListener("click", async () => {
+  if (!solicitudSeleccionada) return;
+  botonReintentar.disabled = true;
+  if (estadoCorreo) {
+    estadoCorreo.textContent = "Reintentando envío...";
+    estadoCorreo.dataset.error = "false";
+  }
+  try {
+    const resultado = await reintentarCorreoCfdi(solicitudSeleccionada);
+    const enviado = resultado.correo.estado === "Enviado";
+    if (estadoCorreo) {
+      estadoCorreo.textContent = enviado
+        ? "El CFDI se envió al correo de facturación."
+        : resultado.correo.mensaje;
+      estadoCorreo.dataset.error = String(!enviado);
+    }
+    botonReintentar.hidden = enviado;
+    await cargarSolicitudes();
+  } catch (error) {
+    if (estadoCorreo) {
+      estadoCorreo.textContent = error.message;
+      estadoCorreo.dataset.error = "true";
+    }
+  } finally {
+    botonReintentar.disabled = false;
+  }
+});
 
 function mostrarError(error) {
   if (error.message === "NO_AUTENTICADO") {
