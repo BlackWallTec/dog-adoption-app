@@ -60,7 +60,6 @@ private fun NavController.irAlLogin() {
     }
 }
 
-
 // La opción de ajustes abre la cuenta; ahí se revisa si hace falta iniciar sesión.
 // Barra de abajo: 0 Catálogo, 1 Ayudar, 2 Donar, 3 Solicitudes, 4 Ajustes.
 private fun NavController.irAOpcionBarra(opcion: Int) {
@@ -332,13 +331,21 @@ fun AppNavigation() {
 
         // SOLICITUDES - HU04: Mis solicitudes (solo lectura)
         composable(route = Screen.MisSolicitudes.ruta) {
-            MisSolicitudesRoute(
-                onEditar = {
-                    // navegar a editar documentos (HU de edición, todavía no existe)
-                },
-                onVerCatalogo = { navController.popBackStack(Screen.Catalogo.ruta, inclusive = false) },
-                onNavSelect = navController::irAOpcionBarra,
-            )
+            // Las solicitudes son del usuario con sesión; sin sesión se va al login.
+            ConSesion(
+                estadoSesion,
+                navController,
+                sesionViewModel,
+                { destinoTrasLogin = it },
+            ) {
+                MisSolicitudesRoute(
+                    onEditar = {
+                        // navegar a la edición de la solicitud HU09.
+                    },
+                    onVerCatalogo = { navController.popBackStack(Screen.Catalogo.ruta, inclusive = false) },
+                    onNavSelect = navController::irAOpcionBarra,
+                )
+            }
         }
 
         // ========= Pantallas Donativos ========
