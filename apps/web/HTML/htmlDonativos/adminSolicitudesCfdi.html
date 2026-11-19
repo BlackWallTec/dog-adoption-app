@@ -117,6 +117,54 @@
             </dd>
           </dl>
         </section>
+        <section id="cfdi-upload-section" hidden>
+          <h3>Cargar CFDI emitido</h3>
+          <form id="cfdi-upload-form">
+            <label class="cfdi-file-field" for="cfdi-pdf">
+              PDF del CFDI
+              <input id="cfdi-pdf" name="pdf" type="file" accept=".pdf,application/pdf" required />
+            </label>
+            <label class="cfdi-file-field" for="cfdi-xml">
+              XML del CFDI
+              <input
+                id="cfdi-xml"
+                name="xml"
+                type="file"
+                accept=".xml,application/xml,text/xml"
+                required
+              />
+            </label>
+            <button id="cfdi-validar" class="cfdi-reload" type="button">Validar archivos</button>
+            <p id="cfdi-carga-mensaje" role="status" aria-live="polite"></p>
+            <div id="cfdi-preview" class="cfdi-preview" hidden>
+              <h4>Datos leídos del XML</h4>
+              <dl class="cfdi-fields">
+                <dt>UUID</dt>
+                <dd id="cfdi-preview-uuid"></dd>
+                <dt>RFC receptor</dt>
+                <dd id="cfdi-preview-rfc"></dd>
+                <dt>Total CFDI</dt>
+                <dd id="cfdi-preview-total"></dd>
+              </dl>
+              <h4>Revisa que el PDF corresponda al comprobante</h4>
+              <iframe id="cfdi-pdf-preview" title="Vista previa del PDF del CFDI"></iframe>
+              <label class="cfdi-confirmation" for="cfdi-confirmar-pdf">
+                <input id="cfdi-confirmar-pdf" type="checkbox" />
+                Confirmo que revisé el PDF y corresponde a los datos del XML.
+              </label>
+              <button id="cfdi-confirmar-carga" class="cfdi-reload" type="submit" disabled>
+                Guardar CFDI y enviar por correo
+              </button>
+            </div>
+          </form>
+        </section>
+        <section id="cfdi-delivery-section" hidden>
+          <h3>Entrega del CFDI</h3>
+          <p id="cfdi-correo-estado" role="status"></p>
+          <button id="cfdi-reintentar-correo" class="cfdi-reload" type="button" hidden>
+            Reintentar envío por correo
+          </button>
+        </section>
       </div>
       <footer class="cfdi-dialog-footer">
         <button id="solicitud-cfdi-cerrar-pie" class="cfdi-reload" type="button">Cerrar</button>
