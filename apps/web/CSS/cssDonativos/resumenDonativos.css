@@ -76,3 +76,25 @@ body {
   color: #566273;
   font-size: 14px;
 }
+
+.summary-back-link {
+  display: inline-flex;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: #2f6fb5;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.summary-back-link:hover {
+  background: #245c98;
+}
+
+.summary-back-link:focus-visible {
+  outline: 3px solid #1d2733;
+  outline-offset: 3px;
+}
