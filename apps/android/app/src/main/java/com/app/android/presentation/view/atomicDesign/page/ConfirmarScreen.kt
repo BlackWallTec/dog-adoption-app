@@ -89,6 +89,11 @@ data class ConfirmarSolicitudUiState(
     val enviando: Boolean = false,
 )
 
+data class SolicitudEnviadaSnapshot(
+    val solicitudId: String,
+    val mascota: MascotaResumen,
+)
+
 // ---------- Route & Screen ----------
 @Composable
 fun ConfirmarRoute(

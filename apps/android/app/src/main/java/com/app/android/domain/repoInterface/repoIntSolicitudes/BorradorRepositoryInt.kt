@@ -1,6 +1,7 @@
 package com.app.android.domain.repoInterface.repoIntSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
+import com.app.android.presentation.view.atomicDesign.page.SolicitudEnviadaSnapshot
 import kotlinx.coroutines.flow.StateFlow
 
 // CONTRATO: el borrador en memoria, compartido por las 6 pantallas de la solicitud.
@@ -21,4 +22,8 @@ interface BorradorRepositoryInt {
 
     // Borra el borrador (después de enviar con exito)
     fun limpiar()
+
+    val confirmacionEnviada: StateFlow<SolicitudEnviadaSnapshot?>
+
+    fun guardarConfirmacionEnviada(snapshot: SolicitudEnviadaSnapshot)
 }

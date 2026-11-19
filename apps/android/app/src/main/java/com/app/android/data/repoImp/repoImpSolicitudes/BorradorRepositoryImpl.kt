@@ -2,8 +2,10 @@ package com.app.android.data.repoImp.repoImpSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
+import com.app.android.presentation.view.atomicDesign.page.SolicitudEnviadaSnapshot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 // El borrador vive en memoria. Hilt crea UNO solo para toda la app (@Singleton en NetworkModule),
@@ -35,5 +37,15 @@ class BorradorRepositoryImpl : BorradorRepositoryInt {
 
     override fun limpiar() {
         _borrador.value = null
+    }
+
+    private val _confirmacionEnviada =
+        MutableStateFlow<SolicitudEnviadaSnapshot?>(null)
+
+    override val confirmacionEnviada: StateFlow<SolicitudEnviadaSnapshot?> =
+        _confirmacionEnviada.asStateFlow()
+
+    override fun guardarConfirmacionEnviada(snapshot: SolicitudEnviadaSnapshot) {
+        _confirmacionEnviada.value = snapshot
     }
 }

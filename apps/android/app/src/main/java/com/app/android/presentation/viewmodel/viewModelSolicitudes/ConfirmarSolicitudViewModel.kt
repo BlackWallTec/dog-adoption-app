@@ -12,6 +12,7 @@ import com.app.android.presentation.view.atomicDesign.page.ConfirmarSolicitudUiS
 import com.app.android.presentation.view.atomicDesign.page.MascotaResumen
 import com.app.android.presentation.view.atomicDesign.page.SeccionResumen
 import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
+import com.app.android.presentation.view.atomicDesign.page.SolicitudEnviadaSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -190,22 +191,51 @@ class ConfirmarSolicitudViewModel
 
             viewModelScope.launch {
                 try {
+                    val borrador = borradorRepo.borrador.value ?: return@launch
+                    val estadoActual = uiState.value
+
+                    val snapshot =
+                        SolicitudEnviadaSnapshot(
+                            solicitudId = "",
+                            mascota = estadoActual.mascota,
+                        )
+
                     val solicitudId = enviarSolicitudUseCase()
+
+                    borradorRepo.guardarConfirmacionEnviada(
+                        snapshot.copy(solicitudId = solicitudId),
+                    )
+
                     onSuccess(solicitudId)
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
                     val statusCode = (e as? SolicitudHttpException)?.statusCode
                     val msg =
                         when (statusCode) {
-                            400 -> e.message.ifBlank { "Datos inválidos en la solicitud." }
-                            409 -> "Ya existe una solicitud activa o borrador para este perro."
-                            403 -> "Este borrador pertenece a otra cuenta de usuario."
+                            400 -> {
+                                e.message.ifBlank { "Datos inválidos en la solicitud." }
+                            }
+
+                            409 -> {
+                                "Ya existe una solicitud activa o borrador para este perro."
+                            }
+
+                            403 -> {
+                                "Este borrador pertenece a otra cuenta de usuario."
+                            }
+
                             401 -> {
                                 onUnauthorized()
                                 "Sesión expirada. Por favor inicia sesión nuevamente."
                             }
-                            413 -> "La imagen es demasiado grande. Por favor recapture o reduzca la imagen."
-                            else -> e.message ?: "Error al enviar la solicitud."
+
+                            413 -> {
+                                "La imagen es demasiado grande. Por favor recapture o reduzca la imagen."
+                            }
+
+                            else -> {
+                                e.message ?: "Error al enviar la solicitud."
+                            }
                         }
                     _errorMessage.value = msg
                     _enviando.value = false

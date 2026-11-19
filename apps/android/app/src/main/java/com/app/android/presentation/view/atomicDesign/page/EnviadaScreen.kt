@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -74,77 +76,81 @@ fun EnviadaScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(paddingInterno)
-                    .verticalScroll(rememberScrollState()) // permite deslizar si no cabe
-                    .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Box(
+            Column(
                 modifier =
                     Modifier
-                        .size(160.dp)
-                        .background(SecondaryContainer, CircleShape),
-                contentAlignment = Alignment.Center,
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Filled.MarkEmailRead,
-                    contentDescription = null, // decorativo
-                    tint = Secondary,
-                    modifier = Modifier.size(80.dp),
+                Box(
+                    modifier =
+                        Modifier
+                            .size(160.dp)
+                            .background(SecondaryContainer, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.MarkEmailRead,
+                        contentDescription = null, // decorativo
+                        tint = Secondary,
+                        modifier = Modifier.size(80.dp),
+                    )
+                }
+                Text(
+                    text = "¡Solicitud enviada!",
+                    color = InverseSurface,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = "Te notificaremos cuando haya novedades",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                TarjetaMascota(
+                    foto = painterResource(id = R.drawable.perro_prueba),
+                    nombre = "Bruno",
+                    edad = "2 años",
+                    sexo = "Macho",
+                    tamano = "Mediano",
+                    raza = "Mestizo",
+                    ciudad = "Querétaro",
+                )
+                Text(
+                    text = "Solicitud $solicitudId · En revisión",
+                    color = InverseSurface,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
-            Text(
-                text = "¡Solicitud enviada!",
-                color = InverseSurface,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = "Te notificaremos cuando haya novedades",
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            TarjetaMascota(
-                foto = painterResource(id = R.drawable.perro_prueba),
-                nombre = "Bruno",
-                edad = "2 años",
-                sexo = "Macho",
-                tamano = "Mediano",
-                raza = "Mestizo",
-                ciudad = "Querétaro",
-            )
-            Text(
-                text = "Solicitud $solicitudId · En revisión",
-                color = InverseSurface,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            InfoCard(
-                // estos luego los remplazamos por cosas como $nombreSolicitante, $nombreMascota y $correo
-                descripcion = "X, revisaremos tu solicitud para Y y te contactaremos en Z.",
-                icono = Icons.Outlined.Mail,
-            )
-            AppButton(
-                text = "Ver mis solicitudes",
-                onClick = onVerSolicitudesClick,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp),
-            )
-            AppButton(
-                text = "Volver al catálogo",
-                onClick = onBackClick,
-                variant = ButtonVariant.Outlined,
+            Column(
                 modifier =
                     Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp),
-            )
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                AppButton(
+                    text = "Ver mis solicitudes",
+                    onClick = onVerSolicitudesClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                AppButton(
+                    text = "Volver al catálogo",
+                    onClick = onBackClick,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
