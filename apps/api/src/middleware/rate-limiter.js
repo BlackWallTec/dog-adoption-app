@@ -2,26 +2,33 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Se conecta automáticamente usando tus variables del .env
-const redis = Redis.fromEnv();
+const tieneCredenciales =
+  Boolean(process.env.UPSTASH_REDIS_REST_URL) && Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
+
+// Solo inicializa Redis si existen las variables en el entorno
+const redis = tieneCredenciales ? Redis.fromEnv() : null;
 
 // Limitador para usuarios autenticados (60 peticiones por minuto)
-const limitadorPrivado = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(60, "1 m"),
-  prefix: "rl:user",
-});
+const limitadorPrivado = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(60, "1 m"),
+      prefix: "rl:user",
+    })
+  : null;
 
 // Limitador más estricto para rutas públicas como Login/Registro (10 peticiones por minuto)
-const limitadorPublico = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "1 m"),
-  prefix: "rl:ip",
-});
+const limitadorPublico = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      prefix: "rl:ip",
+    })
+  : null;
 
 export async function rateLimiter(req, res, next) {
-  // Opcional: Desactivar en desarrollo local para no gastar comandos gratuitos
-  if (process.env.NODE_ENV === "development") {
+  // No ejecutar en tests (CI/local) ni en desarrollo para no gastar comandos ni fallar sin .env
+  if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development" || !redis) {
     return next();
   }
 
@@ -35,7 +42,7 @@ export async function rateLimiter(req, res, next) {
       resultado = await limitadorPrivado.limit(userId);
     } else {
       // CASO PÚBLICO: Limitamos por la IP real que envía Vercel
-      const ip = req.headers["x-forwarded-for"]?.split(",") || "127.0.0.1";
+      const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "127.0.0.1";
       resultado = await limitadorPublico.limit(ip);
     }
 
@@ -61,19 +68,25 @@ export async function rateLimiter(req, res, next) {
 
 // ======== SECCION DE PRUEBAS ======== //
 // Limitador de prueba: solo 3 peticiones cada 1 minuto
-const limitadorPrueba = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(3, "1 m"),
-  prefix: "rl:test",
-});
+const limitadorPrueba = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(3, "1 m"),
+      prefix: "rl:test",
+    })
+  : null;
 
 export async function rateLimiterPrueba(req, res, next) {
+  if (process.env.NODE_ENV === "test" || !redis) {
+    return next();
+  }
+
   try {
     // Usa el UUID si viene de verificarToken, o cae a la IP local
     const identificador =
       req.user?.id || req.user?.sub || req.headers["x-forwarded-for"] || "127.0.0.1";
 
-    const { success, limit, remaining, reset } = await limitadorPrueba.limit(identificador);
+    const { success, limit, remaining } = await limitadorPrueba.limit(identificador);
 
     res.setHeader("X-RateLimit-Limit", limit);
     res.setHeader("X-RateLimit-Remaining", remaining);
