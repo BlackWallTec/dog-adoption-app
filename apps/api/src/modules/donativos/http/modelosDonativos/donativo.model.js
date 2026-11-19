@@ -37,6 +37,22 @@ class DonativoModel {
     return data ?? [];
   }
 
+  static async aprobarPendiente(idDonativo) {
+    const { data, error } = await supabaseAdmin
+      .from("donativo")
+      .update({ estado: "Validado" })
+      .eq("id_donativo", idDonativo)
+      .eq("estado", "Pendiente de validación")
+      .select("id_donativo, estado")
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Error al aprobar el donativo: ${error.message}`);
+    }
+
+    return data;
+  }
+
   // HU46: el procedimiento vive en Supabase (donativos_registrar_monetario)
   static async registrarMonetario({ idUsuario, monto, referencia, comprobante }) {
     const { data, error } = await supabaseAdmin.rpc("donativos_registrar_monetario", {

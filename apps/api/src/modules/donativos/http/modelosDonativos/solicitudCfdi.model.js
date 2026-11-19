@@ -118,7 +118,9 @@ class SolicitudCfdiModel {
   static async getDetallePendiente(idSolicitud) {
     const { data: solicitud, error: errorSolicitud } = await supabaseAdmin
       .from("solicitud_cfdi")
-      .select("id_solicitud_cfdi, id_donativo, estado, fecha_solicitud")
+      .select(
+        "id_solicitud_cfdi, id_donativo, estado, fecha_solicitud, cfdi_uuid, pdf_storage_path, xml_storage_path, fecha_carga_cfdi, correo_estado, correo_intentos, correo_error",
+      )
       .eq("id_solicitud_cfdi", idSolicitud)
       .eq("estado", ESTADO_PENDIENTE)
       .maybeSingle();
@@ -166,6 +168,14 @@ class SolicitudCfdiModel {
       id_solicitud_cfdi: solicitud.id_solicitud_cfdi,
       fecha_solicitud: solicitud.fecha_solicitud,
       estado: solicitud.estado,
+      cfdi: {
+        uuid: solicitud.cfdi_uuid,
+        archivos_cargados: Boolean(solicitud.pdf_storage_path && solicitud.xml_storage_path),
+        fecha_carga: solicitud.fecha_carga_cfdi,
+        correo_estado: solicitud.correo_estado,
+        correo_intentos: solicitud.correo_intentos,
+        correo_error: solicitud.correo_error,
+      },
       donativo: donativo
         ? {
             id_donativo: donativo.id_donativo,

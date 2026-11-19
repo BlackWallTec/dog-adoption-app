@@ -1,4 +1,5 @@
 const API_URL = "/api/donativos/admin/solicitudes-cfdi";
+const CFDI_ADMIN_URL = "/api/donativos/admin/solicitudes-cfdi";
 
 async function leerJson(respuesta) {
   const contentType = respuesta.headers.get("content-type") || "";
@@ -64,4 +65,46 @@ export async function obtenerDetalleSolicitudCfdi(idSolicitud) {
 
   validarUrlConstancia(detalle.datos_fiscales?.constancia_url ?? null);
   return detalle;
+}
+
+async function enviarArchivosCfdi(idSolicitud, ruta, formData) {
+  const respuesta = await fetch(`${CFDI_ADMIN_URL}/${encodeURIComponent(idSolicitud)}/${ruta}`, {
+    method: "POST",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+    body: formData,
+  });
+  const resultado = await leerJson(respuesta);
+  if (!respuesta.ok) {
+    throw new Error(resultado.error || `No fue posible procesar el CFDI (${respuesta.status}).`);
+  }
+  return resultado;
+}
+
+export async function validarArchivosCfdi(idSolicitud, formData) {
+  return enviarArchivosCfdi(idSolicitud, "validar-cfdi", formData);
+}
+
+export async function cargarArchivosCfdi(idSolicitud, formData) {
+  return enviarArchivosCfdi(idSolicitud, "cargar-cfdi", formData);
+}
+
+export async function reintentarCorreoCfdi(idSolicitud) {
+  const respuesta = await fetch(
+    `${CFDI_ADMIN_URL}/${encodeURIComponent(idSolicitud)}/reintentar-correo`,
+    {
+      method: "POST",
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    },
+  );
+  const resultado = await leerJson(respuesta);
+  if (!respuesta.ok) {
+    throw new Error(
+      resultado.error || `No fue posible reintentar el correo (${respuesta.status}).`,
+    );
+  }
+  return resultado;
 }

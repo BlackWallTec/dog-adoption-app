@@ -1,8 +1,18 @@
 import express, { Router } from "express";
+import multer from "multer";
 import {
+  aprobarDonativoPendiente,
   obtenerDonativosPendientes,
   obtenerResumenDonativosPendientes,
 } from "./adminDonativos.controller.js";
+import {
+  confirmarCargaCfdi,
+  descargarCfdiCliente,
+  listarCfdiCliente,
+  manejarErrorSubidaCfdi,
+  reintentarCorreoCfdi,
+  validarCargaCfdi,
+} from "./adminCfdi.controller.js";
 import {
   obtenerDetalleSolicitudCfdiPendiente,
   obtenerSolicitudesCfdiPendientes,
@@ -20,6 +30,13 @@ import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 
 export const router = Router();
+const subirArchivosCfdi = multer({
+  storage: multer.memoryStorage(),
+  limits: { files: 2, fields: 1, fileSize: 10 * 1024 * 1024 },
+}).fields([
+  { name: "pdf", maxCount: 1 },
+  { name: "xml", maxCount: 1 },
+]);
 
 // Rutas Cliente
 
@@ -54,6 +71,12 @@ router.get(
   requireRole(ROLES.ADMIN, ROLES.ROOT),
   obtenerDonativosPendientes,
 );
+router.patch(
+  "/admin/pendientes/:idDonativo/aprobar",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  aprobarDonativoPendiente,
+);
 
 router.get(
   "/admin/solicitudes-cfdi",
@@ -66,4 +89,35 @@ router.get(
   verificarToken,
   requireRole(ROLES.ADMIN, ROLES.ROOT),
   obtenerDetalleSolicitudCfdiPendiente,
+);
+
+router.post(
+  "/admin/solicitudes-cfdi/:idSolicitud/validar-cfdi",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  subirArchivosCfdi,
+  manejarErrorSubidaCfdi,
+  validarCargaCfdi,
+);
+router.post(
+  "/admin/solicitudes-cfdi/:idSolicitud/cargar-cfdi",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  subirArchivosCfdi,
+  manejarErrorSubidaCfdi,
+  confirmarCargaCfdi,
+);
+router.post(
+  "/admin/solicitudes-cfdi/:idSolicitud/reintentar-correo",
+  verificarToken,
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+  reintentarCorreoCfdi,
+);
+
+router.get("/cliente/cfdi", verificarToken, requireRole(ROLES.CLIENT), listarCfdiCliente);
+router.get(
+  "/cliente/cfdi/:idSolicitud/:tipoArchivo",
+  verificarToken,
+  requireRole(ROLES.CLIENT),
+  descargarCfdiCliente,
 );
