@@ -26,9 +26,12 @@ beforeEach(() => {
   carpeta = mkdtempSync(join(tmpdir(), "qarino-correo-movil-"));
   archivo = join(carpeta, "estado.json");
   ahora = 1_700_000_000_000;
+  const usuario = { id_usuario: "cliente", rol: "Cliente" };
   usuarios = {
-    fetchByEmail: vi.fn().mockResolvedValue({ id_usuario: "cliente", rol: "Cliente" }),
-    updatePassword: vi.fn(),
+    fetchByEmail: vi.fn().mockResolvedValue(usuario),
+    updatePassword: vi.fn(async (_id, hash) => {
+      usuario.contrasena = hash;
+    }),
   };
   enviar = vi.fn().mockResolvedValue({ id: "ficticio" });
   codigo = vi.fn().mockReturnValue("012345");
@@ -99,6 +102,17 @@ describe("Códigos de correo para Clientes", () => {
     await expect(
       servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234"),
     ).rejects.toThrow();
+  });
+  it("no confirma la recuperación si la base no guarda el cambio y permite reintentar", async () => {
+    await servicio.solicitar(correo, "recuperar");
+    usuarios.updatePassword.mockImplementationOnce(async () => {});
+    await expect(
+      servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234"),
+    ).rejects.toMatchObject({ status: 503, code: "PASSWORD_UPDATE_FAILED" });
+    expect(servicio.estado("cliente").version).toBe(0);
+    await expect(
+      servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234"),
+    ).resolves.toEqual({ ok: true });
   });
   it("vence la recuperación a los quince minutos", async () => {
     await servicio.solicitar(correo, "recuperar");

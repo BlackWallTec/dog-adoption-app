@@ -138,6 +138,18 @@ export function crearCorreoMovil({
               "VALIDATION",
             );
           await usuarios.updatePassword(id, await bcrypt.hash(contrasena, 10));
+          // No consume el código ni confirma éxito si la contraseña no quedó guardada.
+          const actualizado = await usuarios.fetchByEmail(correo);
+          if (
+            actualizado?.id_usuario !== id ||
+            !actualizado.contrasena ||
+            !(await bcrypt.compare(contrasena, actualizado.contrasena))
+          )
+            throw new ErrorCorreoMovil(
+              "No se pudo comprobar el cambio de contraseña. Inténtalo de nuevo.",
+              503,
+              "PASSWORD_UPDATE_FAILED",
+            );
           cuenta.version += 1;
         } else cuenta.confirmado = true;
         delete cuenta[tipo];
