@@ -20,11 +20,15 @@ const upload = multer({
 // Solo Administrador o Root con sesion activa
 const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
 
-router.post("/:id/documentos", upload.single("archivo"), subirDocumento, manejarErrorSubida);
-
+router.post(
+  "/:id/documentos",
+  verificarToken,
+  upload.single("archivo"),
+  subirDocumento,
+  manejarErrorSubida,
+);
 // Rutas de la app (cliente): /cliente/activa, /cliente/perfil/:idUsuario, ...
-router.use(clientRouter);
-
+router.use("/cliente", verificarToken, clientRouter);
 // ===== Rutas Admin =====
 // GET /api/solicitudes/admin/solicitudes
 router.get("/admin/solicitudes", soloAdmin, getSolicitudesAdmin);

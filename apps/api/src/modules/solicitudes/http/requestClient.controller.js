@@ -78,12 +78,13 @@ const formatMiSolicitud = (fila) => {
 // GET /api/solicitudes/cliente/activa?idUsuario=...&idPerro=...
 export const getActive = async (req, res) => {
   try {
-    const { idUsuario, idPerro } = req.query;
+    const { idPerro } = req.query;
+    const idUsuario = req.user.uuid;
 
-    if (!idUsuario || !idPerro) {
+    if (!idPerro) {
       return res.status(400).json({
         success: false,
-        message: "Faltan idUsuario o idPerro.",
+        message: "Faltan idPerro.",
       });
     }
 

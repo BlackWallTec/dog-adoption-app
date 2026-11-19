@@ -71,5 +71,47 @@ class AdoptionRequestModel {
 
     return data || [];
   }
+
+  static async getDraftRequest(idUsuario, idPerro) {
+    const { data, error } = await supabase
+      .from("solicitud_adopcion")
+      .select(`
+        *,
+        estado_solicitud (
+          descripcion
+        )
+      `)
+      .eq("id_usuario", idUsuario)
+      .eq("id_perro", idPerro);
+
+    if (error) {
+      throw new Error(`Error en la consulta del borrador: ${error.message}`);
+    }
+
+    return data.find((fila) => fila.estado_solicitud?.descripcion === "Borrador") ?? null;
+  }
+
+  static async getSubmittedRequest(idUsuario, idPerro) {
+    const { data, error } = await supabase
+      .from("solicitud_adopcion")
+      .select(`
+        *,
+        estado_solicitud (
+          descripcion
+        )
+      `)
+      .eq("id_usuario", idUsuario)
+      .eq("id_perro", idPerro);
+
+    if (error) {
+      throw new Error(`Error en la consulta de solicitudes: ${error.message}`);
+    }
+
+    return (
+      data.find(
+        (fila) => !["Borrador", "Rechazada"].includes(fila.estado_solicitud?.descripcion),
+      ) ?? null
+    );
+  }
 }
 export default AdoptionRequestModel;
