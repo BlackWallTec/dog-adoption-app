@@ -8,6 +8,7 @@ import { getInscritos } from "./inscritosAdmin.controller.js";
 import { router as programas } from "./programas.routes.js";
 import * as edicionController from "./programaEdicion.controller.js";
 import * as detalleController from "./programaDetalle.controller.js";
+import { getCalendario } from "./calendarioAdmin.controller.js";
 
 export const router = Router();
 
@@ -41,6 +42,11 @@ router.get(
 
 // HU38 editar y cancelar programas solo para administador o root
 const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+
+// HU30: calendario de programas y semanas sin cobertura
+// Va antes de /admin/programas/:idPrograma para que "calendario" no se tome como id
+// GET /api/voluntarios/admin/programas/calendario?desde=AAAA-MM-DD&hasta=AAAA-MM-DD
+router.get("/admin/programas/calendario", ...soloAdmin, getCalendario);
 
 // GET /api/voluntarios/admin/programas/:idPrograma
 router.get("/admin/programas/:idPrograma", ...soloAdmin, edicionController.obtenerParaEditar);

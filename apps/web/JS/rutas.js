@@ -44,6 +44,13 @@ export const PANTALLAS = [
     archivo: "/HTML/htmlVoluntariado/adminInscritos.html",
   },
   {
+    id: "calendario",
+    grupo: "voluntariado",
+    titulo: "Voluntariado",
+    ruta: "/admin/voluntariado/calendario",
+    archivo: "/HTML/htmlVoluntariado/adminCalendario.html",
+  },
+  {
     id: "donativos",
     etiqueta: "Donativos",
     icono: "favorite",

@@ -1,0 +1,286 @@
+/* ==================== MODULO VOLUNTARIADO: CALENDARIO (HU30) ==================== */
+
+/* El atributo hidden debe ganarle a cualquier display de las clases */
+[hidden] {
+  display: none !important;
+}
+
+/* Colores de las barras: mismos tonos que los badges de estado de Inscritos (HU34).
+   El JS los asigna al color de cada evento */
+:root {
+  --cal-disponible: #e6f4ea;
+  --cal-disponible-texto: #1e4620;
+  --cal-lleno: var(--md-sys-color-secondary-container);
+  --cal-lleno-texto: var(--md-sys-color-secondary);
+  --cal-finalizado: var(--md-sys-color-surface-container);
+  --cal-finalizado-texto: var(--md-sys-color-on-surface-variant);
+  /* La HU pide cancelado en gris; el rojo queda para la franja sin cobertura */
+  --cal-cancelado: #eeeeee;
+  --cal-cancelado-texto: var(--md-sys-color-on-surface-variant);
+  --cal-sin-cobertura: #ffdad6;
+  --cal-sin-cobertura-texto: var(--md-sys-color-error);
+}
+
+.content-area {
+  padding: 36px 40px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: var(--md-sys-color-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* ==================== ENCABEZADO ==================== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-family: var(--font-headline);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 4px;
+}
+
+.section-subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ==================== BADGES DE ESTADO (mismos que Inscritos) ==================== */
+.badge-estado {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-disponible {
+  background-color: #e6f4ea;
+  color: #1e4620;
+}
+
+.badge-lleno {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+}
+
+.badge-finalizado {
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.badge-cancelado {
+  background-color: #ffdad6;
+  color: var(--md-sys-color-error);
+}
+
+.badge-sin-cobertura {
+  background-color: var(--cal-sin-cobertura);
+  color: var(--cal-sin-cobertura-texto);
+  border: 1px dashed var(--md-sys-color-error);
+}
+
+/* ==================== LEYENDA ==================== */
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  list-style: none;
+}
+
+/* ==================== AVISOS (misma forma que aviso-estado de Inscritos) ==================== */
+.aviso-estado,
+.aviso-fecha {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.aviso-estado {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+.aviso-fecha {
+  background-color: #ffdad6;
+  color: var(--md-sys-color-error);
+}
+
+/* ==================== ERROR DE CARGA (igual que Inscritos) ==================== */
+.estado-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--md-sys-color-error);
+}
+
+.estado-error .btn-primary {
+  color: #ffffff;
+}
+
+/* ==================== TARJETA DEL CALENDARIO (mismos valores que table-card) ==================== */
+.calendario-card {
+  padding: 20px 24px;
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+}
+
+/* Mientras carga se atenúa, sin ocultarlo, para poder seguir navegando */
+#calendario[aria-busy="true"] {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+/* ==================== BARRA DE HERRAMIENTAS (buttonClass) ==================== */
+/* Se reusan btn-primary (global) y btn-secundario (Inscritos).
+   Se antepone .calendario-card para ganarle al tema de FullCalendar */
+.calendario-card .btn-primary {
+  color: #ffffff;
+}
+
+.calendario-card .btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.calendario-card .btn-primary,
+.calendario-card .btn-secundario {
+  padding: 8px 16px;
+}
+
+.calendario-titulo {
+  font-family: var(--font-headline);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--md-sys-color-on-surface);
+  text-transform: capitalize;
+}
+
+/* ==================== PROGRAMAS (eventClass) ==================== */
+.evento {
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.evento-contenido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  padding: 2px 4px;
+  overflow: hidden;
+}
+
+.evento-nombre {
+  font-weight: 700;
+}
+
+/* El badge dentro de la barra va más compacto */
+.evento .badge-estado {
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.evento-cancelado .evento-nombre,
+.evento-cancelado .evento-detalle {
+  text-decoration: line-through;
+}
+
+.evento-finalizado,
+.evento-cancelado {
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* ==================== SEMANAS SIN COBERTURA (className de la franja) ==================== */
+.franja-sin-cobertura {
+  color: var(--cal-sin-cobertura-texto);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.franja-etiqueta {
+  display: block;
+  padding: 2px 6px;
+}
+
+/* ==================== MENU DEL PROGRAMA ==================== */
+.menu-programa {
+  position: fixed;
+  z-index: 1000;
+  min-width: 220px;
+  padding: 8px;
+  background-color: #ffffff;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.menu-titulo {
+  padding: 6px 10px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Misma interacción que los elementos del sidebar */
+.menu-opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--md-sys-color-on-surface);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.menu-opcion:hover {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.menu-opcion:focus-visible {
+  outline: 2px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+.menu-opcion .material-symbols-rounded {
+  font-size: 20px;
+  color: var(--md-sys-color-secondary);
+}

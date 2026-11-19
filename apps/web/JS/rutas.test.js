@@ -28,3 +28,12 @@ test("una ruta ajena al panel no se reescribe", () => {
   expect(pantallaPorUbicacion("/login")).toBeNull();
   expect(tituloDe("/login")).toBe("Panel");
 });
+
+test("el calendario de voluntariado se abre en /admin/voluntariado/calendario", () => {
+  expect(rutaDe("calendario")).toBe("/admin/voluntariado/calendario");
+  expect(archivoDeRuta("/admin/voluntariado/calendario")).toBe(
+    "/HTML/htmlVoluntariado/adminCalendario.html",
+  );
+  expect(idMenuActivo("/admin/voluntariado/calendario")).toBe("voluntariado");
+  expect(tituloDe("/admin/voluntariado/calendario")).toBe("Voluntariado");
+});

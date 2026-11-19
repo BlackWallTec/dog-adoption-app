@@ -10,7 +10,9 @@
     "preview": "vp preview"
   },
   "dependencies": {
-    "@qarino/shared": "workspace:*"
+    "@qarino/shared": "workspace:*",
+    "fullcalendar": "catalog:",
+    "temporal-polyfill": "catalog:"
   },
   "devDependencies": {
     "supabase": "catalog:",
