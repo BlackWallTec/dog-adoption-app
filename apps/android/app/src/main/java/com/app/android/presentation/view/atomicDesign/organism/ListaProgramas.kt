@@ -22,6 +22,7 @@ fun ListaProgramas(
     onInscribirse: (String) -> Unit, // evento: id del programa
     onCancelar: (String) -> Unit, // evento HU37: id del programa
     modifier: Modifier = Modifier,
+    onVerDetalle: ((String) -> Unit)? = null, // evento HU36: id del programa (null = tarjeta no tocable)
 ) {
     LazyColumn(
         modifier = modifier,
@@ -41,6 +42,8 @@ fun ListaProgramas(
                 ubicacion = programa.ubicacion,
                 textoCupo = programa.textoCupo,
                 progresoCupo = programa.progresoCupo,
+                // HU36: al tocar la tarjeta abre el detalle
+                alVerDetalle = onVerDetalle?.let { abrir -> { abrir(programa.id) } },
                 // HU37: si ya está inscrito, el botón cancela; si no, inscribe
                 alAccionBoton = { if (cancela) onCancelar(programa.id) else onInscribirse(programa.id) },
                 textoBoton = programa.textoBoton,
@@ -88,6 +91,7 @@ private fun ListaProgramasPreview() {
             onInscribirse = {},
             onCancelar = {},
             modifier = Modifier.padding(16.dp),
+            onVerDetalle = {},
         )
     }
 }
