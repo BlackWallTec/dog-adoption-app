@@ -441,6 +441,9 @@ fun AppNavigation() {
                                 launchSingleTop = true
                             }
                         },
+                        onVerDetalle = { idPrograma ->
+                            navController.navigate(Screen.DetallePrograma.crearRuta(idPrograma))
+                        },
                     )
                 }
             }
@@ -452,10 +455,11 @@ fun AppNavigation() {
                     sesionViewModel,
                     { destinoTrasLogin = it }) { _ ->
                     MisProgramasScreen(
-                        onBackClick = {
-                            navController.popBackStack(Screen.Programas.ruta, inclusive = false)
-                        },
+                        onBackClick = { navController.popBackStack(Screen.Programas.ruta, inclusive = false) },
                         onNavSelect = navController::irAOpcionBarra,
+                        onVerDetalle = { idPrograma ->
+                            navController.navigate(Screen.DetallePrograma.crearRuta(idPrograma))
+                        },
                     )
                 }
             }

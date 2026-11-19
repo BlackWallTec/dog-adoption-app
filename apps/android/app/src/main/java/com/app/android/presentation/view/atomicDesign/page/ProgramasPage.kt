@@ -69,14 +69,14 @@ fun ProgramasPage(
                     .padding(horizontal = 16.dp),
         ) {
             Text(
-                text = "Programas",
+                text = titulo,
                 color = colores.inverseSurface,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 16.dp),
             )
             Text(
-                text = "Elige un programa de voluntariado para ayudar a los perritos de Qariño.",
+                text = descripcion,
                 color = colores.inverseSurface,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
@@ -97,7 +97,7 @@ fun ProgramasPage(
 
                     is ProgramasUiState.Empty -> {
                         InfoMessageCard(
-                            mensaje = "No hay programas disponibles por ahora.",
+                            mensaje = mensajeVacio,
                             icono = Icons.Outlined.Info,
                         )
                     }
@@ -154,15 +154,15 @@ private fun ProgramasPageSuccessPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "Mis Voluntariados - vacío")
+@Preview(showBackground = true, name = "Mis Programas - vacío")
 @Composable
-private fun MisVoluntariadosEmptyPreview() {
+private fun MisProgramasEmptyPreview() {
     AndroidTheme {
         ProgramasPage(
             uiState = ProgramasUiState.Empty,
             onReintentar = {},
             onBackClick = {},
-            titulo = "Mis Voluntariados",
+            titulo = "Mis Programas",
             descripcion = "Estas son tus próximas jornadas agendadas.",
             mensajeVacio = "Aún no tienes voluntariados agendados.",
         )

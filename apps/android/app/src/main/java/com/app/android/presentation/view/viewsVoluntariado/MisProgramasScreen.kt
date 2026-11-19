@@ -21,6 +21,7 @@ fun MisProgramasScreen(
     viewModel: MisProgramasViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onNavSelect: (Int) -> Unit = {},
+    onVerDetalle: ((String) -> Unit)? = null, // HU36: id del programa
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -37,11 +38,12 @@ fun MisProgramasScreen(
         onCancelar = { id ->
             programaPorCancelar = (uiState as? ProgramasUiState.Success)?.programas?.find { it.id == id }
         },
-        titulo = "Mis Voluntariados",
+        titulo = "Mis Programas",
         descripcion = "Estas son tus próximas jornadas agendadas.",
         mensajeVacio = "Aún no tienes voluntariados agendados.",
         snackbarHostState = snackbarHostState,
         onNavSelect = onNavSelect,
+        onVerDetalle = onVerDetalle, // HU36
     )
 
     // Confirmación antes de cancelar: la acción libera el lugar y otra persona puede tomarlo
