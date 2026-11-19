@@ -2,6 +2,7 @@ package com.app.android.data.dataSource.dataSourcesDonativos
 
 import com.app.android.data.dtos.dtosDonativos.ApiResponseDatosFiscalesDto
 import com.app.android.data.dtos.dtosDonativos.ApiResponseDonativosSimpleDto
+import com.app.android.data.dtos.dtosDonativos.ApiResponseMisDonativosDto
 import com.app.android.data.dtos.dtosDonativos.GuardarDatosFiscalesRequestDto
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -41,5 +42,15 @@ interface DonativosApiService {
         @Query("monto") monto: String,
         @Query("referencia") referencia: String?,
         @Body comprobante: RequestBody,
+    ): ApiResponseDonativosSimpleDto
+
+    // GET /api/donativos/cliente/mis-donativos (HU49, el usuario sale del token)
+    @GET("api/donativos/cliente/mis-donativos")
+    suspend fun fetchMisDonativosRemote(): ApiResponseMisDonativosDto
+
+    // POST /api/donativos/cliente/mis-donativos/:idDonativo/cfdi (HU49)
+    @POST("api/donativos/cliente/mis-donativos/{idDonativo}/cfdi")
+    suspend fun createSolicitudCfdiRemote(
+        @Path("idDonativo") idDonativo: String,
     ): ApiResponseDonativosSimpleDto
 }
