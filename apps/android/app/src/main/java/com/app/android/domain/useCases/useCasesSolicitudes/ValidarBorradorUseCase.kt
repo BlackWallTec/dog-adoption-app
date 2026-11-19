@@ -36,44 +36,46 @@ class ValidarBorradorUseCase
             if (hogar.hadPet == null) return ValidacionBorradorResult.Invalido("Falta indicar si has tenido mascotas.")
             if (hogar.otherPets == null) return ValidacionBorradorResult.Invalido("Falta indicar si tienes otros animales.")
             if (hogar.whyAdopt.isBlank()) return ValidacionBorradorResult.Invalido("Falta responder por qué deseas adoptar.")
+            if (hogar.whyAdopt.length > 100) return ValidacionBorradorResult.Invalido("El motivo de adopción supera los 100 caracteres.")
             if (hogar.whereLive.isBlank()) return ValidacionBorradorResult.Invalido("Falta responder dónde vivirá el perrito.")
+            if (hogar.whereLive.length >
+                100
+            ) {
+                return ValidacionBorradorResult.Invalido("La respuesta de dónde vivirá supera los 100 caracteres.")
+            }
             if (hogar.peopleInHouse < 1) return ValidacionBorradorResult.Invalido("El número de personas en casa debe ser al menos 1.")
             if (hogar.allAgree == null) return ValidacionBorradorResult.Invalido("Falta indicar si todos están de acuerdo.")
             if (hogar.hasGarden.isBlank()) return ValidacionBorradorResult.Invalido("Falta indicar si tienes jardín o patio.")
+            if (hogar.hasGarden.length >
+                50
+            ) {
+                return ValidacionBorradorResult.Invalido("La respuesta de jardín o patio supera los 50 caracteres.")
+            }
 
             val hasPets = hogar.hadPet || hogar.otherPets
             if (hasPets && hogar.aboutPets.isBlank()) {
                 return ValidacionBorradorResult.Invalido("Falta contar sobre tus mascotas.")
             }
 
-            val comp =
-                borrador.compromiso
-                    ?: return ValidacionBorradorResult.Invalido("Falta completar el compromiso de adopción.")
-            val maxLen = 300
-            if (comp.petNeeds.isBlank()) return ValidacionBorradorResult.Invalido("Falta responder sobre los cuidados básicos.")
-            if (comp.petNeeds.length > maxLen) return ValidacionBorradorResult.Invalido("Los cuidados básicos superan los 300 caracteres.")
-
-            if (comp.petSterilization.isBlank()) return ValidacionBorradorResult.Invalido("Falta tu opinión sobre la esterilización.")
-            if (comp.petSterilization.length > maxLen) {
-                return ValidacionBorradorResult.Invalido("La opinión sobre esterilización supera los 300 caracteres.")
+            val comp = borrador.compromiso ?: return ValidacionBorradorResult.Invalido("Falta completar el compromiso de adopción.")
+            val maxLen = 250
+            if (comp.petNeeds.length > maxLen) return ValidacionBorradorResult.Invalido("Los cuidados básicos superan los 250 caracteres.")
+            if (comp.petSterilization.length >
+                maxLen
+            ) {
+                return ValidacionBorradorResult.Invalido("La opinión sobre esterilización supera los 250 caracteres.")
             }
-
-            if (comp.hasVet == null) return ValidacionBorradorResult.Invalido("Falta indicar si cuentas con veterinario.")
-
-            if (comp.vetDetail.isBlank()) return ValidacionBorradorResult.Invalido("Falta detalle del veterinario.")
-            if (comp.vetDetail.length > maxLen) {
-                return ValidacionBorradorResult.Invalido("El detalle del veterinario supera los 300 caracteres.")
+            if (comp.vetDetail.length >
+                maxLen
+            ) {
+                return ValidacionBorradorResult.Invalido("El detalle del veterinario supera los 250 caracteres.")
             }
-
-            if (comp.timeAlone.isBlank()) return ValidacionBorradorResult.Invalido("Falta responder cuánto tiempo estaría solo.")
-            if (comp.timeAlone.length > maxLen) return ValidacionBorradorResult.Invalido("El tiempo solo supera los 300 caracteres.")
-
-            if (comp.dailyRoutine.isBlank()) return ValidacionBorradorResult.Invalido("Falta describir la rutina diaria.")
-            if (comp.dailyRoutine.length > maxLen) return ValidacionBorradorResult.Invalido("La rutina diaria supera los 300 caracteres.")
-
-            if (comp.dogManagement.isBlank()) return ValidacionBorradorResult.Invalido("Falta responder sobre manejo de comportamiento.")
-            if (comp.dogManagement.length > maxLen) {
-                return ValidacionBorradorResult.Invalido("El manejo de comportamiento supera los 300 caracteres.")
+            if (comp.timeAlone.length > maxLen) return ValidacionBorradorResult.Invalido("El tiempo solo supera los 250 caracteres.")
+            if (comp.dailyRoutine.length > maxLen) return ValidacionBorradorResult.Invalido("La rutina diaria supera los 250 caracteres.")
+            if (comp.dogManagement.length >
+                maxLen
+            ) {
+                return ValidacionBorradorResult.Invalido("El manejo de comportamiento supera los 250 caracteres.")
             }
 
             val docs = borrador.documentos

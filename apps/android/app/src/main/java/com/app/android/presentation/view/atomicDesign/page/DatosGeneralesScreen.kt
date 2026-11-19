@@ -179,7 +179,7 @@ private fun FormularioDatosGenerales(
             readOnly = true,
         )
 
-        // este si es editable
+        // este si es editableD
         LabeledWritableCard(
             label = "Ocupación",
             value = datos.ocupacion,
@@ -189,6 +189,7 @@ private fun FormularioDatosGenerales(
             // si hay error lo muestra
             helperText = errorOcupacion ?: "Este dato no está guardado en tu perfil.",
             singleLine = true,
+            maxLength = 100,
         )
 
         // read only

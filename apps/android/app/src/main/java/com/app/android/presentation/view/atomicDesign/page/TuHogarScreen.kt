@@ -189,6 +189,7 @@ private fun FormularioTuHogar(
                 onValueChange = { onDatosChange(datos.copy(whyAdopt = it)) },
                 placeholder = "Escribe tu respuesta...",
                 minLines = 3,
+                maxLength = 100,
             )
             errores?.whyAdopt?.let { ErrorMessage(text = it) }
         }
@@ -200,6 +201,7 @@ private fun FormularioTuHogar(
                 onValueChange = { onDatosChange(datos.copy(whereLive = it)) },
                 placeholder = "Escribe tu respuesta...",
                 minLines = 3,
+                maxLength = 100,
             )
             errores?.whereLive?.let { ErrorMessage(text = it) }
         }
@@ -270,6 +272,7 @@ private fun FormularioTuHogar(
                 onValueChange = { onDatosChange(datos.copy(hasGarden = it)) },
                 placeholder = "Escribe tu respuesta...",
                 minLines = 3,
+                maxLength = 50,
             )
             errores?.hasGarden?.let { ErrorMessage(text = it) }
         }
@@ -290,6 +293,7 @@ private fun FormularioTuHogar(
                 onValueChange = { onDatosChange(datos.copy(aboutPets = it)) },
                 placeholder = "Escribe tu respuesta...",
                 minLines = 3,
+                maxLength = 250,
             )
             errores?.aboutPets?.let { ErrorMessage(text = it) }
         }

@@ -3,8 +3,6 @@ package com.app.android.presentation.navigation
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,16 +18,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
+import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
+import com.app.android.presentation.view.atomicDesign.page.EnviadaScreen
 import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
-import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
@@ -47,6 +44,8 @@ import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
 import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
 import com.app.android.presentation.view.viewsVoluntariado.DetalleProgramaScreen
+=======
+>>>>>>> 6ce769a (feat(android): updated atomic design, addded read only fields, updated app nav manager)
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
@@ -330,43 +329,55 @@ fun AppNavigation() {
                     },
                 )
             }
-            CompromisoRoute(
-                onBack = { navController.navigateUp() },
-                onIrADocumentoss = {
-                    // navegar a documentos
-                    navController.navigate(Screen.Documentos.ruta)
-                },
-            )
         }
         // Paso 5 - Documentos
         composable(route = Screen.Documentos.ruta) {
-            UploadDocumentsRoute(
-                onBackClick = { navController.navigateUp() },
-                onContinuarClick = {
-                    navController.navigate(Screen.Confirmar.ruta)
-                },
-            )
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
+                UploadDocumentsRoute(
+                    onBackClick = { navController.navigateUp() },
+                    onContinuarClick = {
+                        navController.navigate(Screen.Confirmar.ruta)
+                    },
+                )
+            }
         }
 
         // Paso 6 - Confirmar
         composable(route = Screen.Confirmar.ruta) {
-            ConfirmarRoute(
-                onBack = { navController.navigateUp() },
-                onEditarSeccion = { seccion ->
-                    val rutaDestino =
-                        when (seccion) {
-                            SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.ruta
-                            SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.ruta
-                            SeccionSolicitud.COMPROMISO -> Screen.Compromiso.ruta
-                            SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.ruta
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
+                ConfirmarRoute(
+                    onBack = { navController.navigateUp() },
+                    onEditarSeccion = { seccion ->
+                        val rutaDestino =
+                            when (seccion) {
+                                SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.ruta
+                                SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.ruta
+                                SeccionSolicitud.COMPROMISO -> Screen.Compromiso.ruta
+                                SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.ruta
+                            }
+                        navController.popBackStack(rutaDestino, inclusive = false)
+                    },
+                    onEnviarExitoso = { solicitudId ->
+                        navController.navigate(Screen.SolicitudEnviada.crearRuta(solicitudId)) {
+                            popUpTo(Screen.Catalogo.ruta) { inclusive = false }
                         }
-                    navController.popBackStack(rutaDestino, inclusive = false)
-                },
-                onEnviarExitoso = { solicitudId ->
-                    navController.navigate(Screen.SolicitudEnviada.crearRuta(solicitudId)) {
-                        popUpTo(Screen.Catalogo.ruta) { inclusive = false }
-                    }
-                },
+                    },
+                )
+            }
+        }
+
+        // Paso 7 - Enviado
+        composable(
+            route = Screen.SolicitudEnviada.ruta,
+            arguments =
+                listOf(
+                    navArgument("idSolicitud") { type = NavType.StringType },
+                ),
+        ) {
+            EnviadaScreen(
+                onBackClick = navController::irAlCatalogo,
+                onVerSolicitudesClick = navController::irAlCatalogo,
+                onNavSelect = navController::irAOpcionBarra,
             )
         }
 
