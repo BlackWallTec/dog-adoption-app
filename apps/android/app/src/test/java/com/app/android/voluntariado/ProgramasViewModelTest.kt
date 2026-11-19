@@ -67,6 +67,8 @@ class ProgramasViewModelTest {
             falla?.let { throw it }
             return programas
         }
+
+        override suspend fun obtenerMisProgramas(): List<Programa> = programas.filter { it.usuarioInscrito }
     }
 
     @Before
@@ -633,6 +635,8 @@ class ProgramasViewModelTest {
         val api =
             object : ProgramaApiService {
                 override suspend fun obtenerProgramas() = respuesta
+
+                override suspend fun obtenerMisProgramas() = respuesta
             }
         return runBlocking { ProgramaRepositoryImpl(api).obtenerProgramasVigentes() }
     }
