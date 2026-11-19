@@ -216,7 +216,7 @@ fun AppNavigation() {
 
         // ========= Pantallas Catalogo ========
         composable(route = Screen.Catalogo.ruta) {
-            PerroScreen(
+            CatalogoFiltrosRoute(
                 onDogClick = { dogId ->
                     navController.navigate(
                         Screen.DetallePerro.crearRuta(dogId),
