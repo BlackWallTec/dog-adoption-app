@@ -55,6 +55,7 @@ export default defineConfig({
         main: r("index.html"),
         login: r("HTML/htmlPerfiles/login.html"),
         registro: r("HTML/htmlPerfiles/registro.html"),
+        correo: r("HTML/htmlPerfiles/correo.html"),
         adminPerros: r("HTML/htmlCatalogo/adminPerros.html"),
         adminDonativos: r("HTML/htmlDonativos/adminDonativos.html"),
         resumenDonativos: r("HTML/htmlDonativos/resumenDonativos.html"),

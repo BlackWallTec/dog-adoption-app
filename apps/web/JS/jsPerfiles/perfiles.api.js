@@ -13,8 +13,16 @@ const MESSAGES = {
 
 // Respuesta de error de la API ({ error, code, fields }) -> clase de errores.js
 function toError(status, data) {
-  const message = MESSAGES[status] || "No pudimos completar la solicitud. Inténtalo más tarde.";
-  return errorFromHTTPStatus(status, message, data?.fields, data?.code);
+  // Los errores del flujo de correo distinguen un enlace vencido de una cuenta pendiente.
+  const correo = ["EMAIL_NOT_CONFIRMED", "INVALID_EMAIL_TOKEN", "EMAIL_UNAVAILABLE"].includes(
+    data?.code,
+  );
+  const message = correo
+    ? data.error
+    : MESSAGES[status] || "No pudimos completar la solicitud. Inténtalo más tarde.";
+  const error = errorFromHTTPStatus(status, message, data?.fields, data?.code);
+  error.apiCode = data?.code;
+  return error;
 }
 
 export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
@@ -51,6 +59,21 @@ export function createPerfilesApi({ fetchImpl = globalThis.fetch } = {}) {
   }
 
   return {
+    getCorreoConfig() {
+      return request("correo/config", undefined, "GET");
+    },
+    getBandejaCorreo() {
+      return request("correo/bandeja", undefined, "GET");
+    },
+    solicitarCorreo(correo, recuperar = false) {
+      return request(`correo/${recuperar ? "recuperar" : "reenviar"}`, { correo });
+    },
+    confirmarCorreo(token) {
+      return request("correo/confirmar", { token });
+    },
+    restablecerContrasena(token, contrasena, confirmContrasena) {
+      return request("correo/restablecer", { token, contrasena, confirmContrasena });
+    },
     login({ correo, contrasena }) {
       return request("login", { correo: correo.trim().toLowerCase(), contrasena });
     },

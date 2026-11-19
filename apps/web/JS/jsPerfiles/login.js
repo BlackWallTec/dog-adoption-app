@@ -1,6 +1,7 @@
 import { perfilesApi } from "./perfiles.api.js";
 import { createSessionView } from "./perfiles.session.js";
 import { fieldError, byId } from "./utils.js";
+import { UNAUTHENTICATED, INVALID_CREDENTIALS } from "@qarino/shared/errores.js";
 
 const loginForm = byId("login-form");
 const loginEmail = byId("login-email");
@@ -94,6 +95,7 @@ loginForm.addEventListener("submit", async (event) => {
     if (request !== activeRequest) return;
 
     feedback("login-feedback", error.message ? error.message : "Error al identificarse");
+    byId("reenviar-correo").hidden = error.apiCode !== "EMAIL_NOT_CONFIRMED";
   } finally {
     if (request === activeRequest) setBusy("login-submit", false, "Iniciar sesión");
   }
@@ -104,10 +106,19 @@ async function restoreSession() {
   try {
     await sessionView.show(await perfilesApi.getSession());
   } catch (error) {
-    feedback("login-feedback", error.message ? error.message : "Error al comprobar sesión");
+    // La primera visita sin sesión es normal; no se muestra como un fallo de acceso.
+    if (!(error instanceof UNAUTHENTICATED) && !(error instanceof INVALID_CREDENTIALS)) {
+      feedback("login-feedback", error.message ? error.message : "Error al comprobar sesión");
+    }
   } finally {
     setBusy("login-submit", false, "Iniciar sesión");
   }
 }
 
 void restoreSession();
+
+for (const id of ["recuperar-correo", "reenviar-correo"]) {
+  byId(id).addEventListener("click", () => {
+    sessionStorage.setItem("perfiles-correo", loginEmail.value.trim());
+  });
+}

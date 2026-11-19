@@ -16,8 +16,9 @@ function busy(active, label) {
   submit.querySelector("[data-button-label]").textContent = label;
 }
 
-function showError(message) {
+function showError(message, correcto = false) {
   feedback.textContent = message;
+  feedback.className = `alert alert-${correcto ? "success" : "danger"}`;
   feedback.hidden = !message;
   if (message) feedback.focus();
 }
@@ -65,8 +66,16 @@ form.addEventListener("submit", async (event) => {
   busy(true, "Creando tu cuenta…");
 
   try {
-    await perfilesApi.registerAdmin(values);
+    const resultado = await perfilesApi.registerAdmin(values);
     form.reset();
+    // Root conserva su sesión; la confirmación se envía al nuevo Administrador.
+    if (resultado.requiereConfirmacion) {
+      showError(
+        "Cuenta creada. La persona debe confirmar su correo antes de iniciar sesión.",
+        true,
+      );
+      return;
+    }
     window.location.replace("login.html");
   } catch (error) {
     for (const [field, message] of Object.entries(error.fields ?? {})) {
