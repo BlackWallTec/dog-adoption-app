@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +40,7 @@ import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.organism.SearchBar
 import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosUiState
 import com.app.android.presentation.viewmodel.viewModelCatalogo.PerrosViewModel
-import androidx.compose.runtime.LaunchedEffect
+
 @Composable
 fun PerroScreen(
     modifier: Modifier = Modifier,
@@ -56,15 +57,17 @@ fun PerroScreen(
     }
     val estado by vm.uiState.collectAsState()
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFFBF2))
-            .statusBarsPadding()
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(Color(0xFFFFFBF2))
+                .statusBarsPadding(),
     ) {
-        Column( //esto es para que se pueda mover de arriba hacia abajo y viceversa
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 24.dp)
+        Column( // esto es para que se pueda mover de arriba hacia abajo y viceversa
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .padding(horizontal = 24.dp),
         ) {
             // El contenido sigue siendo el catálogo; las otras opciones abren sus propias pantallas.
             Row( //esto es para las 3 rayitas y la campana
@@ -112,33 +115,45 @@ fun PerroScreen(
 
 @Composable
 private fun PerroScreen(
-    estado: PerrosUiState,        //vm
+    estado: PerrosUiState, // vm
     modifier: Modifier = Modifier,
-    //nuevo
-    onDogClick: (String) -> Unit = {}
+    // nuevo
+    onDogClick: (String) -> Unit = {},
 ) {
     when (val resultado = estado) {
-        PerrosUiState.Loading -> Text("Cargando perros...", modifier = modifier)
-        PerrosUiState.Empty -> Text("No hay perros disponibles", modifier = modifier)
-        is PerrosUiState.Error -> Text(resultado.mensaje, modifier = modifier)
+        PerrosUiState.Loading -> {
+            Text("Cargando perros...", modifier = modifier)
+        }
+
+        PerrosUiState.Empty -> {
+            Text("No hay perros disponibles", modifier = modifier)
+        }
+
+        is PerrosUiState.Error -> {
+            Text(resultado.mensaje, modifier = modifier)
+        }
+
         is PerrosUiState.Success -> {
             LazyVerticalGrid(
                 modifier = modifier,
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(resultado.perros, key= { it.id }) { perro -> //nuevo  
-                    Card (onClick = { onDogClick(perro.id) }) { //nuevo
+                items(resultado.perros, key = { it.id }) { perro ->
+                    // nuevo
+                    Card(onClick = { onDogClick(perro.id) }) {
+                        // nuevo
                         Column {
                             AsyncImage(
                                 model = perro.fotoUrl,
                                 contentDescription = perro.nombre,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(150.dp)
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(150.dp),
                             )
                             Column(Modifier.padding(12.dp)) {
                                 Text(perro.nombre, fontWeight = FontWeight.Bold)

@@ -43,6 +43,33 @@ class AdoptionRequestModel {
 
     return activa ?? null;
   }
-}
 
+  // Solicitudes ya enviadas de un usuario (de la más reciente a la más antigua)
+  // idUsuario siempre sale del token, no de la url.
+  static async getByUser(idUsuario) {
+    const { data, error } = await supabase
+      .from("solicitud_adopcion")
+      .select(`
+      id_solicitud,
+      fecha_solicitud,
+      comentario_admin,
+      puede_editar,
+      perro:perro!solicitud_adopcion_id_perro_fkey (
+        nombre,
+        multimedia ( url, tipo )
+        ),
+        estado:estado_solicitud!solicitud_adopcion_id_estado_fkey (
+          descripcion
+        )
+      `)
+      .eq("id_usuario", idUsuario)
+      .order("fecha_solicitud", { ascending: false });
+
+    if (error) {
+      throw new Error(`Error en la consulta de mis solicitudes: ${error.message}`);
+    }
+
+    return data || [];
+  }
+}
 export default AdoptionRequestModel;

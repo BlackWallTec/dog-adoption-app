@@ -13,6 +13,7 @@ fun CatalogoFiltrosRoute(
     onDogClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CatalogFiltersViewModel = hiltViewModel(),
+    onNavSelect: (Int) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     val filtros by viewModel.appliedFilters.collectAsState()
@@ -26,6 +27,7 @@ fun CatalogoFiltrosRoute(
         onClearFilters = viewModel::onClearFilters,
         onRetry = viewModel::onRetry,
         onDogClick = onDogClick,
+        onNavSelect = onNavSelect,
         modifier = modifier,
     )
 }

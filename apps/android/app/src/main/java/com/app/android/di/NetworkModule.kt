@@ -134,6 +134,7 @@ object NetworkModule {
 
     // 4. Repositorio de Solicitudes.
     // Para volver al fake (sin backend): return SolicitudRepositoryFake()
+    // fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryFake()
     @Provides
     @Singleton
     fun provideSolicitudRepository(apiService: SolicitudApiService): SolicitudRepositoryInt = SolicitudRepositoryImpl(apiService)

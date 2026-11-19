@@ -34,6 +34,7 @@ import com.app.android.presentation.view.viewsPerfiles.LoginScreen
 import com.app.android.presentation.view.viewsPerfiles.RegistroScreen
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
+import com.app.android.presentation.view.viewsSolicitudes.MisSolicitudesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
@@ -61,6 +62,7 @@ private fun NavController.irAlLogin() {
 }
 
 // La opción de ajustes abre la cuenta; ahí se revisa si hace falta iniciar sesión.
+// Barra de abajo: 0 Catálogo, 1 Ayudar, 2 Donar, 3 Solicitudes, 4 Ajustes.
 private fun NavController.irAOpcionBarra(opcion: Int) {
     if (opcion == 0) {
         irAlCatalogo()
@@ -70,6 +72,7 @@ private fun NavController.irAOpcionBarra(opcion: Int) {
         when (opcion) {
             1 -> Screen.GrafoVoluntariado.ruta
             2 -> Screen.DonarDinero.ruta
+            3 -> Screen.MisSolicitudes.ruta
             4 -> Screen.Cuenta.ruta
             else -> null
         }
@@ -242,6 +245,8 @@ fun AppNavigation() {
 
         // ========= Pantallas Solicitudes ========
 
+        // SOLICITUDES - HU06: Mis solicitudes
+
         // SOLICITUDES: Paso 1 - Requisitos
         composable(
             route = Screen.Requisitos.ruta,
@@ -316,6 +321,25 @@ fun AppNavigation() {
                     onIrADocumentoss = {
                         // navegar a documentos
                     },
+                )
+            }
+        }
+
+        // SOLICITUDES - HU04: Mis solicitudes (solo lectura)
+        composable(route = Screen.MisSolicitudes.ruta) {
+            // Las solicitudes son del usuario con sesión; sin sesión se va al login.
+            ConSesion(
+                estadoSesion,
+                navController,
+                sesionViewModel,
+                { destinoTrasLogin = it },
+            ) {
+                MisSolicitudesRoute(
+                    onEditar = {
+                        // navegar a la edición de la solicitud HU09.
+                    },
+                    onVerCatalogo = { navController.popBackStack(Screen.Catalogo.ruta, inclusive = false) },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
