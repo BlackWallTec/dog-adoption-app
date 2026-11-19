@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
+import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
 import com.app.android.presentation.view.atomicDesign.molecule.InfoMessageCard
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
@@ -34,17 +35,22 @@ import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramaUi
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiState
 
+
 @Composable
 fun ProgramasPage(
     uiState: ProgramasUiState,
     onReintentar: () -> Unit,
     onBackClick: () -> Unit,
-    onInscribirse: (String) -> Unit = {}, // evento: id del programa
-    onCancelar: (String) -> Unit = {}, // evento HU37: id del programa
+    onInscribirse: (String) -> Unit = {},
+    onCancelar: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     navSeleccionado: Int = 1,
     onNavSelect: (Int) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    titulo: String = "Programas",
+    descripcion: String = "Elige un programa de voluntariado para ayudar a los perritos de Qariño.",
+    mensajeVacio: String = "No hay programas disponibles por ahora.",
+    onMisVoluntariados: (() -> Unit)? = null,
 ) {
     val colores = MaterialTheme.colorScheme
 
@@ -63,18 +69,26 @@ fun ProgramasPage(
                     .padding(horizontal = 16.dp),
         ) {
             Text(
-                text = "Programas",
+                text = titulo,
                 color = colores.inverseSurface,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 16.dp),
             )
             Text(
-                text = "Elige un programa de voluntariado para ayudar a los perritos de Qariño.",
+                text = descripcion,
                 color = colores.inverseSurface,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
             )
+            onMisVoluntariados?.let { alTocar ->
+                AppButton(
+                    text = "Mis voluntariados",
+                    onClick = alTocar,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                )
+            }
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 when (uiState) {
                     is ProgramasUiState.Loading -> {
@@ -83,7 +97,7 @@ fun ProgramasPage(
 
                     is ProgramasUiState.Empty -> {
                         InfoMessageCard(
-                            mensaje = "No hay programas disponibles por ahora.",
+                            mensaje = mensajeVacio,
                             icono = Icons.Outlined.Info,
                         )
                     }
@@ -127,6 +141,22 @@ private fun ProgramasPageSuccessPreview() {
                 ),
             onReintentar = {},
             onBackClick = {},
+            onMisVoluntariados = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Mis Voluntariados - vacío")
+@Composable
+private fun MisVoluntariadosEmptyPreview() {
+    AndroidTheme {
+        ProgramasPage(
+            uiState = ProgramasUiState.Empty,
+            onReintentar = {},
+            onBackClick = {},
+            titulo = "Mis Voluntariados",
+            descripcion = "Estas son tus próximas jornadas agendadas.",
+            mensajeVacio = "Aún no tienes voluntariados agendados.",
         )
     }
 }

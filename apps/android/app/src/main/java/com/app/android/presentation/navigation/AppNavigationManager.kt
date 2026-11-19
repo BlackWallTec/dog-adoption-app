@@ -37,6 +37,7 @@ import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
+import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
@@ -405,6 +406,11 @@ fun AppNavigation() {
                                 launchSingleTop = true
                             }
                         },
+                        onMisVoluntariados = { // HU40
+                            navController.navigate(Screen.MisVoluntariados.ruta) {
+                                launchSingleTop = true
+                            }
+                        },
                     )
                 }
             }
@@ -421,6 +427,26 @@ fun AppNavigation() {
                         viewModel = hiltViewModel(grafo),
                         onBack = { navController.navigateUp() },
                         onExplorarProgramas = {
+                            navController.popBackStack(Screen.Programas.ruta, inclusive = false)
+                        },
+                        onNavSelect = navController::irAOpcionBarra,
+                        onVerMisVoluntariados = { // HU40
+                            navController.navigate(Screen.MisVoluntariados.ruta) {
+                                launchSingleTop = true
+                            }
+                        },
+                    )
+                }
+            }
+
+            composable(route = Screen.MisVoluntariados.ruta) {
+                ConSesion(
+                    estadoSesion,
+                    navController,
+                    sesionViewModel,
+                    { destinoTrasLogin = it }) { _ ->
+                    MisProgramasScreen(
+                        onBackClick = {
                             navController.popBackStack(Screen.Programas.ruta, inclusive = false)
                         },
                         onNavSelect = navController::irAOpcionBarra,

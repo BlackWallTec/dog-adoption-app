@@ -15,6 +15,9 @@ export const router = Router();
 // GET /api/voluntarios/cliente/programas
 router.get("/cliente/programas", verificarToken, clientController.getProgramasVigentes);
 
+// GET /api/voluntarios/cliente/mis-programas
+router.get("/cliente/mis-programas", verificarToken, clientController.getMisProgramas);
+
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 router.post("/programas/:idPrograma/inscripciones", verificarToken, inscribirse);
 
