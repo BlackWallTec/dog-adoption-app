@@ -1,5 +1,4 @@
-
-package com.app.android.solicitudes
+package com.app.android.TestCatalogo
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed

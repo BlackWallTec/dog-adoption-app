@@ -7,10 +7,17 @@ class ShareContent (
     val descripcion: String,
     val enlace: String,
 ){
-    fun texto(): String=
-        "Conoce a $nombre! \n"+
-        "Edad: $edad \n"+
-        "Sexo: $sexo \n"+
-        "Descripcion: $descripcion \n"+
-        "Ádoptalo aqui: $enlace"
+    fun texto(): String= buildString {
+        appendLine("Conoce a $nombre!")
+        if(edad !=null){
+            appendLine("Edad: $edad")
+        }
+        if (sexo.isNotBlank()){
+            appendLine("Sexo: $sexo")
+        }
+        if (descripcion.isNotBlank()) {
+            appendLine("Descripción: $descripcion")
+        }
+        appendLine("Adoptalo aqui: $enlace")
+    }
 }   
