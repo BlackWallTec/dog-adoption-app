@@ -3,10 +3,12 @@ import { mkdtempSync, readFileSync, existsSync, unlinkSync, rmdirSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+vi.mock("nodemailer", () => ({ default: { createTransport: vi.fn() } }));
 vi.mock("../../src/config/supabaseClient.js", () => ({ supabaseAdmin: {}, supabase: {} }));
 import {
   crearCorreoMovil,
-  enviarCodigoResend,
+  enviarCodigoCorreo,
   verificarCorreoMovil,
   servicioCorreoMovil,
 } from "../../src/modules/perfiles/services/correoMovil.service.js";
@@ -23,6 +25,7 @@ const construir = () =>
     secreto: "secreto-de-prueba",
   });
 beforeEach(() => {
+  vi.stubEnv("MAIL_TRANSPORT", "resend");
   carpeta = mkdtempSync(join(tmpdir(), "qarino-correo-movil-"));
   archivo = join(carpeta, "estado.json");
   ahora = 1_700_000_000_000;
@@ -149,12 +152,46 @@ describe("Códigos de correo para Clientes", () => {
       .fn()
       .mockResolvedValue({ ok: true, json: async () => ({ id: "correo-ficticio" }) });
     vi.stubGlobal("fetch", fetchMock);
-    expect(await enviarCodigoResend({ para: correo, codigo: "012345", tipo: "confirmar" })).toEqual(
+    expect(await enviarCodigoCorreo({ para: correo, codigo: "012345", tipo: "confirmar" })).toEqual(
       { id: "correo-ficticio" },
     );
     const [url, request] = fetchMock.mock.calls[0];
     expect(url).toBe("https://api.resend.com/emails");
     expect(request.headers.Authorization).toBe("Bearer clave-ficticia");
     expect(JSON.parse(request.body).text).toContain("012345");
+  });
+  it("envía con Gmail al destinatario solicitado usando la contraseña de aplicación", async () => {
+    vi.stubEnv("MAIL_TRANSPORT", "gmail");
+    vi.stubEnv("SMTP_USER", "proyecto@gmail.com");
+    vi.stubEnv("SMTP_PASS", "abcd efgh ijkl mnop");
+    const sendMail = vi.fn().mockResolvedValue({ messageId: "correo-ficticio" });
+    nodemailer.createTransport.mockReturnValueOnce({ sendMail });
+    await expect(
+      enviarCodigoCorreo({ para: correo, codigo: "012345", tipo: "recuperar" }),
+    ).resolves.toEqual({ messageId: "correo-ficticio" });
+    expect(nodemailer.createTransport).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        service: "gmail",
+        auth: { user: "proyecto@gmail.com", pass: "abcdefghijklmnop" },
+      }),
+    );
+    expect(sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "Qariño Animal <proyecto@gmail.com>",
+        to: [correo],
+        subject: "Recupera tu contraseña",
+        text: expect.stringContaining("012345"),
+      }),
+    );
+  });
+  it("rechaza Gmail sin contraseña de aplicación antes de conectarse", async () => {
+    vi.stubEnv("MAIL_TRANSPORT", "gmail");
+    vi.stubEnv("SMTP_USER", "proyecto@gmail.com");
+    vi.stubEnv("SMTP_PASS", "");
+    nodemailer.createTransport.mockClear();
+    await expect(
+      enviarCodigoCorreo({ para: correo, codigo: "012345", tipo: "confirmar" }),
+    ).rejects.toThrow("Falta SMTP_PASS");
+    expect(nodemailer.createTransport).not.toHaveBeenCalled();
   });
 });

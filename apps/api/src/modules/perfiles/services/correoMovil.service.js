@@ -178,16 +178,44 @@ export function servicioCorreoMovil() {
   servicio ??= crearCorreoMovil({
     archivo: resolve(process.env.CORREO_MOVIL_ARCHIVO || ".local/correo-movil.json"),
     secreto: process.env.JWT_SECRET,
-    enviar: enviarCodigoResend,
+    enviar: enviarCodigoCorreo,
   });
   return servicio;
 }
 
 // La clave se usa sólo en el servidor. El código nunca se devuelve en respuestas HTTP.
-export async function enviarCodigoResend({ para, codigo, tipo }) {
-  const remitente = process.env.MAIL_FROM?.trim();
-  if (!process.env.RESEND_API_KEY || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(remitente || ""))
-    throw new Error("Falta configurar Resend y su remitente.");
+export async function enviarCodigoCorreo({ para, codigo, tipo }) {
+  const transporte = process.env.MAIL_TRANSPORT || "resend";
+  if (!["resend", "gmail"].includes(transporte)) throw new Error("Proveedor de correo inválido.");
+  const remitente = (
+    transporte === "gmail" ? process.env.SMTP_USER : process.env.MAIL_FROM
+  )?.trim();
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(remitente || ""))
+    throw new Error("Falta configurar el remitente de correo.");
+  const mensaje = {
+    from: `Qariño Animal <${remitente}>`,
+    to: [para],
+    subject:
+      tipo === "confirmar" ? "Confirma tu cuenta de Qariño Animal" : "Recupera tu contraseña",
+    text: `Tu código es: ${codigo}\n\nEscríbelo en la aplicación Qariño Animal. ${tipo === "confirmar" ? "Vence en 72 horas." : "Vence en 15 minutos."}\n\nSi no lo solicitaste, ignora este correo.`,
+  };
+  // Gmail usa una contraseña de aplicación sólo en el servidor; conserva las rutas y códigos de Android.
+  if (transporte === "gmail") {
+    const pass = process.env.SMTP_PASS?.replace(/\s/g, "");
+    if (!pass) throw new Error("Falta SMTP_PASS para enviar con Gmail.");
+    const { default: nodemailer } = await import("nodemailer");
+    return nodemailer
+      .createTransport({
+        service: "gmail",
+        auth: { user: remitente, pass },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 8000,
+        dnsTimeout: 8000,
+      })
+      .sendMail(mensaje);
+  }
+  if (!process.env.RESEND_API_KEY) throw new Error("Falta configurar la clave de Resend.");
   const respuesta = await fetch("https://api.resend.com/emails", {
     method: "POST",
     signal: AbortSignal.timeout(8_000),
@@ -195,13 +223,7 @@ export async function enviarCodigoResend({ para, codigo, tipo }) {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      from: `Qariño Animal <${remitente}>`,
-      to: [para],
-      subject:
-        tipo === "confirmar" ? "Confirma tu cuenta de Qariño Animal" : "Recupera tu contraseña",
-      text: `Tu código es: ${codigo}\n\nEscríbelo en la aplicación Qariño Animal. ${tipo === "confirmar" ? "Vence en 72 horas." : "Vence en 15 minutos."}\n\nSi no lo solicitaste, ignora este correo.`,
-    }),
+    body: JSON.stringify(mensaje),
   });
   if (!respuesta.ok) throw new Error(`Resend rechazó el envío (HTTP ${respuesta.status}).`);
   return respuesta.json();

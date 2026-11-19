@@ -57,6 +57,7 @@ beforeAll(async () => {
   vi.stubEnv("CORREO_MOVIL_ARCHIVO", archivo);
   vi.stubEnv("JWT_SECRET", "secreto-ficticio-de-prueba-movil");
   vi.stubEnv("RESEND_API_KEY", "clave-ficticia");
+  vi.stubEnv("MAIL_TRANSPORT", "resend");
   vi.stubEnv("MAIL_FROM", "onboarding@resend.dev");
   fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ id: "simulado" }) });
   vi.stubGlobal("fetch", fetchMock);
