@@ -10,6 +10,7 @@ import com.app.android.domain.entities.entitiesSolicitudes.DocumentoLocal
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentosSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
@@ -33,12 +34,11 @@ class EnviarSolicitudUseCaseTest {
         var uploadedDocs = mutableListOf<DocumentType>()
         var finalizeCalled = false
 
-        override suspend fun getSolicitudActiva(
-            idUsuario: String,
-            idPerro: String,
-        ): SolicitudResumen? = null
+        override suspend fun getSolicitudActiva(idPerro: String): SolicitudResumen? = null
 
-        override suspend fun getPerfil(idUsuario: String): DatosGenerales =
+        override suspend fun getMisSolicitudes(): List<SolicitudCliente> = emptyList()
+
+        override suspend fun getPerfil(): DatosGenerales =
             DatosGenerales(
                 nombreCompleto = "Test",
                 fechaNacimiento = "1995-03-15",
@@ -49,7 +49,9 @@ class EnviarSolicitudUseCaseTest {
                 correo = "test@correo.com",
             )
 
-        override suspend fun crearOReutilizarBorrador(borrador: com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud): String {
+        override suspend fun crearOReutilizarBorrador(
+            borrador: com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud,
+        ): String {
             if (shouldFail) throw SolicitudHttpException(failCode, failMessage)
             createCalled = true
             return "sol-test-999"
@@ -88,7 +90,16 @@ class EnviarSolicitudUseCaseTest {
         borradorRepo.iniciar("user1", "dog1")
         borradorRepo.actualizar {
             it.copy(
-                datosGenerales = DatosGenerales(nombreCompleto = "Sofía", fechaNacimiento = "1995-03-15", ocupacion = "Ingeniera", domicilio = "Calle", municipio = "Qro", telefono = "123", correo = "sofia@correo.com"),
+                datosGenerales =
+                    DatosGenerales(
+                        nombreCompleto = "Sofía",
+                        fechaNacimiento = "1995-03-15",
+                        ocupacion = "Ingeniera",
+                        domicilio = "Calle",
+                        municipio = "Qro",
+                        telefono = "123",
+                        correo = "sofia@correo.com",
+                    ),
                 tuHogar =
                     TuHogar(
                         hadPet = false,
@@ -113,8 +124,20 @@ class EnviarSolicitudUseCaseTest {
                     ),
                 documentos =
                     DocumentosSolicitud(
-                        identificacion = DocumentoLocal(uri = "content://ine", nombre = "ine.pdf", tamanoBytes = 100L, mimeType = "application/pdf"),
-                        comprobanteDomicilio = DocumentoLocal(uri = "content://dom", nombre = "dom.pdf", tamanoBytes = 100L, mimeType = "application/pdf"),
+                        identificacion =
+                            DocumentoLocal(
+                                uri = "content://ine",
+                                nombre = "ine.pdf",
+                                tamanoBytes = 100L,
+                                mimeType = "application/pdf",
+                            ),
+                        comprobanteDomicilio =
+                            DocumentoLocal(
+                                uri = "content://dom",
+                                nombre = "dom.pdf",
+                                tamanoBytes = 100L,
+                                mimeType = "application/pdf",
+                            ),
                     ),
             )
         }
@@ -205,6 +228,5 @@ class EnviarSolicitudUseCaseTest {
             assertNotNull(borradorRepo.borrador.value)
         }
 
-    private fun mockkContext(): android.content.Context =
-        object : android.content.ContextWrapper(null as android.content.Context?) {}
+    private fun mockkContext(): android.content.Context = object : android.content.ContextWrapper(null as android.content.Context?) {}
 }
