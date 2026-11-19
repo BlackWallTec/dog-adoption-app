@@ -95,6 +95,7 @@ fun ConfirmarRoute(
     onBack: () -> Unit,
     onEditarSeccion: (SeccionSolicitud) -> Unit,
     onEnviarExitoso: (String) -> Unit = {},
+    onUnauthorized: () -> Unit = {},
     viewModel: ConfirmarSolicitudViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -120,9 +121,12 @@ fun ConfirmarRoute(
             onBackClick = onBack,
             onEditarClick = onEditarSeccion,
             onEnviarClick = {
-                viewModel.enviarSolicitud { solicitudId ->
-                    onEnviarExitoso(solicitudId)
-                }
+                viewModel.enviarSolicitud(
+                    onSuccess = { solicitudId ->
+                        onEnviarExitoso(solicitudId)
+                    },
+                    onUnauthorized = onUnauthorized,
+                )
             },
             modifier = Modifier.padding(innerPadding),
         )

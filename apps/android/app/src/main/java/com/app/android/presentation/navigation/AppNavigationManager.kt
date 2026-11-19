@@ -325,7 +325,7 @@ fun AppNavigation() {
                 CompromisoRoute(
                     onBack = { navController.navigateUp() },
                     onIrADocumentoss = {
-                        // navegar a documentos
+                        navController.navigate(Screen.Documentos.ruta)
                     },
                 )
             }
@@ -366,6 +366,9 @@ fun AppNavigation() {
                         navController.navigate(Screen.SolicitudEnviada.crearRuta(solicitudId)) {
                             popUpTo(Screen.Catalogo.ruta) { inclusive = false }
                         }
+                    },
+                    onUnauthorized = {
+                        navController.irAlLogin()
                     },
                 )
             }

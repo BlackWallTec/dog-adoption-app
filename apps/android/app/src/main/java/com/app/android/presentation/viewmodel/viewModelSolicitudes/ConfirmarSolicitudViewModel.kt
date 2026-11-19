@@ -2,11 +2,11 @@ package com.app.android.presentation.viewmodel.viewModelSolicitudes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudHttpException
 import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.useCases.useCasesCatalogo.GetDogByIdUseCase
-import com.app.android.domain.useCases.useCasesSolicitudes.ValidacionBorradorResult
-import com.app.android.domain.useCases.useCasesSolicitudes.ValidarBorradorUseCase
+import com.app.android.domain.useCases.useCasesSolicitudes.EnviarSolicitudUseCase
 import com.app.android.presentation.view.atomicDesign.page.CampoResumen
 import com.app.android.presentation.view.atomicDesign.page.ConfirmarSolicitudUiState
 import com.app.android.presentation.view.atomicDesign.page.MascotaResumen
@@ -30,7 +30,7 @@ class ConfirmarSolicitudViewModel
     constructor(
         private val borradorRepo: BorradorRepositoryInt,
         private val getDogByIdUseCase: GetDogByIdUseCase,
-        private val validarBorradorUseCase: ValidarBorradorUseCase,
+        private val enviarSolicitudUseCase: EnviarSolicitudUseCase,
     ) : ViewModel() {
         @Suppress("ktlint:standard:backing-property-naming")
         private val _enviando = MutableStateFlow(false)
@@ -179,32 +179,36 @@ class ConfirmarSolicitudViewModel
                     ),
             )
 
-        fun enviarSolicitud(onSuccess: (String) -> Unit) {
+        fun enviarSolicitud(
+            onSuccess: (String) -> Unit,
+            onUnauthorized: () -> Unit,
+        ) {
             if (_enviando.value) return
 
-            val validacion = validarBorradorUseCase()
-            when (validacion) {
-                is ValidacionBorradorResult.Invalido -> {
-                    _errorMessage.value = validacion.mensaje
-                }
+            _enviando.value = true
+            _errorMessage.value = null
 
-                is ValidacionBorradorResult.Valido -> {
-                    _enviando.value = true
-                    _errorMessage.value = null
-
-                    viewModelScope.launch {
-                        try {
-                            // TODO(Stage 2): call EnviarSolicitudUseCase when Supabase schema is verified
-                            val solicitudId = borradorRepo.borrador.value?.idPerro ?: "solicitud_ok"
-                            borradorRepo.limpiar()
-                            onSuccess(solicitudId)
-                            // Dejamos _enviando en true para evitar clics duplicados durante la transición de navegación
-                        } catch (e: Exception) {
-                            if (e is CancellationException) throw e
-                            _errorMessage.value = "Error al enviar la solicitud: ${e.message}"
-                            _enviando.value = false // Restablecer solo si ocurre un error
+            viewModelScope.launch {
+                try {
+                    val solicitudId = enviarSolicitudUseCase()
+                    onSuccess(solicitudId)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    val statusCode = (e as? SolicitudHttpException)?.statusCode
+                    val msg =
+                        when (statusCode) {
+                            400 -> e.message.ifBlank { "Datos inválidos en la solicitud." }
+                            409 -> "Ya existe una solicitud activa o borrador para este perro."
+                            403 -> "Este borrador pertenece a otra cuenta de usuario."
+                            401 -> {
+                                onUnauthorized()
+                                "Sesión expirada. Por favor inicia sesión nuevamente."
+                            }
+                            413 -> "La imagen es demasiado grande. Por favor recapture o reduzca la imagen."
+                            else -> e.message ?: "Error al enviar la solicitud."
                         }
-                    }
+                    _errorMessage.value = msg
+                    _enviando.value = false
                 }
             }
         }
