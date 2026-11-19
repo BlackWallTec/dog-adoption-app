@@ -98,6 +98,7 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     await estrategia.guardar({
       idUsuario,
       rol,
+      requiereConfirmacion: Boolean(correoServicio),
       usuario: {
         nombre: b.nombre,
         apellidos: b.apellidos,

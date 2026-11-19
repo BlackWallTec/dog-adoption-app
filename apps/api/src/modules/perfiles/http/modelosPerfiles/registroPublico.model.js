@@ -12,7 +12,14 @@ Los valores van parametrizados por postgres.js (nunca concatenados).
 const FK_CODIGO_POSTAL = "direcciones_fisicas_id_codigo_postal_fkey";
 
 export default class RegistroPublico {
-  static async crearCliente({ idUsuario, rol, usuario, contacto, direccion }) {
+  static async crearCliente({
+    idUsuario,
+    rol,
+    usuario,
+    contacto,
+    direccion,
+    requiereConfirmacion = false,
+  }) {
     const sql = getSqlSignup();
 
     try {
@@ -28,6 +35,10 @@ export default class RegistroPublico {
               contrasena: usuario.contrasena,
               fecha_nacimiento: usuario.fecha_nacimiento ?? null,
               aviso_privacidad_aceptado: usuario.aviso_privacidad_aceptado,
+              // La marca nace en la misma transacción; reenviar códigos nunca cambia esta fecha.
+              ...(requiereConfirmacion
+                ? { correo_pendiente_desde: tx`statement_timestamp()` }
+                : {}),
             },
             "id_usuario",
             "rol",
@@ -36,6 +47,7 @@ export default class RegistroPublico {
             "contrasena",
             "fecha_nacimiento",
             "aviso_privacidad_aceptado",
+            ...(requiereConfirmacion ? ["correo_pendiente_desde"] : []),
           )}
         `;
 

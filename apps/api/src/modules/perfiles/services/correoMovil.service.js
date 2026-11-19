@@ -16,7 +16,7 @@ export class ErrorCorreoMovil extends Error {
 }
 
 // Extensión local: no sustituye bcrypt/JWT ni modifica las cuentas anteriores.
-// El almacenamiento transaccional en Supabase se realizará antes de desplegar este MVP.
+// Los códigos siguen siendo locales; Supabase guarda el plazo pendiente para la limpieza.
 export function crearCorreoMovil({
   archivo,
   usuarios = Usuario,
@@ -58,10 +58,15 @@ export function crearCorreoMovil({
         "RATE_LIMITED",
       );
     const valor = codigo();
+    // Reenviar permite cambiar el código, pero nunca prolongar las 72 horas del registro.
+    if (tipo === "confirmar") {
+      cuenta.limiteConfirmacion ??= ahora() + 72 * 60 * MINUTO;
+      if (cuenta.limiteConfirmacion <= ahora()) invalido();
+    }
     cuenta[tipo] = {
       hash: hash(id, tipo, valor),
       enviado: ahora(),
-      vence: ahora() + (tipo === "confirmar" ? 72 * 60 : 15) * MINUTO,
+      vence: tipo === "confirmar" ? cuenta.limiteConfirmacion : ahora() + 15 * MINUTO,
       intentos: 0,
     };
     guardar();
@@ -94,6 +99,11 @@ export function crearCorreoMovil({
           const id = usuario.id_usuario;
           estado.cuentas[id] ??= { confirmado: true, version: 0 };
           const cuenta = estado.cuentas[id];
+          if (usuario.correo_pendiente_desde) {
+            cuenta.confirmado = false;
+            cuenta.limiteConfirmacion =
+              Date.parse(usuario.correo_pendiente_desde) + 72 * 60 * MINUTO;
+          }
           if (
             (tipo === "confirmar" && !cuenta.confirmado) ||
             (tipo === "recuperar" && cuenta.confirmado)
@@ -151,7 +161,11 @@ export function crearCorreoMovil({
               "PASSWORD_UPDATE_FAILED",
             );
           cuenta.version += 1;
-        } else cuenta.confirmado = true;
+        } else {
+          // No consume el código si Supabase falla o si la cuenta ya venció o fue eliminada.
+          if (!(await usuarios.confirmarCorreo(id))) invalido();
+          cuenta.confirmado = true;
+        }
         delete cuenta[tipo];
         guardar();
         return { ok: true };
@@ -197,7 +211,7 @@ export async function enviarCodigoCorreo({ para, codigo, tipo }) {
     to: [para],
     subject:
       tipo === "confirmar" ? "Confirma tu cuenta de Qariño Animal" : "Recupera tu contraseña",
-    text: `Tu código es: ${codigo}\n\nEscríbelo en la aplicación Qariño Animal. ${tipo === "confirmar" ? "Vence en 72 horas." : "Vence en 15 minutos."}\n\nSi no lo solicitaste, ignora este correo.`,
+    text: `Tu código es: ${codigo}\n\nEscríbelo en la aplicación Qariño Animal. ${tipo === "confirmar" ? "Confirma tu cuenta dentro de las 72 horas posteriores al registro." : "Vence en 15 minutos."}\n\nSi no lo solicitaste, ignora este correo.`,
   };
   // Gmail usa una contraseña de aplicación sólo en el servidor; conserva las rutas y códigos de Android.
   if (transporte === "gmail") {

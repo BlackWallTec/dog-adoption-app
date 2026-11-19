@@ -65,7 +65,7 @@ export const postLogin = async (req, res) => {
       usuario.rol === ROLES.CLIENT && correoMovilHabilitado()
         ? servicioCorreoMovil().estado(usuario.id_usuario)
         : null;
-    if (estadoCorreo && !estadoCorreo.confirmado)
+    if (estadoCorreo && (!estadoCorreo.confirmado || usuario.correo_pendiente_desde))
       return res.status(403).json({
         code: "EMAIL_NOT_CONFIRMED",
         error: "Confirma tu correo antes de iniciar sesión.",
