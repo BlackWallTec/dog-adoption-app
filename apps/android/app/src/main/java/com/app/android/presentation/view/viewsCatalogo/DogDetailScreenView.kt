@@ -78,10 +78,18 @@ fun DogDetailScreenView(
                 Scaffold(
                     // Top Molecule: BackButton & Title
                     topBar = {
-                        AppTopBar(
-                            titulo = dog.nombre,
-                            onBackClick = onBackClick,
-                        )
+                        Column {
+                            AppTopBar(
+                                titulo = dog.nombre,
+                                onBackClick = onBackClick,
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                            ) {
+                                CompartirScreen(perro = dog)
+                            }
+                        }
                     },
                     // Button: NavBar
                     bottomBar = {
