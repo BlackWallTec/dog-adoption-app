@@ -23,7 +23,8 @@ router.post("/admin/solicitar-subida", soloAdmin, adminController.obtenerUrlSubi
 
 // ==== Rutas Admin ======
 // GET /api/catalogo/admin/perros
-router.get("/admin/perros", adminController.getPerrosAdmin);
+// Web: cookie `token` (no mandar x-client). Móvil: x-client mobile + Authorization Bearer.
+router.get("/admin/perros", soloAdmin, adminController.getPerrosAdmin);
 
 // POST /api/catalogo/admin/perros
 router.post("/admin/perros", soloAdmin, adminController.postNuevoPerro);

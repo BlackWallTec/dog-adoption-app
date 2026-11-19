@@ -178,7 +178,14 @@ async function cargarPerros() {
   mostrarCarga();
 
   try {
-    const respuesta = await fetch("/api/catalogo/admin/perros");
+    const respuesta = await fetch("/api/catalogo/admin/perros", {
+      credentials: "same-origin",
+    });
+
+    if (respuesta.status === 401 || respuesta.status === 403) {
+      window.location.assign("/HTML/htmlPerfiles/login.html");
+      return;
+    }
 
     const contentType = respuesta.headers.get("content-type") || "";
     if (!respuesta.ok || !contentType.includes("application/json")) {
