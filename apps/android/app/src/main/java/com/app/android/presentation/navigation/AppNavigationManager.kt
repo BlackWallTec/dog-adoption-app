@@ -42,10 +42,7 @@ import com.app.android.presentation.view.viewsSolicitudes.MisSolicitudesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
-<<<<<<< HEAD
 import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
-=======
->>>>>>> b9aec90 (feat(solicitudes): uses cases done, test cases pass)
 import com.app.android.presentation.view.viewsVoluntariado.DetalleProgramaScreen
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState

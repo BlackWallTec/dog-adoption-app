@@ -33,9 +33,12 @@ class EnviarSolicitudUseCaseTest {
         var uploadedDocs = mutableListOf<DocumentType>()
         var finalizeCalled = false
 
-        override suspend fun getSolicitudActiva(idPerro: String): SolicitudResumen? = null
+        override suspend fun getSolicitudActiva(
+            idUsuario: String,
+            idPerro: String,
+        ): SolicitudResumen? = null
 
-        override suspend fun getPerfil(): DatosGenerales =
+        override suspend fun getPerfil(idUsuario: String): DatosGenerales =
             DatosGenerales(
                 nombreCompleto = "Test",
                 fechaNacimiento = "1995-03-15",

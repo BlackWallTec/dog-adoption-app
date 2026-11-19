@@ -110,7 +110,13 @@ export const getActive = async (req, res) => {
 // GET /api/solicitudes/cliente/perfil/:idUsuario
 export const getProfile = async (req, res) => {
   try {
-    const perfil = await profileModel.getProfile(req.params.idUsuario);
+    const perfil = await profileModel.getProfile(req.user.uuid);
+    if (!perfil) {
+      return res.status(404).json({
+        success: false,
+        message: "No se encontró el perfil.",
+      });
+    }
 
     return res.status(200).json({
       success: true,
