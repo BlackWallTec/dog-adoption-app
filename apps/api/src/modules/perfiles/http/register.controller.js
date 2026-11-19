@@ -79,8 +79,14 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     // Valida formato de todos los campos
     validateRegistration(b);
 
-    // CP elegido debe ser un texto; su existencia la verifica la estrategia
-    if (typeof b.id_codigo_postal !== "string") throw cpInexistente();
+    // El formulario debe enviar el UUID de la colonia elegida, no un CP ni un texto vacío.
+    if (
+      typeof b.id_codigo_postal !== "string" ||
+      !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(b.id_codigo_postal)
+    )
+      throw new VALIDATION("Error de validación en los datos", {
+        id_codigo_postal: "Selecciona una colonia válida para tu código postal.",
+      });
     await estrategia.validarCP(b.id_codigo_postal);
 
     // Valores ya validados, normalizados

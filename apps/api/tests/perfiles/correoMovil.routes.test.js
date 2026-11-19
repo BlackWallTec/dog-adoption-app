@@ -46,7 +46,7 @@ const registro = (correo) => ({
   calle: "Prueba",
   numero_exterior: "1",
   numero_interior: "",
-  id_codigo_postal: "cp-demo",
+  id_codigo_postal: "12345678-1234-1234-1234-123456789abc",
   contrasena: "Anterior1234",
   confirmContrasena: "Anterior1234",
   privacidad: true,
@@ -146,6 +146,18 @@ describe("Extensión móvil sin sustituir el login actual", () => {
       if (correo.startsWith("root")) rootCookie = cookie;
     }
   });
+  it.each([undefined, null, "", "   ", "06700", "colonia-invalida"])(
+    "rechaza la colonia inválida %s antes de escribir en Postgres",
+    async (idCodigoPostal) => {
+      const altasPrevias = RegistroPublico.crearCliente.mock.calls.length;
+      const respuesta = await request(app)
+        .post(`${base}/register`)
+        .send({ ...registro("nuevo@gmail.com"), id_codigo_postal: idCodigoPostal });
+      expect(respuesta.status).toBe(422);
+      expect(respuesta.body.fields.id_codigo_postal).toContain("Selecciona una colonia");
+      expect(RegistroPublico.crearCliente).toHaveBeenCalledTimes(altasPrevias);
+    },
+  );
   it("añade confirmación sólo al Cliente nuevo, sin permitir saltarla usando cookies", async () => {
     const respuesta = await request(app).post(`${base}/register`).send(registro("nuevo@gmail.com"));
     expect(respuesta.status).toBe(201);

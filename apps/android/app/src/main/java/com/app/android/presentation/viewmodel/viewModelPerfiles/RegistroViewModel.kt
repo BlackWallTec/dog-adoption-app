@@ -109,6 +109,15 @@ class RegistroViewModel @Inject constructor(
     fun registrar() {
         val state = _uiState.value
         if (state.isLoading || state.registroExitoso) return
+        // Escribir el CP carga opciones; todavía hay que elegir una colonia de esa lista.
+        if (state.cargandoColonias || state.datos.idCodigoPostal.isBlank() ||
+            state.colonias.none { it.idCodigoPostal == state.datos.idCodigoPostal }) {
+            _uiState.update { it.copy(
+                campos = it.campos + ("id_codigo_postal" to "Selecciona la colonia de tu dirección."),
+                error = null,
+            ) }
+            return
+        }
         _uiState.update { it.copy(isLoading = true, campos = emptyMap(), error = null) }
         // launch inicia una corrutina ligada al ViewModel; al destruirse éste, se cancela su alcance.
         registroJob = viewModelScope.launch {
