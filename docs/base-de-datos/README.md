@@ -42,26 +42,52 @@ docs/base-de-datos/
 │                                    políticas de Storage
 ├── 04_event_triggers.sql         ← event trigger ensure_rls (no lo incluye pg_dump)
 ├── consultas/                    ← consultas que generan 02_*.sql y 03_*.sql
-├── historial/                    ← SQL de cada función copiado del Dashboard (ver su README)
-└── migracion-base/
-    └── 20261119200351_remote_schema.sql   ← migración base (idéntica a 01_schema.sql)
+└── historial/                    ← SQL de cada función copiado del Dashboard (ver su README)
+    └── migraciones-antiguas/     ← migraciones aplicadas a mano antes de la migración base
+
+supabase/migrations/
+└── 20261119200351_remote_schema.sql   ← migración base (idéntica a 01_schema.sql)
 ```
 
 ## Migraciones
 
-- El proyecto remoto **no tenía historial de migraciones**: todo, incluidas las migraciones
-  de `supabase/migrations/`, se pegó a mano en el SQL Editor.
-- Se creó la migración base `20261119200351_remote_schema.sql` con el estado completo de la
-  base, y se registró como aplicada en el remoto con:
-  ```
-  npx supabase migration repair --status applied 20261119200351 --remote
-  ```
-- Ya incluye el contenido de `20261115000000_create_solicitud_cfdi.sql` y de
-  `20261119000000_add_cfdi_delivery_to_solicitud.sql` (verificado).
-- **Pendiente (decisión del equipo):** la migración base está en `docs/base-de-datos/migracion-base/`
-  y **no** en `supabase/migrations/`. Para usar `npx supabase db push` sin conflictos hay que
-  mover la base a `supabase/migrations/` y pasar las dos migraciones anteriores a `historial/`,
-  porque ya están contenidas en la base.
+### Situación inicial
+
+El proyecto remoto **no tenía historial de migraciones**. Toda la estructura, incluidas las
+migraciones del CFDI, se pegó a mano en el SQL Editor del Dashboard.
+
+### Migración base
+
+Se creó `supabase/migrations/20261119200351_remote_schema.sql` con el estado completo de la base
+(idéntica a `01_schema.sql`) y se registró como aplicada en el remoto con:
+
+```
+npx supabase migration repair --status applied 20261119200351 --remote
+```
+
+Hoy el historial local (`supabase/migrations/`) y el remoto coinciden: los dos tienen solo
+`20261119200351`.
+
+### Migraciones antiguas
+
+Estas migraciones se movieron a `historial/migraciones-antiguas/` porque su contenido ya está
+incluido en la migración base (verificado). Se conservan solo como referencia; **no se deben
+volver a ejecutar**:
+
+- `20261115000000_create_solicitud_cfdi.sql`
+- `20261119000000_add_cfdi_delivery_to_solicitud.sql`
+
+### Reglas para cambios nuevos
+
+1. **No volver a hacer cambios de estructura a mano en el Dashboard.** Si se hace, el historial
+   se desincroniza otra vez.
+2. Todo cambio va como migración nueva, con fecha posterior a `20261119200351`:
+   ```
+   npx supabase migration new nombre_del_cambio
+   ```
+3. Se aplica a producción con `npx supabase db push`, después de revisarlo en un PR.
+4. **No modificar `20261119200351_remote_schema.sql`.** Si se regenera `01_schema.sql`, la
+   migración base se queda como está.
 
 ## Transacciones / lógica de negocio
 
@@ -69,7 +95,7 @@ La lógica transaccional vive en las **9 funciones** de `public`, que se llaman 
 llamada se ejecuta dentro de una transacción. El detalle de cada una está en
 `historial/README.md` y en la sección 3 de `02_funciones_triggers.sql`.
 
-⚠️ `limpiar_datos_prueba()` vacía **todas** las tablas. Solo `service_role` puede ejecutarla.
+`limpiar_datos_prueba()` vacía **todas** las tablas. Solo `service_role` puede ejecutarla.
 
 ## Cómo levantar la base de datos limpia en un proyecto Supabase nuevo
 
