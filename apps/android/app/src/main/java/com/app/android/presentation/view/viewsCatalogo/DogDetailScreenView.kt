@@ -22,6 +22,7 @@ import com.app.android.domain.entities.entitiesCatalogo.Dog
 import com.app.android.domain.entities.entitiesCatalogo.toUiState
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.toMediaItems
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
+import com.app.android.presentation.view.atomicDesign.organism.NavBar
 
 // 4. Clases de VMStates y el VM
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailUiState
