@@ -210,6 +210,14 @@ fun AppNavigation() {
                         sesionViewModel.salir()
                     },
                     onLogin = navController::irAlLogin,
+                    onNavSelect = navController::irAOpcionBarra,
+                    onMisSolicitudes = { navController.navigate(Screen.MisSolicitudes.ruta) },
+                    onMisProgramas = {
+                        // Primero Programas, para que "atrás" en Mis programas tenga a dónde regresar.
+                        navController.navigate(Screen.GrafoVoluntariado.ruta)
+                        navController.navigate(Screen.MisVoluntariados.ruta)
+                    },
+                    onDatosFiscales = { navController.navigate(Screen.DatosFiscales.ruta) },
                 )
             }
         }
