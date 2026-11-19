@@ -73,6 +73,12 @@ describe("esRangoValido", () => {
     expect(esRangoValido(undefined, "2026-12-01")).toBe(false);
   });
 
+  it("rechaza fechas imposibles sin lanzar error", () => {
+    expect(esRangoValido("2026-13-01", "2026-12-01")).toBe(false);
+    expect(esRangoValido("2026-11-01", "2026-11-32")).toBe(false);
+    expect(esRangoValido("2026-00-10", "2026-01-10")).toBe(false);
+  });
+
   it("rechaza desde mayor que hasta y rangos de más de 62 días", () => {
     expect(esRangoValido("2026-12-01", "2026-11-01")).toBe(false);
     expect(esRangoValido("2026-01-01", "2026-06-01")).toBe(false);
@@ -189,6 +195,18 @@ describe("GET /admin/programas/calendario", () => {
   it("400 si el rango no es válido y no consulta la BD", async () => {
     const res = crearRespuesta();
     await getCalendario({ query: { desde: "2026-02-30", hasta: "2026-03-01" } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: "RANGO_INVALIDO" }));
+    expect(mocks.programasEnRango).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["2026-13-01", "2026-12-01"],
+    ["2026-11-01", "2026-11-32"],
+  ])("400 RANGO_INVALIDO con fecha imposible (%s, %s)", async (desde, hasta) => {
+    const res = crearRespuesta();
+    await getCalendario({ query: { desde, hasta } }, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: "RANGO_INVALIDO" }));

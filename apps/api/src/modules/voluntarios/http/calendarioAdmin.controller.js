@@ -33,8 +33,13 @@ export const lunesDe = (texto) => sumarDias(texto, -((aFecha(texto).getUTCDay() 
 // Supabase regresa "2026-11-21T09:00:00"; se compara como "2026-11-21 09:00:00"
 const aTimestamp = (valor) => String(valor).replace("T", " ").slice(0, 19);
 
-const esFechaValida = (texto) =>
-  typeof texto === "string" && FECHA_REGEX.test(texto) && aTexto(aFecha(texto)) === texto;
+// Primero se descarta Invalid Date (ej. 2026-13-01), porque toISOString() lanza RangeError.
+// La comparación con el texto atrapa fechas que JS recorre, como 2026-02-30 -> 2026-03-02
+const esFechaValida = (texto) => {
+  if (typeof texto !== "string" || !FECHA_REGEX.test(texto)) return false;
+  const fecha = aFecha(texto);
+  return !Number.isNaN(fecha.getTime()) && aTexto(fecha) === texto;
+};
 
 // desde <= hasta y máximo 62 días, para que no se pidan años completos
 export const esRangoValido = (desde, hasta) => {
