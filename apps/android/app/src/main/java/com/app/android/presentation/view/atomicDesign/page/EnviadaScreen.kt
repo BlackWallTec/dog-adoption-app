@@ -46,6 +46,7 @@ import com.app.android.presentation.view.ui.theme.Surface
 @Composable
 fun EnviadaScreen(
     solicitudId: String,
+    mascota: MascotaResumen,
     onBackClick: () -> Unit,
     onVerSolicitudesClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -76,67 +77,53 @@ fun EnviadaScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(paddingInterno)
-                    .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+                    .verticalScroll(rememberScrollState()) // permite deslizar si no cabe
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Column(
+            Box(
                 modifier =
                     Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                        .size(160.dp)
+                        .background(SecondaryContainer, CircleShape),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier =
-                        Modifier
-                            .size(160.dp)
-                            .background(SecondaryContainer, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.MarkEmailRead,
-                        contentDescription = null, // decorativo
-                        tint = Secondary,
-                        modifier = Modifier.size(80.dp),
-                    )
-                }
-                Text(
-                    text = "¡Solicitud enviada!",
-                    color = InverseSurface,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = "Te notificaremos cuando haya novedades",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                TarjetaMascota(
-                    foto = painterResource(id = R.drawable.perro_prueba),
-                    nombre = "Bruno",
-                    edad = "2 años",
-                    sexo = "Macho",
-                    tamano = "Mediano",
-                    raza = "Mestizo",
-                    ciudad = "Querétaro",
-                )
-                Text(
-                    text = "Solicitud $solicitudId · En revisión",
-                    color = InverseSurface,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                Icon(
+                    imageVector = Icons.Filled.MarkEmailRead,
+                    contentDescription = null, // decorativo
+                    tint = Secondary,
+                    modifier = Modifier.size(80.dp),
                 )
             }
+            Text(
+                text = "¡Solicitud enviada!",
+                color = InverseSurface,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "Te notificaremos cuando haya novedades",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            TarjetaMascotaResumen(mascota = mascota)
+            Text(
+                text = "Solicitud $solicitudId · En revisión",
+                color = InverseSurface,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Column(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp),
+                        .padding(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 AppButton(
@@ -161,6 +148,12 @@ fun EnviadaScreenPreview() {
     AndroidTheme {
         EnviadaScreen(
             solicitudId = "solicitud-prueba",
+            mascota =
+                MascotaResumen(
+                    nombre = "Bruno",
+                    detalle = "2 años · Macho · Mediano",
+                    raza = "Mestizo · Querétaro",
+                ),
             onBackClick = {},
             onVerSolicitudesClick = {},
         )

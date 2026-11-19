@@ -266,7 +266,7 @@ fun ConfirmarSolicitudScreen(
 // Se quedan locales hasta que otra pantalla las necesite (luego se mueven a atomic/molecule).
 
 @Composable
-private fun TarjetaMascotaResumen(
+fun TarjetaMascotaResumen(
     mascota: MascotaResumen,
     modifier: Modifier = Modifier,
 ) {

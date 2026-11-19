@@ -23,7 +23,7 @@ import androidx.navigation.navArgument
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
-import com.app.android.presentation.view.atomicDesign.page.EnviadaScreen
+import com.app.android.presentation.view.viewsSolicitudes.EnviadaRoute
 import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
@@ -393,10 +393,10 @@ fun AppNavigation() {
                 sesionViewModel = sesionViewModel,
                 recordarDestino = { destinoTrasLogin = it },
             ) { _ ->
-                EnviadaScreen(
+                EnviadaRoute(
                     solicitudId = solicitudId,
-                    onBackClick = navController::irAlCatalogo,
-                    onVerSolicitudesClick = navController::irAlCatalogo,
+                    onBack = navController::irAlCatalogo,
+                    onVerSolicitudes = navController::irAlCatalogo,
                     onNavSelect = navController::irAOpcionBarra,
                 )
             }
