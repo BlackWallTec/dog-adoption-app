@@ -13,6 +13,8 @@
   "dependencies": {
     "@qarino/shared": "workspace:*",
     "@supabase/supabase-js": "catalog:",
+    "@upstash/ratelimit": "catalog:",
+    "@upstash/redis": "catalog:",
     "bcryptjs": "catalog:",
     "cookie-parser": "catalog:",
     "cors": "catalog:",
