@@ -5,6 +5,7 @@ import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
 import CodigoPostal from "./modelosPerfiles/cps.model.js";
 import RegistroPublico from "./modelosPerfiles/registroPublico.model.js";
+import { correoHabilitado, servicioCorreo } from "../services/correo.service.js";
 import {
   ERROR_CODES,
   errorBody,
@@ -86,6 +87,9 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     const correo = b.correo.toLowerCase();
     const telefono = limpiarTelefono(b.telefono);
 
+    // Valida la configuración antes de crear la cuenta; conserva ambas estrategias actuales.
+    const correoServicio = correoHabilitado() ? servicioCorreo() : null;
+
     // Hashea la contraseña
     const hashContrasena = await bcrypt.hash(b.contrasena, 10);
 
@@ -111,11 +115,16 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
       },
     });
 
+    // Tanto Clientes como Administradores nuevos confirman su propia dirección.
+    // La entrega fallida permite reenviar; no se modifica la transacción de registro.
+    if (correoServicio) await correoServicio.registrar(idUsuario, correo);
+
     return res.status(201).json({
       user: {
         uuid: idUsuario,
         rol,
       },
+      ...(correoServicio ? { requiereConfirmacion: true } : {}),
     });
   } catch (error) {
     console.error(error);

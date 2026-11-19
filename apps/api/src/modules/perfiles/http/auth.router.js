@@ -6,8 +6,17 @@ import * as authController from "./auth.controller.js";
 import * as registerController from "./register.controller.js";
 import * as profileController from "./profile.controller.js";
 import * as cpController from "./cps.controller.js";
+import * as correoController from "./correo.controller.js";
 
 const router = express.Router();
+
+// Correo aislado del resto de módulos; los enlaces se consumen por POST y no crean sesiones.
+router.get("/correo/config", correoController.configuracion);
+router.get("/correo/bandeja", correoController.bandeja);
+router.post("/correo/reenviar", correoController.limitarCorreo, correoController.reenviar);
+router.post("/correo/recuperar", correoController.limitarCorreo, correoController.recuperar);
+router.post("/correo/confirmar", correoController.limitarCorreo, correoController.confirmar);
+router.post("/correo/restablecer", correoController.limitarCorreo, correoController.restablecer);
 
 // Rutas Login
 router.post("/login", authController.postLogin);

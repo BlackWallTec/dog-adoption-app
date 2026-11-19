@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { verificarSesionCorreo } from "../modules/perfiles/index.js";
 
 /*
 IMPORTANTE
@@ -39,6 +40,9 @@ export default function verificarToken(req, res, next) {
     req.user = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ["HS256"],
     });
+    // Recuperar contraseña invalida sesiones anteriores; sin el MVP habilitado no cambia el flujo.
+    if (!verificarSesionCorreo(req.user))
+      throw new Error("Sesión anterior al cambio de contraseña");
     next();
   } catch {
     return res.status(401).json({

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
+import { correoHabilitado, servicioCorreo } from "../services/correo.service.js";
 import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "@qarino/shared/errores.js";
 
 /*
@@ -59,12 +60,24 @@ export const postLogin = async (req, res) => {
         .json(errorBody(ERROR_CODES.INVALID_CREDENTIALS, "Credenciales inválidas"));
     }
 
+    // La comprobación se realiza después de validar la contraseña para no revelar cuentas.
+    const estadoCorreo = correoHabilitado()
+      ? servicioCorreo().obtenerEstado(usuario.id_usuario)
+      : { confirmado: true, version: 0 };
+    if (!estadoCorreo.confirmado) {
+      return res.status(403).json({
+        code: "EMAIL_NOT_CONFIRMED",
+        error: "Confirma tu correo antes de iniciar sesión. Puedes solicitar otro enlace.",
+      });
+    }
+
     const vida = vidaSeconds(usuario.rol);
 
     const token = jwt.sign(
       {
         uuid: usuario.id_usuario,
         rol: usuario.rol,
+        correoVersion: estadoCorreo.version,
       },
       process.env.JWT_SECRET,
       {
@@ -100,9 +113,7 @@ export const postLogin = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    return res
-      .status(500)
-      .json(errorBody(ERROR_CODES.INTERNAL, `Error interno del servidor: ${error.message}`));
+    return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
   }
 };
 

@@ -58,3 +58,6 @@ DIR_DUMPS
 apps/android/pruebas-voluntariado/capturas/
 local.properties
 apps/.vitest/
+
+# Tokens y bandeja de correo del MVP local (contienen enlaces privados)
+.local/
