@@ -1,5 +1,4 @@
 import express from "express";
-import verificarToken from "../../../middleware/is-auth.js";
 import * as clientController from "./requestClient.controller.js";
 
 const router = express.Router();
