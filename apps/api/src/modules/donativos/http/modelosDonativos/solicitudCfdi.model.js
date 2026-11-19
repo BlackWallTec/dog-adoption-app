@@ -189,6 +189,33 @@ class SolicitudCfdiModel {
       motivos_revision: motivosRevision,
     };
   }
+
+  // HU49: el donante pide su CFDI, solo si el donativo es suyo y ya esta validado
+  static async crear ({ idDonativo, idUsuario }) {
+    const { data: donativo, error: errorDonativo } = await supabaseAdmin
+      .from("donativo")
+      .select("id_donativo, estado")
+      .eq("id_donativo", idDonativo)
+      .eq("id_usuario", idUsuario)
+      .maybeSingle();
+    
+      if(errorDonativo) {
+        throw new Error(`Error al consultar el donativo: ${errorDonativo.message}`);
+      }
+
+      if(!donativo) return "no-existe";
+      if(donativo.estado !== "Validado") return "no-validado";
+      
+      const {error} = await supabaseAdmin.from("solicitud_cfdi").insert({
+        id_donativo: idDonativo });
+        
+      if(error) {
+        if(error.code === "23505") return "repetida"; // ya existe una solicitud para este donativo
+        throw new Error(`Error al crear la solicitud de CFDI: ${error.message}`);
+      }
+
+      return "creada";
+  }
 }
 
 export default SolicitudCfdiModel;

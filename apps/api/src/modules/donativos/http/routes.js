@@ -15,6 +15,8 @@ import {
   putDatosFiscales,
 } from "./datosFiscales.controller.js";
 
+import { getMisDonativos, postSolicitudCfdi } from "./cfdiCliente.controller.js";
+
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
@@ -40,6 +42,10 @@ router.post(
   express.raw({ type: TIPOS_COMPROBANTE, limit: "10mb" }),
   postDonativo,
 );
+
+//HU49 - mis donativos y pedir CFDI
+router.get("/cliente/mis-donativos", verificarToken, getMisDonativos);
+router.post("/cliente/mis-donativos/:idDonativo/cfdi", verificarToken, postSolicitudCfdi);
 
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
