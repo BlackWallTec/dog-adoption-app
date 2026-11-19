@@ -7,6 +7,7 @@ import * as clientController from "./voluntariadoClient.controller.js";
 import { getInscritos } from "./inscritosAdmin.controller.js";
 import { router as programas } from "./programas.routes.js";
 import * as edicionController from "./programaEdicion.controller.js";
+import * as detalleController from "./programaDetalle.controller.js";
 
 export const router = Router();
 
@@ -17,6 +18,9 @@ router.get("/cliente/programas", verificarToken, clientController.getProgramasVi
 
 // GET /api/voluntarios/cliente/mis-programas
 router.get("/cliente/mis-programas", verificarToken, clientController.getMisProgramas);
+
+// GET /api/voluntarios/cliente/programas/:idPrograma
+router.get("/cliente/programas/:idPrograma", verificarToken, detalleController.getDetallePrograma);
 
 // POST /api/voluntarios/programas/:idPrograma/inscripciones
 router.post("/programas/:idPrograma/inscripciones", verificarToken, inscribirse);

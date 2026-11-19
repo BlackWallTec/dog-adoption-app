@@ -26,6 +26,7 @@ fun ProgramasScreen(
     onNavSelect: (Int) -> Unit = {},
     onInscripcionExitosa: () -> Unit = {},
     onMisVoluntariados: () -> Unit = {},
+    onVerDetalle: ((String) -> Unit)? = null, // HU36: id del programa
 ) {
     // Guía: collectAsStateWithLifecycle pausa la recolección cuando la pantalla no está visible
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,6 +54,7 @@ fun ProgramasScreen(
         snackbarHostState = snackbarHostState,
         onNavSelect = onNavSelect,
         onMisVoluntariados = onMisVoluntariados,
+        onVerDetalle = onVerDetalle, // HU36
     )
 
     // Confirmación antes de cancelar: la acción libera el lugar y otra persona puede tomarlo

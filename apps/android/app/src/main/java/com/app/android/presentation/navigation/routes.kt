@@ -9,14 +9,16 @@ sealed class Screen(
     object Catalogo : Screen("catalogo_screen")
     // Pantallas de perfiles
     object Login : Screen("login_screen")
-    object Registro : Screen("registro_screen")
-    object Cuenta : Screen("cuenta_screen")
 
+    object Registro : Screen("registro_screen")
+
+    object Cuenta : Screen("cuenta_screen")
 
     object DetallePerro : Screen("detalle_perro_screen/{dogId}") {
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
     }
+
     // Donativos - HU46
     object DonarDinero : Screen("donar_dinero_screen")
 
@@ -29,10 +31,17 @@ sealed class Screen(
 
     // catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
+
     // confirmación de inscripción (lee el programa del ViewModel compartido, sin argumentos)
     object ConfirmacionInscripcion : Screen("voluntariado_confirmacion")
+
     // "Mis Voluntariados" (programas vigentes en los que el usuario está inscrito)
     object MisVoluntariados : Screen("mis_voluntariados_screen")
+
+    // HU36: detalle de un programa (dentro del grafo de voluntariado)
+    object DetallePrograma : Screen("voluntariado_detalle/{idPrograma}") {
+        fun crearRuta(idPrograma: String) = "voluntariado_detalle/$idPrograma"
+    }
 
     // Grafo que agrupa Programas y Confirmación para que compartan ProgramasViewModel
     object GrafoVoluntariado : Screen("voluntariado_graph")
