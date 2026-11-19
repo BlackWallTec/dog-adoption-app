@@ -4,7 +4,8 @@ import {
   contarInscritosPorProgramasModel,
 } from "./modelosVoluntariado/inscripcion.model.js";
 
-export const getProgramasVigentes = async (req, res) => {
+// soloInscritos = true -> solo los programas del usuario
+const responderProgramas = (soloInscritos) => async (req, res) => {
   try {
     const programas = await programModel.getCurrentPrograms();
 
@@ -32,7 +33,7 @@ export const getProgramasVigentes = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data,
+      data: soloInscritos ? data.filter((programa) => programa.usuario_inscrito) : data,
     });
   } catch (error) {
     return res.status(500).json({
@@ -41,3 +42,7 @@ export const getProgramasVigentes = async (req, res) => {
     });
   }
 };
+
+export const getProgramasVigentes = responderProgramas(false);
+
+export const getMisProgramas = responderProgramas(true);

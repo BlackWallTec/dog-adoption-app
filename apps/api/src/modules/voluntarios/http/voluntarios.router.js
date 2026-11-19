@@ -16,8 +16,10 @@ export const router = Router();
 // GET /api/voluntarios/cliente/programas
 router.get("/cliente/programas", verificarToken, clientController.getProgramasVigentes);
 
+// GET /api/voluntarios/cliente/mis-programas
+router.get("/cliente/mis-programas", verificarToken, clientController.getMisProgramas);
+
 // GET /api/voluntarios/cliente/programas/:idPrograma
-// HU36: detalle del programa. Requiere sesión, igual que el catálogo.
 router.get("/cliente/programas/:idPrograma", verificarToken, detalleController.getDetallePrograma);
 
 // POST /api/voluntarios/programas/:idPrograma/inscripciones

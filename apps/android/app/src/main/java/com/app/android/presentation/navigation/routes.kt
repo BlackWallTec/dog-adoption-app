@@ -7,7 +7,6 @@ sealed class Screen(
     val ruta: String,
 ) {
     object Catalogo : Screen("catalogo_screen")
-
     // Pantallas de perfiles
     object Login : Screen("login_screen")
 
@@ -30,11 +29,14 @@ sealed class Screen(
     // Donativos - HU45
     object DatosFiscales : Screen("datos_fiscales_screen")
 
-    // HU39A: catálogo de programas de voluntariado
+    // catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
 
-    // HU33: confirmación de inscripción (lee el programa del ViewModel compartido, sin argumentos)
+    // confirmación de inscripción (lee el programa del ViewModel compartido, sin argumentos)
     object ConfirmacionInscripcion : Screen("voluntariado_confirmacion")
+
+    // "Mis Voluntariados" (programas vigentes en los que el usuario está inscrito)
+    object MisVoluntariados : Screen("mis_voluntariados_screen")
 
     // HU36: detalle de un programa (dentro del grafo de voluntariado)
     object DetallePrograma : Screen("voluntariado_detalle/{idPrograma}") {

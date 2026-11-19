@@ -76,6 +76,15 @@ class ProgramasViewModel @Inject constructor(
         }
     }
 
+    // HU40: al volver de "Mis Voluntariados" (donde se pudo cancelar)
+    fun actualizarProgramas() {
+        if (_uiState.value !is ProgramasUiState.Success) return
+        viewModelScope.launch {
+            recargarSinIndicador()
+            publicarProgramas()
+        }
+    }
+
     fun inscribirse(idPrograma: String) {
         val programa = iniciarProceso(idPrograma, "Inscribiendo…") ?: return
 

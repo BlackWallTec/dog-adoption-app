@@ -4,4 +4,6 @@ import com.app.android.domain.entities.entitiesVoluntariado.Programa
 
 interface ProgramaRepository {
     suspend fun obtenerProgramasVigentes(): List<Programa>
+
+    suspend fun obtenerMisProgramas(): List<Programa>
 }

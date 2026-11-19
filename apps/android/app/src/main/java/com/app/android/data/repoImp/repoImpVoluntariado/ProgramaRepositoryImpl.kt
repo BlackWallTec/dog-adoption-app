@@ -30,12 +30,15 @@ class ProgramaRepositoryImpl @Inject constructor(
     private val api: ProgramaApiService
 ) : ProgramaRepository {
 
-    override suspend fun obtenerProgramasVigentes(): List<Programa> {
-        // Un programa con datos inválidos se omite y se registra, sin afectar a los demás.
-        return api.obtenerProgramas().data.mapNotNull { dto ->
+    override suspend fun obtenerProgramasVigentes(): List<Programa> = api.obtenerProgramas().data.aDominio()
+
+    override suspend fun obtenerMisProgramas(): List<Programa> = api.obtenerMisProgramas().data.aDominio()
+
+    // Un programa con datos inválidos se omite y se registra, sin afectar a los demás.
+    private fun List<ProgramaDto>.aDominio(): List<Programa> =
+        mapNotNull { dto ->
             runCatching { dto.toDomain() }
                 .onFailure { Log.e("HU39A", "Programa con datos inválidos: ${dto.idPrograma}", it) }
                 .getOrNull()
         }
-    }
 }

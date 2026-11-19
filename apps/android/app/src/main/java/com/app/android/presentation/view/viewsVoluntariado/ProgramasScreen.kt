@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.android.presentation.view.atomicDesign.organism.ConfirmActionDialog
 import com.app.android.presentation.view.atomicDesign.page.ProgramasPage
@@ -23,6 +25,7 @@ fun ProgramasScreen(
     onBackClick: () -> Unit = {},
     onNavSelect: (Int) -> Unit = {},
     onInscripcionExitosa: () -> Unit = {},
+    onMisVoluntariados: () -> Unit = {},
     onVerDetalle: ((String) -> Unit)? = null, // HU36: id del programa
 ) {
     // Guía: collectAsStateWithLifecycle pausa la recolección cuando la pantalla no está visible
@@ -38,6 +41,8 @@ fun ProgramasScreen(
         viewModel.inscripcionExitosa.collect { onInscripcionExitosa() }
     }
 
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.actualizarProgramas() }
+
     ProgramasPage(
         uiState = uiState,
         onReintentar = viewModel::cargarProgramas,
@@ -48,6 +53,7 @@ fun ProgramasScreen(
         },
         snackbarHostState = snackbarHostState,
         onNavSelect = onNavSelect,
+        onMisVoluntariados = onMisVoluntariados,
         onVerDetalle = onVerDetalle, // HU36
     )
 

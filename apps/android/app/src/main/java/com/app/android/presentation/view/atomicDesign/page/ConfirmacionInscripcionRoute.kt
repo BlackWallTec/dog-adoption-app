@@ -22,6 +22,8 @@ fun ConfirmacionInscripcionRoute(
     onBack: () -> Unit,
     onExplorarProgramas: () -> Unit,
     onNavSelect: (Int) -> Unit = {},
+    onVerMisVoluntariados: () -> Unit = {}, // HU40
+    onVerDetalle: (String) -> Unit = {}, // HU36: id del programa
 ) {
     val programaConfirmado by viewModel.programaConfirmado.collectAsStateWithLifecycle()
     val programa = programaConfirmado // copia local para el smart cast
@@ -54,7 +56,8 @@ fun ConfirmacionInscripcionRoute(
         onBackClick = onBack,
         onExplorarProgramasClick = onExplorarProgramas,
         onNavSelect = onNavSelect,
-        onVerMisProgramasClick = { /* no hace nada */ },
+        onVerMisProgramasClick = onVerMisVoluntariados,
+        onVerDetalleProgramaClick = { onVerDetalle(programa.id) }, // HU36
         onCancelarInscripcionClick = { confirmandoCancelacion = true },
     )
 
