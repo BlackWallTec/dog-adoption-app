@@ -8,7 +8,7 @@ import androidx.compose.ui.test.performScrollTo
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.domain.entities.entitiesPerfiles.Usuario
 import com.app.android.presentation.view.ui.theme.AndroidTheme
-import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
+import com.app.android.presentation.view.viewsConfiguracion.ConfiguracionScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -26,7 +26,7 @@ class AccesoDatosFiscalesTest {
         val sesion = Sesion(usuario = Usuario(id = "prueba", rol = "Cliente"), token = "")
         composeRule.setContent {
             AndroidTheme {
-                CuentaScreen(
+                ConfiguracionScreen(
                     state = SesionUiState(sesion = sesion, comprobando = false),
                     onRetry = {},
                     onCatalog = {},

@@ -1,4 +1,4 @@
-package com.app.android.presentation.view.viewsPerfiles
+package com.app.android.presentation.view.viewsConfiguracion
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,11 +26,13 @@ import com.app.android.presentation.view.atomicDesign.molecule.ListAccess
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.ui.theme.PrimaryContainer
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
+import com.app.android.presentation.view.viewsPerfiles.PerfilesError
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CuentaScreen(
+fun ConfiguracionScreen(
     state: SesionUiState,
     onRetry: () -> Unit,
     onCatalog: () -> Unit,
@@ -133,30 +135,16 @@ private fun DatoCuenta(label: String, value: String, tag: String = "") {
     }
 }
 
-@Composable
-fun InicioSesionScreen(state: SesionUiState, onRetry: () -> Unit, onGuest: () -> Unit) {
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-            if (state.comprobando) { CircularProgressIndicator(); Text("Comprobando tu sesión…", Modifier.padding(top = 16.dp)) }
-            else {
-                state.error?.let { PerfilesError(it) }
-                AppButton("Reintentar", onRetry, Modifier.fillMaxWidth().padding(top = 16.dp))
-                TextButton(onClick = onGuest) { Text("Explorar sin cuenta") }
-            }
-        }
-    }
-}
-
 @Preview(name = "Configuración", showBackground = true, widthDp = 360, heightDp = 1200)
 @Composable
-private fun CuentaPreview() {
+private fun ConfiguracionPreview() {
     // Estos datos son solo para ver el diseño; no hacen una llamada al servidor.
     val sesion = Sesion(
         usuario = Usuario(id = "preview", rol = "Cliente"),
         token = "",
     )
     AndroidTheme {
-        CuentaScreen(
+        ConfiguracionScreen(
             state = SesionUiState(
                 sesion = sesion,
                 comprobando = false,

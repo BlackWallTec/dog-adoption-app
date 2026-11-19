@@ -30,9 +30,9 @@ import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
 import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
+import com.app.android.presentation.view.viewsConfiguracion.ConfiguracionScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
-import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
 import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
 import com.app.android.presentation.view.viewsPerfiles.LoginScreen
 import com.app.android.presentation.view.viewsPerfiles.RegistroScreen
@@ -201,7 +201,7 @@ fun AppNavigation() {
         // Conecto los botones de cuenta sin meter peticiones de red en la vista.
         composable(route = Screen.Cuenta.ruta) {
             ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) {
-                CuentaScreen(
+                ConfiguracionScreen(
                     state = estadoSesion,
                     onRetry = sesionViewModel::consultarPerfil,
                     onCatalog = navController::irAlCatalogo,
