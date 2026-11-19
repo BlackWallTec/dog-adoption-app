@@ -18,6 +18,7 @@
     "cors": "catalog:",
     "dotenv": "catalog:",
     "express": "^5.3.0",
+    "fast-xml-parser": "catalog:",
     "jsonwebtoken": "catalog:",
     "multer": "catalog:"
   },
