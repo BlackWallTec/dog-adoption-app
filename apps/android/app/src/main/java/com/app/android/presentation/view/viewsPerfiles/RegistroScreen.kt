@@ -38,7 +38,7 @@ import com.app.android.presentation.viewmodel.viewModelPerfiles.RegistroViewMode
 @Composable
 fun RegistroScreen(
     onCancel: () -> Unit,
-    onRegistered: () -> Unit,
+    onRegistered: (String, Boolean, Boolean) -> Unit,
     // Hilt obtiene el ViewModel de esta pantalla y resuelve sus dependencias.
     viewModel: RegistroViewModel = hiltViewModel(),
 ) {
@@ -46,7 +46,10 @@ fun RegistroScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     // LaunchedEffect reacciona al cambio de esta clave; consumir el éxito evita repetir la navegación.
     LaunchedEffect(state.registroExitoso) {
-        if (state.registroExitoso) { viewModel.consumirRegistro(); onRegistered() }
+        if (state.registroExitoso) {
+            viewModel.consumirRegistro()
+            onRegistered(state.datos.correo.trim(), state.requiereConfirmacion, state.correoEnviado)
+        }
     }
     // Intercepta el botón o gesto de atrás del teléfono para cancelar también el trabajo pendiente.
     BackHandler { viewModel.cancelar(); onCancel() }

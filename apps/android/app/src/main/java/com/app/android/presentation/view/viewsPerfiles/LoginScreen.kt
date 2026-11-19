@@ -43,6 +43,8 @@ fun LoginScreen(
     onExploreWithoutAccount: () -> Unit,
     onRegister: () -> Unit,
     onAuthenticated: (Sesion) -> Unit,
+    onRecoverPassword: (String) -> Unit = {},
+    onConfirmEmail: (String) -> Unit = {},
     // ViewModel por default
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
@@ -76,6 +78,8 @@ fun LoginScreen(
         onBackToCatalog = { viewModel.cancelLogin(); onBackToCatalog() },
         onExploreWithoutAccount = { viewModel.cancelLogin(); onExploreWithoutAccount() },
         onRegister = { viewModel.cancelLogin(); onRegister() },
+        onRecoverPassword = { viewModel.cancelLogin(); onRecoverPassword(state.email) },
+        onConfirmEmail = { viewModel.cancelLogin(); onConfirmEmail(state.email) },
     )
 }
 
@@ -89,6 +93,8 @@ internal fun LoginContent(
     onBackToCatalog: () -> Unit,
     onExploreWithoutAccount: () -> Unit,
     onRegister: () -> Unit,
+    onRecoverPassword: () -> Unit = {},
+    onConfirmEmail: () -> Unit = {},
 ) {
     // Obtiene el control para quitar el foco de los campos que obtienen el foco
     // (por ejemplo al ser tocados, gracias a esto se puede controlar ese foco)
@@ -158,6 +164,10 @@ internal fun LoginContent(
                 )
 
                 state.error?.let { PerfilesError(it) }
+                if (state.correoPendiente) AppButton("Confirmar mi correo", onConfirmEmail,
+                    Modifier.fillMaxWidth().testTag("login_confirmar_correo"), enabled = !state.isLoading, variant = ButtonVariant.Outlined)
+                AppButton("¿Olvidaste tu contraseña?", onRecoverPassword,
+                    Modifier.fillMaxWidth().testTag("login_recuperar"), enabled = !state.isLoading, variant = ButtonVariant.Clear)
                 AppButton("Iniciar sesión", submit, Modifier.fillMaxWidth().testTag("login_submit"),
                     isLoading = state.isLoading, loadingDescription = "Iniciando sesión")
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {

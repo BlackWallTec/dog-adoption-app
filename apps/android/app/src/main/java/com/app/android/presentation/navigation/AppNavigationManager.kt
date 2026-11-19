@@ -36,6 +36,7 @@ import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsDonativos.MisDonativosRoute
 import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
+import com.app.android.presentation.view.viewsPerfiles.CorreoScreen
 import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
 import com.app.android.presentation.view.viewsPerfiles.LoginScreen
 import com.app.android.presentation.view.viewsPerfiles.RegistroScreen
@@ -175,6 +176,8 @@ fun AppNavigation() {
                 onRegister = {
                     navController.navigate(Screen.Registro.ruta) { launchSingleTop = true }
                 },
+                onRecoverPassword = { correo -> navController.navigate(Screen.Correo.crearRuta(correo, true)) },
+                onConfirmEmail = { correo -> navController.navigate(Screen.Correo.crearRuta(correo, false)) },
                 onAuthenticated = { sesion ->
                     sesionViewModel.autenticado(sesion)
                     // Si venía de una pantalla protegida (p. ej. adoptar un perro), vuelve ahí.
@@ -192,11 +195,18 @@ fun AppNavigation() {
         composable(route = Screen.Registro.ruta) {
             RegistroScreen(
                 onCancel = navController::irAlLogin,
-                onRegistered = {
-                    Toast
-                        .makeText(context, "Cuenta creada. Inicia sesión.", Toast.LENGTH_LONG)
-                        .show()
-                    navController.irAlLogin()
+                onRegistered = { correo, requiereConfirmacion, correoEnviado ->
+                    if (requiereConfirmacion) {
+                        if (!correoEnviado) Toast.makeText(context, "Cuenta creada. Solicita otro código para confirmar tu correo.", Toast.LENGTH_LONG).show()
+                        navController.navigate(Screen.Correo.crearRuta(correo, false)) {
+                            popUpTo(Screen.Registro.ruta) { inclusive = true }
+                        }
+                    } else {
+                        Toast
+                            .makeText(context, "Cuenta creada. Inicia sesión.", Toast.LENGTH_LONG)
+                            .show()
+                        navController.irAlLogin()
+                    }
                 },
             )
         }
@@ -214,6 +224,16 @@ fun AppNavigation() {
                 },
                 onDatosFiscales = { navController.navigate(Screen.DatosFiscales.ruta) },
             )
+        }
+
+        composable(Screen.Correo.ruta, arguments = listOf(
+            navArgument("correo") { type = NavType.StringType; defaultValue = "" },
+            navArgument("recuperar") { type = NavType.BoolType; defaultValue = false },
+        )) {
+            CorreoScreen(onCancel = navController::irAlLogin, onFinished = { recuperar ->
+                Toast.makeText(context, if (recuperar) "Contraseña actualizada. Inicia sesión." else "Correo confirmado. Inicia sesión.", Toast.LENGTH_LONG).show()
+                navController.irAlLogin()
+            })
         }
 
         // Conecto los botones de cuenta sin meter peticiones de red en la vista.

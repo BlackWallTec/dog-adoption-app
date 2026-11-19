@@ -5,4 +5,5 @@ class ErrorApi(
     mensaje: String,
     val campos: Map<String, String> = emptyMap(),
     val sesionExpirada: Boolean = false,
+    val codigo: String? = null,
 ) : Exception(mensaje)

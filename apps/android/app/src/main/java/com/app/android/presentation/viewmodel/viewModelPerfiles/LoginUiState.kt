@@ -9,6 +9,7 @@ data class LoginUiState(
     val passwordError: String? = null,
     val error: String? = null,
     val credentialsRejected: Boolean = false,
+    val correoPendiente: Boolean = false,
     val isLoading: Boolean = false,
     // Cuando el login termina con éxito, aquí llega la sesión.
     // LoginRoute la lee, navega, y llama viewModel.consumirSesion() para limpiarla.
