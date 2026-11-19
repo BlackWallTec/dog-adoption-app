@@ -43,6 +43,7 @@ import com.app.android.presentation.view.ui.theme.Surface
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun EnviadaScreen(
+    solicitudId: String,
     onBackClick: () -> Unit,
     onVerSolicitudesClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -115,7 +116,7 @@ fun EnviadaScreen(
                 ciudad = "Querétaro",
             )
             Text(
-                text = "Solicitud QA-0248 · En revisión",
+                text = "Solicitud $solicitudId · En revisión",
                 color = InverseSurface,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
@@ -153,6 +154,7 @@ fun EnviadaScreen(
 fun EnviadaScreenPreview() {
     AndroidTheme {
         EnviadaScreen(
+            solicitudId = "solicitud-prueba",
             onBackClick = {},
             onVerSolicitudesClick = {},
         )

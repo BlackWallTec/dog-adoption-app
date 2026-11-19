@@ -344,7 +344,12 @@ fun AppNavigation() {
 
         // Paso 6 - Confirmar
         composable(route = Screen.Confirmar.ruta) {
-            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
+            ConSesion(
+                estadoSesion,
+                navController,
+                sesionViewModel,
+                { destinoTrasLogin = it },
+            ) { _ ->
                 ConfirmarRoute(
                     onBack = { navController.navigateUp() },
                     onEditarSeccion = { seccion ->
@@ -373,14 +378,25 @@ fun AppNavigation() {
                 listOf(
                     navArgument("idSolicitud") { type = NavType.StringType },
                 ),
-        ) {
-            EnviadaScreen(
-                onBackClick = navController::irAlCatalogo,
-                onVerSolicitudesClick = navController::irAlCatalogo,
-                onNavSelect = navController::irAOpcionBarra,
-            )
+        ) { backStackEntry ->
+            val solicitudId = backStackEntry.arguments?.getString("idSolicitud") ?: ""
+
+            ConSesion(
+                estado = estadoSesion,
+                navController = navController,
+                sesionViewModel = sesionViewModel,
+                recordarDestino = { destinoTrasLogin = it },
+            ) { _ ->
+                EnviadaScreen(
+                    solicitudId = solicitudId,
+                    onBackClick = navController::irAlCatalogo,
+                    onVerSolicitudesClick = navController::irAlCatalogo,
+                    onNavSelect = navController::irAOpcionBarra,
+                )
+            }
         }
 
+<<<<<<< HEAD
         // SOLICITUDES - HU04: Mis solicitudes (solo lectura)
         composable(route = Screen.MisSolicitudes.ruta) {
             // Las solicitudes son del usuario con sesión; sin sesión se va al login.
@@ -400,6 +416,8 @@ fun AppNavigation() {
             }
         }
 
+=======
+>>>>>>> ed304fe (feat(solicitudes): update screen to have dynamic text)
         // ========= Pantallas Donativos ========
 
         // DONATIVOS - HU46: registrar donativo económico
