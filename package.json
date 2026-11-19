@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "cookie-parser": "catalog:",
-    "jsonwebtoken": "catalog:"
+    "jsonwebtoken": "catalog:",
+    "postgres": "catalog:"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "catalog:",
