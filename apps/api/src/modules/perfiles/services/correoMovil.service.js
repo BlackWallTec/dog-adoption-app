@@ -101,7 +101,8 @@ export function crearCorreoMovil({
             try {
               await emitir(id, correo, tipo);
             } catch (error) {
-              if (error instanceof ErrorCorreoMovil) throw error;
+              // El tiempo de espera tampoco revela si el correo pertenece a una cuenta.
+              if (error instanceof ErrorCorreoMovil) return GENERICO;
               console.error("No se entregó el código de correo móvil.");
             }
           }
