@@ -27,7 +27,7 @@ class SolicitudModel {
           descripcion
         )
       `)
-      .order("fecha_solicitud", { ascending: true });
+      .order("fecha_solicitud", { ascending: false });
 
     if (error) {
       throw new Error(`Error en la consulta de solicitudes: ${error.message}`);
