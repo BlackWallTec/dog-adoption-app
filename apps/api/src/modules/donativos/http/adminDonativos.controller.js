@@ -1,5 +1,7 @@
 import DonativoModel from "./modelosDonativos/donativo.model.js";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // HU44 - Obtener donativos pendientes para administradores
 export async function obtenerDonativosPendientes(req, res) {
   try {
@@ -11,6 +13,30 @@ export async function obtenerDonativosPendientes(req, res) {
 
     return res.status(500).json({
       error: "No fue posible consultar los donativos pendientes.",
+    });
+  }
+}
+
+export async function aprobarDonativoPendiente(req, res) {
+  const { idDonativo } = req.params;
+  if (!UUID_REGEX.test(idDonativo)) {
+    return res.status(400).json({ error: "Identificador de donativo inválido." });
+  }
+
+  try {
+    const donativo = await DonativoModel.aprobarPendiente(idDonativo);
+    if (!donativo) {
+      return res.status(409).json({
+        error: "El donativo ya no está pendiente o no existe.",
+      });
+    }
+
+    return res.status(200).json(donativo);
+  } catch (error) {
+    console.error("Error al aprobar el donativo:", error);
+
+    return res.status(500).json({
+      error: "No fue posible aprobar el donativo.",
     });
   }
 }

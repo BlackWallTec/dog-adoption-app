@@ -35,6 +35,13 @@
               <p id="donativos-counter-subtitle" class="section-subtitle">
                 Cargando donativos pendientes...
               </p>
+              <p
+                id="donativos-action-message"
+                class="donativos-action-message"
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
             </div>
             <div class="donations-header-actions">
               <a class="public-summary-link" href="/donativos/resumen">Ver resumen público</a>
@@ -54,12 +61,13 @@
                     <th>Monto</th>
                     <th>Fecha</th>
                     <th>Estado</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
 
                 <tbody id="tabla-donativos-body" aria-live="polite">
                   <tr>
-                    <td colspan="5">Cargando donativos pendientes...</td>
+                    <td colspan="6">Cargando donativos pendientes...</td>
                   </tr>
                 </tbody>
               </table>

@@ -25,6 +25,7 @@ catalog:
   "@vitest/ui": 5.0.5
   fullcalendar: ^7.1.5
   temporal-polyfill: ^1.0.8
+  fast-xml-parser: ^5.12.1
 overrides:
   vite@*: "catalog:"
 peerDependencyRules:

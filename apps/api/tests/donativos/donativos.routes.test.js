@@ -17,6 +17,7 @@ vi.mock("../../src/config/supabaseClient.js", () => ({
 vi.mock("../../src/modules/donativos/http/modelosDonativos/donativo.model.js", () => ({
   default: {
     getPendientes: vi.fn().mockResolvedValue([]),
+    aprobarPendiente: vi.fn(),
     countPendientes: vi.fn().mockResolvedValue(7),
     registrarMonetario: vi.fn(),
   },
@@ -88,6 +89,34 @@ describe("HU44 - Protección de rutas administrativas", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
+  });
+
+  it("permite que administradores aprueben un donativo pendiente", async () => {
+    const donativo = {
+      id_donativo: "b2e87183-0b85-4840-a5e7-5eae19dce391",
+      estado: "Validado",
+    };
+    DonativoModel.aprobarPendiente.mockResolvedValue(donativo);
+
+    const response = await request(crearApp())
+      .patch(`/api/donativos/admin/pendientes/${donativo.id_donativo}/aprobar`)
+      .set("Cookie", `token=${crearToken("Administrador")}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(donativo);
+    expect(DonativoModel.aprobarPendiente).toHaveBeenCalledWith(donativo.id_donativo);
+  });
+
+  it("rechaza la aprobación a usuarios sin sesión o sin rol administrativo", async () => {
+    const path = "/api/donativos/admin/pendientes/b2e87183-0b85-4840-a5e7-5eae19dce391/aprobar";
+    const sinSesion = await request(crearApp()).patch(path);
+    const cliente = await request(crearApp())
+      .patch(path)
+      .set("Cookie", `token=${crearToken("Cliente")}`);
+
+    expect(sinSesion.status).toBe(401);
+    expect(cliente.status).toBe(403);
+    expect(DonativoModel.aprobarPendiente).not.toHaveBeenCalled();
   });
 
   it("publica solo el conteo agregado, sin registros individuales", async () => {
@@ -166,5 +195,41 @@ describe("HU53 - Solicitudes CFDI administrativas", () => {
 
     expect(response.status).toBe(400);
     expect(getDetalleSolicitudCfdiMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("HU57 - Entrega protegida de CFDI", () => {
+  it("rechaza carga y reintento sin una sesión administrativa", async () => {
+    const app = crearApp();
+    const validar = await request(app).post(
+      "/api/donativos/admin/solicitudes-cfdi/b2e87183-0b85-4840-a5e7-5eae19dce391/validar-cfdi",
+    );
+    const reintentar = await request(app).post(
+      "/api/donativos/admin/solicitudes-cfdi/b2e87183-0b85-4840-a5e7-5eae19dce391/reintentar-correo",
+    );
+
+    expect(validar.status).toBe(401);
+    expect(reintentar.status).toBe(401);
+  });
+
+  it("rechaza a clientes en rutas administrativas", async () => {
+    const response = await request(crearApp())
+      .post(
+        "/api/donativos/admin/solicitudes-cfdi/b2e87183-0b85-4840-a5e7-5eae19dce391/reintentar-correo",
+      )
+      .set("Cookie", `token=${crearToken("Cliente")}`);
+
+    expect(response.status).toBe(403);
+  });
+
+  it("protege la consulta y descarga de CFDI para clientes autenticados", async () => {
+    const app = crearApp();
+    const sinSesion = await request(app).get("/api/donativos/cliente/cfdi");
+    const admin = await request(app)
+      .get("/api/donativos/cliente/cfdi")
+      .set("Cookie", `token=${crearToken("Administrador")}`);
+
+    expect(sinSesion.status).toBe(401);
+    expect(admin.status).toBe(403);
   });
 });

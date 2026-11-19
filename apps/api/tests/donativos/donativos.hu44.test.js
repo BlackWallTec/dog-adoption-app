@@ -3,11 +3,15 @@ import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 vi.mock("../../src/modules/donativos/http/modelosDonativos/donativo.model.js", () => ({
   default: {
     getPendientes: vi.fn(),
+    aprobarPendiente: vi.fn(),
   },
 }));
 
 import DonativoModel from "../../src/modules/donativos/http/modelosDonativos/donativo.model.js";
-import { obtenerDonativosPendientes } from "../../src/modules/donativos/http/adminDonativos.controller.js";
+import {
+  aprobarDonativoPendiente,
+  obtenerDonativosPendientes,
+} from "../../src/modules/donativos/http/adminDonativos.controller.js";
 
 describe("HU44 - Lista de donativos pendientes", () => {
   beforeEach(() => {
@@ -79,5 +83,54 @@ describe("HU44 - Lista de donativos pendientes", () => {
     } finally {
       consoleSpy.mockRestore();
     }
+  });
+
+  it("aprueba un donativo pendiente y devuelve su nuevo estado", async () => {
+    const donativo = {
+      id_donativo: "b2e87183-0b85-4840-a5e7-5eae19dce391",
+      estado: "Validado",
+    };
+    DonativoModel.aprobarPendiente.mockResolvedValue(donativo);
+
+    const req = { params: { idDonativo: donativo.id_donativo } };
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+
+    await aprobarDonativoPendiente(req, res);
+
+    expect(DonativoModel.aprobarPendiente).toHaveBeenCalledWith(donativo.id_donativo);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(donativo);
+  });
+
+  it("rechaza IDs inválidos sin llamar al modelo", async () => {
+    const req = { params: { idDonativo: "no-es-uuid" } };
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+
+    await aprobarDonativoPendiente(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(DonativoModel.aprobarPendiente).not.toHaveBeenCalled();
+  });
+
+  it("informa si el donativo ya no está pendiente", async () => {
+    DonativoModel.aprobarPendiente.mockResolvedValue(null);
+    const req = { params: { idDonativo: "b2e87183-0b85-4840-a5e7-5eae19dce391" } };
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
+
+    await aprobarDonativoPendiente(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "El donativo ya no está pendiente o no existe.",
+    });
   });
 });

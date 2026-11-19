@@ -41,6 +41,16 @@
   color: var(--md-sys-color-on-surface-variant);
 }
 
+.donativos-action-message {
+  margin-top: 8px;
+  color: #1e4620;
+  font-size: 14px;
+}
+
+.donativos-action-message[data-error="true"] {
+  color: #a12622;
+}
+
 .table-card {
   background-color: #ffffff;
   border: 1px solid var(--md-sys-color-outline-variant);
@@ -83,7 +93,7 @@
   background-color: var(--md-sys-color-surface);
 }
 
-.donations-table tbody td[colspan="5"] {
+.donations-table tbody td[colspan="6"] {
   text-align: center;
   padding: 32px 24px;
   color: var(--md-sys-color-on-surface-variant);
@@ -100,6 +110,25 @@
 .badge-pendiente {
   background-color: #fef3c7;
   color: #92400e;
+}
+
+.donativo-aprobar {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #2e7d32;
+  color: #ffffff;
+  font: 700 13px var(--font-body);
+  cursor: pointer;
+}
+
+.donativo-aprobar:hover {
+  background: #256628;
+}
+
+.donativo-aprobar:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .table-footer {
