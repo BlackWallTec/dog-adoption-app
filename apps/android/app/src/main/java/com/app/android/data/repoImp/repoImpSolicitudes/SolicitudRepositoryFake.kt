@@ -1,23 +1,24 @@
 package com.app.android.data.repoImp.repoImpSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
+import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
+import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
+import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import kotlinx.coroutines.delay
 
-// REPOSITORIO FAKE: mismo contrato, datos inventados en memoria.
-// Para tests y para trabajar sin backend.
 class SolicitudRepositoryFake : SolicitudRepositoryInt {
-    // Solicitudes activas inventadas. Llave = "idUsuario|idPerro"
     private val activas = mutableMapOf<String, SolicitudResumen>()
 
     private val perfilFake =
         DatosGenerales(
             nombreCompleto = "Sofía García López",
             fechaNacimiento = "1995-03-15",
-            ocupacion = "", // no está en el perfil: el usuario la escribe
+            ocupacion = "",
             domicilio = "Calle Roble 24, Col. Álamos, Querétaro, Qro. · C.P. 76160",
             municipio = "Querétaro",
             telefono = "442 123 4567",
@@ -69,14 +70,13 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
     }
 
     override suspend fun getSolicitudActiva(
-        idUsuario: String,
         idPerro: String,
     ): SolicitudResumen? {
         simularRed()
-        return activas["$idUsuario|$idPerro"]
+        return activas.entries.firstOrNull { it.key.endsWith("|$idPerro") }?.value
     }
 
-    override suspend fun getPerfil(idUsuario: String): DatosGenerales {
+    override suspend fun getPerfil(): DatosGenerales {
         simularRed()
         return perfilFake
     }
@@ -84,6 +84,25 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
     override suspend fun getMisSolicitudes(): List<SolicitudCliente> {
         simularRed()
         return misSolicitudesFake
+    }
+
+    override suspend fun crearOReutilizarBorrador(borrador: BorradorSolicitud): String {
+        simularRed()
+        return "sol-fake-123"
+    }
+
+    override suspend fun subirDocumento(
+        solicitudId: String,
+        type: DocumentType,
+        file: PickedFile,
+        bytes: ByteArray,
+    ): UploadedDocument {
+        simularRed()
+        return UploadedDocument(type = type, fileName = file.name, sizeBytes = file.sizeBytes)
+    }
+
+    override suspend fun finalizarSolicitud(solicitudId: String) {
+        simularRed()
     }
 
     private suspend fun simularRed() = delay(500)

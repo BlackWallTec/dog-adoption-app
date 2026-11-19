@@ -45,6 +45,7 @@ fun LabeledWritableCard(
     singleLine: Boolean = false, // true se usara para campos de una linea (ex. edad)
     minLines: Int = 1, // que tan alta empieza la tarjeta
     readOnly: Boolean = false, // true = se ve pero no se puede escribir
+    maxLength: Int? = null,
 ) {
     // Column = título arriba, tarjeta en medio, ayuda abajo
     Column(modifier = modifier.fillMaxWidth()) {
@@ -59,7 +60,10 @@ fun LabeledWritableCard(
 
         WritableCard(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { input ->
+                val capped = if (maxLength != null) input.take(maxLength) else input
+                onValueChange(capped)
+            },
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             singleLine = singleLine,
@@ -68,10 +72,17 @@ fun LabeledWritableCard(
         )
 
         // texto de ayuda aparece si se habilita
-        if (helperText != null) {
+        val textoAyuda =
+            when {
+                helperText != null && maxLength != null -> "$helperText · ${value.length}/$maxLength"
+                helperText != null -> helperText
+                maxLength != null -> "${value.length}/$maxLength"
+                else -> null
+            }
+        if (textoAyuda != null) {
             Text(
-                text = helperText,
-                color = InverseSurface.copy(alpha = 0.7f), // 70% de opacidad
+                text = textoAyuda,
+                color = InverseSurface.copy(alpha = 0.7f),
                 fontSize = 12.sp,
                 modifier = Modifier.padding(top = 4.dp),
             )

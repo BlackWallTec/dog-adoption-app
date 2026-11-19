@@ -4,10 +4,14 @@ import com.app.android.data.dtos.dtosSolicitudes.PerroSolicitudDto
 import com.app.android.data.dtos.dtosSolicitudes.SolicitudClienteDto
 import com.app.android.data.dtos.dtosSolicitudes.toDomain
 import com.app.android.data.dtos.dtosSolicitudes.toEstadoSolicitud
+import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
+import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
+import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
+import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.useCases.useCasesSolicitudes.GetMisSolicitudesUseCase
 import com.app.android.presentation.util.utilSolicitudes.toItem
@@ -49,12 +53,20 @@ class MisSolicitudesUnitTest {
             return solicitudesARetornar
         }
 
-        override suspend fun getSolicitudActiva(
-            idUsuario: String,
-            idPerro: String,
-        ): SolicitudResumen? = null
+        override suspend fun getSolicitudActiva(idPerro: String): SolicitudResumen? = null
 
-        override suspend fun getPerfil(idUsuario: String): DatosGenerales = throw NotImplementedError()
+        override suspend fun getPerfil(): DatosGenerales = throw NotImplementedError()
+
+        override suspend fun crearOReutilizarBorrador(borrador: BorradorSolicitud): String = throw NotImplementedError()
+
+        override suspend fun subirDocumento(
+            solicitudId: String,
+            type: DocumentType,
+            file: PickedFile,
+            bytes: ByteArray,
+        ): UploadedDocument = throw NotImplementedError()
+
+        override suspend fun finalizarSolicitud(solicitudId: String) = throw NotImplementedError()
     }
 
     private val repositoryFake = FakeSolicitudRepository()

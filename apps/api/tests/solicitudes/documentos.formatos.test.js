@@ -2,17 +2,25 @@ import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import express from "express";
 import request from "supertest";
 
-// Supabase falso: no se crea cliente real ni se lee .env
+vi.mock("../../src/middleware/is-auth.js", () => ({
+  default: (req, _res, next) => {
+    req.user = { uuid: "user-1" };
+    next();
+  },
+}));
+
 vi.mock("../../src/config/supabaseClient.js", () => ({
   supabase: {},
-  supabaseAdmin: {},
 }));
 
 vi.mock("../../src/modules/solicitudes/http/modelosSolicitudes/documentos.model.js", () => ({
-  obtenerUsuarioPorSolicitud: vi.fn(),
+  obtenerSolicitudParaDocumentos: vi.fn(),
+  obtenerDocumentosPreviosPorTipo: vi.fn(),
   subirArchivoStorage: vi.fn(),
+  eliminarArchivoStorage: vi.fn(),
   crearRegistroDocumento: vi.fn(),
   relacionarDocumentoSolicitud: vi.fn(),
+  eliminarDocumentosReemplazados: vi.fn(),
 }));
 
 import * as DocumentoModel from "../../src/modules/solicitudes/http/modelosSolicitudes/documentos.model.js";
@@ -20,12 +28,9 @@ import { router as solicitudesRouter } from "../../src/modules/solicitudes/index
 
 const ID = "ff028456-acf9-4781-a560-98dd168a5516";
 
-// Requisito: PDF, JPG o PNG, con hasta 20 MB.
-// Se escribe aquí y no se importa del código, para probar el requisito
-// y no lo que el código dice que hace.
-const LIMITE_BYTES = 20 * 1024 * 1024;
+// Requisito: PDF, JPG o PNG, con hasta 2 MB.
+const LIMITE_BYTES = 2 * 1024 * 1024;
 
-// Así se guardan los tipos en la columna documento.tipo
 const TIPOS_DE_DOCUMENTO = ["INE", "Domicilio"];
 
 const FORMATOS_PERMITIDOS = [
@@ -64,10 +69,21 @@ function nadaSeGuardo() {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  DocumentoModel.obtenerUsuarioPorSolicitud.mockResolvedValue("user-1");
-  DocumentoModel.subirArchivoStorage.mockResolvedValue("https://storage/archivo");
+  DocumentoModel.obtenerSolicitudParaDocumentos.mockResolvedValue({
+    id_solicitud: ID,
+    id_usuario: "user-1",
+    puede_editar: true,
+    estado: "Borrador",
+  });
+  DocumentoModel.obtenerDocumentosPreviosPorTipo.mockResolvedValue([]);
+  DocumentoModel.subirArchivoStorage.mockResolvedValue({
+    url_archivo: "https://storage/archivo",
+    storagePath: `${ID}/123_archivo`,
+  });
   DocumentoModel.crearRegistroDocumento.mockResolvedValue("doc-1");
   DocumentoModel.relacionarDocumentoSolicitud.mockResolvedValue();
+  DocumentoModel.eliminarDocumentosReemplazados.mockResolvedValue();
+  DocumentoModel.eliminarArchivoStorage.mockResolvedValue();
 });
 
 describe("Documentos de identificación y comprobante de domicilio", () => {
@@ -78,7 +94,7 @@ describe("Documentos de identificación y comprobante de domicilio", () => {
       expect(res.status).toBe(200);
       expect(DocumentoModel.crearRegistroDocumento).toHaveBeenCalledWith(
         "user-1",
-        tipo,
+        tipo.toUpperCase(),
         "https://storage/archivo",
       );
     });
@@ -95,8 +111,8 @@ describe("Documentos de identificación y comprobante de domicilio", () => {
     );
   });
 
-  describe("tamaño máximo de 20 MB", () => {
-    it("acepta un archivo de exactamente 20 MB", { timeout: 30_000 }, async () => {
+  describe("tamaño máximo de 2 MB", () => {
+    it("acepta un archivo de exactamente 2 MB", { timeout: 30_000 }, async () => {
       const res = await subir({
         nombre: "limite.pdf",
         contentType: "application/pdf",
@@ -107,7 +123,7 @@ describe("Documentos de identificación y comprobante de domicilio", () => {
       expect(res.body.sizeBytes).toBe(LIMITE_BYTES);
     });
 
-    it("rechaza 20 MB más un byte con 413 y no guarda nada", { timeout: 30_000 }, async () => {
+    it("rechaza 2 MB más un byte con 413 y no guarda nada", { timeout: 30_000 }, async () => {
       const res = await subir({
         nombre: "excedido.pdf",
         contentType: "application/pdf",
@@ -115,11 +131,10 @@ describe("Documentos de identificación y comprobante de domicilio", () => {
       });
 
       expect(res.status).toBe(413);
-      expect(res.body.message).toMatch(/20 MB/);
+      expect(res.body.message).toMatch(/2 MB/);
       nadaSeGuardo();
     });
   });
 
-  // Hoy solo se revisa el tipo que declara el cliente, no el contenido real
   it.todo("rechaza un .exe que declara ser application/pdf");
 });

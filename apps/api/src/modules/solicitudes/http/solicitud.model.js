@@ -1,4 +1,5 @@
 import { supabaseAdmin as supabase } from "../../../config/supabaseClient.js";
+const first = (value) => (Array.isArray(value) ? (value[0] ?? null) : (value ?? null));
 
 class SolicitudModel {
   // Lista para la tabla del admin
@@ -26,16 +27,18 @@ class SolicitudModel {
           descripcion
         )
       `)
-      .order("fecha_solicitud", { ascending: true });
+      .order("fecha_solicitud", { ascending: false });
 
     if (error) {
       throw new Error(`Error en la consulta de solicitudes: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []).filter(
+      (row) => first(row.estado)?.descripcion?.trim().toLowerCase() !== "borrador",
+    );
   }
 
-  // HU05: detalle de UNA solicitud (para el pop-up del admin)
+  // HU05: detalle de UNA solicitud (excluyendo borradores)
   static async getById(idSolicitud) {
     const { data, error } = await supabase
       .from("solicitud_adopcion")
@@ -73,10 +76,14 @@ class SolicitudModel {
         )
       `)
       .eq("id_solicitud", idSolicitud)
-      .maybeSingle(); // null si no existe
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Error en la consulta del detalle: ${error.message}`);
+    }
+
+    if (!data || first(data.estado)?.descripcion?.trim().toLowerCase() === "borrador") {
+      return null;
     }
 
     return data;

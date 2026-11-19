@@ -71,6 +71,8 @@ class TuHogarUnitTest {
         // Frontera válida exacta: 1 persona (mínimo permitido)
         val datosMinimo =
             TuHogar(
+                hadPet = false,
+                otherPets = false,
                 whyAdopt = "Compañía",
                 whereLive = "Dormitorio",
                 hasGarden = "Sí",

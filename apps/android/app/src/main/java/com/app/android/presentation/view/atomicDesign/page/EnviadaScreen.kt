@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -43,6 +45,8 @@ import com.app.android.presentation.view.ui.theme.Surface
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun EnviadaScreen(
+    solicitudId: String,
+    mascota: MascotaResumen,
     onBackClick: () -> Unit,
     onVerSolicitudesClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -74,7 +78,7 @@ fun EnviadaScreen(
                     .fillMaxSize()
                     .padding(paddingInterno)
                     .verticalScroll(rememberScrollState()) // permite deslizar si no cabe
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -105,45 +109,35 @@ fun EnviadaScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            TarjetaMascota(
-                foto = painterResource(id = R.drawable.perro_prueba),
-                nombre = "Bruno",
-                edad = "2 años",
-                sexo = "Macho",
-                tamano = "Mediano",
-                raza = "Mestizo",
-                ciudad = "Querétaro",
-            )
+            TarjetaMascotaResumen(mascota = mascota)
             Text(
-                text = "Solicitud QA-0248 · En revisión",
+                text = "Solicitud $solicitudId · En revisión",
                 color = InverseSurface,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            InfoCard(
-                // estos luego los remplazamos por cosas como $nombreSolicitante, $nombreMascota y $correo
-                descripcion = "X, revisaremos tu solicitud para Y y te contactaremos en Z.",
-                icono = Icons.Outlined.Mail,
-            )
-            AppButton(
-                text = "Ver mis solicitudes",
-                onClick = onVerSolicitudesClick,
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp),
-            )
-            AppButton(
-                text = "Volver al catálogo",
-                onClick = onBackClick,
-                variant = ButtonVariant.Outlined,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-            )
+                        .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                AppButton(
+                    text = "Ver mis solicitudes",
+                    onClick = onVerSolicitudesClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                AppButton(
+                    text = "Volver al catálogo",
+                    onClick = onBackClick,
+                    variant = ButtonVariant.Outlined,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -153,6 +147,13 @@ fun EnviadaScreen(
 fun EnviadaScreenPreview() {
     AndroidTheme {
         EnviadaScreen(
+            solicitudId = "solicitud-prueba",
+            mascota =
+                MascotaResumen(
+                    nombre = "Bruno",
+                    detalle = "2 años · Macho · Mediano",
+                    raza = "Mestizo · Querétaro",
+                ),
             onBackClick = {},
             onVerSolicitudesClick = {},
         )

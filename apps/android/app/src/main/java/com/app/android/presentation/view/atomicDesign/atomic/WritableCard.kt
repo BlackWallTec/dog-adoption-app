@@ -24,8 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.ui.theme.InverseSurface
+import com.app.android.presentation.view.ui.theme.ReadOnlyGrey
 import com.app.android.presentation.view.ui.theme.Secondary
 import com.app.android.presentation.view.ui.theme.Surface
+import com.app.android.presentation.view.ui.theme.SurfaceContainerHigh
 import com.app.android.presentation.view.ui.theme.SurfaceContainerLow
 
 // Átomo: tarjeta de escritura
@@ -42,10 +44,20 @@ fun WritableCard(
     singleLine: Boolean = false, // true se usara para campos de una linea (ex. edad)
     minLines: Int = 1, // que tan alta empieza la tarjeta
     readOnly: Boolean = false, // true = se ve pero no se puede escribir
+    maxLength: Int? = null,
 ) {
+    // Style to grey out read only fields
+    val containerColor = if (readOnly) ReadOnlyGrey else SurfaceContainerLow
+    val textAlpha = if (readOnly) 0.6f else 1.0f
+    val iconTint = if (readOnly) Secondary.copy(alpha = 0.5f) else Secondary
     TextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { input ->
+            if (!readOnly) {
+                val capped = if (maxLength != null) input.take(maxLength) else input
+                onValueChange(capped)
+            }
+        },
         modifier = modifier.fillMaxWidth(),
         placeholder = { Text(placeholder) },
         leadingIcon =
@@ -61,8 +73,12 @@ fun WritableCard(
         // Los colores se dividen por los diferentes estados de escritura
         colors =
             TextFieldDefaults.colors(
-                focusedContainerColor = SurfaceContainerLow, // fondo cuando escribes
-                unfocusedContainerColor = SurfaceContainerLow, // fondo en reposo
+                focusedContainerColor = containerColor, // fondo cuando escribes
+                unfocusedContainerColor = containerColor, // fondo en reposo
+                disabledContainerColor = containerColor,
+                focusedTextColor = InverseSurface.copy(alpha = textAlpha),
+                unfocusedTextColor = InverseSurface.copy(alpha = textAlpha),
+                disabledTextColor = InverseSurface.copy(alpha = textAlpha),
                 focusedIndicatorColor = Color.Transparent, // la linea de abajo escribiendo: invisible
                 unfocusedIndicatorColor = Color.Transparent, // linea de abajo en reposo: invisible
                 disabledIndicatorColor = Color.Transparent, // linea de abajo deshabilitado: invisible
@@ -75,7 +91,7 @@ fun WritableCard(
 // pero la implementación final sera en viewmodel
 
 @Suppress("ktlint:standard:function-naming")
-@Preview(showBackground = true, name = "WrittableCard")
+@Preview(showBackground = true, name = "WritableCard")
 @Composable
 private fun WritableCardPreview() {
     AndroidTheme {
@@ -97,6 +113,7 @@ private fun WritableCardPreview() {
                 placeholder = "Escribe tu ocupación",
                 leadingIcon = Icons.Outlined.Person,
                 singleLine = true,
+                readOnly = true,
             )
 
             // 2. Sin icono y más alta (como las preguntas largas)

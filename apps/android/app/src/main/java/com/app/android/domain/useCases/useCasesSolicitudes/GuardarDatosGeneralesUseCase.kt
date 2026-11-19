@@ -24,7 +24,11 @@ constructor(
 
         val errores =
             ErroresDatosGenerales(
-                ocupacion = if (ocupacion.isEmpty()) "Escribe tu ocupación" else null,
+                ocupacion = when {
+                    ocupacion.isEmpty() -> "Escribe tu ocupación"
+                    ocupacion.length > 100 -> "La ocupación no puede superar los 100 caracteres"
+                    else -> null
+                },
             )
 
         if (!errores.hayErrores) {

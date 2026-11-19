@@ -5,19 +5,14 @@ import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositor
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import javax.inject.Inject
 
-// Resultado de intentar empezar una solicitud
 sealed interface ResultadoInicio {
-    // No tiene solicitud activa: el borrador ya se inició, puede seguir
     data object Lista : ResultadoInicio
 
-    // Ya tiene una solicitud activa para este perro: se bloquea
     data class Bloqueada(
         val solicitud: SolicitudResumen,
     ) : ResultadoInicio
 }
 
-// REGLA: una solicitud activa por usuario y perro.
-// Si ya existe → bloquea. Si no → inicia el borrador en memoria (NO escribe en la BD).
 class IniciarBorradorUseCase
 @Inject
 constructor(
@@ -28,10 +23,10 @@ constructor(
         idUsuario: String,
         idPerro: String,
     ): ResultadoInicio {
-        val activa = repository.getSolicitudActiva(idUsuario, idPerro) // solo LEE
+        val activa = repository.getSolicitudActiva(idPerro)
         if (activa != null) return ResultadoInicio.Bloqueada(activa)
 
-        borrador.iniciar(idUsuario, idPerro) // en memoria
+        borrador.iniciar(idUsuario, idPerro)
         return ResultadoInicio.Lista
     }
 }

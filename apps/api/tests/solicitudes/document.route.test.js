@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import express from "express";
 import request from "supertest";
 
+vi.mock("../../src/middleware/is-auth.js", () => ({
+  default: (req, _res, next) => {
+    req.user = { uuid: "user-1" };
+    next();
+  },
+}));
+
 // Supabase falso: no se crea cliente real ni se lee .env
 vi.mock("../../src/config/supabaseClient.js", () => ({
   supabase: {},
@@ -9,10 +16,13 @@ vi.mock("../../src/config/supabaseClient.js", () => ({
 }));
 
 vi.mock("../../src/modules/solicitudes/http/modelosSolicitudes/documentos.model.js", () => ({
-  obtenerUsuarioPorSolicitud: vi.fn(),
+  obtenerSolicitudParaDocumentos: vi.fn(),
+  obtenerDocumentosPreviosPorTipo: vi.fn(),
   subirArchivoStorage: vi.fn(),
+  eliminarArchivoStorage: vi.fn(),
   crearRegistroDocumento: vi.fn(),
   relacionarDocumentoSolicitud: vi.fn(),
+  eliminarDocumentosReemplazados: vi.fn(),
 }));
 
 import * as DocumentoModel from "../../src/modules/solicitudes/http/modelosSolicitudes/documentos.model.js";
@@ -29,6 +39,21 @@ function crearApp() {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  DocumentoModel.obtenerSolicitudParaDocumentos.mockResolvedValue({
+    id_solicitud: ID,
+    id_usuario: "user-1",
+    puede_editar: true,
+    estado: "Borrador",
+  });
+  DocumentoModel.obtenerDocumentosPreviosPorTipo.mockResolvedValue([]);
+  DocumentoModel.subirArchivoStorage.mockResolvedValue({
+    url_archivo: "https://storage/ine.pdf",
+    storagePath: `${ID}/123_ine.pdf`,
+  });
+  DocumentoModel.crearRegistroDocumento.mockResolvedValue("doc-1");
+  DocumentoModel.relacionarDocumentoSolicitud.mockResolvedValue();
+  DocumentoModel.eliminarDocumentosReemplazados.mockResolvedValue();
+  DocumentoModel.eliminarArchivoStorage.mockResolvedValue();
 });
 
 describe("POST /api/solicitudes/:id/documentos (ruta)", () => {
@@ -41,11 +66,6 @@ describe("POST /api/solicitudes/:id/documentos (ruta)", () => {
   });
 
   it("acepta multipart con campos archivo y tipo, y responde 200", async () => {
-    DocumentoModel.obtenerUsuarioPorSolicitud.mockResolvedValue("user-1");
-    DocumentoModel.subirArchivoStorage.mockResolvedValue("https://storage/ine.pdf");
-    DocumentoModel.crearRegistroDocumento.mockResolvedValue("doc-1");
-    DocumentoModel.relacionarDocumentoSolicitud.mockResolvedValue();
-
     const res = await request(crearApp())
       .post(`/api/solicitudes/${ID}/documentos`)
       .field("tipo", "INE")
@@ -56,6 +76,13 @@ describe("POST /api/solicitudes/:id/documentos (ruta)", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.id_documento).toBe("doc-1");
+    expect(res.body.data).toEqual({
+      id_documento: "doc-1",
+      tipo: "INE",
+      url_archivo: "https://storage/ine.pdf",
+      nombre_archivo: "ine.pdf",
+      tamano_bytes: Buffer.from("pdf de prueba").length,
+    });
     expect(DocumentoModel.crearRegistroDocumento).toHaveBeenCalledWith(
       "user-1",
       "INE",
@@ -64,7 +91,9 @@ describe("POST /api/solicitudes/:id/documentos (ruta)", () => {
   });
 
   it("responde 404 si la solicitud no existe en la BD", async () => {
-    DocumentoModel.obtenerUsuarioPorSolicitud.mockRejectedValue(new Error("NOT_FOUND_SOLICITUD"));
+    DocumentoModel.obtenerSolicitudParaDocumentos.mockRejectedValue(
+      new Error("NOT_FOUND_SOLICITUD"),
+    );
 
     const res = await request(crearApp())
       .post(`/api/solicitudes/${ID}/documentos`)
@@ -75,5 +104,43 @@ describe("POST /api/solicitudes/:id/documentos (ruta)", () => {
       });
 
     expect(res.status).toBe(404);
+  });
+
+  it("responde 403 si la solicitud pertenece a otro usuario", async () => {
+    DocumentoModel.obtenerSolicitudParaDocumentos.mockResolvedValue({
+      id_solicitud: ID,
+      id_usuario: "otro-usuario",
+      puede_editar: true,
+      estado: "Borrador",
+    });
+
+    const res = await request(crearApp())
+      .post(`/api/solicitudes/${ID}/documentos`)
+      .field("tipo", "INE")
+      .attach("archivo", Buffer.from("pdf"), {
+        filename: "ine.pdf",
+        contentType: "application/pdf",
+      });
+
+    expect(res.status).toBe(403);
+    expect(DocumentoModel.subirArchivoStorage).not.toHaveBeenCalled();
+  });
+
+  it("reemplaza el documento anterior si se vuelve a subir el mismo tipo (retry-replace)", async () => {
+    const prevDocs = [
+      { id_documento: "doc-viejo", tipo: "INE", url_archivo: "https://storage/viejo.pdf" },
+    ];
+    DocumentoModel.obtenerDocumentosPreviosPorTipo.mockResolvedValue(prevDocs);
+
+    const res = await request(crearApp())
+      .post(`/api/solicitudes/${ID}/documentos`)
+      .field("tipo", "INE")
+      .attach("archivo", Buffer.from("pdf nuevo"), {
+        filename: "ine_nuevo.pdf",
+        contentType: "application/pdf",
+      });
+
+    expect(res.status).toBe(200);
+    expect(DocumentoModel.eliminarDocumentosReemplazados).toHaveBeenCalledWith(ID, prevDocs);
   });
 });

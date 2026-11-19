@@ -1,5 +1,6 @@
 package com.app.android.domain.useCases.useCasesSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import javax.inject.Inject
@@ -37,7 +38,6 @@ class GuardarTuHogarUseCase
     constructor(
         private val borrador: BorradorRepositoryInt,
     ) {
-        // Valida si todo esta bien, guarda. Regresa los errores (vacios si se guardo)
         operator fun invoke(datos: TuHogar): TuHogarErrors {
             val limpios =
                 datos.copy(
@@ -46,19 +46,37 @@ class GuardarTuHogarUseCase
                     hasGarden = datos.hasGarden.trim(),
                     aboutPets = datos.aboutPets.trim(),
                 )
-            // Cuentanos sobre tus mascotas es obligatorio si tiene mascotas
             val hasPets = limpios.hadPet == true || limpios.otherPets == true
+            val needsPetAccept = limpios.houseType != HouseType.CASA
 
             val errores =
                 TuHogarErrors(
-                    hadPet = if (hasPets && limpios.hadPet == null) "Selecciona una opción" else null,
-                    otherPets = if (hasPets && limpios.otherPets == null) "Selecciona una opción" else null,
-                    whyAdopt = if (limpios.whyAdopt.isBlank()) "Cuéntanos por qué quieres adoptar" else null,
-                    whereLive = if (limpios.whereLive.isBlank()) "Cuéntanos dónde vivirá y dormirá" else null,
+                    hadPet = if (limpios.hadPet == null) "Selecciona una opción" else null,
+                    otherPets = if (limpios.otherPets == null) "Selecciona una opción" else null,
+                    whyAdopt = when {
+                        limpios.whyAdopt.isBlank() -> "Cuéntanos por qué quieres adoptar"
+                        limpios.whyAdopt.length > 100 -> "El motivo no puede superar los 100 caracteres"
+                        else -> null
+                    },
+                    whereLive = when {
+                        limpios.whereLive.isBlank() -> "Cuéntanos dónde vivirá y dormirá"
+                        limpios.whereLive.length > 100 -> "La respuesta no puede superar los 100 caracteres"
+                        else -> null
+                    },
                     peopleInHouse = if (limpios.peopleInHouse < 1) "Debe de haber al menos 1 persona" else null,
                     allAgree = if (limpios.allAgree == null) "Selecciona una opción" else null,
-                    hasGarden = if (limpios.hasGarden.isBlank()) "Cuéntanos si tienes jardin o patio" else null,
-                    aboutPets = if (hasPets && limpios.aboutPets.isBlank()) "Cuéntanos sobre tus mascotas" else null,
+                    houseType = null,
+                    hasGarden = when {
+                        limpios.hasGarden.isBlank() -> "Cuéntanos si tienes jardín o patio"
+                        limpios.hasGarden.length > 50 -> "La respuesta no puede superar los 50 caracteres"
+                        else -> null
+                    },
+                    petAccept = if (needsPetAccept && limpios.petAccept == null) "Indica si tu casero acepta mascotas" else null,
+                    aboutPets = when {
+                        hasPets && limpios.aboutPets.isBlank() -> "Cuéntanos sobre tus mascotas"
+                        hasPets && limpios.aboutPets.length > 250 -> "La descripción no puede superar los 250 caracteres"
+                        else -> null
+                    },
                 )
             if (!errores.hasErrors) {
                 borrador.actualizar { it.copy(tuHogar = limpios) }

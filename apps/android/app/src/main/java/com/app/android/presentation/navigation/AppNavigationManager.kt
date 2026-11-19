@@ -21,8 +21,12 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
+import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
+import com.app.android.presentation.view.viewsSolicitudes.EnviadaRoute
+import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
+import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
 import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
@@ -38,8 +42,8 @@ import com.app.android.presentation.view.viewsSolicitudes.MisSolicitudesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
 import com.app.android.presentation.view.viewsVoluntariado.ConfirmacionInscripcionRoute
-import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
 import com.app.android.presentation.view.viewsVoluntariado.DetalleProgramaScreen
+import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
@@ -186,7 +190,8 @@ fun AppNavigation() {
             RegistroScreen(
                 onCancel = navController::irAlLogin,
                 onRegistered = {
-                    Toast.makeText(context, "Cuenta creada. Inicia sesión.", Toast.LENGTH_LONG)
+                    Toast
+                        .makeText(context, "Cuenta creada. Inicia sesión.", Toast.LENGTH_LONG)
                         .show()
                     navController.irAlLogin()
                 },
@@ -260,7 +265,8 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { sesion ->
+                { destinoTrasLogin = it },
+            ) { sesion ->
                 val idPerro = backStackEntry.arguments?.getString("idPerro") ?: ""
 
                 RequisitosRoute(
@@ -281,7 +287,8 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { _ ->
+                { destinoTrasLogin = it },
+            ) { _ ->
                 DatosGeneralesRoute(
                     onBack = { navController.navigateUp() },
                     onIrATuHogar = {
@@ -298,7 +305,8 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { _ ->
+                { destinoTrasLogin = it },
+            ) { _ ->
                 TuHogarRoute(
                     onBack = { navController.navigateUp() },
                     onIrACompromiso = {
@@ -315,12 +323,81 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { _ ->
+                { destinoTrasLogin = it },
+            ) { _ ->
                 CompromisoRoute(
                     onBack = { navController.navigateUp() },
                     onIrADocumentoss = {
-                        // navegar a documentos
+                        navController.navigate(Screen.Documentos.ruta)
                     },
+                )
+            }
+        }
+        // Paso 5 - Documentos
+        composable(route = Screen.Documentos.ruta) {
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
+                UploadDocumentsRoute(
+                    onBackClick = { navController.navigateUp() },
+                    onContinuarClick = {
+                        navController.navigate(Screen.Confirmar.ruta)
+                    },
+                )
+            }
+        }
+
+        // Paso 6 - Confirmar
+        composable(route = Screen.Confirmar.ruta) {
+            ConSesion(
+                estadoSesion,
+                navController,
+                sesionViewModel,
+                { destinoTrasLogin = it },
+            ) { _ ->
+                ConfirmarRoute(
+                    onBack = { navController.navigateUp() },
+                    onEditarSeccion = { seccion ->
+                        val rutaDestino =
+                            when (seccion) {
+                                SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.ruta
+                                SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.ruta
+                                SeccionSolicitud.COMPROMISO -> Screen.Compromiso.ruta
+                                SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.ruta
+                            }
+                        navController.popBackStack(rutaDestino, inclusive = false)
+                    },
+                    onEnviarExitoso = { solicitudId ->
+                        navController.navigate(Screen.SolicitudEnviada.crearRuta(solicitudId)) {
+                            popUpTo(Screen.Catalogo.ruta) { inclusive = false }
+                        }
+                    },
+                    onUnauthorized = {
+                        navController.irAlLogin()
+                    },
+                )
+            }
+        }
+
+        // Paso 7 - Enviado
+        composable(
+            route = Screen.SolicitudEnviada.ruta,
+            arguments =
+                listOf(
+                    navArgument("idSolicitud") { type = NavType.StringType },
+                ),
+        ) { backStackEntry ->
+            val solicitudId = backStackEntry.arguments?.getString("idSolicitud") ?: ""
+
+            ConSesion(
+                estado = estadoSesion,
+                navController = navController,
+                sesionViewModel = sesionViewModel,
+                recordarDestino = { destinoTrasLogin = it },
+            ) { _ ->
+                EnviadaRoute(
+                    solicitudId = solicitudId,
+                    onBack = navController::irAlCatalogo,
+                    onVerSolicitudes = navController::irAlCatalogo,
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -353,7 +430,8 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { sesion ->
+                { destinoTrasLogin = it },
+            ) { sesion ->
                 DonarDineroRoute(
                     idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.popBackStack() },
@@ -380,7 +458,8 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { _ ->
+                { destinoTrasLogin = it },
+            ) { _ ->
                 val monto = backStackEntry.arguments?.getString("monto") ?: ""
                 DonativoEnviadoScreen(
                     monto = "\$$monto MXN",
@@ -399,7 +478,8 @@ fun AppNavigation() {
                 estadoSesion,
                 navController,
                 sesionViewModel,
-                { destinoTrasLogin = it }) { sesion ->
+                { destinoTrasLogin = it },
+            ) { sesion ->
                 DatosFiscalesRoute(
                     idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.navigateUp() },
@@ -420,7 +500,8 @@ fun AppNavigation() {
                     estadoSesion,
                     navController,
                     sesionViewModel,
-                    { destinoTrasLogin = it }) { _ ->
+                    { destinoTrasLogin = it },
+                ) { _ ->
                     val grafo =
                         remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
                     ProgramasScreen(
@@ -450,7 +531,8 @@ fun AppNavigation() {
                     estadoSesion,
                     navController,
                     sesionViewModel,
-                    { destinoTrasLogin = it }) { _ ->
+                    { destinoTrasLogin = it },
+                ) { _ ->
                     val grafo =
                         remember(entry) { navController.getBackStackEntry(Screen.GrafoVoluntariado.ruta) }
                     ConfirmacionInscripcionRoute(
@@ -460,7 +542,8 @@ fun AppNavigation() {
                             navController.popBackStack(Screen.Programas.ruta, inclusive = false)
                         },
                         onNavSelect = navController::irAOpcionBarra,
-                        onVerMisVoluntariados = { // HU40
+                        onVerMisVoluntariados = {
+                            // HU40
                             navController.navigate(Screen.MisVoluntariados.ruta) {
                                 launchSingleTop = true
                             }
@@ -477,7 +560,8 @@ fun AppNavigation() {
                     estadoSesion,
                     navController,
                     sesionViewModel,
-                    { destinoTrasLogin = it }) { _ ->
+                    { destinoTrasLogin = it },
+                ) { _ ->
                     MisProgramasScreen(
                         onBackClick = { navController.popBackStack(Screen.Programas.ruta, inclusive = false) },
                         onNavSelect = navController::irAOpcionBarra,

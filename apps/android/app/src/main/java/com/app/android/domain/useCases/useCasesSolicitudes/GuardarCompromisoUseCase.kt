@@ -43,15 +43,46 @@ class GuardarCompromisoUseCase
                     dailyRoutine = datos.dailyRoutine.trim(),
                     dogManagement = datos.dogManagement.trim(),
                 )
+            val maxLen = 250
             val errores =
                 CompromisoErrors(
-                    petNeeds = if (limpios.petNeeds.isBlank()) "Escribe tu respuesta" else null,
-                    petSterilization = if (limpios.petSterilization.isBlank()) "Escribe tu respuesta" else null,
+                    petNeeds =
+                        when {
+                            limpios.petNeeds.isBlank() -> "Escribe tu respuesta"
+                            limpios.petNeeds.length > maxLen -> "No puede superar los 250 caracteres"
+                            else -> null
+                        },
+                    petSterilization =
+                        when {
+                            limpios.petSterilization.isBlank() -> "Escribe tu respuesta"
+                            limpios.petSterilization.length > maxLen -> "No puede superar los 250 caracteres"
+                            else -> null
+                        },
                     hasVet = if (limpios.hasVet == null) "Selecciona una opción" else null,
-                    vetDetail = if (limpios.vetDetail.isBlank()) "Escribe tu respuesta" else null,
-                    timeAlone = if (limpios.timeAlone.isBlank()) "Escribe tu respuesta" else null,
-                    dailyRoutine = if (limpios.dailyRoutine.isBlank()) "Escribe tu respuesta" else null,
-                    dogManagement = if (limpios.dogManagement.isBlank()) "Escribe tu respuesta" else null,
+                    vetDetail =
+                        when {
+                            limpios.vetDetail.isBlank() -> "Escribe tu respuesta"
+                            limpios.vetDetail.length > maxLen -> "No puede superar los 250 caracteres"
+                            else -> null
+                        },
+                    timeAlone =
+                        when {
+                            limpios.timeAlone.isBlank() -> "Escribe tu respuesta"
+                            limpios.timeAlone.length > maxLen -> "No puede superar los 250 caracteres"
+                            else -> null
+                        },
+                    dailyRoutine =
+                        when {
+                            limpios.dailyRoutine.isBlank() -> "Escribe tu respuesta"
+                            limpios.dailyRoutine.length > maxLen -> "No puede superar los 250 caracteres"
+                            else -> null
+                        },
+                    dogManagement =
+                        when {
+                            limpios.dogManagement.isBlank() -> "Escribe tu respuesta"
+                            limpios.dogManagement.length > maxLen -> "No puede superar los 250 caracteres"
+                            else -> null
+                        },
                 )
             if (!errores.hasErrors) {
                 borrador.actualizar { it.copy(compromiso = limpios) }

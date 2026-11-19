@@ -158,6 +158,7 @@ private fun FormularioCompromiso(
                 onValueChange = { onDatosChange(datos.copy(petNeeds = it)) },
                 placeholder = "Escribe los cuidados que le darías día a día...",
                 minLines = 3,
+                maxLength = 250,
             )
             errores?.petNeeds?.let { ErrorMessage(text = it) }
         }
@@ -168,7 +169,8 @@ private fun FormularioCompromiso(
                 onValueChange = { onDatosChange(datos.copy(petSterilization = it)) },
                 placeholder = "Cuéntanos qué opinas y por qué...",
                 minLines = 3,
-            )
+                maxLength = 250,
+                )
             errores?.petSterilization?.let { ErrorMessage(text = it) }
         }
 
@@ -195,7 +197,8 @@ private fun FormularioCompromiso(
                 onValueChange = { onDatosChange(datos.copy(vetDetail = it)) },
                 placeholder = "Nombre del veterinario o clínica, o cómo lo buscarías...",
                 minLines = 3,
-            )
+                maxLength = 250,
+                )
             errores?.vetDetail?.let { ErrorMessage(text = it) }
         }
 
@@ -206,7 +209,8 @@ private fun FormularioCompromiso(
                 onValueChange = { onDatosChange(datos.copy(timeAlone = it)) },
                 placeholder = "Indica cuántas horas y quién la cuidaría cuando no estés...",
                 minLines = 3,
-            )
+                maxLength = 250,
+                )
             errores?.timeAlone?.let { ErrorMessage(text = it) }
         }
 
@@ -217,7 +221,8 @@ private fun FormularioCompromiso(
                 onValueChange = { onDatosChange(datos.copy(dailyRoutine = it)) },
                 placeholder = "Cuéntanos cómo sería su día, de la mañana a la noche...",
                 minLines = 3,
-            )
+                maxLength = 250,
+                )
             errores?.dailyRoutine?.let { ErrorMessage(text = it) }
         }
 
@@ -228,7 +233,8 @@ private fun FormularioCompromiso(
                 onValueChange = { onDatosChange(datos.copy(dogManagement = it)) },
                 placeholder = "Cuéntanos qué harías, paso a paso...",
                 minLines = 3,
-            )
+                maxLength = 250,
+                )
             errores?.dogManagement?.let { ErrorMessage(text = it) }
         }
 

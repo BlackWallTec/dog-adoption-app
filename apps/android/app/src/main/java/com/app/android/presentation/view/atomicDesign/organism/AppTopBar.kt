@@ -26,21 +26,21 @@ fun AppTopBar(
     titulo: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onNotificacionesClick: () -> Unit = {}, //Ahorita no hace nada
+    onNotificacionesClick: () -> Unit = {}, // Ahorita no hace nada
 ) {
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Icon button = un icono que se puede picar (notificacione sy flecha)
         IconButton(onClick = onBackClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = "Regresar",
-                tint = InverseSurface
+                tint = InverseSurface,
             )
         }
 
@@ -49,7 +49,7 @@ fun AppTopBar(
             color = InverseSurface,
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.weight(1f) // ocupa el espacio que sobra
+            modifier = Modifier.weight(1f), // ocupa el espacio que sobra
             // aka empuja la campana a la derecha
         )
 
