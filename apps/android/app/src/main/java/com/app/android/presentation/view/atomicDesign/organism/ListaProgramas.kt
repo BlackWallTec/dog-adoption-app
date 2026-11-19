@@ -23,12 +23,18 @@ fun ListaProgramas(
     onCancelar: (String) -> Unit, // evento HU37: id del programa
     modifier: Modifier = Modifier,
     onVerDetalle: ((String) -> Unit)? = null, // evento HU36: id del programa (null = tarjeta no tocable)
+    encabezado: (@Composable () -> Unit)? = null,
 ) {
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        if (encabezado != null) {
+            item {
+                encabezado()
+            }
+        }
         items(
             items = programas,
             key = { it.id },
