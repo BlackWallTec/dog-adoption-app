@@ -251,11 +251,6 @@ fun AppNavigation() {
                 listOf(
                     navArgument("dogId") { type = NavType.StringType },
                 ),
-            deepLinks = listOf(
-                navDeepLink { uriPattern = "https://dog-adoption-app-mauve.vercel.app/perro?id={dogId}"},
-                navDeepLink { uriPattern = "qarino://perro/{dogId}"},
-            ),
-            
         ) { backStackEntry ->
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
@@ -527,7 +522,6 @@ fun AppNavigation() {
                 )
             }
         }
-
 
         // ========= Pantallas Voluntariado ========
 
