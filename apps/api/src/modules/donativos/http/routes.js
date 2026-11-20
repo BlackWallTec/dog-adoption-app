@@ -32,6 +32,9 @@ import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 
 export const router = Router();
+
+// Solo un cliente con sesión; el usuario sale del token, no de la URL
+const soloCliente = [verificarToken, requireRole(ROLES.CLIENT)];
 const subirArchivosCfdi = multer({
   storage: multer.memoryStorage(),
   limits: { files: 2, fields: 1, fileSize: 10 * 1024 * 1024 },
@@ -43,26 +46,28 @@ const subirArchivosCfdi = multer({
 // Rutas Cliente
 
 // HU45 - datos fiscales del donante
-router.get("/cliente/datos-fiscales/:idUsuario", getDatosFiscales);
-router.put("/cliente/datos-fiscales/:idUsuario", putDatosFiscales);
+router.get("/cliente/datos-fiscales", soloCliente, getDatosFiscales);
+router.put("/cliente/datos-fiscales", soloCliente, putDatosFiscales);
 
 // El archivo llega crudo, máximo 10 MB como en la app
 router.put(
-  "/cliente/datos-fiscales/:idUsuario/constancia",
+  "/cliente/datos-fiscales/constancia",
+  soloCliente,
   express.raw({ type: TIPOS_CONSTANCIA, limit: "10mb" }),
   putConstancia,
 );
 
 // HU46 - registrar donativo con comprobante
 router.post(
-  "/cliente/donativos/:idUsuario",
+  "/cliente/donativos",
+  soloCliente,
   express.raw({ type: TIPOS_COMPROBANTE, limit: "10mb" }),
   postDonativo,
 );
 
 //HU49 - mis donativos y pedir CFDI
-router.get("/cliente/mis-donativos", verificarToken, getMisDonativos);
-router.post("/cliente/mis-donativos/:idDonativo/cfdi", verificarToken, postSolicitudCfdi);
+router.get("/cliente/mis-donativos", soloCliente, getMisDonativos);
+router.post("/cliente/mis-donativos/:idDonativo/cfdi", soloCliente, postSolicitudCfdi);
 
 router.get("/", (req, res) => {
   res.json({ module: "donativos", items: [] });
