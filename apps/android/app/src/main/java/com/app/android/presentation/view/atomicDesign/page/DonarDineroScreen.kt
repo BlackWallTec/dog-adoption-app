@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.app.android.domain.entities.entitiesDonativos.ComprobanteArchivo
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
+import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
 import com.app.android.presentation.view.atomicDesign.atomic.DatoResumen
 import com.app.android.presentation.view.atomicDesign.atomic.ErrorMessage
 import com.app.android.presentation.view.atomicDesign.atomic.FileUploadCard
@@ -70,6 +71,7 @@ fun DonarDineroScreen(
     errorEnviar: String? = null,
     navSeleccionado: Int = 2, // 2 = Donar
     onNavSelect: (Int) -> Unit = {},
+    onVerMisDonativosClick: () -> Unit = {}, // HU49
 ) {
     // Lo que va escribiendo: se manda hasta que pica Enviar
     var monto by remember { mutableStateOf("") }
@@ -152,6 +154,14 @@ fun DonarDineroScreen(
                 color = InverseSurface,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 16.dp),
+            )
+
+            // HU49: acceso a Mis donativos sin tener que donar antes
+            AppButton(
+                text = "Ver mis donativos",
+                onClick = onVerMisDonativosClick,
+                variant = ButtonVariant.Outlined,
+                modifier = Modifier.fillMaxWidth(),
             )
 
             LabeledWritableCard(

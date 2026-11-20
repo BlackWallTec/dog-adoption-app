@@ -33,6 +33,7 @@ import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
+import com.app.android.presentation.view.viewsDonativos.MisDonativosRoute
 import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
 import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
 import com.app.android.presentation.view.viewsPerfiles.LoginScreen
@@ -442,6 +443,7 @@ fun AppNavigation() {
                     idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.popBackStack() },
                     onNavSelect = navController::irAOpcionBarra,
+                    onVerMisDonativos = { navController.navigate(Screen.MisDonativos.ruta) },
                     onEnviado = { monto ->
                         navController.navigate(Screen.DonativoEnviado.crearRuta(monto)) {
                             // saca el formulario de la pila para que "atrás" no deje mandarlo dos veces
@@ -471,7 +473,23 @@ fun AppNavigation() {
                     monto = "\$$monto MXN",
                     onBackClick = { navController.popBackStack() },
                     onVolverDonarClick = { navController.navigate(Screen.DonarDinero.ruta) },
-                    onVerMisDonativosClick = {}, // Mis donativos todavía no existe
+                    onVerMisDonativosClick = { navController.navigate(Screen.MisDonativos.ruta) },
+                    onNavSelect = navController::irAOpcionBarra,
+                )
+            }
+        }
+
+        // DONATIVOS - HU49: mis donativos y pedir CFDI
+        composable(route = Screen.MisDonativos.ruta) {
+            // Los donativos son del usuario con sesión; sin sesión se va al login.
+            ConSesion(
+                estadoSesion,
+                navController,
+                sesionViewModel,
+                { destinoTrasLogin = it },
+            ) {
+                MisDonativosRoute(
+                    onBack = { navController.navigateUp() },
                     onNavSelect = navController::irAOpcionBarra,
                 )
             }
