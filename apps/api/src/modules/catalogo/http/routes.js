@@ -10,7 +10,11 @@ import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 
 // HU19C: edición de fichas (solo Administrador o Root con sesión activa)
-const soloAdmin = [verificarToken, rateLimiter, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+const soloAdmin = [
+  verificarToken,
+  rateLimiter({ max: 60, ventana: "1 m", prefijo: "admin" }),
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+];
 
 // ===== Rutas Especiales =======
 
