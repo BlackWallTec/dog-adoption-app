@@ -4,7 +4,7 @@ const router = express.Router();
 // Importar los controladores
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
-import { rateLimiter, rateLimiterPrueba } from "../../../middleware/rate-limiter.js";
+import { rateLimiter } from "../../../middleware/rate-limiter.js";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
@@ -70,13 +70,17 @@ router.get("/cliente/filtros", clientController.getFiltros);
 
 // ====== Seccion de pruebas de Rate Limiter ======= //
 // Esto limita por IP //
-router.get("/test-limit", rateLimiterPrueba, (req, res) => {
-  res.json({
-    ok: true,
-    mensaje: "✅ Petición exitosa",
-    peticionesRestantes: req.tokensRestantes,
-  });
-});
+router.get(
+  "/test-limit",
+  rateLimiter({ max: 3, ventana: "1 m", prefijo: "test", forzarEnDev: true }),
+  (req, res) => {
+    res.json({
+      ok: true,
+      mensaje: "✅ Petición exitosa",
+      peticionesRestantes: req.tokensRestantes,
+    });
+  },
+);
 
 // ===== Fin de seccion de Rate Limiter ====== //
 

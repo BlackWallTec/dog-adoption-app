@@ -8,104 +8,67 @@ const tieneCredenciales =
 // Solo inicializa Redis si existen las variables en el entorno
 const redis = tieneCredenciales ? Redis.fromEnv() : null;
 
-// Limitador para usuarios autenticados (60 peticiones por minuto)
-const limitadorPrivado = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(60, "1 m"),
-      prefix: "rl:user",
-    })
-  : null;
+/**
+ * Fábrica de middlewares para limitar peticiones por ruta.
+ * @param {Object} opciones
+ * @param {number} opciones.max - Máximo de peticiones permitidas (por defecto 60)
+ * @param {string} opciones.ventana - Ventana de tiempo ej. "10 s", "1 m", "1 h" (por defecto "1 m")
+ * @param {string} opciones.prefijo - Identificador único de la ruta en Redis (por defecto "global")
+ * @param {boolean} opciones.forzarEnDev - Permite probar el limitador en local aunque NODE_ENV sea "development"
+ */
+export function rateLimiter({
+  max = 60,
+  ventana = "1 m",
+  prefijo = "global",
+  forzarEnDev = false,
+} = {}) {
+  // Creamos dos instancias para esta ruta: una para usuarios con sesión y otra más estricta para públicos
+  const limitador = redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(max, ventana),
+        prefix: `rl:${prefijo}`,
+      })
+    : null;
 
-// Limitador más estricto para rutas públicas como Login/Registro (10 peticiones por minuto)
-const limitadorPublico = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, "1 m"),
-      prefix: "rl:ip",
-    })
-  : null;
+  return async function (req, res, next) {
+    // Apagado en tests (CI/Vitest) o si faltan credenciales. En dev solo corre si forzarEnDev es true
+    const esTest = process.env.NODE_ENV === "test";
+    const esDevBloqueado = process.env.NODE_ENV === "development" && !forzarEnDev;
 
-export async function rateLimiter(req, res, next) {
-  // No ejecutar en tests (CI/local) ni en desarrollo para no gastar comandos ni fallar sin .env
-  if (process.env.NODE_ENV === "test" || process.env.NODE_ENV === "development" || !redis) {
-    return next();
-  }
+    if (esTest || esDevBloqueado || !limitador) {
+      return next();
+    }
 
-  try {
-    const userId = req.user?.id || req.user?.userId;
-
-    let resultado;
-
-    if (userId) {
-      // CASO PRIVADO: Limitamos por el UUID del usuario
-      resultado = await limitadorPrivado.limit(userId);
-    } else {
-      // CASO PÚBLICO: Limitamos por la IP real que envía Vercel
+    try {
+      const userId = req.user?.id || req.user?.userId || req.user?.sub;
       const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "127.0.0.1";
-      resultado = await limitadorPublico.limit(ip);
+
+      // Si hay sesión usa UUID, si es pública usa IP
+      const identificador = userId || ip;
+
+      const { success, limit, remaining } = await limitador.limit(identificador);
+
+      // Agregamos encabezados estándar para que Web/Android sepan su estado
+      res.setHeader("X-RateLimit-Limit", limit);
+      res.setHeader("X-RateLimit-Remaining", remaining);
+
+      // Guardamos el dato en req por si algún controlador o ruta dummy quiere leerlo
+      req.tokensRestantes = remaining;
+
+      if (!success) {
+        return res.status(429).json({
+          ok: false,
+          error: `Demasiadas peticiones. Límite permitido: ${max} cada ${ventana}.`,
+        });
+      }
+
+      next();
+    } catch (error) {
+      // Fail-open: si Redis falla por red, dejamos pasar la petición para no tumbar la app
+      console.error("Error en Rate Limiter:", error);
+      next();
     }
-
-    // Agregamos encabezados estándar para que tu Web/Android sepan su estado
-    res.setHeader("X-RateLimit-Limit", resultado.limit);
-    res.setHeader("X-RateLimit-Remaining", resultado.remaining);
-
-    // 2. Si se pasó del límite, bloqueamos con error 429
-    if (!resultado.success) {
-      return res.status(429).json({
-        error: "Demasiadas peticiones. Por favor, espera un minuto e intenta de nuevo.",
-      });
-    }
-
-    // 3. Si todo está en orden, dejamos pasar la petición al controlador
-    next();
-  } catch (error) {
-    // Si Redis llegara a fallar por red, dejamos pasar al usuario para no tumbar tu app (Fail-open)
-    console.error("Error en Rate Limiter:", error);
-    next();
-  }
+  };
 }
-
-// ======== SECCION DE PRUEBAS ======== //
-// Limitador de prueba: solo 3 peticiones cada 1 minuto
-const limitadorPrueba = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(3, "1 m"),
-      prefix: "rl:test",
-    })
-  : null;
-
-export async function rateLimiterPrueba(req, res, next) {
-  if (process.env.NODE_ENV === "test" || !redis) {
-    return next();
-  }
-
-  try {
-    // Usa el UUID si viene de verificarToken, o cae a la IP local
-    const identificador =
-      req.user?.id || req.user?.sub || req.headers["x-forwarded-for"] || "127.0.0.1";
-
-    const { success, limit, remaining } = await limitadorPrueba.limit(identificador);
-
-    res.setHeader("X-RateLimit-Limit", limit);
-    res.setHeader("X-RateLimit-Remaining", remaining);
-
-    if (!success) {
-      return res.status(429).json({
-        ok: false,
-        mensaje: "🛑 ¡Bloqueado por Rate Limiter! Espera 1 minuto.",
-        restantes: 0,
-      });
-    }
-
-    // Guardamos los restantes en req para verlos en la respuesta de prueba
-    req.tokensRestantes = remaining;
-    next();
-  } catch (error) {
-    console.error("Error conectando a Upstash:", error);
-    return res.status(500).json({ error: "Fallo en Redis, revisa tus keys del .env" });
-  }
-}
-
 // ======== FIN DE CODIGO GENERADO CON IA ====== //
