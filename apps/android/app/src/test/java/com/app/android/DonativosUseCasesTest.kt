@@ -3,11 +3,14 @@ package com.app.android
 import com.app.android.domain.entities.entitiesDonativos.ComprobanteArchivo
 import com.app.android.domain.entities.entitiesDonativos.ConstanciaArchivo
 import com.app.android.domain.entities.entitiesDonativos.DatosFiscales
+import com.app.android.domain.entities.entitiesDonativos.Donativo
 import com.app.android.domain.repoInterface.repoIntDonativos.DatosFiscalesRepositoryInt
 import com.app.android.domain.repoInterface.repoIntDonativos.DonativosRepositoryInt
 import com.app.android.domain.useCases.useCasesDonativos.GetDatosFiscalesUseCase
+import com.app.android.domain.useCases.useCasesDonativos.GetMisDonativosUseCase
 import com.app.android.domain.useCases.useCasesDonativos.GuardarDatosFiscalesUseCase
 import com.app.android.domain.useCases.useCasesDonativos.RegistrarDonativoUseCase
+import com.app.android.domain.useCases.useCasesDonativos.SolicitarCfdiUseCase
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -52,6 +55,15 @@ private class DonativosRepoFake : DonativosRepositoryInt {
     var comprobante: ComprobanteArchivo? = null
     var llamadas = 0
     var falla = false
+    var donativos: List<Donativo> = emptyList()
+    var idCfdiPedido: String? = null
+
+    override suspend fun getMisDonativos() = donativos
+
+    override suspend fun solicitarCfdi(idDonativo: String) {
+        if (falla) throw Exception("sin red")
+        idCfdiPedido = idDonativo
+    }
 
     override suspend fun registrarDonativo(
         idUsuario: String,
@@ -255,5 +267,49 @@ class RegistrarDonativoUseCaseTest {
             runBlocking { registrar("usuario1", "500", "", comprobante) }
         }
         assertEquals(0, repo.llamadas)
+    }
+}
+
+// HU49: mis donativos y pedir CFDI
+class MisDonativosCfdiTest {
+    private val repo = DonativosRepoFake()
+    private val getMisDonativos = GetMisDonativosUseCase(repo)
+    private val solicitarCfdi = SolicitarCfdiUseCase(repo)
+
+    @Test
+    fun `CA-01 un donativo validado sin CFDI deja pedirlo`() {
+        assertTrue(Donativo("1", 500.0, "2026-11-19", "Validado", false).puedePedirCfdi)
+    }
+
+    @Test
+    fun `CA-02 un donativo pendiente no deja pedir CFDI`() {
+        assertFalse(Donativo("2", 500.0, "2026-11-19", "Pendiente de validación", false).puedePedirCfdi)
+    }
+
+    @Test
+    fun `no deja pedir el CFDI dos veces`() {
+        assertFalse(Donativo("3", 500.0, "2026-11-19", "Validado", true).puedePedirCfdi)
+    }
+
+    @Test
+    fun `trae los donativos del repositorio`() =
+        runBlocking {
+            repo.donativos = listOf(Donativo("1", 1.0, "2026-11-19", "Validado", false))
+            assertEquals(1, getMisDonativos().size)
+        }
+
+    @Test
+    fun `manda el id del donativo al pedir el CFDI`() =
+        runBlocking {
+            solicitarCfdi("abc")
+            assertEquals("abc", repo.idCfdiPedido)
+        }
+
+    @Test
+    fun `si falla la red el error le llega a la pantalla`() {
+        repo.falla = true
+        assertThrows(Exception::class.java) {
+            runBlocking { solicitarCfdi("abc") }
+        }
     }
 }

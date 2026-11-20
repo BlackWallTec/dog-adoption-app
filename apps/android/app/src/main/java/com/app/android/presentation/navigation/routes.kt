@@ -29,6 +29,9 @@ sealed class Screen(
     // Donativos - HU45
     object DatosFiscales : Screen("datos_fiscales_screen")
 
+    // Donativos - HU49
+    object MisDonativos : Screen("mis_donativos_screen")
+
     // catálogo de programas de voluntariado
     object Programas : Screen("programas_screen")
 

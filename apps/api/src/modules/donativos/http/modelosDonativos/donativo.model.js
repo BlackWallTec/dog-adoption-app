@@ -69,6 +69,26 @@ class DonativoModel {
 
     return data?.[0] ?? null;
   }
+
+  // HU49: los donativos del usuario y si ya pidio su CFDI
+  static async getDeUsuario(idUsuario) {
+    const { data, error } = await supabaseAdmin
+      .from("donativo")
+      .select("id_donativo, monto, fecha, estado, solicitud_cfdi ( id_solicitud_cfdi )")
+      .eq("id_usuario", idUsuario)
+      .order("fecha", { ascending: false });
+
+    if (error) {
+      throw new Error(`Error al consultar donativos del usuario: ${error.message}`);
+    }
+
+    return (data ?? []).map(({ solicitud_cfdi, ...donativo }) => ({
+      ...donativo,
+      cfdi_solicitado: Array.isArray(solicitud_cfdi)
+        ? solicitud_cfdi.length > 0
+        : Boolean(solicitud_cfdi),
+    }));
+  }
 }
 
 export default DonativoModel;
