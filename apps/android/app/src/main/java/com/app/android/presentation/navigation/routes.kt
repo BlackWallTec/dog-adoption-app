@@ -14,6 +14,8 @@ sealed class Screen(
 
     object Cuenta : Screen("cuenta_screen")
 
+    object Configuracion : Screen("configuracion_screen")
+
     object DetallePerro : Screen("detalle_perro_screen/{dogId}") {
         // Esta función ayuda a construir la ruta cuando quieres pasarle un ID
         fun crearRuta(dogId: String) = "detalle_perro_screen/$dogId"
