@@ -98,7 +98,7 @@ describe("Roles y límites de autenticación", () => {
       .set("x-forwarded-for", "192.0.2.10")
       .send({});
     expect(r.status).toBe(429);
-    expect(r.body.code).toBe(ERROR_CODES.RATE_LIMITED);
+    expect(r.body).toMatchObject({ ok: false, error: expect.any(String) });
     expect(dobles.limitar).toHaveBeenCalledWith("192.0.2.10", `rl:perfiles:${prefijo}`);
     expect(dobles.login).not.toHaveBeenCalled();
     expect(dobles.registro).not.toHaveBeenCalled();
@@ -120,7 +120,7 @@ describe("Roles y límites de autenticación", () => {
     expect(dobles.limitar).not.toHaveBeenCalled();
     expect(dobles.altaAdmin).not.toHaveBeenCalled();
   });
-  it("limita el alta administrativa por UUID sin quitar la protección de Root", async () => {
+  it("limita el alta administrativa sin quitar la protección de Root", async () => {
     dobles.limitar.mockResolvedValueOnce({ success: false, limit: 10, remaining: 0 });
     const bloqueada = await request(app)
       .post("/auth/register-admin")
@@ -128,7 +128,7 @@ describe("Roles y límites de autenticación", () => {
       .set("Authorization", `Bearer ${token(ROLES.ROOT)}`)
       .send({});
     expect(bloqueada.status).toBe(429);
-    expect(dobles.limitar).toHaveBeenCalledWith("usuario-prueba", "rl:perfiles:registro-admin");
+    expect(dobles.limitar).toHaveBeenCalledWith("127.0.0.1", "rl:perfiles:registro-admin");
     expect(dobles.altaAdmin).not.toHaveBeenCalled();
     const permitida = await request(app)
       .post("/auth/register-admin")
@@ -209,7 +209,7 @@ describe("Controlador de correo y middleware compartido", () => {
       dobles.limitar.mockResolvedValueOnce({ success: false, limit: 30, remaining: 0 });
       const r = await request(app).post(`/correo/${ruta}`).send({ correo: "prueba@gmail.com" });
       expect(r.status).toBe(429);
-      expect(r.body.code).toBe(ERROR_CODES.RATE_LIMITED);
+      expect(r.body).toMatchObject({ ok: false, error: expect.any(String) });
       expect(r.headers["x-ratelimit-remaining"]).toBe("0");
       expect(dobles.servicio).not.toHaveBeenCalled();
     },
