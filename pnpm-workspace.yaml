@@ -26,6 +26,8 @@ catalog:
   fullcalendar: ^7.1.5
   temporal-polyfill: ^1.0.8
   fast-xml-parser: ^5.12.1
+  "@upstash/ratelimit": ^2.2.1
+  "@upstash/redis": ^1.41.0
 overrides:
   vite@*: "catalog:"
 peerDependencyRules:

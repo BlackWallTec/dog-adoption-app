@@ -1,3 +1,4 @@
 .env
 .dir_dump.txt
 node_modules
+.vitest
