@@ -29,6 +29,8 @@ data class RegistroUiState(
     val error: String? = null,
     val isLoading: Boolean = false,
     val registroExitoso: Boolean = false,
+    val requiereConfirmacion: Boolean = false,
+    val correoEnviado: Boolean = true,
 )
 
 /**
@@ -107,13 +109,24 @@ class RegistroViewModel @Inject constructor(
     fun registrar() {
         val state = _uiState.value
         if (state.isLoading || state.registroExitoso) return
+        // Escribir el CP carga opciones; todavía hay que elegir una colonia de esa lista.
+        if (state.cargandoColonias || state.datos.idCodigoPostal.isBlank() ||
+            state.colonias.none { it.idCodigoPostal == state.datos.idCodigoPostal }) {
+            _uiState.update { it.copy(
+                campos = it.campos + ("id_codigo_postal" to "Selecciona la colonia de tu dirección."),
+                error = null,
+            ) }
+            return
+        }
         _uiState.update { it.copy(isLoading = true, campos = emptyMap(), error = null) }
         // launch inicia una corrutina ligada al ViewModel; al destruirse éste, se cancela su alcance.
         registroJob = viewModelScope.launch {
             // fold separa el Result en éxito (onSuccess) o fallo (onFailure).
             registrar(state.datos).fold(
-                onSuccess = { _uiState.update { it.copy(
+                onSuccess = { resultado -> _uiState.update { it.copy(
                     isLoading = false, registroExitoso = true,
+                    requiereConfirmacion = resultado.requiereConfirmacion,
+                    correoEnviado = resultado.correoEnviado,
                     datos = it.datos.copy(contrasena = "", confirmContrasena = ""),
                 ) } },
                 // as? convierte si el error es ErrorApi; ?. y orEmpty dejan un mapa vacío en otro caso.

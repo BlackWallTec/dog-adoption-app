@@ -3,6 +3,7 @@ package com.app.android.presentation.viewmodel.viewModelPerfiles
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
+import com.app.android.domain.entities.entitiesPerfiles.ErrorApi
 import com.app.android.domain.useCases.useCasesPerfiles.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -38,7 +39,7 @@ class LoginViewModel
             // La función especificada para update, es la lambda que refiere al método
             // copy del estado mismo
             _uiState.update {
-                it.copy(email = email, error = null)
+                it.copy(email = email, error = null, correoPendiente = false)
             }
     }
 
@@ -63,7 +64,7 @@ class LoginViewModel
         // La función especificada para update, es la lambda que refiere
         // al método copy del estado mismo
         _uiState.update {
-            it.copy(isLoading = true, error = null)
+            it.copy(isLoading = true, error = null, correoPendiente = false)
         }
 
         // Esto ya utiliza el useCase, puede ser bloqueante porque involucra una solicitud
@@ -80,7 +81,8 @@ class LoginViewModel
                 // Si loginUseCase retorna un error
                 onFailure = { error ->
                     _uiState.update {
-                        it.copy(isLoading = false, error = error.message)
+                        it.copy(isLoading = false, error = error.message,
+                            correoPendiente = (error as? ErrorApi)?.codigo == "EMAIL_NOT_CONFIRMED")
                     }
                 },
             )

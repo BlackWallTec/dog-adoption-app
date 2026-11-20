@@ -59,8 +59,22 @@ class UsuarioRepositoryImpl @Inject constructor(
     }
 
     // Convierte Registro al envío JSON y devuelve el usuario creado como un modelo de domain.
-    override suspend fun register(registro: Registro): Result<Usuario> = ejecutar {
-        api.register(registro.toRequest()).user.toDomain()
+    override suspend fun register(registro: Registro): Result<ResultadoRegistro> = ejecutar {
+        val respuesta = api.register(registro.toRequest())
+        ResultadoRegistro(respuesta.user.toDomain(), respuesta.requiereConfirmacion == true, respuesta.correoEnviado != false)
+    }
+
+    // Correo reutiliza la frontera de errores existente y nunca cambia el token guardado.
+    override suspend fun solicitarCodigo(correo: String, recuperar: Boolean): Result<Unit> = ejecutar {
+        val r = if (recuperar) api.recuperarCodigo(CodigoCorreoRequest(correo)) else api.reenviarCodigo(CodigoCorreoRequest(correo))
+        if (r.mensaje.isNullOrBlank()) throw ErrorApi("No pudimos comprobar la solicitud de correo.")
+    }
+    override suspend fun confirmarCorreo(correo: String, codigo: String): Result<Unit> = ejecutar {
+        if (api.confirmarCodigo(CodigoCorreoRequest(correo, codigo)).ok != true) throw ErrorApi("No se pudo confirmar el correo.")
+    }
+    override suspend fun restablecerContrasena(correo: String, codigo: String, contrasena: String, repetida: String): Result<Unit> = ejecutar {
+        if (api.restablecerCodigo(CodigoCorreoRequest(correo, codigo, contrasena, repetida)).ok != true)
+            throw ErrorApi("No se pudo cambiar la contraseña.")
     }
 
     // Convierte Perfil en el envio de un JSON y devuelve un modelo protegido
@@ -121,6 +135,7 @@ class UsuarioRepositoryImpl @Inject constructor(
                         ?: "El servidor no pudo completar la solicitud (HTTP ${e.code()}).",
                     campos = cuerpo?.fields.orEmpty(),
                     sesionExpirada = expirada,
+                    codigo = cuerpo?.code,
                 ))
             } catch (e: ErrorApi) {
                 Result.failure(e)

@@ -13,6 +13,10 @@ sealed class Screen(
     object Registro : Screen("registro_screen")
 
     object Cuenta : Screen("cuenta_screen")
+    object Correo : Screen("correo_screen?recuperar={recuperar}&correo={correo}") {
+        fun crearRuta(correo: String, recuperar: Boolean) =
+            "correo_screen?recuperar=$recuperar&correo=${android.net.Uri.encode(correo)}"
+    }
 
     object Configuracion : Screen("configuracion_screen")
 

@@ -59,3 +59,5 @@ apps/android/pruebas-voluntariado/capturas/
 local.properties
 apps/.vitest/
 apps/api/.vitest
+# Estado privado de confirmación móvil (hashes HMAC; nunca se publica).
+apps/api/.local/

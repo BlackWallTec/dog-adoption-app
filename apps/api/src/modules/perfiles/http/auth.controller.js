@@ -2,8 +2,15 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
-import ROLES from "./modelosPerfiles/roles.model.js";
-import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "@qarino/shared/errores.js";
+import ROLES from "../../../config/roles.js";
+import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
+import {
+  ERROR_CODES,
+  errorBody,
+  UNAUTHENTICATED,
+  FORBIDDEN,
+  errorResponse,
+} from "@qarino/shared/errores.js";
 
 /*
 IMPORTANTE
@@ -59,12 +66,24 @@ export const postLogin = async (req, res) => {
         .json(errorBody(ERROR_CODES.INVALID_CREDENTIALS, "Credenciales inválidas"));
     }
 
+    // Extensión optativa: las cuentas anteriores y los roles web mantienen su acceso.
+    const estadoCorreo =
+      usuario.rol === ROLES.CLIENT && correoMovilHabilitado()
+        ? servicioCorreoMovil().estado(usuario.id_usuario)
+        : null;
+    if (estadoCorreo && (!estadoCorreo.confirmado || usuario.correo_pendiente_desde))
+      throw new FORBIDDEN(
+        "Confirma tu correo antes de iniciar sesión.",
+        ERROR_CODES.EMAIL_NOT_CONFIRMED,
+      );
+
     const vida = vidaSeconds(usuario.rol);
 
     const token = jwt.sign(
       {
         uuid: usuario.id_usuario,
         rol: usuario.rol,
+        ...(estadoCorreo ? { correoVersionMovil: estadoCorreo.version } : {}),
       },
       process.env.JWT_SECRET,
       {
@@ -98,11 +117,9 @@ export const postLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
-
-    return res
-      .status(500)
-      .json(errorBody(ERROR_CODES.INTERNAL, `Error interno del servidor: ${error.message}`));
+    const respuesta = errorResponse(error);
+    if (respuesta.status >= 500) console.error("No se completó el inicio de sesión.");
+    return res.status(respuesta.status).json(respuesta.body);
   }
 };
 
@@ -127,10 +144,8 @@ export const getMe = async (req, res) => {
       user: { uuid, rol },
     });
   } catch (error) {
-    if (error instanceof UNAUTHENTICATED) {
-      return res.status(401).json(errorBody(ERROR_CODES.UNAUTHENTICATED, error.message));
-    }
-    console.error(error);
-    return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
+    const respuesta = errorResponse(error);
+    if (respuesta.status >= 500) console.error("No se pudo consultar la sesión.");
+    return res.status(respuesta.status).json(respuesta.body);
   }
 };

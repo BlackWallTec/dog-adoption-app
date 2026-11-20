@@ -26,6 +26,11 @@ export const ERROR_CODES = Object.freeze({
   FORBIDDEN: "FORBIDDEN",
   RATE_LIMITED: "RATE_LIMITED",
   INTERNAL: "INTERNAL_ERROR",
+  INVALID_EMAIL_CODE: "INVALID_EMAIL_CODE",
+  EMAIL_NOT_CONFIRMED: "EMAIL_NOT_CONFIRMED",
+  EMAIL_UNAVAILABLE: "EMAIL_UNAVAILABLE",
+  PASSWORD_UPDATE_FAILED: "PASSWORD_UPDATE_FAILED",
+  SERVICE_UNAVAILABLE: "SERVICE_UNAVAILABLE",
 });
 
 export function errorBody(code, error, fields) {
@@ -74,10 +79,10 @@ export class CONFLICT extends Error {
 }
 
 export class BAD_REQUEST extends Error {
-  constructor(message = "Solicitud inválida") {
+  constructor(message = "Solicitud inválida", code = ERROR_CODES.BAD_REQUEST) {
     super(message);
     this.name = "BAD_REQUEST";
-    this.code = ERROR_CODES.BAD_REQUEST;
+    this.code = code;
   }
 }
 
@@ -98,10 +103,13 @@ export class UNAUTHENTICATED extends Error {
 }
 
 export class FORBIDDEN extends Error {
-  constructor(message = "No tienes permiso para realizar esta acción") {
+  constructor(
+    message = "No tienes permiso para realizar esta acción",
+    code = ERROR_CODES.FORBIDDEN,
+  ) {
     super(message);
     this.name = "FORBIDDEN";
-    this.code = ERROR_CODES.FORBIDDEN;
+    this.code = code;
   }
 }
 
@@ -119,6 +127,48 @@ export class INTERNAL extends Error {
     this.name = "INTERNAL";
     this.code = ERROR_CODES.INTERNAL;
   }
+}
+
+export class SERVICE_UNAVAILABLE extends Error {
+  constructor(
+    message = "Servicio temporalmente no disponible",
+    code = ERROR_CODES.SERVICE_UNAVAILABLE,
+  ) {
+    super(message);
+    this.name = "SERVICE_UNAVAILABLE";
+    this.code = code;
+  }
+}
+
+// Traduce las clases compartidas al contrato HTTP; nunca expone detalles de fallos inesperados.
+export function errorResponse(error) {
+  const status =
+    error instanceof VALIDATION
+      ? 422
+      : error instanceof EMAIL_EXISTS || error instanceof CONFLICT
+        ? 409
+        : error instanceof BAD_REQUEST
+          ? 400
+          : error instanceof INVALID_CREDENTIALS || error instanceof UNAUTHENTICATED
+            ? 401
+            : error instanceof FORBIDDEN
+              ? 403
+              : error instanceof RATE_LIMITED
+                ? 429
+                : error instanceof SERVICE_UNAVAILABLE
+                  ? 503
+                  : 500;
+  return {
+    status,
+    body:
+      status === 500
+        ? errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor")
+        : errorBody(
+            error.code,
+            error.message,
+            error instanceof VALIDATION ? error.getFields() : undefined,
+          ),
+  };
 }
 
 // Para obtener un código HTTP de errores de supabase (PostgreSQL)
@@ -166,7 +216,7 @@ export function errorFromHTTPStatus(status, message, fields, code) {
       return code === ERROR_CODES.CONFLICT ? new CONFLICT(message) : new EMAIL_EXISTS(message);
 
     case 400:
-      return new BAD_REQUEST(message);
+      return new BAD_REQUEST(message, code === ERROR_CODES.INVALID_EMAIL_CODE ? code : undefined);
 
     case 401:
       return code === ERROR_CODES.INVALID_CREDENTIALS
@@ -174,10 +224,18 @@ export function errorFromHTTPStatus(status, message, fields, code) {
         : new UNAUTHENTICATED(message);
 
     case 403:
-      return new FORBIDDEN(message);
+      return new FORBIDDEN(message, code === ERROR_CODES.EMAIL_NOT_CONFIRMED ? code : undefined);
 
     case 429:
       return new RATE_LIMITED(message);
+
+    case 503:
+      return new SERVICE_UNAVAILABLE(
+        message,
+        [ERROR_CODES.EMAIL_UNAVAILABLE, ERROR_CODES.PASSWORD_UPDATE_FAILED].includes(code)
+          ? code
+          : undefined,
+      );
 
     case 500:
     default:

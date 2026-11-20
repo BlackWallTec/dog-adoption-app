@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.app.android.presentation.navigation.AppNavigation
 import com.app.android.presentation.view.ui.theme.AndroidTheme
+import com.app.android.presentation.view.viewsPerfiles.LocalBackendAccess
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
@@ -44,7 +45,10 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // El enrutador toma el control total de la app desde aquí
                     //PerroScreen()
-                    AppNavigation()
+                    // Pide el permiso de red local antes de consultar la API de desarrollo en Android 17.
+                    LocalBackendAccess {
+                        AppNavigation()
+                    }
                 }
             }
         }
