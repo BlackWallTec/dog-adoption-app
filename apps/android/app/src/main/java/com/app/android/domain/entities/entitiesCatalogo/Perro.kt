@@ -4,5 +4,6 @@ data class Perro(
     val nombre: String,
     val edad: Int?,
     val sexo: String,
+    val descripcion: String,
     val fotoUrl: String = ""
 )

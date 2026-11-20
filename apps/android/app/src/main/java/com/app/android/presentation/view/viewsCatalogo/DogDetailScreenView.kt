@@ -12,6 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 // 3. Componentes de UI (Material 3)
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,10 +78,18 @@ fun DogDetailScreenView(
                 Scaffold(
                     // Top Molecule: BackButton & Title
                     topBar = {
-                        AppTopBar(
-                            titulo = dog.nombre,
-                            onBackClick = onBackClick,
-                        )
+                        Column {
+                            AppTopBar(
+                                titulo = dog.nombre,
+                                onBackClick = onBackClick,
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                            ) {
+                                CompartirScreen(perro = dog)
+                            }
+                        }
                     },
                     // Button: NavBar
                     bottomBar = {

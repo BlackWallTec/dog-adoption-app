@@ -47,7 +47,7 @@ class DogDetailViewModel
                     // Debug
                     // 🟢 IMPRIMIMOS LA ENTITY RECIBIDA EN CONSOLA
                     Log.d("TEST_CLEAN", "✅ 2. ¡Éxito! Entity recibida: $resultado")
-                    Log.d("TEST_CLEAN", "🐶 Nombre: ${resultado?.nombre}, Raza: ${resultado?.razaNombre}")
+                    Log.d("TEST_CLEAN", "🐶  Nombre: ${resultado?.nombre}, Raza: ${resultado?.razaNombre}")
 
                     if (resultado == null) {
                         // Caso 1: BD vacía

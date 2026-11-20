@@ -29,6 +29,8 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewMo
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
+import com.app.android.presentation.view.viewsCatalogo.CompartirScreen
+import com.app.android.domain.entities.entitiesCatalogo.Perro
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

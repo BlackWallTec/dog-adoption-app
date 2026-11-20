@@ -15,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavType
+import androidx.navigation.navDeepLink
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
@@ -250,6 +251,7 @@ fun AppNavigation() {
                 listOf(
                     navArgument("dogId") { type = NavType.StringType },
                 ),
+            deepLinks = listOf(navDeepLink { uriPattern = "qarino://perro/{dogId}" })
         ) { backStackEntry ->
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
@@ -521,6 +523,7 @@ fun AppNavigation() {
                 )
             }
         }
+
 
         // ========= Pantallas Voluntariado ========
 
