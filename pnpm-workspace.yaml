@@ -29,6 +29,8 @@ catalog:
   "@upstash/ratelimit": ^2.2.1
   "@upstash/redis": ^1.41.0
   nodemailer: ^10.6.0
+  "@upstash/ratelimit": ^2.2.1
+  "@upstash/redis": ^1.41.0
 overrides:
   vite@*: "catalog:"
 peerDependencyRules:

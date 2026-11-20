@@ -4,7 +4,13 @@ import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "./modelosPerfiles/roles.model.js";
 import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
-import { ERROR_CODES, errorBody, UNAUTHENTICATED } from "@qarino/shared/errores.js";
+import {
+  ERROR_CODES,
+  errorBody,
+  UNAUTHENTICATED,
+  FORBIDDEN,
+  errorResponse,
+} from "@qarino/shared/errores.js";
 
 /*
 IMPORTANTE
@@ -66,10 +72,10 @@ export const postLogin = async (req, res) => {
         ? servicioCorreoMovil().estado(usuario.id_usuario)
         : null;
     if (estadoCorreo && (!estadoCorreo.confirmado || usuario.correo_pendiente_desde))
-      return res.status(403).json({
-        code: "EMAIL_NOT_CONFIRMED",
-        error: "Confirma tu correo antes de iniciar sesión.",
-      });
+      throw new FORBIDDEN(
+        "Confirma tu correo antes de iniciar sesión.",
+        ERROR_CODES.EMAIL_NOT_CONFIRMED,
+      );
 
     const vida = vidaSeconds(usuario.rol);
 
@@ -111,11 +117,9 @@ export const postLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
-
-    return res
-      .status(500)
-      .json(errorBody(ERROR_CODES.INTERNAL, `Error interno del servidor: ${error.message}`));
+    const respuesta = errorResponse(error);
+    if (respuesta.status >= 500) console.error("No se completó el inicio de sesión.");
+    return res.status(respuesta.status).json(respuesta.body);
   }
 };
 
@@ -140,10 +144,8 @@ export const getMe = async (req, res) => {
       user: { uuid, rol },
     });
   } catch (error) {
-    if (error instanceof UNAUTHENTICATED) {
-      return res.status(401).json(errorBody(ERROR_CODES.UNAUTHENTICATED, error.message));
-    }
-    console.error(error);
-    return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
+    const respuesta = errorResponse(error);
+    if (respuesta.status >= 500) console.error("No se pudo consultar la sesión.");
+    return res.status(respuesta.status).json(respuesta.body);
   }
 };

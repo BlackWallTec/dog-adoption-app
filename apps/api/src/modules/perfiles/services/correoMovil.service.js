@@ -4,16 +4,17 @@ import { dirname, resolve } from "node:path";
 import bcrypt from "bcryptjs";
 import Usuario from "../http/modelosPerfiles/user.model.js";
 import ROLES from "../http/modelosPerfiles/roles.model.js";
+import {
+  BAD_REQUEST,
+  RATE_LIMITED,
+  VALIDATION,
+  INTERNAL,
+  SERVICE_UNAVAILABLE,
+  ERROR_CODES,
+} from "@qarino/shared/errores.js";
 
 const MINUTO = 60_000;
 const GENERICO = { message: "Si la cuenta corresponde, recibirás un código en tu correo." };
-export class ErrorCorreoMovil extends Error {
-  constructor(message, status = 400, code = "INVALID_EMAIL_CODE") {
-    super(message);
-    this.status = status;
-    this.code = code;
-  }
-}
 
 // Extensión local: no sustituye bcrypt/JWT ni modifica las cuentas anteriores.
 // Los códigos siguen siendo locales; Supabase guarda el plazo pendiente para la limpieza.
@@ -25,7 +26,7 @@ export function crearCorreoMovil({
   ahora = () => Date.now(),
   codigo = () => String(randomInt(0, 1_000_000)).padStart(6, "0"),
 }) {
-  if (!secreto) throw new Error("Falta el secreto del servidor.");
+  if (!secreto) throw new INTERNAL("Falta el secreto del servidor.");
   let estado = { cuentas: {} };
   try {
     estado = JSON.parse(readFileSync(archivo, "utf8"));
@@ -47,16 +48,15 @@ export function crearCorreoMovil({
     return resultado;
   };
   const invalido = () => {
-    throw new ErrorCorreoMovil("El código no es válido o venció. Solicita uno nuevo.");
+    throw new BAD_REQUEST(
+      "El código no es válido o venció. Solicita uno nuevo.",
+      ERROR_CODES.INVALID_EMAIL_CODE,
+    );
   };
   async function emitir(id, correo, tipo) {
     const cuenta = estado.cuentas[id];
     if (cuenta[tipo] && ahora() - cuenta[tipo].enviado < MINUTO)
-      throw new ErrorCorreoMovil(
-        "Espera un minuto antes de solicitar otro código.",
-        429,
-        "RATE_LIMITED",
-      );
+      throw new RATE_LIMITED("Espera un minuto antes de solicitar otro código.");
     const valor = codigo();
     // Reenviar permite cambiar el código, pero nunca prolongar las 72 horas del registro.
     if (tipo === "confirmar") {
@@ -112,7 +112,7 @@ export function crearCorreoMovil({
               await emitir(id, correo, tipo);
             } catch (error) {
               // El tiempo de espera tampoco revela si el correo pertenece a una cuenta.
-              if (error instanceof ErrorCorreoMovil) return GENERICO;
+              if (error instanceof BAD_REQUEST || error instanceof RATE_LIMITED) return GENERICO;
               console.error("No se entregó el código de correo móvil.");
             }
           }
@@ -142,10 +142,12 @@ export function crearCorreoMovil({
             /[\r\n]/.test(contrasena) ||
             contrasena !== confirmContrasena
           )
-            throw new ErrorCorreoMovil(
+            throw new VALIDATION(
               "Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.",
-              422,
-              "VALIDATION",
+              {
+                contrasena:
+                  "Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.",
+              },
             );
           await usuarios.updatePassword(id, await bcrypt.hash(contrasena, 10));
           // No consume el código ni confirma éxito si la contraseña no quedó guardada.
@@ -155,10 +157,9 @@ export function crearCorreoMovil({
             !actualizado.contrasena ||
             !(await bcrypt.compare(contrasena, actualizado.contrasena))
           )
-            throw new ErrorCorreoMovil(
+            throw new SERVICE_UNAVAILABLE(
               "No se pudo comprobar el cambio de contraseña. Inténtalo de nuevo.",
-              503,
-              "PASSWORD_UPDATE_FAILED",
+              ERROR_CODES.PASSWORD_UPDATE_FAILED,
             );
           cuenta.version += 1;
         } else {
@@ -178,16 +179,14 @@ let servicio;
 export const correoMovilHabilitado = () => process.env.CORREO_MOVIL_MODO === "local";
 export function servicioCorreoMovil() {
   if (!correoMovilHabilitado())
-    throw new ErrorCorreoMovil(
+    throw new SERVICE_UNAVAILABLE(
       "El correo móvil todavía no está habilitado.",
-      503,
-      "EMAIL_UNAVAILABLE",
+      ERROR_CODES.EMAIL_UNAVAILABLE,
     );
   if (process.env.NODE_ENV === "production")
-    throw new ErrorCorreoMovil(
+    throw new SERVICE_UNAVAILABLE(
       "El almacenamiento local de correo no está habilitado en producción.",
-      503,
-      "EMAIL_UNAVAILABLE",
+      ERROR_CODES.EMAIL_UNAVAILABLE,
     );
   servicio ??= crearCorreoMovil({
     archivo: resolve(process.env.CORREO_MOVIL_ARCHIVO || ".local/correo-movil.json"),
@@ -200,12 +199,16 @@ export function servicioCorreoMovil() {
 // La clave se usa sólo en el servidor. El código nunca se devuelve en respuestas HTTP.
 export async function enviarCodigoCorreo({ para, codigo, tipo }) {
   const transporte = process.env.MAIL_TRANSPORT || "resend";
-  if (!["resend", "gmail"].includes(transporte)) throw new Error("Proveedor de correo inválido.");
+  if (!["resend", "gmail"].includes(transporte))
+    throw new SERVICE_UNAVAILABLE("Proveedor de correo inválido.", ERROR_CODES.EMAIL_UNAVAILABLE);
   const remitente = (
     transporte === "gmail" ? process.env.SMTP_USER : process.env.MAIL_FROM
   )?.trim();
   if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(remitente || ""))
-    throw new Error("Falta configurar el remitente de correo.");
+    throw new SERVICE_UNAVAILABLE(
+      "Falta configurar el remitente de correo.",
+      ERROR_CODES.EMAIL_UNAVAILABLE,
+    );
   const mensaje = {
     from: `Qariño Animal <${remitente}>`,
     to: [para],
@@ -216,7 +219,11 @@ export async function enviarCodigoCorreo({ para, codigo, tipo }) {
   // Gmail usa una contraseña de aplicación sólo en el servidor; conserva las rutas y códigos de Android.
   if (transporte === "gmail") {
     const pass = process.env.SMTP_PASS?.replace(/\s/g, "");
-    if (!pass) throw new Error("Falta SMTP_PASS para enviar con Gmail.");
+    if (!pass)
+      throw new SERVICE_UNAVAILABLE(
+        "Falta SMTP_PASS para enviar con Gmail.",
+        ERROR_CODES.EMAIL_UNAVAILABLE,
+      );
     const { default: nodemailer } = await import("nodemailer");
     return nodemailer
       .createTransport({
@@ -229,7 +236,11 @@ export async function enviarCodigoCorreo({ para, codigo, tipo }) {
       })
       .sendMail(mensaje);
   }
-  if (!process.env.RESEND_API_KEY) throw new Error("Falta configurar la clave de Resend.");
+  if (!process.env.RESEND_API_KEY)
+    throw new SERVICE_UNAVAILABLE(
+      "Falta configurar la clave de Resend.",
+      ERROR_CODES.EMAIL_UNAVAILABLE,
+    );
   const respuesta = await fetch("https://api.resend.com/emails", {
     method: "POST",
     signal: AbortSignal.timeout(8_000),
@@ -239,7 +250,11 @@ export async function enviarCodigoCorreo({ para, codigo, tipo }) {
     },
     body: JSON.stringify(mensaje),
   });
-  if (!respuesta.ok) throw new Error(`Resend rechazó el envío (HTTP ${respuesta.status}).`);
+  if (!respuesta.ok)
+    throw new SERVICE_UNAVAILABLE(
+      "No se pudo enviar el correo. Inténtalo más tarde.",
+      ERROR_CODES.EMAIL_UNAVAILABLE,
+    );
   return respuesta.json();
 }
 

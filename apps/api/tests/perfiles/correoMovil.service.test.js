@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, existsSync, unlinkSync, rmdirSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import bcrypt from "bcryptjs";
+import { ERROR_CODES } from "@qarino/shared/errores.js";
 import nodemailer from "nodemailer";
 vi.mock("nodemailer", () => ({ default: { createTransport: vi.fn() } }));
 vi.mock("../../src/config/supabaseClient.js", () => ({ supabaseAdmin: {}, supabase: {} }));
@@ -70,17 +71,17 @@ describe("Códigos de correo para Clientes", () => {
     await servicio.registrar("cliente", correo);
     for (let i = 0; i < 5; i++)
       await expect(servicio.consumir(correo, "999999", "confirmar")).rejects.toMatchObject({
-        status: 400,
+        code: ERROR_CODES.INVALID_EMAIL_CODE,
       });
     await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toMatchObject({
-      status: 400,
+      code: ERROR_CODES.INVALID_EMAIL_CODE,
     });
   });
   it("vence la confirmación a las 72 horas", async () => {
     await servicio.registrar("cliente", correo);
     ahora += 72 * 60 * 60_000;
     await expect(servicio.consumir(correo, "012345", "confirmar")).rejects.toMatchObject({
-      status: 400,
+      code: ERROR_CODES.INVALID_EMAIL_CODE,
     });
   });
   it("reenviar no extiende el plazo original de la cuenta", async () => {
@@ -131,7 +132,7 @@ describe("Códigos de correo para Clientes", () => {
     await servicio.solicitar(correo, "recuperar");
     await expect(
       servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Distinta123"),
-    ).rejects.toMatchObject({ status: 422 });
+    ).rejects.toMatchObject({ code: ERROR_CODES.VALIDATION });
     await servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234");
     expect(await bcrypt.compare("Nueva1234", usuarios.updatePassword.mock.calls[0][1])).toBe(true);
     expect(servicio.estado("cliente").version).toBe(1);
@@ -144,7 +145,7 @@ describe("Códigos de correo para Clientes", () => {
     usuarios.updatePassword.mockImplementationOnce(async () => {});
     await expect(
       servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234"),
-    ).rejects.toMatchObject({ status: 503, code: "PASSWORD_UPDATE_FAILED" });
+    ).rejects.toMatchObject({ code: ERROR_CODES.PASSWORD_UPDATE_FAILED });
     expect(servicio.estado("cliente").version).toBe(0);
     await expect(
       servicio.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234"),

@@ -12,10 +12,11 @@ import {
   VALIDATION,
   EMAIL_EXISTS,
   CONFLICT,
-  BAD_REQUEST,
+  errorResponse,
 } from "@qarino/shared/errores.js";
 import {
   validateRegistration,
+  validateEmail,
   limpiarTelefono,
 } from "@qarino/shared/perfiles/registro.validation.js";
 
@@ -79,18 +80,10 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     // Valida formato de todos los campos
     validateRegistration(b);
 
-    // El formulario debe enviar el UUID de la colonia elegida, no un CP ni un texto vacío.
-    if (
-      typeof b.id_codigo_postal !== "string" ||
-      !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(b.id_codigo_postal)
-    )
-      throw new VALIDATION("Error de validación en los datos", {
-        id_codigo_postal: "Selecciona una colonia válida para tu código postal.",
-      });
     await estrategia.validarCP(b.id_codigo_postal);
 
     // Valores ya validados, normalizados
-    const correo = b.correo.toLowerCase();
+    const correo = validateEmail(b.correo);
     const telefono = limpiarTelefono(b.telefono);
     // El alta administrativa conserva su comportamiento. Sólo Clientes nuevos pueden quedar pendientes.
     const correoServicio =
@@ -131,14 +124,6 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
       ...(entrega ? { requiereConfirmacion: true, correoEnviado: entrega.enviado } : {}),
     });
   } catch (error) {
-    console.error(error);
-
-    if (error instanceof VALIDATION) {
-      return res
-        .status(422)
-        .json(errorBody(ERROR_CODES.VALIDATION, error.message, error.getFields()));
-    }
-
     // Para unique_violation de PostgreSQL
     if (error instanceof EMAIL_EXISTS || error instanceof CONFLICT) {
       const mensaje = "Ya existe una cuenta con ese correo";
@@ -147,11 +132,9 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
         .json(errorBody(ERROR_CODES.EMAIL_EXISTS, mensaje, { correo: mensaje }));
     }
 
-    if (error instanceof BAD_REQUEST) {
-      return res.status(400).json(errorBody(ERROR_CODES.BAD_REQUEST, error.message));
-    }
-
-    return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
+    const respuesta = errorResponse(error);
+    if (respuesta.status >= 500) console.error("No se completó el registro de la cuenta.");
+    return res.status(respuesta.status).json(respuesta.body);
   }
 };
 

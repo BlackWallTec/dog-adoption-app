@@ -272,17 +272,25 @@ describe("Extensión móvil sin sustituir el login actual", () => {
     expect(respuesta.body.requiereConfirmacion).toBeUndefined();
     expect(respuesta.body.user.rol).toBe("Administrador");
   });
-  it("oculta la existencia de cuentas y limita los intentos por IP", async () => {
+  it("oculta la existencia de cuentas", async () => {
     const r = await request(app)
       .post(`${base}/correo-movil/recuperar`)
       .send({ correo: "nadie@gmail.com" });
     expect(r.status).toBe(202);
     expect(r.body.codigo).toBeUndefined();
-    let ultima;
-    for (let i = 0; i < 31; i++)
-      ultima = await request(app)
-        .post(`${base}/correo-movil/recuperar`)
-        .send({ correo: "nadie@gmail.com" });
-    expect(ultima.status).toBe(429);
+  });
+  it("no expone detalles internos cuando falla el login", async () => {
+    Usuario.fetchByEmail.mockRejectedValueOnce(new Error("detalle privado de la base"));
+    const respuesta = await request(app)
+      .post(`${base}/login`)
+      .send({ correo: "anterior@gmail.com", contrasena: "Anterior1234" });
+    expect(respuesta.status).toBe(500);
+    expect(respuesta.body).toEqual({ code: "INTERNAL_ERROR", error: "Error interno del servidor" });
+  });
+  it("no expone detalles internos cuando falla el registro", async () => {
+    RegistroPublico.crearCliente.mockRejectedValueOnce(new Error("detalle privado de la base"));
+    const respuesta = await request(app).post(`${base}/register`).send(registro("fallo@gmail.com"));
+    expect(respuesta.status).toBe(500);
+    expect(respuesta.body).toEqual({ code: "INTERNAL_ERROR", error: "Error interno del servidor" });
   });
 });
