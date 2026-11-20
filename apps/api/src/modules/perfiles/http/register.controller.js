@@ -2,19 +2,21 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "node:crypto";
 import Usuario from "./modelosPerfiles/user.model.js";
-import ROLES from "./modelosPerfiles/roles.model.js";
+import ROLES from "../../../config/roles.js";
 import CodigoPostal from "./modelosPerfiles/cps.model.js";
 import RegistroPublico from "./modelosPerfiles/registroPublico.model.js";
+import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
 import {
   ERROR_CODES,
   errorBody,
   VALIDATION,
   EMAIL_EXISTS,
   CONFLICT,
-  BAD_REQUEST,
+  errorResponse,
 } from "@qarino/shared/errores.js";
 import {
   validateRegistration,
+  validateEmail,
   limpiarTelefono,
 } from "@qarino/shared/perfiles/registro.validation.js";
 
@@ -78,13 +80,14 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     // Valida formato de todos los campos
     validateRegistration(b);
 
-    // CP elegido debe ser un texto; su existencia la verifica la estrategia
-    if (typeof b.id_codigo_postal !== "string") throw cpInexistente();
     await estrategia.validarCP(b.id_codigo_postal);
 
     // Valores ya validados, normalizados
-    const correo = b.correo.toLowerCase();
+    const correo = validateEmail(b.correo);
     const telefono = limpiarTelefono(b.telefono);
+    // El alta administrativa conserva su comportamiento. Sólo Clientes nuevos pueden quedar pendientes.
+    const correoServicio =
+      rol === ROLES.CLIENT && correoMovilHabilitado() ? servicioCorreoMovil() : null;
 
     // Hashea la contraseña
     const hashContrasena = await bcrypt.hash(b.contrasena, 10);
@@ -94,6 +97,7 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     await estrategia.guardar({
       idUsuario,
       rol,
+      requiereConfirmacion: Boolean(correoServicio),
       usuario: {
         nombre: b.nombre,
         apellidos: b.apellidos,
@@ -111,21 +115,15 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
       },
     });
 
+    const entrega = correoServicio ? await correoServicio.registrar(idUsuario, correo) : null;
     return res.status(201).json({
       user: {
         uuid: idUsuario,
         rol,
       },
+      ...(entrega ? { requiereConfirmacion: true, correoEnviado: entrega.enviado } : {}),
     });
   } catch (error) {
-    console.error(error);
-
-    if (error instanceof VALIDATION) {
-      return res
-        .status(422)
-        .json(errorBody(ERROR_CODES.VALIDATION, error.message, error.getFields()));
-    }
-
     // Para unique_violation de PostgreSQL
     if (error instanceof EMAIL_EXISTS || error instanceof CONFLICT) {
       const mensaje = "Ya existe una cuenta con ese correo";
@@ -134,11 +132,9 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
         .json(errorBody(ERROR_CODES.EMAIL_EXISTS, mensaje, { correo: mensaje }));
     }
 
-    if (error instanceof BAD_REQUEST) {
-      return res.status(400).json(errorBody(ERROR_CODES.BAD_REQUEST, error.message));
-    }
-
-    return res.status(500).json(errorBody(ERROR_CODES.INTERNAL, "Error interno del servidor"));
+    const respuesta = errorResponse(error);
+    if (respuesta.status >= 500) console.error("No se completó el registro de la cuenta.");
+    return res.status(respuesta.status).json(respuesta.body);
   }
 };
 

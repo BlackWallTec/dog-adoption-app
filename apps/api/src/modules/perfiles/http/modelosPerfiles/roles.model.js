@@ -1,7 +1,2 @@
-const ROLES = {
-  ROOT: "Root",
-  ADMIN: "Administrador",
-  CLIENT: "Cliente",
-};
-
-export default ROLES;
+// Compatibilidad con los módulos que todavía importan la ruta anterior.
+export { default } from "../../../../config/roles.js";

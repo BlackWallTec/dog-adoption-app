@@ -15,6 +15,7 @@ export default class Usuario {
       id_usuario,
       contrasena,
       rol,
+      ${process.env.CORREO_MOVIL_MODO === "local" ? "correo_pendiente_desde," : ""}
       datos_confidenciales!inner ( id_usuario )
       `,
       )
@@ -37,6 +38,7 @@ export default class Usuario {
       id_usuario,
       contrasena,
       rol,
+      correo_pendiente_desde: data.correo_pendiente_desde ?? null,
     };
   }
 
@@ -67,6 +69,22 @@ export default class Usuario {
     const { error } = await supabaseAdmin.from("usuario").delete().eq("id_usuario", id);
 
     if (error) instanciarError("Error al revertir la cuenta", error.code);
+  }
+
+  // La base decide si aún está dentro de las 72 horas y excluye la cuenta de la limpieza.
+  static async confirmarCorreo(id) {
+    const { data, error } = await supabaseAdmin.rpc("confirmar_correo_cliente", { p_id: id });
+    if (error) instanciarError("Error al confirmar el correo", error.code);
+    return data === true;
+  }
+
+  // La recuperación sólo sustituye el hash del usuario validado por el código de correo.
+  static async updatePassword(id, contrasena) {
+    const { error } = await supabaseAdmin
+      .from("usuario")
+      .update({ contrasena })
+      .eq("id_usuario", id);
+    if (error) instanciarError("Error al actualizar contraseña", error.code);
   }
 
   static async fetchProfileByUUID(id) {

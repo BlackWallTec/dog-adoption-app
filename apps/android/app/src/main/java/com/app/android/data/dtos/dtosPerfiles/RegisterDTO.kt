@@ -28,6 +28,8 @@ data class RegisterRequestDTO(
 data class RegisterResponseDTO(
     // ? permite un valor nulo; el repositorio comprueba este usuario al convertir la respuesta.
     @SerializedName("user") val user: UserDTO?,
+    @SerializedName("requiereConfirmacion") val requiereConfirmacion: Boolean? = null,
+    @SerializedName("correoEnviado") val correoEnviado: Boolean? = null,
 )
 
 /**

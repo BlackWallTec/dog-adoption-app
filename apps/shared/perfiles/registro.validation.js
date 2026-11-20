@@ -43,12 +43,29 @@ const patrones = {
   numero_interior: /^\s*\d{0,9}\s*$/,
   cp: /^\d{5}$/,
   date: /^\d{4}-\d{2}-\d{2}$/,
+  id_codigo_postal: /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
 };
+
+// Registro y correo usan el mismo formato y los mismos dominios permitidos.
+export function validateEmail(correo) {
+  const normalizado = typeof correo === "string" ? correo.trim().toLowerCase() : "";
+  if (!patrones.correo.test(normalizado))
+    throw new VALIDATION("Error de validación en los datos", {
+      correo: "Ingresa un correo válido de Gmail, Outlook, Yahoo, Hotmail o iCloud.",
+    });
+  return normalizado;
+}
 
 export function validateRegistration(body = {}, today = new Date()) {
   body ??= {};
 
   const errors = {};
+
+  try {
+    validateEmail(body.correo);
+  } catch (error) {
+    Object.assign(errors, error.getFields());
+  }
 
   const value = {
     numero_exterior: typeof body.numero_exterior === "string" ? body.numero_exterior : null,
@@ -67,18 +84,21 @@ export function validateRegistration(body = {}, today = new Date()) {
   for (const [field, descript, fun] of [
     ["nombre", desc(1, 100), nada],
     ["apellidos", desc(1, 150), nada],
-    ["correo", desc(1, 254, "sólo Gmail, Outlook, Yahoo, Hotmail o iCloud"), nada],
     ["telefono", desc(10, 12), limpiarTelefono],
     ["calle", desc(1, 250), nada],
     ["numero_exterior", desc(1, 9), nada],
     ["numero_interior", desc(1, 9), nada],
     ["contrasena", desc(8, 72), nada],
   ]) {
-    const val = fun(value[field]);
+    const val = typeof value[field] === "string" ? fun(value[field]) : "";
 
     // Si no coincide con el patrón
     if (!patrones[field].test(val)) errors[field] = `Campo inválido,\n${String(descript)}\n`;
   }
+
+  // El UUID de la colonia se comprueba aquí antes de consultar Postgres.
+  if (!patrones.id_codigo_postal.test(value.id_codigo_postal ?? ""))
+    errors.id_codigo_postal = "Selecciona una colonia válida para tu código postal.";
 
   if (value.fecha_nacimiento) {
     const birth = new Date(`${value.fecha_nacimiento}T00:00:00Z`);
