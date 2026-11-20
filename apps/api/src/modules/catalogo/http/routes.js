@@ -4,13 +4,17 @@ const router = express.Router();
 // Importar los controladores
 import * as adminController from "./catalogAdmin.controller.js";
 import * as clientController from "./catalogClient.controller.js";
-
+import { rateLimiter } from "../../../middleware/rate-limiter.js";
 import verificarToken from "../../../middleware/is-auth.js";
 import requireRole from "../../../middleware/require-role.js";
 import ROLES from "../../perfiles/http/modelosPerfiles/roles.model.js";
 
 // HU19C: edición de fichas (solo Administrador o Root con sesión activa)
-const soloAdmin = [verificarToken, requireRole(ROLES.ADMIN, ROLES.ROOT)];
+const soloAdmin = [
+  verificarToken,
+  rateLimiter({ max: 60, ventana: "1 m", prefijo: "admin" }),
+  requireRole(ROLES.ADMIN, ROLES.ROOT),
+];
 
 // ===== Rutas Especiales =======
 
@@ -67,5 +71,21 @@ router.get("/cliente/perros", clientController.getDogs);
 // HU24: opciones de filtro (razas, tamaños y características)
 // GET /api/catalogo/cliente/filtros
 router.get("/cliente/filtros", clientController.getFiltros);
+
+// ====== Seccion de pruebas de Rate Limiter ======= //
+// Esto limita por IP //
+router.get(
+  "/test-limit",
+  rateLimiter({ max: 3, ventana: "1 m", prefijo: "test", forzarEnDev: true }),
+  (req, res) => {
+    res.json({
+      ok: true,
+      mensaje: "✅ Petición exitosa",
+      peticionesRestantes: req.tokensRestantes,
+    });
+  },
+);
+
+// ===== Fin de seccion de Rate Limiter ====== //
 
 export default router;
