@@ -5,11 +5,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import com.app.android.domain.entities.entitiesPerfiles.Sesion
-import com.app.android.domain.entities.entitiesPerfiles.Usuario
 import com.app.android.presentation.view.ui.theme.AndroidTheme
 import com.app.android.presentation.view.viewsConfiguracion.ConfiguracionScreen
-import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -21,18 +18,15 @@ class AccesoDatosFiscalesTest {
 
     private fun mostrarConfiguracion(
         onDatosFiscales: () -> Unit = {},
-        onMisSolicitudes: () -> Unit = {},
+        onMiCuenta: () -> Unit = {},
     ) {
-        val sesion = Sesion(usuario = Usuario(id = "prueba", rol = "Cliente"), token = "")
         composeRule.setContent {
             AndroidTheme {
                 ConfiguracionScreen(
-                    state = SesionUiState(sesion = sesion, comprobando = false),
-                    onRetry = {},
-                    onCatalog = {},
-                    onLogout = {},
-                    onLogin = {},
-                    onMisSolicitudes = onMisSolicitudes,
+                    onNavSelect = {},
+                    onMiCuenta = onMiCuenta,
+                    onMisSolicitudes = {},
+                    onMisProgramas = {},
                     onDatosFiscales = onDatosFiscales,
                 )
             }
@@ -55,10 +49,10 @@ class AccesoDatosFiscalesTest {
     }
 
     @Test
-    fun al_tocar_mis_solicitudes_navega() {
+    fun al_tocar_mi_cuenta_navega() {
         var abrio = false
-        mostrarConfiguracion(onMisSolicitudes = { abrio = true })
-        composeRule.onNodeWithText("Mis solicitudes").performScrollTo().performClick()
+        mostrarConfiguracion(onMiCuenta = { abrio = true })
+        composeRule.onNodeWithText("Mi cuenta").performScrollTo().performClick()
         assertTrue(abrio)
     }
 }
