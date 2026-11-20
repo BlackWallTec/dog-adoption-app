@@ -31,6 +31,7 @@ import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
 import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
 import com.app.android.presentation.view.viewsCatalogo.DogDetailScreenView
 import com.app.android.presentation.view.viewsCatalogo.PerroScreen
+import com.app.android.presentation.view.viewsConfiguracion.ConfiguracionScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsDonativos.MisDonativosRoute
@@ -79,7 +80,7 @@ private fun NavController.irAOpcionBarra(opcion: Int) {
             1 -> Screen.GrafoVoluntariado.ruta
             2 -> Screen.DonarDinero.ruta
             3 -> Screen.MisSolicitudes.ruta
-            4 -> Screen.Cuenta.ruta
+            4 -> Screen.Configuracion.ruta
             else -> null
         }
     destino?.let {
@@ -197,6 +198,21 @@ fun AppNavigation() {
                         .show()
                     navController.irAlLogin()
                 },
+            )
+        }
+
+        // Ajustes: menú que lleva a la cuenta (Perfiles) y a las pantallas de cada módulo.
+        composable(route = Screen.Configuracion.ruta) {
+            ConfiguracionScreen(
+                onNavSelect = navController::irAOpcionBarra,
+                onMiCuenta = { navController.navigate(Screen.Cuenta.ruta) },
+                onMisSolicitudes = { navController.navigate(Screen.MisSolicitudes.ruta) },
+                onMisProgramas = {
+                    // Primero Programas, para que "atrás" en Mis programas tenga a dónde regresar.
+                    navController.navigate(Screen.GrafoVoluntariado.ruta)
+                    navController.navigate(Screen.MisVoluntariados.ruta)
+                },
+                onDatosFiscales = { navController.navigate(Screen.DatosFiscales.ruta) },
             )
         }
 
