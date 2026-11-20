@@ -234,7 +234,7 @@ fun AppNavigation() {
                 listOf(
                     navArgument("dogId") { type = NavType.StringType },
                 ),
-            deepLinks = listOf(navDeepLink { uriPattern = "qarino://perro/{dogId}" })
+            deepLinks = listOf(navDeepLink { uriPattern = "https://dog-adoption-app-mauve.vercel.app/perro/{dogId}" })
         ) { backStackEntry ->
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""

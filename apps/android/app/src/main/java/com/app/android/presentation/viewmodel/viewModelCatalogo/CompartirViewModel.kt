@@ -31,7 +31,7 @@ class CompartirViewModel @Inject constructor(): ViewModel(){
             edad=perro.edad,
             sexo=perro.sexo,
             descripcion=perro.descripcion,
-            enlace="qarino://perro/${perro.id}"
+            enlace="https://dog-adoption-app-mauve.vercel.app/perro/${perro.id}"
         )
         _shareState.value= ShareUIState.ShareMenu(content)
     }
