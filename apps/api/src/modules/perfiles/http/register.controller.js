@@ -2,7 +2,7 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "node:crypto";
 import Usuario from "./modelosPerfiles/user.model.js";
-import ROLES from "./modelosPerfiles/roles.model.js";
+import ROLES from "../../../config/roles.js";
 import CodigoPostal from "./modelosPerfiles/cps.model.js";
 import RegistroPublico from "./modelosPerfiles/registroPublico.model.js";
 import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";

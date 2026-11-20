@@ -41,7 +41,7 @@ export function rateLimiter({
     }
 
     try {
-      const userId = req.user?.id || req.user?.userId || req.user?.sub;
+      const userId = req.user?.uuid || req.user?.id || req.user?.userId || req.user?.sub;
       const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "127.0.0.1";
 
       // Si hay sesión usa UUID, si es pública usa IP

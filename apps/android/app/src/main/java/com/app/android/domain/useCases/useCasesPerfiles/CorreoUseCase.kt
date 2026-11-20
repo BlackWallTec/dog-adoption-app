@@ -5,8 +5,11 @@ import com.app.android.domain.repoInterface.repoIntPerfiles.PerfilesRepositoryIn
 import javax.inject.Inject
 
 class CorreoUseCase @Inject constructor(private val repo: PerfilesRepositoryInt) {
+    // Mantiene los mismos dominios permitidos por validateEmail en shared del backend.
+    private val correoPermitido = Regex("^[^\\s@]+@(gmail\\.com|outlook\\.com|yahoo\\.com|hotmail\\.com|icloud\\.com)$", RegexOption.IGNORE_CASE)
+
     private fun validar(correo: String, codigo: String? = null): ErrorApi? = when {
-        correo.trim().length > 254 || !Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$").matches(correo.trim()) -> ErrorApi("Ingresa un correo válido.")
+        correo.trim().length > 254 || !correoPermitido.matches(correo.trim()) -> ErrorApi("Ingresa un correo válido de Gmail, Outlook, Yahoo, Hotmail o iCloud.")
         codigo != null && !Regex("^[0-9]{6}$").matches(codigo) -> ErrorApi("Escribe el código de seis dígitos.")
         else -> null
     }

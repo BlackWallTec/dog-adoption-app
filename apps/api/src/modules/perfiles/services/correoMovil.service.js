@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import bcrypt from "bcryptjs";
 import Usuario from "../http/modelosPerfiles/user.model.js";
-import ROLES from "../http/modelosPerfiles/roles.model.js";
+import ROLES from "../../../config/roles.js";
 import {
   BAD_REQUEST,
   RATE_LIMITED,

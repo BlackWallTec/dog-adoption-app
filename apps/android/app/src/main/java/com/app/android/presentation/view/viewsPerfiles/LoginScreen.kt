@@ -164,8 +164,12 @@ internal fun LoginContent(
                 )
 
                 state.error?.let { PerfilesError(it) }
-                if (state.correoPendiente) AppButton("Confirmar mi correo", onConfirmEmail,
-                    Modifier.fillMaxWidth().testTag("login_confirmar_correo"), enabled = !state.isLoading, variant = ButtonVariant.Outlined)
+                // El registro inicia la confirmación; este acceso sólo permite retomar una cuenta pendiente.
+                if (state.correoPendiente) {
+                    SupportingText("Tu cuenta ya está creada. Completa la confirmación de tu correo.")
+                    AppButton("Continuar confirmación", onConfirmEmail,
+                        Modifier.fillMaxWidth().testTag("login_confirmar_correo"), enabled = !state.isLoading, variant = ButtonVariant.Outlined)
+                }
                 AppButton("¿Olvidaste tu contraseña?", onRecoverPassword,
                     Modifier.fillMaxWidth().testTag("login_recuperar"), enabled = !state.isLoading, variant = ButtonVariant.Clear)
                 AppButton("Iniciar sesión", submit, Modifier.fillMaxWidth().testTag("login_submit"),

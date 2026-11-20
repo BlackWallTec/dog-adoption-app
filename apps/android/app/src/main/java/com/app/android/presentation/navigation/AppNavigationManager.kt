@@ -191,7 +191,7 @@ fun AppNavigation() {
             )
         }
 
-        // Crear una cuenta termina en el login; el registro no trae un token.
+        // El registro no inicia sesión: primero confirma el correo si está habilitado; después vuelve al login.
         composable(route = Screen.Registro.ruta) {
             RegistroScreen(
                 onCancel = navController::irAlLogin,

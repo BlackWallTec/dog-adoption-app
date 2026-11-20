@@ -2,7 +2,7 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Usuario from "./modelosPerfiles/user.model.js";
-import ROLES from "./modelosPerfiles/roles.model.js";
+import ROLES from "../../../config/roles.js";
 import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
 import {
   ERROR_CODES,
