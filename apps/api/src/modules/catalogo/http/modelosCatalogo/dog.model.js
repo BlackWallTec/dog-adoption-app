@@ -135,7 +135,7 @@ class DogModel {
 
   // HU19C: ficha completa para el formulario de edición (admin). Devuelve null si no existe.
   static async getDogAdminById(id) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("perro")
       .select(FICHA_ADMIN)
       .eq("id_perro", id)
@@ -152,7 +152,7 @@ class DogModel {
 
   // HU19C: actualiza solo los campos recibidos. Devuelve la ficha actualizada o null si no existe.
   static async updateDog(id, valores) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("perro")
       .update(valores)
       .eq("id_perro", id)
