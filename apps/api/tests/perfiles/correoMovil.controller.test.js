@@ -1,6 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import express from "express";
 import request from "supertest";
+import jwt from "jsonwebtoken";
+import ROLES from "../../src/config/roles.js";
+import rolesCompatibles from "../../src/modules/perfiles/http/modelosPerfiles/roles.model.js";
 import { BAD_REQUEST, ERROR_CODES, SERVICE_UNAVAILABLE } from "@qarino/shared/errores.js";
 
 // Se ejecuta el middleware real con Redis simulado: las pruebas no consumen comandos de Upstash.
@@ -9,21 +12,47 @@ const dobles = vi.hoisted(() => ({
   solicitar: vi.fn(),
   consumir: vi.fn(),
   servicio: vi.fn(),
+  login: vi.fn(),
+  registro: vi.fn(),
+  altaAdmin: vi.fn(),
 }));
 vi.mock("@upstash/redis", () => ({ Redis: { fromEnv: vi.fn(() => ({})) } }));
 vi.mock("@upstash/ratelimit", () => ({
   Ratelimit: class {
+    constructor({ prefix }) {
+      this.prefix = prefix;
+    }
     static slidingWindow(max, ventana) {
       return { max, ventana };
     }
     limit(id) {
-      return dobles.limitar(id);
+      return dobles.limitar(id, this.prefix);
     }
   },
 }));
 vi.mock("../../src/modules/perfiles/services/correoMovil.service.js", () => ({
   correoMovilHabilitado: () => true,
   servicioCorreoMovil: dobles.servicio,
+  verificarCorreoMovil: () => true,
+}));
+vi.mock("../../src/config/supabaseClient.js", () => ({ supabaseAdmin: {}, supabase: {} }));
+vi.mock("../../src/modules/perfiles/http/auth.controller.js", () => ({
+  postLogin: (_req, res) => {
+    dobles.login();
+    return res.json({ ok: true });
+  },
+  postLogout: (_req, res) => res.json({ ok: true }),
+  getMe: (_req, res) => res.json({ ok: true }),
+}));
+vi.mock("../../src/modules/perfiles/http/register.controller.js", () => ({
+  postRegister: (_req, res) => {
+    dobles.registro();
+    return res.status(201).json({ ok: true });
+  },
+  postRegisterAdmin: (_req, res) => {
+    dobles.altaAdmin();
+    return res.status(201).json({ ok: true });
+  },
 }));
 const app = express();
 app.use(express.json());
@@ -31,8 +60,11 @@ beforeAll(async () => {
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example.invalid");
   vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "ficticio");
   vi.stubEnv("NODE_ENV", "production");
+  vi.stubEnv("JWT_SECRET", "secreto-ficticio-de-limites");
   const { default: router } = await import("../../src/modules/perfiles/http/correoMovil.router.js");
   app.use("/correo", router);
+  const { default: auth } = await import("../../src/modules/perfiles/http/auth.router.js");
+  app.use("/auth", auth);
 });
 beforeEach(() => {
   dobles.limitar.mockReset().mockResolvedValue({ success: true, limit: 30, remaining: 29 });
@@ -43,6 +75,74 @@ beforeEach(() => {
   dobles.servicio
     .mockReset()
     .mockReturnValue({ solicitar: dobles.solicitar, consumir: dobles.consumir });
+  dobles.login.mockClear();
+  dobles.registro.mockClear();
+  dobles.altaAdmin.mockClear();
+});
+
+describe("Roles y límites de autenticación", () => {
+  const token = (rol) => jwt.sign({ uuid: "usuario-prueba", rol }, process.env.JWT_SECRET);
+  it("conserva las rutas de importación y los valores de los roles", async () => {
+    const publico = await import("../../src/modules/perfiles/index.js");
+    expect(publico.ROLES).toBe(ROLES);
+    expect(rolesCompatibles).toBe(ROLES);
+    expect(ROLES).toEqual({ ROOT: "Root", ADMIN: "Administrador", CLIENT: "Cliente" });
+  });
+  it.each([
+    ["login", "login"],
+    ["register", "registro"],
+  ])("limita %s antes de ejecutar el controlador", async (ruta, prefijo) => {
+    dobles.limitar.mockResolvedValueOnce({ success: false, limit: 10, remaining: 0 });
+    const r = await request(app)
+      .post(`/auth/${ruta}`)
+      .set("x-forwarded-for", "192.0.2.10")
+      .send({});
+    expect(r.status).toBe(429);
+    expect(r.body.code).toBe(ERROR_CODES.RATE_LIMITED);
+    expect(dobles.limitar).toHaveBeenCalledWith("192.0.2.10", `rl:perfiles:${prefijo}`);
+    expect(dobles.login).not.toHaveBeenCalled();
+    expect(dobles.registro).not.toHaveBeenCalled();
+  });
+  it("permite login y registro cuando queda cuota", async () => {
+    expect((await request(app).post("/auth/login").send({})).status).toBe(200);
+    expect((await request(app).post("/auth/register").send({})).status).toBe(201);
+    expect(dobles.login).toHaveBeenCalledOnce();
+    expect(dobles.registro).toHaveBeenCalledOnce();
+  });
+  it("el alta administrativa exige Root antes de consumir cuota", async () => {
+    expect((await request(app).post("/auth/register-admin").send({})).status).toBe(401);
+    const r = await request(app)
+      .post("/auth/register-admin")
+      .set("x-client", "mobile")
+      .set("Authorization", `Bearer ${token(ROLES.CLIENT)}`)
+      .send({});
+    expect(r.status).toBe(403);
+    expect(dobles.limitar).not.toHaveBeenCalled();
+    expect(dobles.altaAdmin).not.toHaveBeenCalled();
+  });
+  it("limita el alta administrativa por UUID sin quitar la protección de Root", async () => {
+    dobles.limitar.mockResolvedValueOnce({ success: false, limit: 10, remaining: 0 });
+    const bloqueada = await request(app)
+      .post("/auth/register-admin")
+      .set("x-client", "mobile")
+      .set("Authorization", `Bearer ${token(ROLES.ROOT)}`)
+      .send({});
+    expect(bloqueada.status).toBe(429);
+    expect(dobles.limitar).toHaveBeenCalledWith("usuario-prueba", "rl:perfiles:registro-admin");
+    expect(dobles.altaAdmin).not.toHaveBeenCalled();
+    const permitida = await request(app)
+      .post("/auth/register-admin")
+      .set("x-client", "mobile")
+      .set("Authorization", `Bearer ${token(ROLES.ROOT)}`)
+      .send({});
+    expect(permitida.status).toBe(201);
+    expect(dobles.altaAdmin).toHaveBeenCalledOnce();
+  });
+  it("no bloquea el cierre de sesión con la cuota de login agotada", async () => {
+    dobles.limitar.mockResolvedValue({ success: false, limit: 10, remaining: 0 });
+    expect((await request(app).post("/auth/logout")).status).toBe(200);
+    expect(dobles.limitar).not.toHaveBeenCalled();
+  });
 });
 afterAll(() => vi.unstubAllEnvs());
 
