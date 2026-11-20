@@ -194,7 +194,7 @@
 
 .detalle-documentos {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -202,12 +202,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   padding: 12px 14px;
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 12px;
 }
 
 .detalle-documento-icono {
+  flex-shrink: 0;
   color: var(--md-sys-color-secondary);
 }
 
@@ -216,6 +218,12 @@
   flex: 1;
   flex-direction: column;
   min-width: 0;
+}
+
+.detalle-documento-info strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .detalle-documento-info .detalle-muted {
