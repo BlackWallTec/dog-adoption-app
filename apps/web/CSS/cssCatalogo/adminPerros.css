@@ -157,6 +157,21 @@
   background-color: var(--md-sys-color-surface);
 }
 
+.dogs-table tbody tr.fila-desactivada {
+  background-color: #eceff1;
+  color: #78909c;
+}
+
+.dogs-table tbody tr.fila-desactivada .dog-name,
+.dogs-table tbody tr.fila-desactivada .dog-meta,
+.dogs-table tbody tr.fila-desactivada td {
+  color: #78909c;
+}
+
+.dogs-table tbody tr.fila-desactivada:hover {
+  background-color: #e0e4e8;
+}
+
 .dogs-table td {
   padding: 14px 20px;
   vertical-align: middle;

@@ -224,6 +224,42 @@ class DogModel {
 
     return data;
   }
+
+  static async getDogsAdmin() {
+    const { data, error } = await supabase
+      .from("perro")
+      .select(`
+      id_perro,
+      nombre,
+      sexo,
+      edad_aprox,
+      tamano_medida,
+      descripcion,
+      esterilizado,
+      vacunado,
+      estado,
+      fecha_ingreso,
+      activo,
+      raza ( id_raza, nombre ),
+      tamano ( id_tamano, nombre ),
+      multimedia(
+        id_multimedia,
+        url,
+        tipo,
+        fecha_subida
+        )
+      `)
+      .order("activo", { ascending: false })
+      .order("fecha_ingreso", { ascending: false });
+
+    if (error) {
+      throw Object.assign(new Error(`Error en la consulta de perros: ${error.message}`), {
+        code: error.code,
+      });
+    }
+
+    return data;
+  }
 }
 
 export default DogModel;

@@ -56,7 +56,7 @@ export const obtenerUrlSubidaMultimedia = async (req, res) => {
 
 export const getPerrosAdmin = async (req, res) => {
   try {
-    const perros = await dogModel.getDogs();
+    const perros = await dogModel.getDogsAdmin();
     return res.status(200).json({
       success: true,
       data: perros,
