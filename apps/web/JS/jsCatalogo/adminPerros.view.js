@@ -136,9 +136,9 @@ function renderizarTabla(perros) {
       const badgeClase = obtenerClaseBadge(estadoVisible === NO_ESPECIFICADO ? "" : estadoVisible);
       const id = escaparHtml(perro.id ?? perro.id_perro ?? "");
       const nombre = escaparHtml(textoDato(perro.nombre));
-
+      const desactivado = perro.activo === false;
       return `
-      <tr data-id="${id}">
+      <tr data-id="${id}" class="${desactivado ? "fila-desactivada" : ""}">
         <td style="text-align: center;">
           <input type="checkbox" class="perro-select-checkbox" value="${id}">
         </td>
@@ -374,7 +374,7 @@ btnBulkDesactivar.addEventListener("click", () => {
 
 btnBulkActivar.addEventListener("click", () => {
   const selectedIds = obtenerIdsSeleccionados();
-  const action = false;
+  const action = true;
   //console.log("Ejecutar POST/PUT Activar Lote para IDs:", ids);
   showConfirmModal(
     "Activar Perros",
