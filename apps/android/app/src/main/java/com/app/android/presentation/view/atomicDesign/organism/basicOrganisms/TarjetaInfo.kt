@@ -32,7 +32,7 @@ enum class SeccionInfoTarjeta {
 
     DETALLES_RAZA_Y_TAMANO,
     SALUD_Y_CUIDADOS,
-    CARACTERISTICAS_ESPECIALES,
+    CARACTERISTICAS,
     SOBRE_MI,
 }
 
@@ -61,7 +61,7 @@ fun TarjetaInfo(
             SeccionInfoTarjeta.UBICACION,
             SeccionInfoTarjeta.METRICAS_GENERALES,
             SeccionInfoTarjeta.SALUD_Y_CUIDADOS,
-            SeccionInfoTarjeta.CARACTERISTICAS_ESPECIALES,
+            SeccionInfoTarjeta.CARACTERISTICAS,
             SeccionInfoTarjeta.SOBRE_MI,
         ),
 ) {
@@ -142,9 +142,9 @@ fun TarjetaInfo(
                     }
 
                     // D. CARACTERÍSTICAS ESPECIALES (FlowRow acomoda chips automáticamente)
-                    SeccionInfoTarjeta.CARACTERISTICAS_ESPECIALES -> {
+                    SeccionInfoTarjeta.CARACTERISTICAS -> {
                         if (dogState.caracteristicas.isNotEmpty()) {
-                            SectionBlock(titulo = "Características especiales") {
+                            SectionBlock(titulo = "Características") {
                                 FlowRow(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -230,7 +230,7 @@ fun TarjetaInfoReordenadaPreview() {
         ordenSecciones =
             listOf(
                 SeccionInfoTarjeta.SOBRE_MI,
-                SeccionInfoTarjeta.CARACTERISTICAS_ESPECIALES,
+                SeccionInfoTarjeta.CARACTERISTICAS,
                 SeccionInfoTarjeta.SALUD_Y_CUIDADOS,
                 SeccionInfoTarjeta.METRICAS_GENERALES,
             ),

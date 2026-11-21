@@ -22,7 +22,6 @@ import com.app.android.domain.entities.entitiesCatalogo.Dog
 import com.app.android.domain.entities.entitiesCatalogo.toUiState
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.toMediaItems
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
-import com.app.android.presentation.view.atomicDesign.organism.NavBar
 
 // 4. Clases de VMStates y el VM
 import com.app.android.presentation.viewmodel.viewModelCatalogo.DogDetailUiState
@@ -37,7 +36,6 @@ fun DogDetailScreenView(
     // 2. Parámetros
     dogId: String = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
     // 3. Acciones al hacer clic
-    onNavSelect: (Int) -> Unit = {},
     onBackClick: () -> Unit,
     onAdoptClick: (String) -> Unit,
 ) {
@@ -90,15 +88,6 @@ fun DogDetailScreenView(
                                 CompartirScreen(perro = dog)
                             }
                         }
-                    },
-                    // Button: NavBar
-                    bottomBar = {
-                        // Asignamos NavBar al slot inferior del Scaffold
-                        NavBar(
-                            selected = 0,
-                            onSelect = onNavSelect,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
                     },
                 ) { paddingValues ->
                     DogDetailTemplate(

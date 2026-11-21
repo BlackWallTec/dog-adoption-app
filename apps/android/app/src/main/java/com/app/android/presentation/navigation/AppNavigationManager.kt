@@ -15,16 +15,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavType
-import androidx.navigation.navDeepLink
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
-import com.app.android.presentation.view.viewsSolicitudes.EnviadaRoute
 import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
@@ -35,13 +34,14 @@ import com.app.android.presentation.view.viewsConfiguracion.ConfiguracionScreen
 import com.app.android.presentation.view.viewsDonativos.DatosFiscalesRoute
 import com.app.android.presentation.view.viewsDonativos.DonarDineroRoute
 import com.app.android.presentation.view.viewsDonativos.MisDonativosRoute
-import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
 import com.app.android.presentation.view.viewsPerfiles.CorreoScreen
+import com.app.android.presentation.view.viewsPerfiles.CuentaScreen
 import com.app.android.presentation.view.viewsPerfiles.InicioSesionScreen
 import com.app.android.presentation.view.viewsPerfiles.LoginScreen
 import com.app.android.presentation.view.viewsPerfiles.RegistroScreen
 import com.app.android.presentation.view.viewsSolicitudes.CompromisoRoute
 import com.app.android.presentation.view.viewsSolicitudes.DatosGeneralesRoute
+import com.app.android.presentation.view.viewsSolicitudes.EnviadaRoute
 import com.app.android.presentation.view.viewsSolicitudes.MisSolicitudesRoute
 import com.app.android.presentation.view.viewsSolicitudes.RequisitosRoute
 import com.app.android.presentation.view.viewsSolicitudes.TuHogarRoute
@@ -197,7 +197,14 @@ fun AppNavigation() {
                 onCancel = navController::irAlLogin,
                 onRegistered = { correo, requiereConfirmacion, correoEnviado ->
                     if (requiereConfirmacion) {
-                        if (!correoEnviado) Toast.makeText(context, "Cuenta creada. Solicita otro código para confirmar tu correo.", Toast.LENGTH_LONG).show()
+                        if (!correoEnviado) {
+                            Toast
+                                .makeText(
+                                    context,
+                                    "Cuenta creada. Solicita otro código para confirmar tu correo.",
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                        }
                         navController.navigate(Screen.Correo.crearRuta(correo, false)) {
                             popUpTo(Screen.Registro.ruta) { inclusive = true }
                         }
@@ -226,12 +233,27 @@ fun AppNavigation() {
             )
         }
 
-        composable(Screen.Correo.ruta, arguments = listOf(
-            navArgument("correo") { type = NavType.StringType; defaultValue = "" },
-            navArgument("recuperar") { type = NavType.BoolType; defaultValue = false },
-        )) {
+        composable(
+            Screen.Correo.ruta,
+            arguments =
+                listOf(
+                    navArgument("correo") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                    navArgument("recuperar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+        ) {
             CorreoScreen(onCancel = navController::irAlLogin, onFinished = { recuperar ->
-                Toast.makeText(context, if (recuperar) "Contraseña actualizada. Inicia sesión." else "Correo confirmado. Inicia sesión.", Toast.LENGTH_LONG).show()
+                Toast
+                    .makeText(
+                        context,
+                        if (recuperar) "Contraseña actualizada. Inicia sesión." else "Correo confirmado. Inicia sesión.",
+                        Toast.LENGTH_LONG,
+                    ).show()
                 navController.irAlLogin()
             })
         }
@@ -271,7 +293,7 @@ fun AppNavigation() {
                 listOf(
                     navArgument("dogId") { type = NavType.StringType },
                 ),
-            deepLinks = listOf(navDeepLink { uriPattern = "qarino://perro/{dogId}" })
+            deepLinks = listOf(navDeepLink { uriPattern = "qarino://perro/{dogId}" }),
         ) { backStackEntry ->
             // Extraemos de forma segura el ID que viaja en la ruta
             val dogId = backStackEntry.arguments?.getString("dogId") ?: ""
@@ -279,7 +301,6 @@ fun AppNavigation() {
             // Llamamos a la función composable de la pantalla pasándole el ID extraído
             DogDetailScreenView(
                 dogId = dogId,
-                onNavSelect = navController::irAOpcionBarra,
                 onBackClick = { navController.navigateUp() },
                 onAdoptClick = { dogId ->
                     navController.navigate(Screen.Requisitos.crearRuta(dogId))
@@ -543,7 +564,6 @@ fun AppNavigation() {
                 )
             }
         }
-
 
         // ========= Pantallas Voluntariado ========
 

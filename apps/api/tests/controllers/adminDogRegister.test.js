@@ -53,7 +53,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [{ url: "https://storage.com/foto.jpg", tipo: "imagen" }],
       caracteres: [validUUID_Caracter],
-      cuidados: [],
     };
 
     const mockPerroCreado = { id_perro: "perro-uuid-123", ...req.body };
@@ -86,7 +85,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [],
       caracteres: [],
-      cuidados: [],
     };
 
     await postNuevoPerro(req, res);
@@ -117,7 +115,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [],
       caracteres: [],
-      cuidados: [],
     };
 
     await postNuevoPerro(req, res);
@@ -150,7 +147,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [],
       caracteres: [],
-      cuidados: [],
     };
 
     dogModel.createFullDog.mockRejectedValue(

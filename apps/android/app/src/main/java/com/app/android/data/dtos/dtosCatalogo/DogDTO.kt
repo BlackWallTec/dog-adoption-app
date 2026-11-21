@@ -15,7 +15,6 @@ data class ApiResponseDetailDogDto(
 data class DogDetailDataDto(
     @SerializedName("dog") val dogList: List<DogInfoDto>?,
     @SerializedName("behavior") val behavior: BehaviorDto?,
-    @SerializedName("specialCondition") val specialCondition: SpecialConditionDto?,
     @SerializedName("multimedia") val multimedia: List<MultimediaDto>?,
 )
 
@@ -35,7 +34,7 @@ data class DogInfoDto(
     @SerializedName("tamano") val tamano: TamanoDto?,
 )
 
-// 4. Objetos Secundarios (Comportamiento, Cuidados, Fotos)
+// 4. Objetos Secundarios (Comportamiento & Fotos)
 data class RazaDto(
     @SerializedName("id_raza") val idRaza: String?,
     @SerializedName("nombre") val nombre: String?,
@@ -62,19 +61,6 @@ data class CaracterInfoDto(
     @SerializedName("descripcion") val descripcion: String?,
 )
 
-data class SpecialConditionDto(
-    @SerializedName("perro_tiene_cuidado_especial") val cuidadosList: List<CuidadoContainerDto>?,
-)
-
-data class CuidadoContainerDto(
-    @SerializedName("cuidado_especial") val cuidadoEspecial: CuidadoInfoDto?,
-)
-
-data class CuidadoInfoDto(
-    @SerializedName("id_cuidado") val idCuidado: String?,
-    @SerializedName("descripcion") val descripcion: String?,
-)
-
 data class MultimediaDto(
     @SerializedName("id_multimedia") val idMultimedia: String?,
     @SerializedName("url") val url: String?,
@@ -91,19 +77,13 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
     Log.d("DOG_DEBUG", "DTO esterilizado (crudo): ${mainDog?.esterilizado}")
     Log.d("DOG_DEBUG", "DTO vacunado (crudo): ${mainDog?.vacunado}")
 
-    // Extraemos el comportamiento y cuidados
+    // Extraemos el comportamiento
     val primerCaracter =
         this.data
             ?.behavior
             ?.caracteresList
             ?.firstOrNull()
             ?.caracter
-    val primerCuidado =
-        this.data
-            ?.specialCondition
-            ?.cuidadosList
-            ?.firstOrNull()
-            ?.cuidadoEspecial
 
     // Mapeamos la lista completa de multimedia
     val listaMultimedia =
@@ -137,8 +117,6 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
             perroCaracterId = primerCaracter?.idCaracter ?: "",
             perroCaracterNombre = primerCaracter?.nombre ?: "",
             perroCaracterDescripcion = primerCaracter?.descripcion ?: "",
-            perroCuidadosId = primerCuidado?.idCuidado ?: "",
-            perroCuidadosDescripcion = primerCuidado?.descripcion ?: "",
             multimedia = listaMultimedia,
         )
 
@@ -150,4 +128,3 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
 
     return dogDomain
 }
-

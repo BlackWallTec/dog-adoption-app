@@ -25,9 +25,6 @@ data class Dog(
     val perroCaracterId: String,
     val perroCaracterNombre: String,
     val perroCaracterDescripcion: String,
-    // Tabla Perro-Cuidados
-    val perroCuidadosId: String,
-    val perroCuidadosDescripcion: String,
     // Tabla Multimedia
     val multimedia: List<MultimediaDog>,
 )
@@ -52,7 +49,6 @@ fun Dog.toUiState(): DogDetailState {
         mutableListOf<String>().apply {
             if (vacunado) add("Vacunado")
             if (esterilizado) add("Esterilizado")
-            if (perroCuidadosDescripcion.isNotBlank()) add(perroCuidadosDescripcion)
         }
 
     // 2. FASE RESULTADO UI: Ver si los textos se añadieron correctamente a la lista
