@@ -32,6 +32,7 @@ data class DogInfoDto(
     @SerializedName("fecha_ingreso") val fechaIngreso: String?,
     @SerializedName("raza") val raza: RazaDto?,
     @SerializedName("tamano") val tamano: TamanoDto?,
+    @SerializedName("cuidado_especial") val cuidadoEspecial: String?,
 )
 
 // 4. Objetos Secundarios (Comportamiento & Fotos)
@@ -104,6 +105,7 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
             edad = mainDog?.edadAprox ?: 0,
             tamanoNum = mainDog?.tamanoMedida ?: 0f,
             descripcion = mainDog?.descripcion ?: "",
+            cuidadoEspecial = mainDog?.cuidadoEspecial ?: "",
             esterilizado = mainDog?.esterilizado ?: false, // 🔍 Si arriba es null, aquí caerá en false
             vacunado = mainDog?.vacunado ?: false, // 🔍 Si arriba es null, aquí caerá en false
             estado = mainDog?.estado ?: "",
@@ -124,6 +126,7 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
     Log.d("DOG_DEBUG", "=== FASE 2: OBJETO DOMINIO GENERADO ===")
     Log.d("DOG_DEBUG", "Dominio esterilizado: ${dogDomain.esterilizado}")
     Log.d("DOG_DEBUG", "Dominio vacunado: ${dogDomain.vacunado}")
+    Log.d("DOG_DEBUG", "Dominio cuidado especial: ${dogDomain.cuidadoEspecial}")
     Log.d("DOG_DEBUG", "======================================")
 
     return dogDomain

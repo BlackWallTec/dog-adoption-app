@@ -66,6 +66,7 @@ fun DogDetailScreenView(
             is DogDetailUiState.Success -> {
                 // Muestra los datos mapeados desde tu Entity
                 val dog: Dog = state.datos
+                val cuidadosEspeciales = state.specialCare
 
                 // Instanciamos nuestro Template, mapeamos Entity y enviamos parámetros
                 val dogState = dog.toUiState()
@@ -94,6 +95,7 @@ fun DogDetailScreenView(
                         mediaList = mediaItems,
                         dogState = dogState,
                         dogId = dog.id,
+                        cuidadosEspeciales = cuidadosEspeciales,
                         onAdoptClick = { idDelPerro ->
                             onAdoptClick(idDelPerro)
                         },

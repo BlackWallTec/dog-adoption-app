@@ -92,6 +92,7 @@ export async function guardarPerroBD(datosFrontend) {
     id_tamano: datosFrontend.id_tamano,
     multimedia: multimediaFormateada,
     caracteres: datosFrontend.caracteristicas_ids || [],
+    cuidado_especial: datosFrontend.cuidados_especiales ?? "",
   };
 
   console.groupCollapsed("[Modals.service] Payload enviado a la API");

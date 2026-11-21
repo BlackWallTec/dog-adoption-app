@@ -9,6 +9,7 @@ data class Dog(
     val edad: Int,
     val tamanoNum: Float,
     val descripcion: String,
+    val cuidadoEspecial: String,
     val esterilizado: Boolean,
     val vacunado: Boolean,
     val estado: String,

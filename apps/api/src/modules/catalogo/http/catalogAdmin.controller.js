@@ -142,28 +142,51 @@ function mapToTypedValue(value, targetType) {
 
 // funcion auxiliar para mapear el req entrante a un objeto que pueda ser insertado en la base de datos.
 // Regresa 2 datos (bool & objeto) para saber si el mapeo fue exitoso o no.
+// Helper para limpiar y capitalizar el texto del cuidador automáticamente
+function normalizarTextoCuidador(texto) {
+  if (!texto || typeof texto !== "string") return "";
+
+  let limpio = texto.replace(/\s+/g, " ").trim();
+  if (!limpio) return "";
+
+  // Capitaliza la primera letra del párrafo y después de cada punto
+  limpio = limpio.replace(/(^\w|[.!?]\s+\w)/g, (letra) => letra.toUpperCase());
+
+  // Asegura punto final si el cuidador lo olvidó
+  if (!/[.!?]$/.test(limpio)) {
+    limpio += ".";
+  }
+
+  return limpio;
+}
+
 function mapRequestToDogData(reqBody) {
-  // CORREGIDO: id_raza e id_tamano ahora inician como string "" para coincidir con los UUIDs
   var dogData = {
     nombre: "",
     sexo: "",
     edad_aprox: 0,
     tamano_medida: 0.0,
     descripcion: "",
+    cuidado_especial: "",
     esterilizado: false,
     vacunado: false,
     estado: "",
-    id_raza: "", // <-- Cambiado de 0 a ""
-    id_tamano: "", // <-- Cambiado de 0 a ""
+    id_raza: "",
+    id_tamano: "",
     multimedia: [],
     caracteres: [],
   };
 
   var isValid = true;
   var errorMessages = [];
-  const optionalFields = new Set(["edad_aprox", "tamano_medida", "descripcion"]);
+  // 2. AGREGADO A CAMPOS OPCIONALES
+  const optionalFields = new Set([
+    "edad_aprox",
+    "tamano_medida",
+    "descripcion",
+    "cuidado_especial",
+  ]);
 
-  // Expresión regular para validar estructuras UUID v4 estándar
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
   for (const key in dogData) {
@@ -186,7 +209,6 @@ function mapRequestToDogData(reqBody) {
           break;
         }
 
-        // VALIDACIÓN: Asegurar que los elementos dentro de caracteres y cuidados sean strings UUID válidos
         if (key === "caracteres") {
           const allElementsValid = value.every(
             (id) => typeof id === "string" && uuidRegex.test(id),
@@ -204,7 +226,6 @@ function mapRequestToDogData(reqBody) {
           break;
         }
       } else {
-        // VALIDACIÓN: Verificar si los campos id_raza o id_tamano son UUID válidos antes de parsear
         if (key === "id_raza" || key === "id_tamano") {
           if (typeof value !== "string" || !uuidRegex.test(value)) {
             isValid = false;
@@ -219,10 +240,24 @@ function mapRequestToDogData(reqBody) {
           errorMessages.push(`El campo '${key}' tiene un tipo de valor inválido.`);
           break;
         }
-        cleanedValue = parsedValue;
+
+        // 3. SANITIZACIÓN Y VALIDACIÓN DE LONGITUD PARA CUIDADO_ESPECIAL
+        if (key === "cuidado_especial") {
+          if (parsedValue.length > 500) {
+            isValid = false;
+            errorMessages.push("El campo 'cuidado_especial' no puede exceder los 500 caracteres.");
+            break;
+          }
+          cleanedValue = normalizarTextoCuidador(parsedValue);
+        } else {
+          cleanedValue = parsedValue;
+        }
       }
       dogData[key] = cleanedValue;
     } else {
+      // 4. CORRECCIÓN CLAVE: Si la llave no viene en el JSON pero es opcional, no marques error
+      if (optionalFields.has(key)) continue;
+
       isValid = false;
       errorMessages.push(`Falta el campo requerido '${key}' en la solicitud.`);
       break;
@@ -230,24 +265,6 @@ function mapRequestToDogData(reqBody) {
   }
 
   return { isValid, dogData, errorMessages };
-  /* Formato de respues del POST 
-{
-  "nombre": "Firulais",
-  "sexo": "Macho",
-  "edad_aprox": 3,
-  "tamano_medida": 45.5,
-  "descripcion": "Un perro muy amigable y juguetón.",
-  "esterilizado": true,
-  "vacunado": true,
-  "estado": "Disponible",
-  "id_raza": "UUID",
-  "id_tamano": "UUID",
-  "multimedia": [
-    { "url": "https://storage.com", "tipo": "imagen" }
-  ],
-  "caracteres": [{ "id_caracter": "UUID" }, { "id_caracter": UUID }]
-}
-  */
 }
 
 export const postNuevoPerro = async (req, res) => {
@@ -272,6 +289,7 @@ export const postNuevoPerro = async (req, res) => {
 
     // Crear el nuevo perro en la base de datos mediante Stored Procedure (RPC) que maneja la inserción en todas las tablas relacionadas
     // 1. Inserción en tabla Perro: (Incluye Raza & Tamaño)
+    console.log("Datos Mapeados para nuevo perro: ", mappedDogData);
     const perroCreado = await dogModel.createFullDog(mappedDogData);
 
     console.log("Operacion exitosa en supabase:");
