@@ -14,7 +14,7 @@ vi.mock("../../src/config/supabaseClient.js", () => ({
 }));
 
 vi.mock("../../src/modules/catalogo/http/modelosCatalogo/dog.model.js", () => ({
-  default: { getDogs: getDogsMock },
+  default: { getDogsAdmin: getDogsMock },
 }));
 
 import { router as catalogoRouter } from "../../src/modules/catalogo/index.js";
