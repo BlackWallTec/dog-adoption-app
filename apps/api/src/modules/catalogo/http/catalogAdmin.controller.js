@@ -1,11 +1,9 @@
 import dogModel from "./modelosCatalogo/dog.model.js";
 import multimediaModel from "./modelosCatalogo/multimedia.model.js";
 import behaviourModel from "./modelosCatalogo/behaviour.model.js";
-import cuidadoEspecialModel from "./modelosCatalogo/special.model.js";
 import sizeModel from "./modelosCatalogo/size.model.js";
 import breedModel from "./modelosCatalogo/breed.model.js";
 import { validarCambiosPerro } from "./dogValidation.js";
-
 import { getTokenFromReq } from "../../../utils/getTokenFromReq.js";
 import { supabaseAdmin } from "../../../config/supabaseClient.js"; //Client de Supabase para operaciones directas si es necesario
 
@@ -101,22 +99,6 @@ export const getCaracteristicas = async (req, res) => {
   }
 };
 
-// Get Cuidado Especial
-export const getCuidadoEspecial = async (req, res) => {
-  try {
-    const cuidados = await cuidadoEspecialModel.getSpecialConditions();
-    return res.status(200).json({
-      success: true,
-      data: cuidados,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Error interno al consultar los cuidados especiales.",
-    });
-  }
-};
-
 //Get getRazas
 export const getRazas = async (req, res) => {
   try {
@@ -175,7 +157,6 @@ function mapRequestToDogData(reqBody) {
     id_tamano: "", // <-- Cambiado de 0 a ""
     multimedia: [],
     caracteres: [],
-    cuidados: [],
   };
 
   var isValid = true;
@@ -206,7 +187,7 @@ function mapRequestToDogData(reqBody) {
         }
 
         // VALIDACIÓN: Asegurar que los elementos dentro de caracteres y cuidados sean strings UUID válidos
-        if (key === "caracteres" || key === "cuidados") {
+        if (key === "caracteres") {
           const allElementsValid = value.every(
             (id) => typeof id === "string" && uuidRegex.test(id),
           );
@@ -264,8 +245,7 @@ function mapRequestToDogData(reqBody) {
   "multimedia": [
     { "url": "https://storage.com", "tipo": "imagen" }
   ],
-  "caracteres": [{ "id_caracter": "UUID" }, { "id_caracter": UUID }],
-  "cuidados": [{ "id_cuidado": "UUID" }, { "id_cuidado": UUID }]
+  "caracteres": [{ "id_caracter": "UUID" }, { "id_caracter": UUID }]
 }
   */
 }

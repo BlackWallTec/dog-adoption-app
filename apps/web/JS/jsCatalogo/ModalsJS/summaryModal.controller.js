@@ -23,7 +23,6 @@ export function initDogSummaryModal({ onBack, onSuccess, onError }) {
     sterilized: document.querySelector("#resEsterilizado"),
     vaccinated: document.querySelector("#resVacunado"),
     characteristicsContainer: document.querySelector("#resCaracteristicas"),
-    careContainer: document.querySelector("#resCuidados"),
 
     // Galería
     mainImage: document.querySelector("#resImagenPrincipal"),
@@ -157,15 +156,6 @@ export function initDogSummaryModal({ onBack, onSuccess, onError }) {
         caracteristicas.length > 0
           ? caracteristicas.map((c) => `<span class="badge-item active">${c}</span>`).join("")
           : '<span class="badge-item">Sin características</span>';
-    }
-
-    // Renderizado de Badges (Cuidados Especiales)
-    if (ui.careContainer) {
-      const cuidados = datos.cuidados || [];
-      ui.careContainer.innerHTML =
-        cuidados.length > 0
-          ? cuidados.map((c) => `<span class="badge-item active">${c}</span>`).join("")
-          : '<span class="badge-item">Ninguno</span>';
     }
   };
 

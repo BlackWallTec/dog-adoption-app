@@ -13,21 +13,19 @@ async function leerRespuesta(response) {
 
 export async function fetchRegisterData() {
   try {
-    const [resTamanos, resCaracteristicas, resCuidados, resRazas] = await Promise.all([
+    const [resTamanos, resCaracteristicas, resRazas] = await Promise.all([
       fetch(`${API_BASE_URL}/tamanos`),
       fetch(`${API_BASE_URL}/caracteristicas`),
-      fetch(`${API_BASE_URL}/cuidado_especial`),
       fetch(`${API_BASE_URL}/razas`),
     ]);
 
-    const [tamanos, caracteristicas, cuidados, razas] = await Promise.all([
+    const [tamanos, caracteristicas, razas] = await Promise.all([
       leerRespuesta(resTamanos),
       leerRespuesta(resCaracteristicas),
-      leerRespuesta(resCuidados),
       leerRespuesta(resRazas),
     ]);
 
-    return { tamanos, caracteristicas, cuidados, razas };
+    return { tamanos, caracteristicas, razas };
   } catch (error) {
     console.error("fetchRegisterData: Error al obtener datos de la API:", error);
     throw error;
@@ -94,7 +92,6 @@ export async function guardarPerroBD(datosFrontend) {
     id_tamano: datosFrontend.id_tamano,
     multimedia: multimediaFormateada,
     caracteres: datosFrontend.caracteristicas_ids || [],
-    cuidados: datosFrontend.cuidados_ids || [],
   };
 
   console.groupCollapsed("[Modals.service] Payload enviado a la API");

@@ -32,9 +32,7 @@ export function initDogRegisterModal({ onContinue }) {
     const multimediaInput = document.getElementById("multimediaInput");
     if (multimediaInput) multimediaInput.value = "";
     document
-      .querySelectorAll(
-        "#caracteristicasContainer .badge-item.active, #cuidadosContainer .badge-item.active",
-      )
+      .querySelectorAll("#caracteristicasContainer .badge-item.active")
       .forEach((badge) => badge.classList.remove("active"));
     document.getElementById("estado").value = "Disponible";
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -121,7 +119,6 @@ function recollectFormData() {
   previewUrls.forEach((url) => URL.revokeObjectURL(url));
   previewUrls = archivosMultimediaLocales.map((file) => URL.createObjectURL(file));
   const caracteristicas = obtenerBadgesActivos("caracteristicasContainer");
-  const cuidados = obtenerBadgesActivos("cuidadosContainer");
   const raza = document.getElementById("id_raza");
 
   // 4. Construcción de la Estructura Final del Objeto
@@ -150,8 +147,6 @@ function recollectFormData() {
     // Relaciones Muchos a Muchos (Arreglos de IDs)
     caracteristicas_ids: caracteristicas.ids,
     caracteristicas: caracteristicas.nombres,
-    cuidados_ids: cuidados.ids,
-    cuidados: cuidados.nombres,
 
     archivos_multimedia: archivosMultimediaLocales,
     imagenes_urls: previewUrls,
@@ -234,7 +229,6 @@ async function loadModelData() {
     populateSelect("id_tamano", response.tamanos, "id_tamano", "nombre");
     populateSelect("id_raza", response.razas, "id_raza", "nombre");
     populateBadges("caracteristicasContainer", response.caracteristicas, "id_caracter", "nombre");
-    populateBadges("cuidadosContainer", response.cuidados, "id_cuidado", "descripcion");
     return true;
   } catch (error) {
     // Captura cualquier error de red o de ejecución dentro del bloque try
