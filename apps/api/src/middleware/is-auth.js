@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { verificarCorreoMovil } from "../modules/perfiles/index.js";
+import { ERROR_CODES, errorBody } from "@qarino/shared/errores.js";
 
 /*
 IMPORTANTE
@@ -18,7 +19,7 @@ Ahora un ruta que verifica el token:
 router.get("/me", verificarToken, authController.getMe);
 */
 
-export default function verificarToken(req, res, next) {
+export default async function verificarToken(req, res, next) {
   // En capa de request verifica existencia de la cookie y el token
 
   const esMovil = req.get("x-client") === "mobile";
@@ -40,12 +41,20 @@ export default function verificarToken(req, res, next) {
     req.user = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ["HS256"],
     });
-    // Sin la extensión habilitada conserva la validación original. No afecta Root ni Administrador.
-    if (!verificarCorreoMovil(req.user)) throw new Error("Sesión de correo no válida");
-    next();
   } catch {
     return res.status(401).json({
       error: "Token inválido o expirado",
     });
   }
+
+  try {
+    // Sin la extensión habilitada conserva la validación original. No afecta Root ni Administrador.
+    if (!(await verificarCorreoMovil(req.user)))
+      return res.status(401).json({ error: "Token inválido o expirado" });
+  } catch {
+    return res
+      .status(503)
+      .json(errorBody(ERROR_CODES.SERVICE_UNAVAILABLE, "Servicio temporalmente no disponible"));
+  }
+  next();
 }

@@ -5,13 +5,18 @@ import Usuario from "./modelosPerfiles/user.model.js";
 import ROLES from "../../../config/roles.js";
 import CodigoPostal from "./modelosPerfiles/cps.model.js";
 import RegistroPublico from "./modelosPerfiles/registroPublico.model.js";
-import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
+import {
+  correoMovilDisponible,
+  correoMovilHabilitado,
+  servicioCorreoMovil,
+} from "../services/correoMovil.service.js";
 import {
   ERROR_CODES,
   errorBody,
   VALIDATION,
   EMAIL_EXISTS,
   CONFLICT,
+  SERVICE_UNAVAILABLE,
   errorResponse,
 } from "@qarino/shared/errores.js";
 import {
@@ -86,8 +91,15 @@ const crearCuenta = (rol, estrategia) => async (req, res) => {
     const correo = validateEmail(b.correo);
     const telefono = limpiarTelefono(b.telefono);
     // El alta administrativa conserva su comportamiento. Sólo Clientes nuevos pueden quedar pendientes.
-    const correoServicio =
-      rol === ROLES.CLIENT && correoMovilHabilitado() ? servicioCorreoMovil() : null;
+    let correoServicio = null;
+    if (rol === ROLES.CLIENT && correoMovilHabilitado()) {
+      if (!(await correoMovilDisponible()))
+        throw new SERVICE_UNAVAILABLE(
+          "El correo de confirmación no está disponible temporalmente.",
+          ERROR_CODES.EMAIL_UNAVAILABLE,
+        );
+      correoServicio = servicioCorreoMovil();
+    }
 
     // Hashea la contraseña
     const hashContrasena = await bcrypt.hash(b.contrasena, 10);

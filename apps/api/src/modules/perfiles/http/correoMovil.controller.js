@@ -1,6 +1,6 @@
 import { validateEmail } from "@qarino/shared/perfiles/registro.validation.js";
 import { errorResponse } from "@qarino/shared/errores.js";
-import { correoMovilHabilitado, servicioCorreoMovil } from "../services/correoMovil.service.js";
+import { correoMovilDisponible, servicioCorreoMovil } from "../services/correoMovil.service.js";
 
 // El controlador atiende HTTP; shared valida los datos y el servicio resuelve los códigos.
 const atender =
@@ -18,8 +18,8 @@ const atender =
     }
   };
 
-export const getConfiguracion = (_req, res) =>
-  res.set("Cache-Control", "no-store").json({ habilitado: correoMovilHabilitado() });
+export const getConfiguracion = async (_req, res) =>
+  res.set("Cache-Control", "no-store").json({ habilitado: await correoMovilDisponible() });
 export const postReenviar = atender((s, correo) => s.solicitar(correo, "confirmar"), 202);
 export const postRecuperar = atender((s, correo) => s.solicitar(correo, "recuperar"), 202);
 export const postConfirmar = atender((s, correo, b) => s.consumir(correo, b.codigo, "confirmar"));

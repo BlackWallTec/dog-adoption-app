@@ -1,5 +1,11 @@
-import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
-import { instanciarError } from "@qarino/shared/errores.js";
+import { supabaseAdmin } from "../../../../config/supabaseClient.js";
+import { ERROR_CODES, SERVICE_UNAVAILABLE, instanciarError } from "@qarino/shared/errores.js";
+
+const errorCorreo = () =>
+  new SERVICE_UNAVAILABLE(
+    "El servicio de correo no está disponible temporalmente.",
+    ERROR_CODES.EMAIL_UNAVAILABLE,
+  );
 
 // Se parametrizan las consultas, para que se traten como dato y no
 // como instrucción.
@@ -15,7 +21,7 @@ export default class Usuario {
       id_usuario,
       contrasena,
       rol,
-      ${process.env.CORREO_MOVIL_MODO === "local" ? "correo_pendiente_desde," : ""}
+      correo_pendiente_desde,
       datos_confidenciales!inner ( id_usuario )
       `,
       )
@@ -71,20 +77,61 @@ export default class Usuario {
     if (error) instanciarError("Error al revertir la cuenta", error.code);
   }
 
-  // La base decide si aún está dentro de las 72 horas y excluye la cuenta de la limpieza.
-  static async confirmarCorreo(id) {
-    const { data, error } = await supabaseAdmin.rpc("confirmar_correo_cliente", { p_id: id });
-    if (error) instanciarError("Error al confirmar el correo", error.code);
-    return data === true;
+  static async estadoCorreo(id) {
+    const { data, error } = await supabaseAdmin
+      .from("usuario")
+      .select("correo_pendiente_desde, correo_version_movil")
+      .eq("id_usuario", id)
+      .maybeSingle();
+    if (error) throw errorCorreo();
+    return {
+      confirmado: data ? data.correo_pendiente_desde === null : false,
+      version: data?.correo_version_movil ?? 0,
+    };
   }
 
-  // La recuperación sólo sustituye el hash del usuario validado por el código de correo.
-  static async updatePassword(id, contrasena) {
-    const { error } = await supabaseAdmin
-      .from("usuario")
-      .update({ contrasena })
-      .eq("id_usuario", id);
-    if (error) instanciarError("Error al actualizar contraseña", error.code);
+  static async emitirCodigoCorreo(id, tipo, hash) {
+    const { data, error } = await supabaseAdmin.rpc("emitir_codigo_correo", {
+      p_id: id,
+      p_tipo: tipo,
+      p_hash: hash,
+    });
+    if (error) throw errorCorreo();
+    return data;
+  }
+
+  static async confirmarCodigoCorreo(id, hash) {
+    const { data, error } = await supabaseAdmin.rpc("confirmar_codigo_correo", {
+      p_id: id,
+      p_hash: hash,
+    });
+    if (error) throw errorCorreo();
+    return data;
+  }
+
+  static async restablecerContrasenaCorreo(id, hash, contrasena) {
+    const { data, error } = await supabaseAdmin.rpc("restablecer_contrasena_correo", {
+      p_id: id,
+      p_hash: hash,
+      p_contrasena: contrasena,
+    });
+    if (error) throw errorCorreo();
+    return data;
+  }
+
+  // Smoke test sin datos personales: comprueba que la migración compartida
+  // esté disponible antes de crear una cuenta que requiera confirmación.
+  static async correoMovilDisponible() {
+    const [usuario, desafio, funcion] = await Promise.all([
+      supabaseAdmin.from("usuario").select("correo_version_movil").limit(1),
+      supabaseAdmin.from("correo_movil_desafio").select("id_usuario").limit(1),
+      supabaseAdmin.rpc("emitir_codigo_correo", {
+        p_id: "00000000-0000-0000-0000-000000000000",
+        p_tipo: "confirmar",
+        p_hash: "0".repeat(64),
+      }),
+    ]);
+    return !usuario.error && !desafio.error && !funcion.error && funcion.data === "invalido";
   }
 
   static async fetchProfileByUUID(id) {
