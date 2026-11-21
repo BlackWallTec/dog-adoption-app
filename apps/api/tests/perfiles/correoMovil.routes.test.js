@@ -12,8 +12,11 @@ vi.mock("../../src/modules/perfiles/http/modelosPerfiles/user.model.js", () => (
   default: {
     fetchByEmail: vi.fn(),
     fetchEmailByUUID: vi.fn(),
-    updatePassword: vi.fn(),
-    confirmarCorreo: vi.fn(),
+    estadoCorreo: vi.fn(),
+    emitirCodigoCorreo: vi.fn(),
+    confirmarCodigoCorreo: vi.fn(),
+    restablecerContrasenaCorreo: vi.fn(),
+    correoMovilDisponible: vi.fn(),
     registerAccount: vi.fn(),
     deleteAccount: vi.fn(),
   },
@@ -36,6 +39,7 @@ const carpeta = mkdtempSync(join(tmpdir(), "qarino-correo-http-"));
 const archivo = join(carpeta, "estado.json");
 const porEmail = new Map(),
   porId = new Map();
+const retos = new Map();
 let fetchMock, nuevoToken, rootCookie;
 const registro = (correo) => ({
   nombre: "Prueba",
@@ -67,7 +71,13 @@ beforeAll(async () => {
     ["root@gmail.com", "Root"],
     ["admin@gmail.com", "Administrador"],
   ]) {
-    const usuario = { id_usuario: correo, rol, contrasena: await bcrypt.hash("Anterior1234", 4) };
+    const usuario = {
+      id_usuario: correo,
+      rol,
+      contrasena: await bcrypt.hash("Anterior1234", 4),
+      correo_pendiente_desde: null,
+      correo_version_movil: 0,
+    };
     porEmail.set(correo, usuario);
     porId.set(usuario.id_usuario, usuario);
   }
@@ -75,12 +85,33 @@ beforeAll(async () => {
   Usuario.fetchEmailByUUID.mockImplementation(
     async (id) => [...porEmail].find(([, u]) => u.id_usuario === id)?.[0] ?? null,
   );
-  Usuario.updatePassword.mockImplementation(async (id, hash) => {
-    porId.get(id).contrasena = hash;
+  Usuario.estadoCorreo.mockImplementation(async (id) => {
+    const usuario = porId.get(id);
+    return {
+      confirmado: Boolean(usuario) && !usuario.correo_pendiente_desde,
+      version: usuario?.correo_version_movil ?? 0,
+    };
   });
-  Usuario.confirmarCorreo.mockImplementation(async (id) => {
+  Usuario.correoMovilDisponible.mockResolvedValue(true);
+  Usuario.emitirCodigoCorreo.mockImplementation(async (id, tipo, hash) => {
+    retos.set(`${id}:${tipo}`, hash);
+    return "creado";
+  });
+  Usuario.confirmarCodigoCorreo.mockImplementation(async (id, hash) => {
+    const clave = `${id}:confirmar`;
+    if (retos.get(clave) !== hash) return "invalido";
     porId.get(id).correo_pendiente_desde = null;
-    return true;
+    retos.delete(clave);
+    return "ok";
+  });
+  Usuario.restablecerContrasenaCorreo.mockImplementation(async (id, hash, contrasena) => {
+    const clave = `${id}:recuperar`;
+    if (retos.get(clave) !== hash) return "invalido";
+    const usuario = porId.get(id);
+    usuario.contrasena = contrasena;
+    usuario.correo_version_movil += 1;
+    retos.delete(clave);
+    return "ok";
   });
   RegistroPublico.crearCliente.mockImplementation(
     async ({ idUsuario, rol, usuario, contacto, requiereConfirmacion }) => {
@@ -89,6 +120,7 @@ beforeAll(async () => {
         rol,
         ...usuario,
         correo_pendiente_desde: requiereConfirmacion ? new Date().toISOString() : null,
+        correo_version_movil: 0,
       };
       porId.set(idUsuario, cuenta);
       porEmail.set(contacto.correo, cuenta);
@@ -286,6 +318,18 @@ describe("Extensión móvil sin sustituir el login actual", () => {
       .send({ correo: "anterior@gmail.com", contrasena: "Anterior1234" });
     expect(respuesta.status).toBe(500);
     expect(respuesta.body).toEqual({ code: "INTERNAL_ERROR", error: "Error interno del servidor" });
+  });
+  it("distingue una falla de Supabase de un token inválido", async () => {
+    Usuario.estadoCorreo.mockRejectedValueOnce(new Error("Supabase no disponible"));
+    const respuesta = await request(app)
+      .get(`${base}/me`)
+      .set("x-client", "mobile")
+      .set("Authorization", `Bearer ${nuevoToken}`);
+    expect(respuesta.status).toBe(503);
+    expect(respuesta.body).toEqual({
+      code: "SERVICE_UNAVAILABLE",
+      error: "Servicio temporalmente no disponible",
+    });
   });
   it("no expone detalles internos cuando falla el registro", async () => {
     RegistroPublico.crearCliente.mockRejectedValueOnce(new Error("detalle privado de la base"));

@@ -32,6 +32,7 @@ vi.mock("@upstash/ratelimit", () => ({
 }));
 vi.mock("../../src/modules/perfiles/services/correoMovil.service.js", () => ({
   correoMovilHabilitado: () => true,
+  correoMovilDisponible: async () => true,
   servicioCorreoMovil: dobles.servicio,
   verificarCorreoMovil: () => true,
 }));
