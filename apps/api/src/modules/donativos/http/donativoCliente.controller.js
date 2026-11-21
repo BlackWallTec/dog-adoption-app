@@ -6,11 +6,11 @@ export const TIPOS_COMPROBANTE = ["application/pdf", "image/jpeg", "image/png"];
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MONTO_REGEX = /^\d{1,10}(\.\d{1,2})?$/;
 
-// POST /api/donativos/cliente/donativos/:idUsuario?monto=500&referencia=abc
+// POST /api/donativos/cliente/donativos?monto=500&referencia=abc (el usuario sale del token)
 // El comprobante llega crudo en el body (Content-Type = tipo del archivo)
 export const postDonativo = async (req, res) => {
   try {
-    const { idUsuario } = req.params;
+    const idUsuario = req.user.uuid;
     const monto = String(req.query.monto ?? "").trim();
     const referencia = String(req.query.referencia ?? "").trim();
     const tipo = req.get("content-type")?.split(";")[0].trim();

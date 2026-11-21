@@ -10,12 +10,11 @@ class RegistrarDonativoUseCase
         private val repository: DonativosRepositoryInt,
     ) {
         suspend operator fun invoke(
-            idUsuario: String,
             monto: String,
             referencia: String,
             comprobante: ComprobanteArchivo,
         ) {
             // la referencia es opcional: si la dejó vacía no se manda
-            repository.registrarDonativo(idUsuario, monto, referencia.trim().ifEmpty { null }, comprobante)
+            repository.registrarDonativo(monto, referencia.trim().ifEmpty { null }, comprobante)
         }
     }

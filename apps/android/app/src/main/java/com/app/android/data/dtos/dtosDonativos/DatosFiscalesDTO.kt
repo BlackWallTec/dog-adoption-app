@@ -33,7 +33,7 @@ data class ApiResponseDonativosSimpleDto(
 
 // PETICIONES (lo que se le manda en el body)
 
-// Body del PUT /api/donativos/cliente/datos-fiscales/:idUsuario
+// Body del PUT /api/donativos/cliente/datos-fiscales
 data class GuardarDatosFiscalesRequestDto(
     @SerializedName("rfc") val rfc: String,
     @SerializedName("razon_social") val razonSocial: String,

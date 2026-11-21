@@ -4,8 +4,8 @@ import com.app.android.domain.entities.entitiesDonativos.ComprobanteArchivo
 import com.app.android.domain.entities.entitiesDonativos.Donativo
 
 interface DonativosRepositoryInt {
+    // El usuario sale del token, igual que en mis donativos
     suspend fun registrarDonativo(
-        idUsuario: String,
         monto: String,
         referencia: String?,
         comprobante: ComprobanteArchivo,

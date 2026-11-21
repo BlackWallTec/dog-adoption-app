@@ -58,11 +58,11 @@ class DatosFiscalesViewModel
         val guardarState: StateFlow<GuardarDatosFiscalesUiState> = _guardarState
 
         // Cargar
-        fun onLoadDatosFiscales(idUsuario: String) {
+        fun onLoadDatosFiscales() {
             viewModelScope.launch {
                 _uiState.value = DatosFiscalesUiState.Loading
                 try {
-                    val datos = getDatosFiscalesUseCase(idUsuario)
+                    val datos = getDatosFiscalesUseCase()
                     _uiState.value = DatosFiscalesUiState.Success(datos = datos, yaGuardados = datos.completos)
                 } catch (e: Exception) {
                     _uiState.value = DatosFiscalesUiState.Error("No se pudieron cargar tus datos fiscales.")
@@ -108,21 +108,21 @@ class DatosFiscalesViewModel
             editar { it.copy(constanciaNueva = null, errores = it.errores.copy(constancia = mensaje)) }
 
         // GUARDAR
-        fun onGuardar(idUsuario: String) {
+        fun onGuardar() {
             val actual = _uiState.value as? DatosFiscalesUiState.Success ?: return
             if (_guardarState.value is GuardarDatosFiscalesUiState.Loading) return
 
             viewModelScope.launch {
                 _guardarState.value = GuardarDatosFiscalesUiState.Loading
                 try {
-                    val errores = guardarDatosFiscalesUseCase(idUsuario, actual.datos, actual.constanciaNueva)
+                    val errores = guardarDatosFiscalesUseCase(actual.datos, actual.constanciaNueva)
                     if (errores.hayErrores) {
                         // CA-02: se marcan los campos que faltan y no se guarda
                         _uiState.value = actual.copy(errores = errores)
                         _guardarState.value = GuardarDatosFiscalesUiState.Idle
                     } else {
                         // se vuelve a pedir para que se vea lo que quedó en la BD
-                        val guardados = getDatosFiscalesUseCase(idUsuario)
+                        val guardados = getDatosFiscalesUseCase()
                         _uiState.value = DatosFiscalesUiState.Success(datos = guardados, yaGuardados = guardados.completos)
                         _guardarState.value = GuardarDatosFiscalesUiState.Success
                     }

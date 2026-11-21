@@ -12,7 +12,6 @@ import com.app.android.presentation.viewmodel.viewModelDonativos.DonarDineroView
 // ROUTE: conecta el DonarDineroViewModel con la page DonarDineroScreen (HU46)
 @Composable
 fun DonarDineroRoute(
-    idUsuario: String,
     onBack: () -> Unit,
     onEnviado: (String) -> Unit,
     onNavSelect: (Int) -> Unit = {},
@@ -36,7 +35,7 @@ fun DonarDineroRoute(
         onNavSelect = onNavSelect,
         onVerMisDonativosClick = onVerMisDonativos,
         onEnviarClick = { monto, referencia, comprobante ->
-            viewModel.onEnviar(idUsuario, monto, referencia, comprobante)
+            viewModel.onEnviar(monto, referencia, comprobante)
         },
     )
 }

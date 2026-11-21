@@ -31,7 +31,7 @@ const crearRes = () => {
 };
 
 const crearReqArchivo = (tipo, body) => ({
-  params: { idUsuario: ID_USUARIO },
+  user: { uuid: ID_USUARIO },
   get: () => tipo,
   body,
 });
@@ -46,7 +46,7 @@ describe("getDatosFiscales (HU45)", () => {
     mocks.getByUsuario.mockResolvedValue(bodyBien);
     const res = crearRes();
 
-    await getDatosFiscales({ params: { idUsuario: ID_USUARIO } }, res);
+    await getDatosFiscales({ user: { uuid: ID_USUARIO } }, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ success: true, data: bodyBien });
@@ -56,7 +56,7 @@ describe("getDatosFiscales (HU45)", () => {
     mocks.getByUsuario.mockResolvedValue(null);
     const res = crearRes();
 
-    await getDatosFiscales({ params: { idUsuario: ID_USUARIO } }, res);
+    await getDatosFiscales({ user: { uuid: ID_USUARIO } }, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
   });
@@ -65,7 +65,7 @@ describe("getDatosFiscales (HU45)", () => {
     mocks.getByUsuario.mockRejectedValue(new Error("sin conexión"));
     const res = crearRes();
 
-    await getDatosFiscales({ params: { idUsuario: ID_USUARIO } }, res);
+    await getDatosFiscales({ user: { uuid: ID_USUARIO } }, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
   });
@@ -74,7 +74,7 @@ describe("getDatosFiscales (HU45)", () => {
 describe("putDatosFiscales (HU45)", () => {
   const llamar = async (body) => {
     const res = crearRes();
-    await putDatosFiscales({ params: { idUsuario: ID_USUARIO }, body }, res);
+    await putDatosFiscales({ user: { uuid: ID_USUARIO }, body }, res);
     return res;
   };
 
