@@ -179,7 +179,7 @@ class DogModel {
   }
 
   static async desactivarPerro(id) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("perro")
       .update({ activo: false })
       .eq("id_perro", id)
@@ -192,7 +192,7 @@ class DogModel {
 
     if (data) return data;
 
-    const { data: existente, error: errorConsulta } = await supabase
+    const { data: existente, error: errorConsulta } = await supabaseAdmin
       .from("perro")
       .select("id_perro")
       .eq("id_perro", id)
