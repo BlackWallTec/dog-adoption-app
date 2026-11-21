@@ -15,28 +15,22 @@ class DatosFiscalesRepositoryImpl
     constructor(
         private val api: DonativosApiService,
     ) : DatosFiscalesRepositoryInt {
-        override suspend fun getDatosFiscales(idUsuario: String): DatosFiscales {
-            val respuesta = api.fetchDatosFiscalesRemote(idUsuario)
+        override suspend fun getDatosFiscales(): DatosFiscales {
+            val respuesta = api.fetchDatosFiscalesRemote()
             return respuesta.data?.toDomain()
                 ?: throw Exception(respuesta.message ?: "No se encontraron los datos fiscales")
         }
 
-        override suspend fun guardarDatosFiscales(
-            idUsuario: String,
-            datos: DatosFiscales,
-        ) {
-            val respuesta = api.updateDatosFiscalesRemote(idUsuario, datos.toRequest())
+        override suspend fun guardarDatosFiscales(datos: DatosFiscales) {
+            val respuesta = api.updateDatosFiscalesRemote(datos.toRequest())
             if (respuesta.success != true) {
                 throw Exception(respuesta.message ?: "No se pudieron guardar los datos fiscales")
             }
         }
 
-        override suspend fun subirConstancia(
-            idUsuario: String,
-            archivo: ConstanciaArchivo,
-        ): String {
+        override suspend fun subirConstancia(archivo: ConstanciaArchivo): String {
             val cuerpo = archivo.bytes.toRequestBody(archivo.tipo.toMediaType())
-            val respuesta = api.uploadConstanciaRemote(idUsuario, cuerpo)
+            val respuesta = api.uploadConstanciaRemote(cuerpo)
             if (respuesta.success != true) {
                 throw Exception(respuesta.message ?: "No se pudo subir la constancia")
             }

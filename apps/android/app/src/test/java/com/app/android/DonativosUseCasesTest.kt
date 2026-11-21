@@ -29,23 +29,17 @@ private class DatosFiscalesRepoFake : DatosFiscalesRepositoryInt {
     var fallaAlGuardar = false
     var fallaAlSubir = false
 
-    override suspend fun getDatosFiscales(idUsuario: String) = datosEnBd
+    override suspend fun getDatosFiscales() = datosEnBd
 
-    override suspend fun guardarDatosFiscales(
-        idUsuario: String,
-        datos: DatosFiscales,
-    ) {
+    override suspend fun guardarDatosFiscales(datos: DatosFiscales) {
         if (fallaAlGuardar) throw Exception("sin red")
         guardados = datos
     }
 
-    override suspend fun subirConstancia(
-        idUsuario: String,
-        archivo: ConstanciaArchivo,
-    ): String {
+    override suspend fun subirConstancia(archivo: ConstanciaArchivo): String {
         if (fallaAlSubir) throw Exception("sin red")
         constanciaSubida = archivo
-        return "$idUsuario/constancia.pdf"
+        return "usuario1/constancia.pdf"
     }
 }
 
@@ -66,7 +60,6 @@ private class DonativosRepoFake : DonativosRepositoryInt {
     }
 
     override suspend fun registrarDonativo(
-        idUsuario: String,
         monto: String,
         referencia: String?,
         comprobante: ComprobanteArchivo,
@@ -99,7 +92,7 @@ class DatosFiscalesUseCasesTest {
     @Test
     fun `con todo bien guarda los datos y no marca errores`() =
         runBlocking {
-            val errores = guardar("usuario1", datosBien, null)
+            val errores = guardar(datosBien, null)
             assertFalse(errores.hayErrores)
             assertEquals(datosBien, repo.guardados)
         }
@@ -114,21 +107,21 @@ class DatosFiscalesUseCasesTest {
                     codigoPostal = " 76000 ",
                     correoFacturacion = " sofia@gmail.com ",
                 )
-            guardar("usuario1", sucios, null)
+            guardar(sucios, null)
             assertEquals(datosBien, repo.guardados)
         }
 
     @Test
     fun `acepta rfc de empresa con 12 caracteres`() =
         runBlocking {
-            val errores = guardar("usuario1", datosBien.copy(rfc = "ABC990101AB1"), null)
+            val errores = guardar(datosBien.copy(rfc = "ABC990101AB1"), null)
             assertNull(errores.rfc)
         }
 
     @Test
     fun `sube la constancia nueva cuando escogio un archivo`() =
         runBlocking {
-            val errores = guardar("usuario1", datosBien.copy(constanciaUrl = null), constancia)
+            val errores = guardar(datosBien.copy(constanciaUrl = null), constancia)
             assertFalse(errores.hayErrores)
             assertSame(constancia, repo.constanciaSubida)
         }
@@ -136,7 +129,7 @@ class DatosFiscalesUseCasesTest {
     @Test
     fun `si ya tenia constancia y no cambio no sube nada`() =
         runBlocking {
-            guardar("usuario1", datosBien, null)
+            guardar(datosBien, null)
             assertNull(repo.constanciaSubida)
         }
 
@@ -144,7 +137,7 @@ class DatosFiscalesUseCasesTest {
     @Test
     fun `con todo vacio marca cada campo y no guarda`() =
         runBlocking {
-            val errores = guardar("usuario1", DatosFiscales(), null)
+            val errores = guardar(DatosFiscales(), null)
             assertEquals("Escribe tu RFC", errores.rfc)
             assertNotNull(errores.razonSocial)
             assertNotNull(errores.regimenFiscal)
@@ -157,7 +150,7 @@ class DatosFiscalesUseCasesTest {
     @Test
     fun `rfc mal escrito marca solo el rfc`() =
         runBlocking {
-            val errores = guardar("usuario1", datosBien.copy(rfc = "ABC123"), null)
+            val errores = guardar(datosBien.copy(rfc = "ABC123"), null)
             assertEquals("Revisa tu RFC, debe tener 12 o 13 caracteres", errores.rfc)
             assertNull(errores.razonSocial)
             assertNull(errores.codigoPostal)
@@ -167,7 +160,7 @@ class DatosFiscalesUseCasesTest {
     @Test
     fun `razon social con puros espacios cuenta como vacia`() =
         runBlocking {
-            val errores = guardar("usuario1", datosBien.copy(razonSocial = "   "), null)
+            val errores = guardar(datosBien.copy(razonSocial = "   "), null)
             assertNotNull(errores.razonSocial)
             assertNull(repo.guardados)
         }
@@ -175,23 +168,23 @@ class DatosFiscalesUseCasesTest {
     @Test
     fun `codigo postal que no tiene 5 numeros se marca`() =
         runBlocking {
-            assertNotNull(guardar("usuario1", datosBien.copy(codigoPostal = "7600"), null).codigoPostal)
-            assertNotNull(guardar("usuario1", datosBien.copy(codigoPostal = "7600A"), null).codigoPostal)
+            assertNotNull(guardar(datosBien.copy(codigoPostal = "7600"), null).codigoPostal)
+            assertNotNull(guardar(datosBien.copy(codigoPostal = "7600A"), null).codigoPostal)
             assertNull(repo.guardados)
         }
 
     @Test
     fun `correo sin arroba o sin dominio se marca`() =
         runBlocking {
-            assertNotNull(guardar("usuario1", datosBien.copy(correoFacturacion = "sofia.com"), null).correoFacturacion)
-            assertNotNull(guardar("usuario1", datosBien.copy(correoFacturacion = "sofia@gmail"), null).correoFacturacion)
+            assertNotNull(guardar(datosBien.copy(correoFacturacion = "sofia.com"), null).correoFacturacion)
+            assertNotNull(guardar(datosBien.copy(correoFacturacion = "sofia@gmail"), null).correoFacturacion)
             assertNull(repo.guardados)
         }
 
     @Test
     fun `sin constancia nueva ni guardada no deja guardar`() =
         runBlocking {
-            val errores = guardar("usuario1", datosBien.copy(constanciaUrl = null), null)
+            val errores = guardar(datosBien.copy(constanciaUrl = null), null)
             assertEquals("Sube tu constancia de situación fiscal", errores.constancia)
             assertNull(repo.guardados)
         }
@@ -200,7 +193,7 @@ class DatosFiscalesUseCasesTest {
     fun `si falla el guardado no intenta subir la constancia`() {
         repo.fallaAlGuardar = true
         assertThrows(Exception::class.java) {
-            runBlocking { guardar("usuario1", datosBien, constancia) }
+            runBlocking { guardar(datosBien, constancia) }
         }
         assertNull(repo.constanciaSubida)
     }
@@ -209,7 +202,7 @@ class DatosFiscalesUseCasesTest {
     fun `si falla la subida el error le llega a la pantalla`() {
         repo.fallaAlSubir = true
         assertThrows(Exception::class.java) {
-            runBlocking { guardar("usuario1", datosBien, constancia) }
+            runBlocking { guardar(datosBien, constancia) }
         }
     }
 
@@ -217,7 +210,7 @@ class DatosFiscalesUseCasesTest {
     fun `get regresa lo que hay en la bd`() =
         runBlocking {
             repo.datosEnBd = datosBien
-            assertEquals(datosBien, get("usuario1"))
+            assertEquals(datosBien, get())
         }
 
     @Test
@@ -238,7 +231,7 @@ class RegistrarDonativoUseCaseTest {
     @Test
     fun `manda el monto la referencia y el comprobante`() =
         runBlocking {
-            registrar("usuario1", "500.50", "ABC123", comprobante)
+            registrar("500.50", "ABC123", comprobante)
             assertEquals(1, repo.llamadas)
             assertEquals("500.50", repo.monto)
             assertEquals("ABC123", repo.referencia)
@@ -248,14 +241,14 @@ class RegistrarDonativoUseCaseTest {
     @Test
     fun `limpia los espacios de la referencia`() =
         runBlocking {
-            registrar("usuario1", "500", "  ABC123 ", comprobante)
+            registrar("500", "  ABC123 ", comprobante)
             assertEquals("ABC123", repo.referencia)
         }
 
     @Test
     fun `referencia vacia se manda como null porque es opcional`() =
         runBlocking {
-            registrar("usuario1", "500", "   ", comprobante)
+            registrar("500", "   ", comprobante)
             assertEquals(1, repo.llamadas)
             assertNull(repo.referencia)
         }
@@ -264,7 +257,7 @@ class RegistrarDonativoUseCaseTest {
     fun `si falla el envio el error le llega a la pantalla`() {
         repo.falla = true
         assertThrows(Exception::class.java) {
-            runBlocking { registrar("usuario1", "500", "", comprobante) }
+            runBlocking { registrar("500", "", comprobante) }
         }
         assertEquals(0, repo.llamadas)
     }

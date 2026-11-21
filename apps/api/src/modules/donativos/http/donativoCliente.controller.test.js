@@ -30,7 +30,7 @@ const llamar = async ({
 } = {}) => {
   const res = crearRes();
   await postDonativo(
-    { params: { idUsuario }, query: { monto, referencia }, get: () => tipo, body },
+    { user: { uuid: idUsuario }, query: { monto, referencia }, get: () => tipo, body },
     res,
   );
   return res;

@@ -469,9 +469,9 @@ fun AppNavigation() {
                 navController,
                 sesionViewModel,
                 { destinoTrasLogin = it },
-            ) { sesion ->
+            ) { _ ->
+                // El backend saca el usuario del token, ya no se manda el id
                 DonarDineroRoute(
-                    idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.popBackStack() },
                     onNavSelect = navController::irAOpcionBarra,
                     onVerMisDonativos = { navController.navigate(Screen.MisDonativos.ruta) },
@@ -534,9 +534,9 @@ fun AppNavigation() {
                 navController,
                 sesionViewModel,
                 { destinoTrasLogin = it },
-            ) { sesion ->
+            ) { _ ->
+                // El backend saca el usuario del token, ya no se manda el id
                 DatosFiscalesRoute(
-                    idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     onBack = { navController.navigateUp() },
                     onNavSelect = navController::irAOpcionBarra,
                 )

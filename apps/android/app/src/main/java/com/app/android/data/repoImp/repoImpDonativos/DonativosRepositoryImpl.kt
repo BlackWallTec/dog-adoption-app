@@ -15,13 +15,12 @@ class DonativosRepositoryImpl
         private val api: DonativosApiService,
     ) : DonativosRepositoryInt {
         override suspend fun registrarDonativo(
-            idUsuario: String,
             monto: String,
             referencia: String?,
             comprobante: ComprobanteArchivo,
         ) {
             val cuerpo = comprobante.bytes.toRequestBody(comprobante.tipo.toMediaType())
-            val respuesta = api.createDonativoRemote(idUsuario, monto, referencia, cuerpo)
+            val respuesta = api.createDonativoRemote(monto, referencia, cuerpo)
             if (respuesta.success != true) {
                 throw Exception(respuesta.message ?: "No se pudo registrar el donativo")
             }

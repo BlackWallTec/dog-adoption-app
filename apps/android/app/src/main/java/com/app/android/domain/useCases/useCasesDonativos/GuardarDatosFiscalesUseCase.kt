@@ -32,7 +32,6 @@ class GuardarDatosFiscalesUseCase
     ) {
         // constanciaNueva = el archivo que acaba de escoger (null si no cambió la que ya tenía)
         suspend operator fun invoke(
-            idUsuario: String,
             datos: DatosFiscales,
             constanciaNueva: ConstanciaArchivo?,
         ): ErroresDatosFiscales {
@@ -66,10 +65,10 @@ class GuardarDatosFiscalesUseCase
                 )
 
             if (!errores.hayErrores) {
-                repository.guardarDatosFiscales(idUsuario, limpios)
+                repository.guardarDatosFiscales(limpios)
                 // la constancia va aparte porque es un archivo
                 if (constanciaNueva != null) {
-                    repository.subirConstancia(idUsuario, constanciaNueva)
+                    repository.subirConstancia(constanciaNueva)
                 }
             }
             return errores

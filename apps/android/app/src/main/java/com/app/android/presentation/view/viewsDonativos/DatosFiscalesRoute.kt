@@ -13,7 +13,6 @@ import com.app.android.presentation.viewmodel.viewModelDonativos.GuardarDatosFis
 // ROUTE: conecta el DatosFiscalesViewModel con la page DatosFiscalesScreen (HU45)
 @Composable
 fun DatosFiscalesRoute(
-    idUsuario: String,
     onBack: () -> Unit,
     onNavSelect: (Int) -> Unit = {},
     viewModel: DatosFiscalesViewModel = hiltViewModel(),
@@ -22,8 +21,8 @@ fun DatosFiscalesRoute(
     val guardarState by viewModel.guardarState.collectAsState()
 
     // 1 cuando se entra se cargan los datos
-    LaunchedEffect(idUsuario) {
-        viewModel.onLoadDatosFiscales(idUsuario)
+    LaunchedEffect(Unit) {
+        viewModel.onLoadDatosFiscales()
     }
 
     // 2 Traduccion de los dos estados a parametros para la page
@@ -48,8 +47,8 @@ fun DatosFiscalesRoute(
         onConstanciaSeleccionada = viewModel::onConstanciaSeleccionada,
         onConstanciaInvalida = viewModel::onConstanciaInvalida,
         onMensajeMostrado = viewModel::onMensajeMostrado,
-        onReintentar = { viewModel.onLoadDatosFiscales(idUsuario) },
-        onGuardarClick = { viewModel.onGuardar(idUsuario) },
+        onReintentar = { viewModel.onLoadDatosFiscales() },
+        onGuardarClick = { viewModel.onGuardar() },
         onBackClick = onBack,
         onNavSelect = onNavSelect,
     )

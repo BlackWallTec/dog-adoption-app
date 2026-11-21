@@ -35,10 +35,10 @@ function validarDatosFiscales({
   return errores;
 }
 
-// GET /api/donativos/cliente/datos-fiscales/:idUsuario
+// GET /api/donativos/cliente/datos-fiscales (el usuario sale del token)
 export const getDatosFiscales = async (req, res) => {
   try {
-    const datos = await DatosFiscalesModel.getByUsuario(req.params.idUsuario);
+    const datos = await DatosFiscalesModel.getByUsuario(req.user.uuid);
 
     if (!datos) {
       return res.status(404).json({ success: false, message: "No se encontró el usuario." });
@@ -54,10 +54,10 @@ export const getDatosFiscales = async (req, res) => {
   }
 };
 
-// PUT /api/donativos/cliente/datos-fiscales/:idUsuario
+// PUT /api/donativos/cliente/datos-fiscales
 export const putDatosFiscales = async (req, res) => {
   try {
-    const { idUsuario } = req.params;
+    const idUsuario = req.user.uuid;
     const body = req.body ?? {};
     const datos = {
       rfc: body.rfc,
@@ -94,11 +94,11 @@ export const putDatosFiscales = async (req, res) => {
   }
 };
 
-// PUT /api/donativos/cliente/datos-fiscales/:idUsuario/constancia
+// PUT /api/donativos/cliente/datos-fiscales/constancia
 // El archivo llega crudo en el body (Content-Type = tipo del archivo)
 export const putConstancia = async (req, res) => {
   try {
-    const { idUsuario } = req.params;
+    const idUsuario = req.user.uuid;
     const tipo = req.get("content-type")?.split(";")[0].trim();
 
     if (!TIPOS_CONSTANCIA.includes(tipo) || !Buffer.isBuffer(req.body) || req.body.length === 0) {

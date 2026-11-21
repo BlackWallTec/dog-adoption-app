@@ -9,5 +9,5 @@ class GetDatosFiscalesUseCase
     constructor(
         private val repository: DatosFiscalesRepositoryInt,
     ) {
-        suspend operator fun invoke(idUsuario: String): DatosFiscales = repository.getDatosFiscales(idUsuario)
+        suspend operator fun invoke(): DatosFiscales = repository.getDatosFiscales()
     }

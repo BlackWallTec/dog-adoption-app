@@ -35,7 +35,6 @@ class DonarDineroViewModel
         val uiState: StateFlow<DonarDineroUiState> = _uiState
 
         fun onEnviar(
-            idUsuario: String,
             monto: String,
             referencia: String,
             comprobante: ComprobanteArchivo,
@@ -46,7 +45,7 @@ class DonarDineroViewModel
             viewModelScope.launch {
                 _uiState.value = DonarDineroUiState.Enviando
                 try {
-                    registrarDonativoUseCase(idUsuario, monto, referencia, comprobante)
+                    registrarDonativoUseCase(monto, referencia, comprobante)
                     _uiState.value = DonarDineroUiState.Enviado(monto)
                 } catch (e: Exception) {
                     _uiState.value = DonarDineroUiState.Error("No se pudo enviar tu donativo. Intenta de nuevo.")

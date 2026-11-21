@@ -13,32 +13,27 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface DonativosApiService {
-    // GET /api/donativos/cliente/datos-fiscales/:idUsuario
-    @GET("api/donativos/cliente/datos-fiscales/{idUsuario}")
-    suspend fun fetchDatosFiscalesRemote(
-        @Path("idUsuario") idUsuario: String,
-    ): ApiResponseDatosFiscalesDto
+    // GET /api/donativos/cliente/datos-fiscales (el usuario sale del token)
+    @GET("api/donativos/cliente/datos-fiscales")
+    suspend fun fetchDatosFiscalesRemote(): ApiResponseDatosFiscalesDto
 
-    // PUT /api/donativos/cliente/datos-fiscales/:idUsuario
-    @PUT("api/donativos/cliente/datos-fiscales/{idUsuario}")
+    // PUT /api/donativos/cliente/datos-fiscales
+    @PUT("api/donativos/cliente/datos-fiscales")
     suspend fun updateDatosFiscalesRemote(
-        @Path("idUsuario") idUsuario: String,
         @Body body: GuardarDatosFiscalesRequestDto,
     ): ApiResponseDonativosSimpleDto
 
-    // PUT /api/donativos/cliente/datos-fiscales/:idUsuario/constancia
+    // PUT /api/donativos/cliente/datos-fiscales/constancia
     // el archivo va crudo, el Content-Type dice si es pdf, jpg o png
-    @PUT("api/donativos/cliente/datos-fiscales/{idUsuario}/constancia")
+    @PUT("api/donativos/cliente/datos-fiscales/constancia")
     suspend fun uploadConstanciaRemote(
-        @Path("idUsuario") idUsuario: String,
         @Body archivo: RequestBody,
     ): ApiResponseDonativosSimpleDto
 
-    // POST /api/donativos/cliente/donativos/:idUsuario (HU46)
+    // POST /api/donativos/cliente/donativos (HU46, el usuario sale del token)
     // el comprobante va crudo, el Content-Type dice si es pdf, jpg o png
-    @POST("api/donativos/cliente/donativos/{idUsuario}")
+    @POST("api/donativos/cliente/donativos")
     suspend fun createDonativoRemote(
-        @Path("idUsuario") idUsuario: String,
         @Query("monto") monto: String,
         @Query("referencia") referencia: String?,
         @Body comprobante: RequestBody,
