@@ -210,7 +210,7 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       sexo: "Macho",
       edad_aprox: 5,
       tamano_medida: 45.0,
-      cuidado_especial: "a".repeat(1001),
+      cuidado_especial: "a".repeat(501),
       esterilizado: true,
       vacunado: true,
       estado: "Disponible",
