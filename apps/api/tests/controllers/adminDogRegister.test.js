@@ -204,7 +204,7 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
   // -------------------------------------------------------------
   // RAMA 6: cuidado_especial excede el límite de 1000 caracteres (Error 400)
   // -------------------------------------------------------------
-  test("RAMA 6: cuidado_especial supera los 1000 caracteres -> Retorna status 400", async () => {
+  test("RAMA 6: cuidado_especial supera los 500 caracteres -> Retorna status 400", async () => {
     req.body = {
       nombre: "Bruno",
       sexo: "Macho",
@@ -227,7 +227,7 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       expect.objectContaining({
         success: false,
         errors: expect.arrayContaining([
-          expect.stringContaining("no puede exceder los 1000 caracteres"),
+          expect.stringContaining("no puede exceder los 500 caracteres"),
         ]),
       }),
     );
