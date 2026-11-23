@@ -20,20 +20,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.android.domain.entities.entitiesCatalogo.CareParagraph
+import com.app.android.domain.entities.entitiesCatalogo.FormattedSpecialCare
 import com.app.android.presentation.view.atomicDesign.atomic.basicAtomics.TextoCuerpo
 import com.app.android.presentation.view.atomicDesign.atomic.basicAtomics.TextoTitulo
+import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.CareParagraphItem
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.ChipTag
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.SectionBlock
 
 // 1. ENUM PARA ORDENAR Y CONTROLAR SECCIONES
 enum class SeccionInfoTarjeta {
     UBICACION,
+    SOBRE_MI,
     METRICAS_GENERALES,
 
-    DETALLES_RAZA_Y_TAMANO,
+    CARACTERISTICAS,
+
     SALUD_Y_CUIDADOS,
-    CARACTERISTICAS_ESPECIALES,
-    SOBRE_MI,
+
+    CUIDADOS_ESPECIALES,
+
+    DETALLES_RAZA_Y_TAMANO,
 }
 
 // 2. MODELO DE DATOS DESDE EL VIEWMODEL (BD)
@@ -53,16 +60,18 @@ data class DogDetailState(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TarjetaInfo(
-    dogState: DogDetailState,
     modifier: Modifier = Modifier,
+    dogState: DogDetailState,
+    cuidadosEspeciales: FormattedSpecialCare? = null,
     // Por defecto renderiza todas las secciones en el orden estándar del diseño original
     ordenSecciones: List<SeccionInfoTarjeta> =
         listOf(
             SeccionInfoTarjeta.UBICACION,
-            SeccionInfoTarjeta.METRICAS_GENERALES,
-            SeccionInfoTarjeta.SALUD_Y_CUIDADOS,
-            SeccionInfoTarjeta.CARACTERISTICAS_ESPECIALES,
             SeccionInfoTarjeta.SOBRE_MI,
+            SeccionInfoTarjeta.METRICAS_GENERALES,
+            SeccionInfoTarjeta.CARACTERISTICAS,
+            SeccionInfoTarjeta.SALUD_Y_CUIDADOS,
+            SeccionInfoTarjeta.CUIDADOS_ESPECIALES,
         ),
 ) {
     Card(
@@ -142,9 +151,9 @@ fun TarjetaInfo(
                     }
 
                     // D. CARACTERÍSTICAS ESPECIALES (FlowRow acomoda chips automáticamente)
-                    SeccionInfoTarjeta.CARACTERISTICAS_ESPECIALES -> {
+                    SeccionInfoTarjeta.CARACTERISTICAS -> {
                         if (dogState.caracteristicas.isNotEmpty()) {
-                            SectionBlock(titulo = "Características especiales") {
+                            SectionBlock(titulo = "Características") {
                                 FlowRow(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -185,6 +194,20 @@ fun TarjetaInfo(
                             }
                         }
                     }
+
+                    // G. CUIDADOS ESPECIALES
+                    // NUEVA SECCIÓN: CUIDADOS ESPECIALES (Párrafos enriquecidos del cuidador)
+                    SeccionInfoTarjeta.CUIDADOS_ESPECIALES -> {
+                        if (cuidadosEspeciales != null && cuidadosEspeciales.paragraphs.isNotEmpty()) {
+                            SectionBlock(titulo = "Notas y cuidados especiales") {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    cuidadosEspeciales.paragraphs.forEach { paragraph ->
+                                        CareParagraphItem(paragraph = paragraph)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -192,6 +215,8 @@ fun TarjetaInfo(
 }
 
 // 4. PREVISUALIZACIONES (PREVIEWS)
+
+// Dato dummy reutilizable para tus Previews
 
 @Preview(showBackground = true, name = "Orden Normal")
 @Composable
@@ -206,7 +231,6 @@ fun TarjetaInfoNormalPreview() {
             caracteristicas = listOf("Convive con gatos", "Cariñoso", "Juguetón"),
             sobreMi = "¡Hola, soy Bruno! Me encantan los paseos y jugar con mi pelota.",
         )
-
     TarjetaInfo(dogState = dogInfo)
 }
 
@@ -224,15 +248,33 @@ fun TarjetaInfoReordenadaPreview() {
             sobreMi = "¡Hola, soy Bruno! Busco un hogar cariñoso.",
         )
 
+    val dummySpecialCare =
+        FormattedSpecialCare(
+            hasContent = true,
+            paragraphs =
+                listOf(
+                    CareParagraph(
+                        text = "Bruno se asusta mucho con los sonidos fuertes y truenos.",
+                        isUrgentOrAlert = true,
+                    ),
+                    CareParagraph(
+                        text = "Para calmarlo le pueden dar juguetes, comida o una pelota.",
+                        extractedItems = listOf("Juguetes", "Comida", "Una pelota"),
+                        isUrgentOrAlert = false,
+                    ),
+                ),
+        )
+
     // Invertimos el orden enviando la lista en la secuencia que queramos
     TarjetaInfo(
         dogState = dogInfo,
         ordenSecciones =
             listOf(
                 SeccionInfoTarjeta.SOBRE_MI,
-                SeccionInfoTarjeta.CARACTERISTICAS_ESPECIALES,
+                SeccionInfoTarjeta.CARACTERISTICAS,
                 SeccionInfoTarjeta.SALUD_Y_CUIDADOS,
                 SeccionInfoTarjeta.METRICAS_GENERALES,
             ),
+        cuidadosEspeciales = dummySpecialCare,
     )
 }

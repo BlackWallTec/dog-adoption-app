@@ -15,7 +15,6 @@ data class ApiResponseDetailDogDto(
 data class DogDetailDataDto(
     @SerializedName("dog") val dogList: List<DogInfoDto>?,
     @SerializedName("behavior") val behavior: BehaviorDto?,
-    @SerializedName("specialCondition") val specialCondition: SpecialConditionDto?,
     @SerializedName("multimedia") val multimedia: List<MultimediaDto>?,
 )
 
@@ -33,9 +32,10 @@ data class DogInfoDto(
     @SerializedName("fecha_ingreso") val fechaIngreso: String?,
     @SerializedName("raza") val raza: RazaDto?,
     @SerializedName("tamano") val tamano: TamanoDto?,
+    @SerializedName("cuidado_especial") val cuidadoEspecial: String?,
 )
 
-// 4. Objetos Secundarios (Comportamiento, Cuidados, Fotos)
+// 4. Objetos Secundarios (Comportamiento & Fotos)
 data class RazaDto(
     @SerializedName("id_raza") val idRaza: String?,
     @SerializedName("nombre") val nombre: String?,
@@ -62,19 +62,6 @@ data class CaracterInfoDto(
     @SerializedName("descripcion") val descripcion: String?,
 )
 
-data class SpecialConditionDto(
-    @SerializedName("perro_tiene_cuidado_especial") val cuidadosList: List<CuidadoContainerDto>?,
-)
-
-data class CuidadoContainerDto(
-    @SerializedName("cuidado_especial") val cuidadoEspecial: CuidadoInfoDto?,
-)
-
-data class CuidadoInfoDto(
-    @SerializedName("id_cuidado") val idCuidado: String?,
-    @SerializedName("descripcion") val descripcion: String?,
-)
-
 data class MultimediaDto(
     @SerializedName("id_multimedia") val idMultimedia: String?,
     @SerializedName("url") val url: String?,
@@ -91,19 +78,13 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
     Log.d("DOG_DEBUG", "DTO esterilizado (crudo): ${mainDog?.esterilizado}")
     Log.d("DOG_DEBUG", "DTO vacunado (crudo): ${mainDog?.vacunado}")
 
-    // Extraemos el comportamiento y cuidados
+    // Extraemos el comportamiento
     val primerCaracter =
         this.data
             ?.behavior
             ?.caracteresList
             ?.firstOrNull()
             ?.caracter
-    val primerCuidado =
-        this.data
-            ?.specialCondition
-            ?.cuidadosList
-            ?.firstOrNull()
-            ?.cuidadoEspecial
 
     // Mapeamos la lista completa de multimedia
     val listaMultimedia =
@@ -124,6 +105,7 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
             edad = mainDog?.edadAprox ?: 0,
             tamanoNum = mainDog?.tamanoMedida ?: 0f,
             descripcion = mainDog?.descripcion ?: "",
+            cuidadoEspecial = mainDog?.cuidadoEspecial ?: "",
             esterilizado = mainDog?.esterilizado ?: false, // 🔍 Si arriba es null, aquí caerá en false
             vacunado = mainDog?.vacunado ?: false, // 🔍 Si arriba es null, aquí caerá en false
             estado = mainDog?.estado ?: "",
@@ -137,8 +119,6 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
             perroCaracterId = primerCaracter?.idCaracter ?: "",
             perroCaracterNombre = primerCaracter?.nombre ?: "",
             perroCaracterDescripcion = primerCaracter?.descripcion ?: "",
-            perroCuidadosId = primerCuidado?.idCuidado ?: "",
-            perroCuidadosDescripcion = primerCuidado?.descripcion ?: "",
             multimedia = listaMultimedia,
         )
 
@@ -146,8 +126,8 @@ fun ApiResponseDetailDogDto.toDomain(): Dog {
     Log.d("DOG_DEBUG", "=== FASE 2: OBJETO DOMINIO GENERADO ===")
     Log.d("DOG_DEBUG", "Dominio esterilizado: ${dogDomain.esterilizado}")
     Log.d("DOG_DEBUG", "Dominio vacunado: ${dogDomain.vacunado}")
+    Log.d("DOG_DEBUG", "Dominio cuidado especial: ${dogDomain.cuidadoEspecial}")
     Log.d("DOG_DEBUG", "======================================")
 
     return dogDomain
 }
-

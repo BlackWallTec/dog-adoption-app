@@ -1,10 +1,11 @@
 package com.app.android.presentation.viewmodel.viewModelCatalogo
 
-
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.android.domain.entities.entitiesCatalogo.Dog
+import com.app.android.domain.entities.entitiesCatalogo.FormattedSpecialCare
+import com.app.android.domain.useCases.useCasesCatalogo.FormatSpecialCareUseCase
 import com.app.android.domain.useCases.useCasesCatalogo.GetDogByIdUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ sealed interface DogDetailUiState {
     // Data Classes para cada estado con información
     data class Success(
         val datos: Dog,
+        val specialCare: FormattedSpecialCare,
     ) : DogDetailUiState
 
     data class Error(
@@ -35,6 +37,7 @@ class DogDetailViewModel
     @Inject
     constructor(
         private val getDogByIdUseCase: GetDogByIdUseCase,
+        private val formatSpecialCareUseCase: FormatSpecialCareUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<DogDetailUiState>(DogDetailUiState.Loading)
         val uiState: StateFlow<DogDetailUiState> = _uiState
@@ -54,7 +57,11 @@ class DogDetailViewModel
                         _uiState.value = DogDetailUiState.Empty
                     } else {
                         // Caso 2: Datos encontrados
-                        _uiState.value = DogDetailUiState.Success(resultado)
+
+                        // Formateamos el cuidado especial
+                        val formattedCare = formatSpecialCareUseCase(resultado.cuidadoEspecial)
+
+                        _uiState.value = DogDetailUiState.Success(resultado, formattedCare)
                     }
                 } catch (e: Exception) {
                     _uiState.value = DogDetailUiState.Error("Ocurrió un error al cargar datos")

@@ -108,6 +108,7 @@ class DogModel {
         edad_aprox,
         tamano_medida,
         descripcion,
+        cuidado_especial,
         esterilizado,
         vacunado,
         estado,

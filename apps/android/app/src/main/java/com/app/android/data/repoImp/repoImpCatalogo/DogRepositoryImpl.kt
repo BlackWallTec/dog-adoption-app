@@ -1,4 +1,5 @@
 package com.app.android.data.repoImp.repoImpCatalogo
+import android.util.Log
 import com.app.android.data.dataSource.dataSourcesCatalogo.DogApiService
 import com.app.android.data.dtos.dtosCatalogo.ApiResponseDetailDogDto
 import com.app.android.data.dtos.dtosCatalogo.toDomain
@@ -13,6 +14,8 @@ class DogRepositoryImpl
     ) : DogRepositoryInt {
         override suspend fun getDogById(id: String): Dog? {
             val dogDTO: ApiResponseDetailDogDto = api.fetchDogByIdRemote(id)
+            // Print de json crudo
+            Log.d("DOG_DEBUG", "DTO: $dogDTO")
             return dogDTO.toDomain()
         }
 

@@ -1,6 +1,5 @@
 import dogModel from "./modelosCatalogo/dog.model.js";
 import behaviorModel from "./modelosCatalogo/behaviour.model.js";
-import specialModel from "./modelosCatalogo/special.model.js";
 import multimediaModel from "./modelosCatalogo/multimedia.model.js";
 import breedModel from "./modelosCatalogo/breed.model.js";
 import sizeModel from "./modelosCatalogo/size.model.js";
@@ -42,13 +41,11 @@ export const getDogById = async (req, res) => {
   try {
     const id = req.params.id;
     // Size & Breed are already included in the dogModel.getDogById function, so we don't need to call them separately.
-    const [dogInfo, behaviorInfo, specialInfo, multimediaInfo] = await Promise.all([
+    const [dogInfo, behaviorInfo, multimediaInfo] = await Promise.all([
       // Obtener la información del perro
       dogModel.getDogById(id),
       // Obtener la información del caracter
       behaviorModel.getDogBehaviourById(id),
-      // Obtener la información de Características especiales
-      specialModel.getDogSpecialConditionById(id),
       // Obtener la información de Multimedia
       multimediaModel.getDogMultimediaById(id),
     ]);
@@ -60,7 +57,6 @@ export const getDogById = async (req, res) => {
       data: {
         dog: dogInfo,
         behavior: behaviorInfo,
-        specialCondition: specialInfo,
         multimedia: multimediaInfo,
       },
     });

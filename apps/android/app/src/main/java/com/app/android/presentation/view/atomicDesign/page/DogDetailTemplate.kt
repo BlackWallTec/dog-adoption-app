@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.app.android.domain.entities.entitiesCatalogo.CareParagraph
+import com.app.android.domain.entities.entitiesCatalogo.FormattedSpecialCare
 import com.app.android.presentation.view.atomicDesign.atomic.basicAtomics.StickyAnchor
 import com.app.android.presentation.view.atomicDesign.atomic.basicAtomics.StickyButton
 import com.app.android.presentation.view.atomicDesign.model.MediaItem
@@ -32,6 +34,7 @@ fun DogDetailTemplate(
     ordenSecciones: List<SeccionInfoTarjeta> = SeccionInfoTarjeta.entries,
     onVideoClick: (MediaItem.Video) -> Unit = {},
     dogId: String,
+    cuidadosEspeciales: FormattedSpecialCare,
 ) {
     val scrollState = rememberScrollState()
 
@@ -54,6 +57,7 @@ fun DogDetailTemplate(
             // Organismo 2: Tarjeta con toda la información
             TarjetaInfo(
                 dogState = dogState,
+                cuidadosEspeciales = cuidadosEspeciales,
                 ordenSecciones = ordenSecciones,
                 modifier = Modifier.padding(16.dp),
             )
@@ -70,6 +74,25 @@ fun DogDetailTemplate(
 }
 
 // Preview directa del esqueleto visual
+
+
+// Dato dummy reutilizable para tus Previews
+private val dummySpecialCare = FormattedSpecialCare(
+    hasContent = true,
+    paragraphs = listOf(
+        CareParagraph(
+            text = "Bruno se asusta mucho con los sonidos fuertes y truenos.",
+            isUrgentOrAlert = true,
+        ),
+        CareParagraph(
+            text = "Para calmarlo le pueden dar juguetes, comida o una pelota.",
+            extractedItems = listOf("Juguetes", "Comida", "Una pelota"),
+            isUrgentOrAlert = false,
+        ),
+    ),
+)
+
+
 @Preview(showBackground = true, name = "Plantilla: Detalle de Perro")
 @Composable
 fun DogDetailTemplatePreview() {
@@ -91,6 +114,9 @@ fun DogDetailTemplatePreview() {
                 ),
             onAdoptClick = {},
             dogId = "0edfe707-cc43-4bcf-bd43-a7f61e312e17",
+            ordenSecciones = SeccionInfoTarjeta.entries,
+            cuidadosEspeciales = dummySpecialCare,
+
         )
     }
 }
