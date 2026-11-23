@@ -95,7 +95,6 @@
               >
                 <option value="Disponible" selected>Disponible</option>
                 <option value="En Tratamiento">En Tratamiento</option>
-                <option value="Adoptado">Adoptado</option>
               </select>
             </div>
           </div>
@@ -178,12 +177,39 @@
           </div>
         </div>
 
+        <!-- Cuidados Especiales: Texto Guiado -->
         <div class="form-group">
-          <label class="form-label">Cuidados Especiales</label>
-          <div class="badge-selector" id="cuidadosContainer">
-            <span class="badge-item" data-id="1">Dieta Especial</span>
-            <span class="badge-item active" data-id="2">Medicación Diaria</span>
-            <span class="badge-item" data-id="3">Rehabilitación</span>
+          <label for="cuidados_especiales" class="form-label">Cuidados Especiales</label>
+
+          <!-- Botones de arranque rápido (Prompts) -->
+          <div class="prompt-chips-row" id="cuidadosPromptChips">
+            <button type="button" class="prompt-chip" data-template="Le tiene miedo a: ">
+              + Miedo / Fobia
+            </button>
+            <button type="button" class="prompt-chip" data-template="Dieta o alergia a: ">
+              + Dieta / Alergia
+            </button>
+            <button type="button" class="prompt-chip" data-template="Medicación diaria: ">
+              + Medicación
+            </button>
+            <button type="button" class="prompt-chip" data-template="Convivencia especial: ">
+              + Convivencia
+            </button>
+          </div>
+
+          <div class="field-wrapper">
+            <textarea
+              id="cuidados_especiales"
+              name="cuidados_especiales"
+              class="textarea-base"
+              rows="4"
+              maxlength="500"
+              placeholder="Ej: Timmy le tiene miedo a los truenos. Se calma con juguetes, premios o estando acompañado en un lugar cerrado..."
+            ></textarea>
+          </div>
+
+          <div class="textarea-footer">
+            <span class="char-counter" id="cuidadosCharCounter">0 / 500</span>
           </div>
         </div>
       </fieldset>

@@ -18,6 +18,10 @@ export function initDogRegisterModal({ onContinue }) {
     btnClose: document.querySelector("#btn-cerrar-modal"),
     btnCancel: document.querySelector("#btn-cancelar-modal"),
     btnContinue: document.querySelector("#btn-continuar-modal"),
+    nombreInput: document.querySelector("#nombre"),
+    cuidadosTextarea: document.querySelector("#cuidados_especiales"),
+    cuidadosCounter: document.querySelector("#cuidadosCharCounter"),
+    cuidadosPromptChips: document.querySelector("#cuidadosPromptChips"),
   };
   let modelDataLoaded = false;
 
@@ -32,15 +36,14 @@ export function initDogRegisterModal({ onContinue }) {
     const multimediaInput = document.getElementById("multimediaInput");
     if (multimediaInput) multimediaInput.value = "";
     document
-      .querySelectorAll(
-        "#caracteristicasContainer .badge-item.active, #cuidadosContainer .badge-item.active",
-      )
+      .querySelectorAll("#caracteristicasContainer .badge-item.active")
       .forEach((badge) => badge.classList.remove("active"));
     document.getElementById("estado").value = "Disponible";
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
     previewUrls = [];
     archivosMultimediaLocales = [];
     dropzoneController?.limpiar();
+    if (ui.cuidadosCounter) ui.cuidadosCounter.textContent = "0 / 500";
   };
 
   const open = async () => {
@@ -87,6 +90,34 @@ export function initDogRegisterModal({ onContinue }) {
   ui.btnCancel?.addEventListener("click", close);
   ui.btnContinue?.addEventListener("click", onContinueButtonClicked);
 
+  // Contador de caracteres
+  ui.cuidadosTextarea?.addEventListener("input", (e) => {
+    const length = e.target.value.length;
+    if (ui.cuidadosCounter) ui.cuidadosCounter.textContent = `${length} / 500`;
+  });
+
+  // Botones de Frases Clave (Prompts)
+  ui.cuidadosPromptChips?.addEventListener("click", (e) => {
+    const chip = e.target.closest(".prompt-chip");
+    if (!chip) return;
+
+    let template = chip.dataset.template;
+    const nombrePerro = ui.nombreInput?.value.trim();
+
+    // Si el perro tiene nombre y el textarea está vacío, personalizamos la frase
+    if (nombrePerro && ui.cuidadosTextarea.value.trim() === "") {
+      template = `${nombrePerro} ${template.charAt(0).toLowerCase() + template.slice(1)}`;
+    }
+
+    // Agrega un salto de línea si ya hay texto previo
+    const textoActual = ui.cuidadosTextarea.value;
+    ui.cuidadosTextarea.value = textoActual ? `${textoActual}\n${template}` : template;
+
+    // Dispara el evento input para actualizar el contador
+    ui.cuidadosTextarea.dispatchEvent(new Event("input"));
+    ui.cuidadosTextarea.focus();
+  });
+
   return { open, close, reset, ui };
 }
 
@@ -121,7 +152,6 @@ function recollectFormData() {
   previewUrls.forEach((url) => URL.revokeObjectURL(url));
   previewUrls = archivosMultimediaLocales.map((file) => URL.createObjectURL(file));
   const caracteristicas = obtenerBadgesActivos("caracteristicasContainer");
-  const cuidados = obtenerBadgesActivos("cuidadosContainer");
   const raza = document.getElementById("id_raza");
 
   // 4. Construcción de la Estructura Final del Objeto
@@ -150,11 +180,10 @@ function recollectFormData() {
     // Relaciones Muchos a Muchos (Arreglos de IDs)
     caracteristicas_ids: caracteristicas.ids,
     caracteristicas: caracteristicas.nombres,
-    cuidados_ids: cuidados.ids,
-    cuidados: cuidados.nombres,
 
     archivos_multimedia: archivosMultimediaLocales,
     imagenes_urls: previewUrls,
+    cuidados_especiales: document.getElementById("cuidados_especiales").value.trim(),
   };
 
   return datosPerro;
@@ -234,7 +263,6 @@ async function loadModelData() {
     populateSelect("id_tamano", response.tamanos, "id_tamano", "nombre");
     populateSelect("id_raza", response.razas, "id_raza", "nombre");
     populateBadges("caracteristicasContainer", response.caracteristicas, "id_caracter", "nombre");
-    populateBadges("cuidadosContainer", response.cuidados, "id_cuidado", "descripcion");
     return true;
   } catch (error) {
     // Captura cualquier error de red o de ejecución dentro del bloque try

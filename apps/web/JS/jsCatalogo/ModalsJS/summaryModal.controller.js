@@ -23,13 +23,14 @@ export function initDogSummaryModal({ onBack, onSuccess, onError }) {
     sterilized: document.querySelector("#resEsterilizado"),
     vaccinated: document.querySelector("#resVacunado"),
     characteristicsContainer: document.querySelector("#resCaracteristicas"),
-    careContainer: document.querySelector("#resCuidados"),
 
     // Galería
     mainImage: document.querySelector("#resImagenPrincipal"),
     mainVideo: null,
     videoBadge: document.querySelector("#resVideoBadge"),
     thumbsContainer: document.querySelector("#resMiniaturas"),
+    specialCareWrapper: document.querySelector("#resCuidadosWrapper"),
+    specialCareText: document.querySelector("#resCuidadosEspeciales"),
   };
 
   const galleryMain = ui.mainImage?.closest(".gallery-main");
@@ -159,13 +160,16 @@ export function initDogSummaryModal({ onBack, onSuccess, onError }) {
           : '<span class="badge-item">Sin características</span>';
     }
 
-    // Renderizado de Badges (Cuidados Especiales)
-    if (ui.careContainer) {
-      const cuidados = datos.cuidados || [];
-      ui.careContainer.innerHTML =
-        cuidados.length > 0
-          ? cuidados.map((c) => `<span class="badge-item active">${c}</span>`).join("")
-          : '<span class="badge-item">Ninguno</span>';
+    //Renderizado de cuidado especial
+    if (ui.specialCareText) {
+      const cuidados = datos.cuidados_especiales;
+      if (cuidados && cuidados.length > 0) {
+        ui.specialCareText.textContent = cuidados;
+        ui.specialCareText.style.color = "var(--md-sys-color-on-surface)"; // Opcional: estilo normal
+      } else {
+        ui.specialCareText.textContent = "Sin cuidados especiales registrados.";
+        ui.specialCareText.style.color = "var(--md-sys-color-outline)"; // Opcional: texto tenue
+      }
     }
   };
 

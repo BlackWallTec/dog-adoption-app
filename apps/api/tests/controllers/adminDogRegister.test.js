@@ -37,15 +37,17 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
   });
 
   // -------------------------------------------------------------
-  // RAMA 1: Payload válido (Éxito -> Status 200)
+  // RAMA 1: Payload válido con cuidado_especial (Éxito -> Status 200)
   // -------------------------------------------------------------
-  test("RAMA 1: Payload válido -> Retorna status 200 y el perro creado", async () => {
+  test("RAMA 1: Payload válido y normalización de cuidado_especial -> Retorna status 200", async () => {
     req.body = {
       nombre: "Rocky",
       sexo: "Macho",
       edad_aprox: 2,
       tamano_medida: 40.5,
       descripcion: "Un perro muy activo",
+      // Enviamos texto sin mayúsculas iniciales ni punto final para validar el sanitizador
+      cuidado_especial: "se asusta con los truenos. darle su pelota",
       esterilizado: true,
       vacunado: true,
       estado: "Disponible",
@@ -53,7 +55,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [{ url: "https://storage.com/foto.jpg", tipo: "imagen" }],
       caracteres: [validUUID_Caracter],
-      cuidados: [],
     };
 
     const mockPerroCreado = { id_perro: "perro-uuid-123", ...req.body };
@@ -61,8 +62,12 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
 
     await postNuevoPerro(req, res);
 
+    // Verificamos que el modelo recibió el texto ya normalizado (capitalizado y con punto final)
     expect(dogModel.createFullDog).toHaveBeenCalledWith(
-      expect.objectContaining({ nombre: "Rocky" }),
+      expect.objectContaining({
+        nombre: "Rocky",
+        cuidado_especial: "Se asusta con los truenos. Darle su pelota.",
+      }),
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
@@ -86,7 +91,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [],
       caracteres: [],
-      cuidados: [],
     };
 
     await postNuevoPerro(req, res);
@@ -117,7 +121,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [],
       caracteres: [],
-      cuidados: [],
     };
 
     await postNuevoPerro(req, res);
@@ -150,7 +153,6 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       id_tamano: validUUID_Tamano,
       multimedia: [],
       caracteres: [],
-      cuidados: [],
     };
 
     dogModel.createFullDog.mockRejectedValue(
@@ -164,5 +166,70 @@ describe("Branch Coverage: POST postNuevoPerro (HU19)", () => {
       success: false,
       message: "Database connection failed in RPC insert_full_dog",
     });
+  });
+
+  // -------------------------------------------------------------
+  // RAMA 5: Campo opcional cuidado_especial omitido (Éxito -> Status 200)
+  // -------------------------------------------------------------
+  test("RAMA 5: Payload válido sin enviar cuidado_especial (campo opcional) -> Retorna status 200", async () => {
+    req.body = {
+      nombre: "Luna",
+      sexo: "Hembra",
+      edad_aprox: 1,
+      tamano_medida: 25.0,
+      descripcion: "Cachorra saludable",
+      esterilizado: false,
+      vacunado: true,
+      estado: "Disponible",
+      id_raza: validUUID_Raza,
+      id_tamano: validUUID_Tamano,
+      multimedia: [],
+      caracteres: [],
+    };
+
+    const mockPerroCreado = { id_perro: "perro-uuid-456", ...req.body };
+    dogModel.createFullDog.mockResolvedValue(mockPerroCreado);
+
+    await postNuevoPerro(req, res);
+
+    expect(dogModel.createFullDog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nombre: "Luna",
+        cuidado_especial: "",
+      }),
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  // -------------------------------------------------------------
+  // RAMA 6: cuidado_especial excede el límite de 1000 caracteres (Error 400)
+  // -------------------------------------------------------------
+  test("RAMA 6: cuidado_especial supera los 500 caracteres -> Retorna status 400", async () => {
+    req.body = {
+      nombre: "Bruno",
+      sexo: "Macho",
+      edad_aprox: 5,
+      tamano_medida: 45.0,
+      cuidado_especial: "a".repeat(501),
+      esterilizado: true,
+      vacunado: true,
+      estado: "Disponible",
+      id_raza: validUUID_Raza,
+      id_tamano: validUUID_Tamano,
+      multimedia: [],
+      caracteres: [],
+    };
+
+    await postNuevoPerro(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        errors: expect.arrayContaining([
+          expect.stringContaining("no puede exceder los 500 caracteres"),
+        ]),
+      }),
+    );
   });
 });
