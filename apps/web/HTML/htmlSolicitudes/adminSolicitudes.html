@@ -132,7 +132,9 @@
         </div>
 
         <div id="contenedor-comentario-rechazo" class="gestion-field gestion-divider" hidden>
-          <label for="comentario-resolucion" class="gestion-label">Comentario interno</label>
+          <label for="comentario-resolucion" class="gestion-label"
+            >Comentario para el cliente</label
+          >
           <textarea
             id="comentario-resolucion"
             class="gestion-textarea"
@@ -141,7 +143,11 @@
             placeholder="Añade observaciones sobre el motivo del rechazo..."
           ></textarea>
           <div class="gestion-meta">
-            <span>Solo visible para el equipo</span>
+            <label class="gestion-check">
+              <input type="checkbox" id="checkbox-puede-editar" />
+              <span>Permitir que el cliente edite y reenvíe su solicitud</span>
+            </label>
+            <span>Lo verá el cliente en Mis solicitudes</span>
             <span id="contador-caracteres">0 / 1.000</span>
           </div>
         </div>

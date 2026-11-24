@@ -453,6 +453,24 @@
   color: #6b7280;
 }
 
+.gestion-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #1e2923;
+  cursor: pointer;
+}
+
+.gestion-check input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #1e2923;
+  cursor: pointer;
+}
+
 .gestion-footer-title {
   margin: 0 0 4px;
   font-size: 14px;

@@ -80,6 +80,7 @@ describe("resolverSolicitud - Resolución de solicitudes de adopción", () => {
       id_estado: 3,
       comentario_admin: null,
       fecha_resolucion: expect.any(String),
+      puede_editar: false,
     });
 
     expect(updatePerroMock).toHaveBeenCalledWith({ estado: "Adoptado" });
@@ -94,6 +95,7 @@ describe("resolverSolicitud - Resolución de solicitudes de adopción", () => {
       id_estado: 4,
       comentario_admin: motivo,
       fecha_resolucion: expect.any(String),
+      puede_editar: false,
     });
 
     expect(updatePerroMock).not.toHaveBeenCalled();
@@ -107,6 +109,7 @@ describe("resolverSolicitud - Resolución de solicitudes de adopción", () => {
       id_estado: 2,
       comentario_admin: null,
       fecha_resolucion: null,
+      puede_editar: false,
     });
 
     expect(updatePerroMock).not.toHaveBeenCalled();
@@ -119,7 +122,37 @@ describe("resolverSolicitud - Resolución de solicitudes de adopción", () => {
       id_estado: 1,
       comentario_admin: null,
       fecha_resolucion: null,
+      puede_editar: false,
     });
+  });
+
+  it("debe rechazar dejando la solicitud editable cuando se manda puedeEditar = true", async () => {
+    const motivo = "Falta comprobante de domicilio vigente.";
+    const resultado = await resolverSolicitud("sol-123", "rechazada", motivo, true);
+
+    expect(updateSolicitudMock).toHaveBeenCalledWith({
+      id_estado: 4,
+      comentario_admin: motivo,
+      fecha_resolucion: expect.any(String),
+      puede_editar: true,
+    });
+    expect(resultado.puede_editar).toBe(true);
+  });
+
+  it("debe dejar puede_editar en false al rechazar si no se manda el permiso", async () => {
+    await resolverSolicitud("sol-123", "rechazada", "Motivo");
+
+    expect(updateSolicitudMock).toHaveBeenCalledWith(
+      expect.objectContaining({ puede_editar: false }),
+    );
+  });
+
+  it("debe forzar puede_editar en false si el estado no es rechazada, aunque se mande true", async () => {
+    await resolverSolicitud("sol-123", "aprobada", null, true);
+
+    expect(updateSolicitudMock).toHaveBeenCalledWith(
+      expect.objectContaining({ puede_editar: false }),
+    );
   });
 
   it("debe lanzar un error si el estado recibido no existe en el catálogo", async () => {
