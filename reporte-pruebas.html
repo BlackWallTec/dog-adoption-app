@@ -1,0 +1,3411 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Reporte de Pruebas</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 960px;
+        margin: 32px auto;
+        padding: 0 16px;
+        color: #1e293b;
+      }
+      .resumen {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card {
+        padding: 16px 24px;
+        border-radius: 12px;
+        background: #f1f5f9;
+        flex: 1;
+      }
+      .ok {
+        background: #dcfce7;
+        color: #166534;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Resumen de Pruebas Unitarias</h1>
+    <div class="resumen">
+      <div class="card ok"><strong>Suites aprobadas:</strong> 125 / 125</div>
+      <div class="card ok"><strong>Pruebas aprobadas:</strong> 511 / 512</div>
+      <div class="card"><strong>Pendientes (todo):</strong> 1</div>
+    </div>
+    <h3>apps/web/JS/rutas.test.js (5 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? la pantalla de perros se abre en /admin/perros
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? las solicitudes CFDI usan una ruta del módulo de donativos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? reconoce la ruta publica y el archivo al marcar el menu
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? una ruta ajena al panel no se reescribe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? el calendario de voluntariado se abre en /admin/voluntariado/calendario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/src/add.test.js (1 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">? adds two numbers</td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/controllers/adminDogRegister.test.js (4 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Branch Coverage: POST postNuevoPerro (HU19) RAMA 1: Payload válido -> Retorna status 200
+          y el perro creado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">8 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Branch Coverage: POST postNuevoPerro (HU19) RAMA 2: Falta el campo obligatorio "nombre"
+          -> Retorna status 400
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Branch Coverage: POST postNuevoPerro (HU19) RAMA 3: Formato de UUID inválido en id_raza
+          -> Retorna status 400
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Branch Coverage: POST postNuevoPerro (HU19) RAMA 4: Fallo interno en BD (Stored
+          Procedure falla) -> Retorna status 500
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">8 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/catalogo/adminPerros.controller.test.js (3 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU19B: GET /api/catalogo/admin/perros devuelve el listado de perros activos sin
+          modificar la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU19B: GET /api/catalogo/admin/perros un listado vacio sigue siendo una consulta exitosa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU19B: GET /api/catalogo/admin/perros si la consulta falla responde 500 y no inventa
+          perros
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/catalogo/adminPerros.routes.test.js (5 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /api/catalogo/admin/perros pasa por la sesión existente no carga el listado si la
+          web no manda la cookie
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">89 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /api/catalogo/admin/perros pasa por la sesión existente no carga el listado si el
+          header móvil no trae Bearer
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">15 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /api/catalogo/admin/perros pasa por la sesión existente rechaza a un cliente con
+          sesión
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">18 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /api/catalogo/admin/perros pasa por la sesión existente carga el listado con la
+          cookie de un administrador
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">17 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /api/catalogo/admin/perros pasa por la sesión existente carga el listado móvil con
+          x-client y Authorization
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">12 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/catalogo/catalogFiltersController.test.js (11 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/filtros devuelve razas, tamaños y características como { id, nombre }
+          sin relleno
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/filtros tablas vacías -> listas vacías
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/filtros falla una consulta -> 500
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros sin filtros: mismo comportamiento y misma forma de
+          respuesta de siempre
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros perro sin fotos -> foto_url vacío
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros filtros válidos se pasan al modelo ya normalizados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros ningún perro cumple -> 200 con lista vacía, no es
+          error
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros parámetro inválido -> 400 y no consulta la BD
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros varios parámetros inválidos se listan todos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros id con formato inválido (22P02) -> 400
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: GET /cliente/perros con filtros error interno -> 500 como antes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/catalogo/catalogFiltersModel.test.js (13 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros sin filtros: misma consulta de siempre (activo,
+          orden, relaciones normales)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros filtros vacíos equivalen a no mandar filtros
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros sexo -> eq sexo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros edad con tope -> gte y lte
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros edad sin tope (senior) -> solo gte
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros tamano -> relación obligatoria y filtro por id
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros raza -> relación obligatoria y filtro por id
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros varios filtros se acumulan (AND)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con filtros error de Supabase -> lanza con el código para que el
+          controlador decida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con características (AND) solo entran los perros que tienen TODAS
+          las características pedidas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con características (AND) una sola característica -> perros que
+          la tienen
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con características (AND) ningún perro tiene todas -> [] sin
+          consultar perros
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: DogModel.getDogs con características (AND) una característica que nadie tiene ->
+          []
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/catalogo/dogFilters.test.js (14 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros sin parámetros -> sin filtros y sin errores
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros parámetros vacíos se tratan como no enviados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros sexo válido sin importar mayúsculas -> valor canónico
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros sexo inválido -> error
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros tamano y raza se pasan recortados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros edad=cachorro -> rango {"min":0,"max":1}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros edad=adulto -> rango {"min":2,"max":4}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros edad=senior -> rango {"min":5,"max":null}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros edad=SENIOR -> rango {"min":5,"max":null}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros los rangos de edad no se traslapan y cubren desde 0
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros edad inválida -> error (incluye nombres heredados de Object)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros caracter -> lista de ids sin vacíos ni repetidos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros parámetro repetido (arreglo) -> error
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU24: leerFiltrosPerros varios filtros a la vez se combinan
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/perfiles/correoMovil.controller.test.js (19 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación conserva las rutas de importación y los valores de los
+          roles
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación limita login antes de ejecutar el controlador
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">119 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación limita register antes de ejecutar el controlador
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">25 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación permite login y registro cuando queda cuota
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">56 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación el alta administrativa exige Root antes de consumir
+          cuota
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">53 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación limita el alta administrativa sin quitar la protección
+          de Root
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">67 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Roles y límites de autenticación no bloquea el cierre de sesión con la cuota de login
+          agotada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">12 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido consulta la configuración sin consumir
+          cuota y evita caché
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">12 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido normaliza el correo con shared antes de
+          solicitar el código
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido rechaza el correo undefined con la
+          validación compartida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">14 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido rechaza el correo invalido con la
+          validación compartida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">17 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido rechaza el correo prueba@otro.com con la
+          validación compartida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">21 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido conserva el código estable del error de
+          confirmación
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido conserva el error de contraseña no
+          guardada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">13 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido informa indisponibilidad y oculta los
+          errores inesperados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">34 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido limita reenviar con Upstash antes de
+          atenderlo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">13 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido limita recuperar con Upstash antes de
+          atenderlo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido limita confirmar con Upstash antes de
+          atenderlo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Controlador de correo y middleware compartido limita restablecer con Upstash antes de
+          atenderlo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/perfiles/correoMovil.routes.test.js (15 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual desactivada conserva exactamente el
+          contrato móvil y la cookie web
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">286 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual habilitada conserva las cuentas anteriores
+          y los roles web
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">144 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual rechaza la colonia inválida undefined
+          antes de escribir en Postgres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">16 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual rechaza la colonia inválida null antes de
+          escribir en Postgres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual rechaza la colonia inválida antes de
+          escribir en Postgres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">40 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual rechaza la colonia inválida antes de
+          escribir en Postgres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">14 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual rechaza la colonia inválida 06700 antes de
+          escribir en Postgres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual rechaza la colonia inválida
+          colonia-invalida antes de escribir en Postgres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">12 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual añade confirmación sólo al Cliente nuevo,
+          sin permitir saltarla usando cookies
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">667 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual la marca en Supabase impide entrar aunque
+          falte el estado local
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">17 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual cambia la contraseña sólo con código
+          válido e invalida el JWT anterior
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">469 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual el alta de Administradores conserva su
+          respuesta y su protección de Root
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">285 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual oculta la existencia de cuentas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">32 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual no expone detalles internos cuando falla
+          el login
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Extensión móvil sin sustituir el login actual no expone detalles internos cuando falla
+          el registro
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">204 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/perfiles/correoMovil.service.test.js (17 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes conserva el acceso de cuentas anteriores
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes conserva ceros iniciales, persiste hashes y confirma una
+          sola vez
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">23 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes bloquea el código después de cinco intentos incorrectos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">67 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes vence la confirmación a las 72 horas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">13 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes reenviar no extiende el plazo original de la cuenta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">17 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes conserva el código si falla Supabase y no confirma una
+          cuenta eliminada o vencida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">28 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes recupera la condición pendiente desde Supabase si no
+          existe el archivo local
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">13 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes limita el reenvío, mantiene una respuesta genérica e
+          invalida el código anterior
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">29 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes recupera mediante bcrypt y aumenta la versión de sesión
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">667 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes no confirma la recuperación si la base no guarda el
+          cambio y permite reintentar
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">658 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes vence la recuperación a los quince minutos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">24 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes no actúa sobre Root ni Administradores
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes mantiene la cuenta pendiente si falla la entrega
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">13 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes conserva la validación anterior si está desactivado y
+          rechaza el almacenamiento local en producción
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes usa Resend sin devolver el código ni exponer la clave al
+          cliente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes envía con Gmail al destinatario solicitado usando la
+          contraseña de aplicación
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Códigos de correo para Clientes rechaza Gmail sin contraseña de aplicación antes de
+          conectarse
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/perfiles/shared.validation.test.js (30 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa BAD_REQUEST: Código inválido con
+          HTTP 400
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa FORBIDDEN: Confirma tu correo
+          con HTTP 403
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa RATE_LIMITED: Demasiados
+          intentos; inténtalo más tarde con HTTP 429
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa SERVICE_UNAVAILABLE: Reintenta
+          con HTTP 503
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa SERVICE_UNAVAILABLE: Servicio
+          temporalmente no disponible con HTTP 503
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa EMAIL_EXISTS: Ya existe una
+          cuenta con ese correo con HTTP 409
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa EMAIL_EXISTS: Ya existe una
+          cuenta con ese correo con HTTP 409
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa INVALID_CREDENTIALS:
+          Credenciales inválidas con HTTP 401
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa UNAUTHENTICATED: No autenticado
+          con HTTP 401
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa INTERNAL: detalle privado con
+          HTTP 500
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa Error: detalle privado con HTTP
+          500
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación serializa null con HTTP 500
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación conserva los errores de campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación reconstruye HTTP 400 sin perder su código
+          INVALID_EMAIL_CODE
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación reconstruye HTTP 403 sin perder su código
+          EMAIL_NOT_CONFIRMED
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación reconstruye HTTP 503 sin perder su código
+          EMAIL_UNAVAILABLE
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación reconstruye HTTP 503 sin perder su código
+          PASSWORD_UPDATE_FAILED
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación admite gmail.com y normaliza
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación admite outlook.com y normaliza
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación admite yahoo.com y normaliza
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación admite hotmail.com y normaliza
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación admite icloud.com y normaliza
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza undefined con VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza null con VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza con VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza sin-correo con VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza x@otro.com con VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza x@GMAIL.COM.otro.com con
+          VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación rechaza
+          xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@gmail.com
+          con VALIDATION
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Convención compartida de errores y validación el registro incompleto devuelve campos en
+          lugar de fallar al normalizar
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/solicitudes/adminSolicitudes.resolucion.test.js (9 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarResolucion - Validaciones del modal de gestión rechaza la validación si el estado
+          no está dentro de los permitidos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarResolucion - Validaciones del modal de gestión exige comentario obligatorio
+          cuando el estado es 'rechazada'
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarResolucion - Validaciones del modal de gestión permite rechazar cuando se incluye
+          un comentario válido y hace trim de espacios
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarResolucion - Validaciones del modal de gestión bloquea comentarios que superen
+          los 1,000 caracteres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarResolucion - Validaciones del modal de gestión permite exactamente 1,000
+          caracteres en un rechazo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarResolucion - Validaciones del modal de gestión envía comment en null cuando se
+          aprueba o pasa a periodo de prueba, aunque hubiera texto
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? mapearEstadoInicialSelect - Sincronización al abrir el detalle mapea correctamente los
+          textos de estado provenientes del backend
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? calcularEstadoVisualFormulario - Comportamiento visual del formulario muestra el campo
+          de comentario y punto rojo cuando se selecciona rechazada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">25 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? calcularEstadoVisualFormulario - Comportamiento visual del formulario oculta y limpia el
+          comentario y pone punto verde cuando se selecciona aprobada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/solicitudes/document.route.test.js (5 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes/:id/documentos (ruta) está montada: sin archivo responde 400, no
+          404
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">71 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes/:id/documentos (ruta) acepta multipart con campos archivo y tipo,
+          y responde 200
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">35 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes/:id/documentos (ruta) responde 404 si la solicitud no existe en la
+          BD
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">21 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes/:id/documentos (ruta) responde 403 si la solicitud pertenece a
+          otro usuario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">67 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes/:id/documentos (ruta) reemplaza el documento anterior si se vuelve
+          a subir el mismo tipo (retry-replace)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">47 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/solicitudes/documentos.controllers.test.js (4 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? subirDocumento (controlador) responde 400 si no llega archivo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? subirDocumento (controlador) sube el archivo, crea el registro y lo relaciona con la
+          solicitud
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? subirDocumento (controlador) usa INE como tipo por defecto si no se envía tipo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? subirDocumento (controlador) responde 404 y no sube nada si la solicitud no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/solicitudes/documentos.formatos.test.js (19 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE acepta archivos PDF
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">162 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE acepta archivos JPG
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE acepta archivos PNG
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">22 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE rechaza archivos GIF con 415
+          y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">27 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE rechaza archivos WEBP con
+          415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">21 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE rechaza archivos TXT con 415
+          y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">21 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE rechaza archivos DOCX con
+          415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio INE rechaza archivos EXE con 415
+          y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">15 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio acepta archivos PDF
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">57 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio acepta archivos JPG
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">97 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio acepta archivos PNG
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">16 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio rechaza archivos GIF
+          con 415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">27 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio rechaza archivos WEBP
+          con 415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">19 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio rechaza archivos TXT
+          con 415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">14 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio rechaza archivos DOCX
+          con 415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">15 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio Domicilio rechaza archivos EXE
+          con 415 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio tamaño máximo de 2 MB acepta un
+          archivo de exactamente 2 MB
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">50 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? Documentos de identificación y comprobante de domicilio tamaño máximo de 2 MB rechaza 2
+          MB más un byte con 413 y no guarda nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">27 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ?? Documentos de identificación y comprobante de domicilio rechaza un .exe que declara ser
+          application/pdf
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/solicitudes/solicitudAdmin.resolucion.test.js (6 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? resolverSolicitud - Resolución de solicitudes de adopción debe aprobar la solicitud,
+          limpiar comentario_admin, asignar fecha_resolucion y marcar el perro como Adoptado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? resolverSolicitud - Resolución de solicitudes de adopción debe rechazar la solicitud,
+          guardar comentario_admin, asignar fecha_resolucion y NO modificar el estado del perro
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? resolverSolicitud - Resolución de solicitudes de adopción debe pasar a periodo_prueba
+          dejando fecha_resolucion y comentario_admin en null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? resolverSolicitud - Resolución de solicitudes de adopción debe pasar a en_revision
+          normalizando acentos ('En revisión') y dejando fecha_resolucion en null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? resolverSolicitud - Resolución de solicitudes de adopción debe lanzar un error si el
+          estado recibido no existe en el catálogo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? resolverSolicitud - Resolución de solicitudes de adopción debe propagar el error si
+          falla la consulta a estado_solicitud
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/solicitudes/solicitudes.draft.submit.test.js (6 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes y POST /api/solicitudes/:id/enviar crea un borrador nuevo (201)
+          ignorando idUsuario en el body
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">125 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes y POST /api/solicitudes/:id/enviar reutiliza y actualiza un
+          borrador existente (200)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">19 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes y POST /api/solicitudes/:id/enviar responde 409 si ya existe una
+          solicitud enviada/activa para ese perro
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">24 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes y POST /api/solicitudes/:id/enviar responde 400 VALIDATION_ERROR
+          si faltan campos o exceden longitud
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">15 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes y POST /api/solicitudes/:id/enviar rechaza finalizar (400) si
+          faltan documentos INE o DOMICILIO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? POST /api/solicitudes y POST /api/solicitudes/:id/enviar finaliza el borrador (200)
+          cuando respuestas y ambos documentos están completos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">54 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/adminCfdi.controller.test.js (5 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - CFDI administrativo previsualiza validaciones y no guarda archivos antes de la
+          confirmación
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - CFDI administrativo requiere confirmación administrativa del PDF antes de guardar
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - CFDI administrativo guarda los dos archivos y marca atendida la solicitud cuando
+          el correo se envía
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - CFDI administrativo conserva los archivos e informa que el correo puede
+          reintentarse
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - CFDI administrativo reintenta el correo usando los archivos ya guardados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/cfdi.model.test.js (3 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? CfdiModel.descargarParaCliente no descarga un CFDI cuando la solicitud pertenece a otro
+          usuario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? CfdiModel.descargarParaCliente descarga el archivo privado solo para el titular de la
+          donación
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? CfdiModel.descargarParaCliente limpia el PDF privado si falla la carga del XML
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/cfdiCliente.controller.test.js (5 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU49 - cfdiCliente.controller trae los donativos del usuario que viene en el token
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU49 - cfdiCliente.controller CA-01: crea la solicitud si el donativo está validado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU49 - cfdiCliente.controller CA-02: no deja pedir CFDI si el donativo no está validado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU49 - cfdiCliente.controller no deja pedir el CFDI dos veces
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU49 - cfdiCliente.controller rechaza un id inválido sin consultar la base
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/cfdiMail.service.test.js (3 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? enviarCfdiPorCorreo envía ambos archivos adjuntos al correo fiscal usando Resend
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">8 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? enviarCfdiPorCorreo falla explícitamente cuando faltan variables de configuración
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? enviarCfdiPorCorreo reporta error cuando Resend rechaza el envío
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/cfdiXml.service.test.js (6 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarArchivosPdfXml extrae y valida RFC, monto y UUID del CFDI
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarArchivosPdfXml rechaza si falta uno de los archivos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarArchivosPdfXml rechaza archivos que solo aparentan ser PDF
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarArchivosPdfXml rechaza XML con DTD o entidades
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarArchivosPdfXml rechaza un RFC o un monto que no coincide con los datos del
+          donativo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarArchivosPdfXml rechaza XML sin UUID fiscal
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/datosFiscales.model.test.js (2 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? DatosFiscalesModel.crearUrlFirmadaConstancia genera una URL temporal en el bucket
+          privado de constancias
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? DatosFiscalesModel.crearUrlFirmadaConstancia rechaza rutas de constancia que no
+          pertenecen al donante
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/donativo.model.test.js (3 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? DonativoModel.aprobarPendiente cambia a Validado solo si el donativo sigue pendiente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? DonativoModel.aprobarPendiente devuelve null si el donativo ya no está pendiente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? DonativoModel.aprobarPendiente propaga errores de Supabase
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/donativos.hu44.test.js (6 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Lista de donativos pendientes devuelve los donativos pendientes con sus datos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Lista de donativos pendientes devuelve una lista vacía cuando no hay pendientes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Lista de donativos pendientes responde con error 500 cuando falla la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Lista de donativos pendientes aprueba un donativo pendiente y devuelve su nuevo
+          estado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Lista de donativos pendientes rechaza IDs inválidos sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Lista de donativos pendientes informa si el donativo ya no está pendiente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/donativos.routes.test.js (14 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Protección de rutas administrativas rechaza el listado administrativo si no hay
+          sesión
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">101 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Protección de rutas administrativas rechaza a usuarios sin rol administrativo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">44 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Protección de rutas administrativas permite el listado a administradores
+          autenticados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">42 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Protección de rutas administrativas permite que administradores aprueben un
+          donativo pendiente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">16 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Protección de rutas administrativas rechaza la aprobación a usuarios sin sesión o
+          sin rol administrativo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">47 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU44 - Protección de rutas administrativas publica solo el conteo agregado, sin
+          registros individuales
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU53 - Solicitudes CFDI administrativas rechaza la bandeja sin sesión
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">37 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU53 - Solicitudes CFDI administrativas rechaza a usuarios que no son Administrador o
+          Root
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">18 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU53 - Solicitudes CFDI administrativas devuelve la bandeja al administrador sin incluir
+          datos fiscales
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">21 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU53 - Solicitudes CFDI administrativas muestra el detalle solo de la solicitud
+          seleccionada y nunca cambia su estado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">67 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU53 - Solicitudes CFDI administrativas rechaza identificadores inválidos antes de
+          consultar el modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">19 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - Entrega protegida de CFDI rechaza carga y reintento sin una sesión administrativa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">25 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - Entrega protegida de CFDI rechaza a clientes en rutas administrativas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">16 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? HU57 - Entrega protegida de CFDI protege la consulta y descarga de CFDI para clientes
+          autenticados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/donativos/solicitudCfdi.model.test.js (4 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? SolicitudCfdiModel filtra las solicitudes pendientes y omite datos fiscales de la
+          bandeja
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? SolicitudCfdiModel marca la solicitud para revisión cuando faltan datos fiscales
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? SolicitudCfdiModel devuelve datos fiscales y un enlace temporal solo en el detalle
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? SolicitudCfdiModel mantiene el detalle si falla el enlace firmado y lo señala para
+          revisión
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/calendario.controller.test.js (21 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esRangoValido acepta el rango de la vista de mes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esRangoValido rechaza fechas que no existen o con otro formato
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esRangoValido rechaza fechas imposibles sin lanzar error
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esRangoValido rechaza desde mayor que hasta y rangos de más de 62 días
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? lunesDe regresa el lunes de la semana
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? estadoDe Cancelado gana aunque ya haya terminado (con espacios de char())
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? estadoDe Finalizado cuando la fecha fin ya pasó
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? estadoDe Lleno cuando inscritos >= cupo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? estadoDe Disponible si hay lugar o no tiene cupo definido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarPorPrograma cuenta las inscripciones de cada programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? semanasSinCobertura sin programas marca la semana actual y las futuras, no las pasadas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? semanasSinCobertura un programa cancelado no da cobertura
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? semanasSinCobertura un programa de sábado a martes cubre las dos semanas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? semanasSinCobertura un programa que termina el lunes a las 00:00 no cubre esa semana
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? semanasSinCobertura un programa Finalizado de la semana actual sí cuenta como cobertura
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? armarCalendario convierte las filas y pone 0 inscritos si no hay inscripciones
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /admin/programas/calendario 400 si el rango no es válido y no consulta la BD
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /admin/programas/calendario 400 RANGO_INVALIDO con fecha imposible (2026-13-01,
+          2026-12-01)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /admin/programas/calendario 400 RANGO_INVALIDO con fecha imposible (2026-11-01,
+          2026-11-32)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /admin/programas/calendario 200 amplía a semanas completas y calcula estado y
+          cobertura
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET /admin/programas/calendario 500 si falla la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/inscripcion.controller.test.js (31 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "no-es-un-uuid" da 404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "123" da 404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "' OR 1=1 --" da 404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "" da 404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "11111111-2222-3333-4444-55555555555" da
+          404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "11111111-2222-3333-4444-5555555555555" da
+          404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "g1111111-2222-3333-4444-555555555555" da
+          404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id "11111111-2222-3333-4444-555555555555\n" da
+          404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el id " 11111111-2222-3333-4444-555555555555" da
+          404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) idPrograma=undefined da 404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) idPrograma=null da 404 sin llamar al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el UUID 11111111-2222-3333-4444-555555555555 es
+          válido y llega al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el UUID ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB es
+          válido y llega al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el UUID 00000000-0000-0000-0000-000000000000 es
+          válido y llega al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validaciones previas (sin tocar la BD) el UUID ffffffff-ffff-ffff-ffff-ffffffffffff es
+          válido y llega al modelo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa OK da 201 con solo id_programa, fecha_inscripcion y
+          estado (sin codigo)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa PROGRAMA_NO_ENCONTRADO da 404 con su mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa PROGRAMA_NO_DISPONIBLE da 409 con su mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa PROGRAMA_INICIADO da 409 con su mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa YA_INSCRITO da 409 con su mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa SIN_CUPO da 409 con su mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa código desconocido da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa código en minúsculas da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa sin código da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa resultado null da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? respuesta de inscribir_en_programa resultado undefined da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores de la BD 23503 (la cuenta no tiene perfil en usuario) da 401 NO_AUTENTICADO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores de la BD un error con 23505 (ya no es un caso especial) da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores de la BD un error con otro código da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores de la BD un error con código parecido da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores de la BD un error con sin código da 500 ERROR_INTERNO
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/inscripcion.model.test.js (23 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel llama a contar_inscritos con el id del programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel regresa el conteo 0
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel regresa el conteo 1
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel regresa el conteo 10
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel regresa el conteo 9007199254740991
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel convierte un conteo en texto a número
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel nulos: un conteo null se convierte en 0
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel nulos: un conteo undefined se convierte en 0
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosModel estructural: un error lanza una excepción con contexto y código
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosPorProgramasModel regresa un Map con el conteo de cada programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosPorProgramasModel vacíos: con una lista vacía regresa un Map vacío y no
+          llama a la BD
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? contarInscritosPorProgramasModel estructural: si un conteo falla, la función entera
+          falla
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? inscribirEnProgramaModel llama a inscribir_en_programa con supabase Admin y los dos ids
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? inscribirEnProgramaModel regresa data tal cual (OK)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? inscribirEnProgramaModel regresa data tal cual (SIN_CUPO)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? inscribirEnProgramaModel regresa data tal cual (YA_INSCRITO)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? inscribirEnProgramaModel estructural: el error conserva el código, que el controlador
+          usa para decidir
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getIdsProgramasInscritosModel filtra por usuario y por estado Aceptado, y regresa un Set
+          de ids
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getIdsProgramasInscritosModel vacíos: sin inscripciones regresa un Set vacío
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getIdsProgramasInscritosModel estructural: un error lanza una excepción con código
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarInscripcionModel cambia el estado a Pendiente solo de la inscripción activa de
+          ese usuario y programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarInscripcionModel nulos: sin inscripción activa regresa null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarInscripcionModel estructural: un error lanza una excepción con contexto y código
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/programaCreacion.controller.test.js (41 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) crea una jornada utilizando el administrador autenticado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">18 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cuerpo invalido: undefined
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cuerpo invalido: null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cuerpo invalido: undefined
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cuerpo invalido: texto
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo nombre invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo nombre invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo nombre invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo tipo invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo tipo invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo descripcion invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo descripcion invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo ubicacion invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza el campo ubicacion invalido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cupo invalido: 0
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cupo invalido: -5
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cupo invalido: 2.5
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cupo invalido: 15
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un cupo invalido: null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza una jornada con fecha pasada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un fin anterior o igual al inicio: 08:00
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza un fin anterior o igual al inicio: 09:00
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) rechaza fechas inválidas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) solicita confirmación cuando existen empalmes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) permite publicar con empalmes si se confirma explícitamente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? crearPrograma (HU31) responde 500 si falla la inserción
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerTipos devuelve los tipos disponibles
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerTipos responde 500 si falla la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo registra un tipo válido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo permite registrar un tipo sin descripción
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo rechaza datos inválidos: {"nombre":""}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo rechaza datos inválidos: {"nombre":" "}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo rechaza datos inválidos: {"nombre":"aaaaaaaaaaaaaaaaaaaaa"}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo rechaza datos inválidos:
+          {"nombre":"Limpieza","descripcion":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? registrarTipo responde 409 si el tipo ya existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consultarEmpalmes devuelve las jornadas con horarios coincidentes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">20 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consultarEmpalmes responde 400 cuando falta fechaInicio
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consultarEmpalmes responde 400 cuando falta horaInicio
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consultarEmpalmes responde 400 cuando falta fechaFin
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consultarEmpalmes responde 400 cuando falta horaFin
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consultarEmpalmes responde 500 si falla la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/programaDetalle.controller.test.js (11 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) responde 200 con el detalle, el tipo, los inscritos y el
+          estado sin espacios
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">32 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) marca usuario_inscrito si el usuario del token ya está
+          inscrito
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) responde 404 si el id no es un UUID
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) responde 404 si el programa no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) responde 404 si el programa está cancelado y el usuario nunca
+          se inscribió
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) muestra un programa cancelado a quien estuvo inscrito
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) responde 404 si el programa ya terminó y el usuario nunca se
+          inscribió
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDetallePrograma (HU36) responde 500 sin exponer el error si falla la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esConsultaRestringida no restringe un programa disponible que no ha terminado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esConsultaRestringida restringe un programa cancelado o finalizado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? esConsultaRestringida restringe un programa cuya fecha de fin ya pasó
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/programaEdicion.controller.test.js (37 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? funciones auxiliares (HU38) esEditable acepta un programa disponible que no ha
+          finalizado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">14 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? funciones auxiliares (HU38) esEditable rechaza un programa cancelado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? funciones auxiliares (HU38) esEditable rechaza un programa cuya fecha de fin ya pasó
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? funciones auxiliares (HU38) tomarCamposEditables ignora los campos que no se pueden
+          editar
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerParaEditar (HU38) responde 404 sin consultar si el id no es un UUID
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerParaEditar (HU38) responde 404 si el programa no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerParaEditar (HU38) regresa los datos, los inscritos activos y que es editable
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerParaEditar (HU38) marca como no editable un programa cancelado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtenerParaEditar (HU38) responde 500 si falla la consulta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) guarda los cambios ignorando los campos no editables
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) pide avisar a los inscritos si hay inscritos y cambió el horario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">9 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) no pide avisar si hay inscritos pero solo cambió el nombre
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 404 si el id no es un UUID
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 404 si el programa no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 409 si el programa está cancelado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 400 si un campo obligatorio está vacío
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 400 si se cambia el inicio a una fecha pasada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) permite editar un programa ya iniciado si no cambia la fecha de
+          inicio
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 400 si la nueva fecha de fin ya pasó
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 409 si el cupo es menor a los inscritos activos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">8 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) permite un cupo igual a los inscritos activos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 409 OVERLAP sin incluir al propio programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) no marca empalme si el único traslape es el propio programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) guarda con empalme si el admin lo confirma
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 409 si el programa se canceló mientras se editaba
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">12 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) responde 500 si falla el guardado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) permite una edición parcial conservando los demás campos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? editarPrograma (HU38) en una edición parcial sigue validando el valor enviado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) cancela el programa y guarda el motivo sin espacios sobrantes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) cancela sin motivo guardando null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) trata un motivo vacío como null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) responde 400 si el motivo tiene más de 200 caracteres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) responde 400 si el motivo no es texto
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">13 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) responde 404 si el id no es un UUID
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) responde 409 si el programa ya estaba cancelado o finalizó
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) responde 404 si no se canceló porque el programa no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cancelarPrograma (HU38) responde 500 si falla la cancelación
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/tests/voluntarios/voluntariadoClient.controller.test.js (15 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible programa sin límite da cupo_disponible null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible 15 lugares con 8 ocupados da 7
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible lleno (10/10) da 0
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible más ocupados que cupo da 0, nunca negativo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible límites: uno antes de llenarse (9/10) da 1
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible un programa con límite sin conteo en el Map cuenta 0 ocupados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible cupo_maximo 0 da cupo_disponible 0 (no se trata como sin límite)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible solo cuenta los programas que tienen cupo_maximo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible conserva los campos del programa y responde { success: true, data }
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cupo_disponible vacíos: sin programas responde una lista vacía
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? usuario_inscrito se marca según el Set de inscripciones del usuario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores si getCurrentPrograms falla responde 500 con el mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores si getIdsProgramasInscritosModel falla responde 500 con el mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores si contarInscritosPorProgramasModel falla responde 500 con el mensaje
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? errores un error sin mensaje usa el mensaje por defecto
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsDonativos/adminDonativos.test.js (2 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? aprobarDonativoPendiente solicita la aprobación con la sesión web
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? aprobarDonativoPendiente muestra el error de conflicto cuando ya no está pendiente
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsDonativos/adminDonativos.utils.test.js (6 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? formatea los montos en pesos mexicanos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">25 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">? formatea fechas validas</td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">? maneja fechas invalidas</td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? prepara correctamente las cinco columnas de un donativo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? CA-02: muestra un mensaje cuando no hay donativos pendientes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? CA-02: no muestra el mensaje de lista vacia cuando hay pendientes
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsDonativos/adminSolicitudesCfdi.test.js (3 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consulta la bandeja con cookie de sesión y sin caché
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? consulta solo el detalle seleccionado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? rechaza enlaces de constancia que no usan HTTPS
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsDonativos/resumenDonativos.test.js (2 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? obtiene el total agregado del resumen público
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">6 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? rechaza una respuesta que no contiene un conteo válido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsSolicitudes/adminSolicitudes.utils.test.js (3 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? builds a query with only non-default filters and the page
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? formats date-only values without shifting to the previous Mexico City day
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">23 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? maps statuses to labels and badge families
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsCatalogo/adminPerros.fila.test.js (4 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? usa la primera url de multimedia y, si no hay, la imagen de respaldo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? un dato ausente se muestra como no especificado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? el contador describe la ultima consulta y el error ofrece reintentar
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? solo acepta un listado; un error o un cuerpo invalido no se pintan como filas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/web/JS/jsCatalogo/perroForm.test.js (14 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? escaparHtml neutraliza etiquetas y comillas
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cambiosRespectoA sin cambios devuelve objeto vacío
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cambiosRespectoA solo incluye los campos modificados
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cambiosRespectoA ignora espacios sobrantes al comparar
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cambiosRespectoA detecta cambio de raza
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? cambiosRespectoA ficha con campos nulos y formulario vacío no cuenta como cambio
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarFormulario formulario completo es válido
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarFormulario marca los obligatorios vacíos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarFormulario edad negativa o decimal es inválida; medida negativa también
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? tamaño según la altura respeta los límites: <45 Chico, 45-75 Mediano, >75 Grande
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? tamaño según la altura sin altura válida no decide nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? tamaño según la altura devuelve el id del tamaño o null si no existe en el catálogo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? tamaño según la altura sexo con relleno de la BD no cuenta como cambio
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? tamaño según la altura altura mayor a 200 cm es inválida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/src/modules/donativos/http/datosFiscales.controller.test.js (17 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDatosFiscales (HU45) regresa los datos del usuario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDatosFiscales (HU45) regresa 404 si el usuario no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getDatosFiscales (HU45) regresa 500 si falla la base de datos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-01: guarda los datos limpios
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-02: sin body marca todos los campos y no guarda
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-02: rfc mal escrito se marca solo ese campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-02: razon_social mal escrito se marca solo ese campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-02: regimen_fiscal mal escrito se marca solo ese campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-02: codigo_postal mal escrito se marca solo ese campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) CA-02: correo_facturacion mal escrito se marca solo ese campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) regresa 404 si no hay fila de ese usuario
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putDatosFiscales (HU45) regresa 500 si falla la base de datos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putConstancia (HU45) CA-01: guarda el archivo y regresa la ruta
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putConstancia (HU45) rechaza un tipo de archivo que no es PDF, JPG o PNG
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putConstancia (HU45) rechaza un archivo vacío
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putConstancia (HU45) regresa 404 si el usuario no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? putConstancia (HU45) regresa 500 si falla la subida
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/src/modules/donativos/http/donativoCliente.controller.test.js (16 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) CA-01: registra el donativo y regresa su estado
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) la referencia es opcional
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) acepta el tipo de archivo aunque traiga más datos en el header
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza un usuario que no es UUID
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza el monto inválido ''
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza el monto inválido 'abc'
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza el monto inválido '0'
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza el monto inválido '-5'
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza el monto inválido '10.123'
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza el monto inválido '12345678901'
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) rechaza una referencia de más de 200 caracteres
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) CA-02: sin comprobante no registra nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) CA-02: con comprobante vacío no registra nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) CA-02: con un tipo de archivo no permitido no registra nada
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) regresa 404 si el usuario no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? postDonativo (HU46) regresa 500 si falla la base de datos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/src/modules/catalogo/http/catalog.admin.test.js (11 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id sin sesión → 401 y no toca la BD
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">165 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id rol Cliente → 403
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">36 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id admin con datos válidos → 200 y solo manda los campos recibidos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">10 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id datos inválidos → 400 con errores por campo
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">24 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id intentar cambiar estado → 400
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">8 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id perro inexistente → 404
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">7 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id raza/tamaño inexistente (FK) → 400
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">25 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? PATCH /admin/perros/:id error de BD → 500
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">40 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET admin (ficha y opciones) GET /admin/perros/:id exige sesión
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">52 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET admin (ficha y opciones) GET /admin/perros/:id devuelve la ficha o 404
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">19 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? GET admin (ficha y opciones) razas y tamaños para los selects
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">11 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/src/modules/catalogo/http/dogValidation.test.js (10 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro acepta cambios válidos y limpia espacios
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">3 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro rechaza nombre vacío o solo espacios
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro rechaza edad negativa, decimal, vacía o no numérica
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro tamano_medida y descripcion vacíos se guardan como null
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro rechaza tamano_medida negativa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro esterilizado y vacunado deben ser booleanos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro rechaza campos no editables (estado, id_perro, fecha_ingreso)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro raza y tamaño no pueden ir vacíos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro body vacío o no objeto: no hay cambios
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? validarCambiosPerro guarda tal cual un nombre con HTML (el escape se hace al mostrarlo)
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+    </table>
+    <h3>apps/api/src/modules/voluntarios/http/inscritosAdmin.controller.test.js (8 pruebas)</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px">
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? armarListaInscritos junta el nombre y el contacto de cada inscrito
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">5 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? armarListaInscritos regresa null en correo, teléfono y asistencia cuando no hay datos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? armarListaInscritos recorta los espacios del estado del programa
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? armarListaInscritos regresa una lista vacía si no hay inscritos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">0 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getInscritos responde 404 sin consultar la BD si el ID no es un UUID
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">4 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getInscritos responde 404 si el programa no existe
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">2 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getInscritos responde 200 con la lista de inscritos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee">
+          ? getInscritos responde 500 si falla la base de datos
+        </td>
+        <td style="padding: 6px 12px; border-bottom: 1px solid #eee; text-align: right">1 ms</td>
+      </tr>
+    </table>
+  </body>
+</html>

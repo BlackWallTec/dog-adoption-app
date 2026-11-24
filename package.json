@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "catalog:",
+    "@vitest/ui": "catalog:",
     "vite-plus": "catalog:"
   },
   "devEngines": {
