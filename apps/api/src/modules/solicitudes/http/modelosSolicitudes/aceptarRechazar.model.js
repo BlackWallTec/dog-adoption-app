@@ -62,7 +62,7 @@ export async function getData(id) {
 }
 
 //Function to update the databse with the new values
-export async function resolverSolicitud(solicitudId, state, comment) {
+export async function resolverSolicitud(solicitudId, state, comment, puedeEditar = false) {
   const { data: estadosCatalogo, error: errorEstados } = await supabaseAdmin
     .from("estado_solicitud")
     .select("id_estado, descripcion");
