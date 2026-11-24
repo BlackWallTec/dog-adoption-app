@@ -8,12 +8,31 @@ import { check, sleep } from "k6";
 // Estrés:
 // k6 run --summary-mode=full -e BASE_URL=http://localhost:3000 -e TIPO=estres -e RUTA=/api/catalogo/cliente/perros -e DESCRIPCION="lista de perros" apps/api/performance_test/getPerformance.perf.js
 
+// Ejemplos con autenticación:
+/*
+Obtén un token (USA CREDENCIALES VÁLIDAS):
+curl -i -X POST http://BASE_URL/api/perfiles/login \
+  -H "Content-Type: application/json" \
+  -d '{"correo":"correo@gmail.com","contrasena":"contrasena"}'
+
+Usa el token devuelto para la prueba:
+k6 run --summary-mode=full -e 'BASE_URL=http://localhost:3000' -e 'TIPO=carga' -e 'RUTA=/api/perfiles/profile' -e 'DESCRIPCION=perfil del usuario' -e 'TOKEN=TU_TOKEN' apps/api/performance_test/getPerformance.perf.js
+*/
+
 // ─── CONFIGURACIÓN DE LA API ─────────────────────────────────────────────────
 const BASE_URL = __ENV.BASE_URL || "http://10.25.93.2:3000";
 const RUTA = __ENV.RUTA || "/api/catalogo/cliente/perros";
 const TIPO = (__ENV.TIPO || "carga").toLowerCase();
 const DESCRIPCION = __ENV.DESCRIPCION || "lista de perros";
 const VALIDACION = (__ENV.VALIDACION || "no_vacio").toLowerCase();
+const TOKEN = __ENV.TOKEN;
+const headers = TOKEN
+  ? {
+      Cookie: `token=${TOKEN}`,
+      Authorization: `Bearer ${TOKEN}`,
+      "x-client": "mobile",
+    }
+  : {};
 
 const P95 = Number(__ENV.P95 || 200);
 const VUS = Number(__ENV.VUS || 50);
@@ -87,7 +106,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get(`${BASE_URL}${RUTA}`);
+  const res = http.get(`${BASE_URL}${RUTA}`, { headers });
 
   const validaciones = {
     no_vacio: (r) => Boolean(r.body && r.body.length > 0),
