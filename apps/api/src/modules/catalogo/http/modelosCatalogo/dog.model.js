@@ -70,13 +70,14 @@ class DogModel {
             nombre
         ),
         multimedia(
-            id_multimedia,
             url,
             tipo,
-            fecha_subida
         )
     `)
-      .eq("activo", true);
+      .eq("activo", true)
+      .eq("multimedia.tipo", "imagen")
+      .order("fecha_subida", { referencedTable: "multimedia", ascending: true })
+      .limit(1, { foreignTable: "multimedia" });
 
     if (sexo) consulta = consulta.eq("sexo", sexo);
     if (tamano) consulta = consulta.eq("tamano.id_tamano", tamano);

@@ -93,7 +93,7 @@ export const getDogs = async (req, res) => {
     }
       */
     res.status(200).json({
-      syuccess: true,
+      success: true,
       data: perros,
     });
   } catch (error) {
