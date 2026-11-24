@@ -61,3 +61,4 @@ apps/.vitest/
 apps/api/.vitest
 # Estado privado de confirmación móvil (hashes HMAC; nunca se publica).
 apps/api/.local/
+apps/api/performance_test/performance_reports
