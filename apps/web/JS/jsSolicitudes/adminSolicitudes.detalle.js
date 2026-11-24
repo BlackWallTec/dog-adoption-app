@@ -218,6 +218,7 @@ function pintarDetalle(id, detalle) {
 
     const selectEstado = document.getElementById("select-nuevo-estado");
     const textareaComentario = document.getElementById("comentario-resolucion");
+    const checkboxPuedeEditar = document.getElementById("checkbox-puede-editar");
 
     if (selectEstado) {
       const estadoRaw = String(detalle.estado || "").toLowerCase();
@@ -228,6 +229,10 @@ function pintarDetalle(id, detalle) {
 
       if (textareaComentario) {
         textareaComentario.value = detalle.comentario_admin || detalle.comentario || "";
+      }
+
+      if (checkboxPuedeEditar) {
+        checkboxPuedeEditar.checked = detalle.puede_editar === true;
       }
 
       selectEstado.dispatchEvent(new Event("change"));

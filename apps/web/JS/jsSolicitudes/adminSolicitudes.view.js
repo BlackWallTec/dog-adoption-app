@@ -335,6 +335,7 @@ const modalConfirmacion = document.getElementById("modal-confirmacion-estado");
 const iconoConfirmacion = document.getElementById("confirmacion-icono");
 const tituloConfirmacion = document.getElementById("titulo-confirmacion-estado");
 const mensajeConfirmacion = document.getElementById("mensaje-confirmacion-estado");
+const checkboxPuedeEditar = document.getElementById("checkbox-puede-editar");
 
 //It acompanies the color of the state
 function actualizarIndicadorEstado(valor) {
@@ -364,6 +365,7 @@ function sincronizarFormularioEstado() {
   //If it is rejected then you show the comentary box
   if (!esRechazada) {
     textareaComentario.value = "";
+    if (checkboxPuedeEditar) checkboxPuedeEditar.checked = false;
   }
 
   //Recalculates the length of the text that is written
@@ -386,7 +388,7 @@ function validarResolucion() {
   if (estado === "rechazada" && !comentario) {
     return {
       ok: false,
-      mensaje: "Debes escribir un comentario interno cuando la solicitud es rechazada.",
+      mensaje: "Debes escribir un comentario para el cliente cuando la solicitud es rechazada.",
     };
   }
 
@@ -400,6 +402,7 @@ function validarResolucion() {
     datos: {
       state: estado,
       comment: estado === "rechazada" ? comentario : null,
+      puede_editar: estado === "rechazada" && checkboxPuedeEditar?.checked === true,
     },
   };
 }

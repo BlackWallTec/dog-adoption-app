@@ -133,6 +133,8 @@ function mapDetalle(s) {
     folio: `QA-${s.id_solicitud.slice(0, 8).toUpperCase()}`,
     fecha: s.fecha_solicitud,
     estado: normalizeStatus(s.estado?.descripcion),
+    comentario_admin: s.comentario_admin ?? "",
+    puede_editar: s.puede_editar === true,
     adoptante: {
       nombre_completo: `${usuario.nombre || ""} ${usuario.apellidos || ""}`.trim(),
       fecha_nacimiento: usuario.fecha_nacimiento,
@@ -230,7 +232,9 @@ export async function getSolicitudDetalle(req, res) {
 //We send the data to the modal
 export async function adoptionRequest(req, res) {
   const { id } = req.params;
-  const { state, comment } = req.body;
+  const { state, comment, puede_editar } = req.body;
+  // An adoption request can be editable if it has been denied.
+  const puedeEditar = state === "rechazada" && puede_editar === true;
 
   //If an option was not chosen, we send that the decsion was not valid
   if (!["en_revision", "periodo_prueba", "aprobada", "rechazada"].includes(state)) {
@@ -247,6 +251,7 @@ export async function adoptionRequest(req, res) {
       id,
       state,
       state === "rechazada" ? String(comment).trim() : null,
+      puedeEditar,
     );
     //If it is done correctly, then it is sent that everything was done correctly
     return res.status(200).json({ message: "Resolución guardada", data: resultado });

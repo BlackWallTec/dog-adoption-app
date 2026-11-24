@@ -95,13 +95,14 @@ export async function resolverSolicitud(solicitudId, state, comment) {
     fecha_resolucion: ["en_revision", "periodo_prueba"].includes(state)
       ? null
       : new Date().toISOString(),
+    puede_editar: puedeEditar === true,
   };
 
   const { data, error } = await supabaseAdmin
     .from("solicitud_adopcion")
     .update(camposActualizar)
     .eq("id_solicitud", solicitudId)
-    .select("id_solicitud, id_estado, id_perro, comentario_admin, fecha_resolucion")
+    .select("id_solicitud, id_estado, id_perro, comentario_admin, fecha_resolucion, puede_editar")
     .single();
 
   if (error) throw error;
