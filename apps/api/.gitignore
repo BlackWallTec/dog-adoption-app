@@ -3,7 +3,5 @@
 node_modules
 .vitest
 
-tests/voluntarios/pruebas-carga/.env
-tests/voluntarios/pruebas-carga/tokens.json
-
-
+performance_test/Voluntarios/.env
+performance_test/Voluntarios/tokens.json
