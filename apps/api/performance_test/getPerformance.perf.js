@@ -3,10 +3,10 @@ import { check, sleep } from "k6";
 
 // Comandos para correr pruebas, desde la raíz del repo (dog-adoption-app)
 // Carga:
-// k6 run   -e BASE_URL=http://localhost:3000   -e TIPO=carga   -e RUTA=/api/catalogo/cliente/perros   -e DESCRIPCION="lista de perros disponibles"   apps/api/performance_test/getPerformance.test.js
+// k6 run   -e BASE_URL=http://localhost:3000   -e TIPO=carga   -e RUTA=/api/catalogo/cliente/perros   -e DESCRIPCION="lista de perros disponibles"   apps/api/performance_test/getPerformance.perf.js
 //
 // Estrés:
-// k6 run --summary-mode=full -e BASE_URL=http://localhost:3000 -e TIPO=estres -e RUTA=/api/catalogo/cliente/perros -e DESCRIPCION="lista de perros" apps/api/performance_test/getPerformance.test.js
+// k6 run --summary-mode=full -e BASE_URL=http://localhost:3000 -e TIPO=estres -e RUTA=/api/catalogo/cliente/perros -e DESCRIPCION="lista de perros" apps/api/performance_test/getPerformance.perf.js
 
 // ─── CONFIGURACIÓN DE LA API ─────────────────────────────────────────────────
 const BASE_URL = __ENV.BASE_URL || "http://10.25.93.2:3000";
