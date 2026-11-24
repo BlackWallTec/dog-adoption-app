@@ -81,6 +81,7 @@ export const getDogs = async (req, res) => {
 
   try {
     const perros = await dogModel.getDogs(filtros);
+    /*
     for (const perro of perros) {
       const fotos = await multimediaModel.getDogMultimediaById(perro.id_perro);
       console.log("Fotos encontradas:", fotos);
@@ -90,6 +91,7 @@ export const getDogs = async (req, res) => {
         perro.foto_url = "";
       }
     }
+      */
     res.status(200).json({
       syuccess: true,
       data: perros,
