@@ -1,4 +1,10 @@
 .env
 .dir_dump.txt
 node_modules
+<<<<<<< HEAD
 .vitest
+=======
+
+tests/voluntarios/pruebas-carga/.env
+tests/voluntarios/pruebas-carga/tokens.json
+>>>>>>> d77a20b (test(voluntarios): test carga)
