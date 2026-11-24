@@ -95,7 +95,7 @@ export async function resolverSolicitud(solicitudId, state, comment, puedeEditar
     fecha_resolucion: ["en_revision", "periodo_prueba"].includes(state)
       ? null
       : new Date().toISOString(),
-    puede_editar: puedeEditar === true,
+    puede_editar: state === "rechazada" && puedeEditar === true,
   };
 
   const { data, error } = await supabaseAdmin
