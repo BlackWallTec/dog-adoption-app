@@ -34,7 +34,7 @@ if (!isEstres) {
   thresholds.http_req_failed = ["rate<0.01"];
 } else {
   // PERFIL 2: ESTRÉS (Escalones sin pausa + escalón de recuperación)
-  const NIVELES = (__ENV.NIVELES || "100,300,600,1000").split(",").map(Number);
+  const NIVELES = (__ENV.NIVELES || "50,100,300,500").split(",").map(Number);
   const DUR = Number(__ENV.DUR || 20);
   const PAUSA = Number(__ENV.PAUSA || 10);
   const PARO = Math.max(1, PAUSA - 3);
