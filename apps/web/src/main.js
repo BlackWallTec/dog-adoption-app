@@ -1,1 +1,2 @@
-document.querySelector("#app").innerHTML = "<h1>Dog Adoption App</h1>";
+import { rutaDe } from "../JS/rutas.js";
+window.location.replace(rutaDe("login"));
