@@ -24,5 +24,6 @@
         "service": "web"
       }
     }
-  ]
+  ],
+  "redirects": [{ "source": "/", "destination": "/admin/login", "permanent": false }]
 }
