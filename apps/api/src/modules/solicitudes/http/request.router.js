@@ -14,4 +14,8 @@ router.get("/mis-solicitudes", clientController.getMisSolicitudes);
 
 // GET /api/solicitudes/cliente/perfil
 router.get("/perfil", clientController.getProfile);
+
+// GET /api/solicitudes/cliente/:id/edicion
+router.get("/:id/edicion", clientController.getParaEditar);
+
 export default router;

@@ -1,7 +1,7 @@
 import { supabaseAdmin as supabase } from "../../../../config/supabaseClient.js";
 
 // Estados que NO cuentan como solicitud activa
-const ESTADOS_INACTIVOS = ["Rechazada", "Borrador"];
+const ESTADOS_INACTIVOS = ["Borrador"];
 
 class AdoptionRequestModel {
   // Busca el uuid de un estado por su nombre (Lucca lo usará: "Pendiente de Revisión")
@@ -203,6 +203,35 @@ class AdoptionRequestModel {
       throw new Error(`Error al enviar la solicitud: ${error.message}`);
     }
 
+    return data;
+  }
+
+  // Reenvía una solicitud rechazada
+  static async resubmit(idSolicitud, idUsuario, payload, idEstadoPendiente) {
+    const { data, error } = await supabase
+      .from("solicitud_adopcion")
+      .update({
+        ...payload,
+        id_estado: idEstadoPendiente,
+        puede_editar: false,
+        fecha_solicitud: new Date().toISOString(),
+        fecha_resolucion: null,
+        comentario_admin: null, // el comentario del rechazo ya no aplica
+      })
+      .eq("id_solicitud", idSolicitud)
+      .eq("id_usuario", idUsuario)
+      .eq("puede_editar", true) // si se reenvió o el admin quito el permiso no se actualiza
+      .select("id_solicitud")
+      .maybeSingle();
+
+    if (error) {
+      throw new error(`Error al reenviar la solicitud: ${error.message}`);
+    }
+    if (!data) {
+      const conflicto = new Error("Esta solicitud ya no se puede editar.");
+      conflicto.code = "CONFLICT";
+      throw conflicto;
+    }
     return data;
   }
 }

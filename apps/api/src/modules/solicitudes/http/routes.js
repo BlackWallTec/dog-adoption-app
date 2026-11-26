@@ -9,7 +9,7 @@ import {
   adoptionRequest,
 } from "./solicitudAdmin.controller.js";
 import { MAX_SIZE_BYTES, manejarErrorSubida, subirDocumento } from "./documentos.controller.js";
-import { createDraft, submitSolicitud } from "./requestClient.controller.js";
+import { createDraft, resubmitSolicitud, submitSolicitud } from "./requestClient.controller.js";
 import clientRouter from "./request.router.js";
 
 const router = Router();
@@ -35,6 +35,9 @@ router.post(
 
 // Finalizar y enviar solicitud (POST /api/solicitudes/:id/enviar)
 router.post("/:id/enviar", verificarToken, submitSolicitud);
+
+// Reenviar solicitud rechazada ya editada (PUT /api/solicitudes/:id/reenviar)
+router.put("/:id/reenviar", verificarToken, resubmitSolicitud);
 
 // Rutas de la app (cliente): /cliente/activa, /cliente/mis-solicitudes, /cliente/perfil
 router.use("/cliente", verificarToken, clientRouter);
