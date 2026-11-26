@@ -79,8 +79,16 @@ export const getDogs = async (req, res) => {
     });
   }
 
+  // 1. Leer limit y offset con valores seguros por defecto
+  const limit = Math.min(parseInt(req.query.limit) || 10, 20); // Tope máximo de 20
+  const offset = parseInt(req.query.offset) || 0;
+
+  // En Supabase .range(from, to) es INCLUSIVO en ambos extremos
+  const from = offset;
+  const to = offset + limit - 1;
+
   try {
-    const perros = await dogModel.getDogs(filtros);
+    const perros = await dogModel.getDogs(filtros, from, to);
     /*
     for (const perro of perros) {
       const fotos = await multimediaModel.getDogMultimediaById(perro.id_perro);

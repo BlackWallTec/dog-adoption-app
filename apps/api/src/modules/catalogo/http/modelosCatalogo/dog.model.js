@@ -35,7 +35,7 @@ class DogModel {
 
   // HU24: filtros opcionales { sexo, tamano, raza, edad: { min, max }, caracteres }.
   // Sin filtros devuelve exactamente lo mismo que antes.
-  static async getDogs(filtros = {}) {
+  static async getDogs(filtros = {}, from, to) {
     const { sexo, tamano, raza, edad, caracteres } = filtros;
 
     // Si se filtra por una relación, tiene que ser obligatoria (!inner); si no, queda igual que antes.
@@ -79,7 +79,8 @@ class DogModel {
       .eq("activo", true)
       .eq("multimedia.tipo", "imagen")
       .order("fecha_subida", { referencedTable: "multimedia", ascending: true })
-      .limit(1, { foreignTable: "multimedia" });
+      .limit(1, { foreignTable: "multimedia" })
+      .range(from, to);
 
     if (sexo) consulta = consulta.eq("sexo", sexo);
     if (tamano) consulta = consulta.eq("tamano.id_tamano", tamano);

@@ -22,6 +22,7 @@ class FilteredDogsRepositoryImpl
             )
         }
 
+        // Funcion que obtiene los perros filtrados (o sin filtros)
         override suspend fun getDogs(filters: DogFilters): List<DogSummary> {
             val response =
                 api.fetchDogs(
@@ -30,6 +31,8 @@ class FilteredDogsRepositoryImpl
                     raza = filters.razaId,
                     edad = filters.edad,
                     caracter = filters.caracterIds.takeIf { it.isNotEmpty() }?.joinToString(","),
+                    limit = filters.limit,
+                    offset = filters.offset,
                 )
             return response.data.orEmpty().map { it.toDomain() }
         }

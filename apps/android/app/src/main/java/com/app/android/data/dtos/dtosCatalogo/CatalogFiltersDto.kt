@@ -2,6 +2,8 @@ package com.app.android.data.dtos.dtosCatalogo
 
 import com.app.android.domain.entities.entitiesCatalogo.DogSummary
 import com.app.android.domain.entities.entitiesCatalogo.FilterChoice
+import com.app.android.domain.entities.entitiesCatalogo.PaginatedDogs
+import com.app.android.domain.entities.entitiesCatalogo.PaginationMeta
 import com.google.gson.annotations.SerializedName
 
 // get
@@ -21,10 +23,20 @@ data class FilterChoiceDto(
     @SerializedName("nombre") val nombre: String?,
 )
 
-// get perros
+// get perros con metadatos de paginación
 data class FilteredDogsResponseDto(
     @SerializedName("success") val success: Boolean?,
     @SerializedName("data") val data: List<FilteredDogDto>?,
+    @SerializedName("meta") val meta: PaginationMetaDto?, // Metadatos del backend
+)
+
+data class PaginationMetaDto(
+    @SerializedName("current_page") val currentPage: Int?,
+    @SerializedName("per_page") val perPage: Int?,
+    @SerializedName("total") val total: Int?,
+    @SerializedName("last_page") val lastPage: Int?,
+    @SerializedName("has_more") val hasMore: Boolean?,
+    @SerializedName("next_cursor") val nextCursor: String?,
 )
 
 data class FilteredDogDto(
@@ -54,8 +66,6 @@ fun FilterChoiceDto.toDomain(): FilterChoice? {
 }
 
 fun FilteredDogDto.toDomain(): DogSummary {
-    // Busca primero en "foto_url" (si el backend lo envía)
-    // o toma la URL del primer objeto dentro del array "multimedia"
     val primeraImagen = fotoUrl ?: multimedia?.firstOrNull()?.url
 
     return DogSummary(
@@ -65,6 +75,24 @@ fun FilteredDogDto.toDomain(): DogSummary {
         sexo = sexo?.trim() ?: "",
         tamano = tamano?.nombre ?: "",
         raza = raza?.nombre ?: "Sin raza",
-        fotoUrl = primeraImagen?.takeIf { it.isNotBlank() }, // 👈 Asigna la imagen obtenida
+        fotoUrl = primeraImagen?.takeIf { it.isNotBlank() },
     )
 }
+
+// == Mapeo de la metainformación de paginación a Dominio ==
+fun PaginationMetaDto?.toDomain(): PaginationMeta =
+    PaginationMeta(
+        currentPage = this?.currentPage ?: 1,
+        perPage = this?.perPage ?: 10,
+        total = this?.total ?: 0,
+        lastPage = this?.lastPage ?: 1,
+        hasMore = this?.hasMore ?: false,
+        nextCursor = this?.nextCursor,
+    )
+
+// 👈 Mapeo completo de la respuesta de perros paginada a Dominio
+fun FilteredDogsResponseDto.toDomain(): PaginatedDogs =
+    PaginatedDogs(
+        dogs = data.orEmpty().map { it.toDomain() },
+        meta = meta.toDomain(),
+    )
