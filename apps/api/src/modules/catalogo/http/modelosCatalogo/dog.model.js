@@ -70,8 +70,10 @@ class DogModel {
             nombre
         ),
         multimedia(
+            id_multimedia,
             url,
             tipo,
+            fecha_subida
         )
     `)
       .eq("activo", true)
