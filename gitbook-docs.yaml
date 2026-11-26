@@ -1,0 +1,15 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+version: 1
+site:
+  title: Qariño Animal — Documentación Técnica
+  structure:
+    - type: space
+      key: space-tecnica
+      title: Documentación Técnica
+      path: tecnica
+      default: true
+      content:
+        directory: ./docs/public
+        language: es
+openapi:
+  qarino-api: ./docs/public/openapi.yaml
