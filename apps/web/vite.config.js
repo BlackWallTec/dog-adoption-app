@@ -64,6 +64,7 @@ export default defineConfig({
         createVolunteering: r("HTML/htmlVoluntariado/createVolunteering.html"),
         adminCalendario: r("HTML/htmlVoluntariado/adminCalendario.html"),
         adminSolicitudes: r("HTML/htmlSolicitudes/adminSolicitudes.html"),
+        perro: r("HTML/htmlCatalogo/perro.html"),
       },
     },
   },

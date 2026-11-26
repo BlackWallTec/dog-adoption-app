@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conoce a este perro | Qariño Animal</title>
+    <meta property="og:title" content="Un perrito te espera en Qariño Animal" />
+    <meta property="og:description" content="Descarga la app y conoce a tu próximo mejor amigo." />
+    <link rel="icon" type="image/svg+xml" href="/public/favicon.svg" />
+    <style>
+      :root {
+        --bg: #fffaf0;
+        --card: #ffffff;
+        --texto: #2b2b2b;
+        --suave: #6b6b6b;
+        --acento: #ffd049;
+        --acento-texto: #2b2b2b;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1a14;
+          --card: #272419;
+          --texto: #f3f0e6;
+          --suave: #b5b0a0;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--texto);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 420px;
+        background: var(--card);
+        border-radius: 24px;
+        padding: 32px 24px;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      }
+      .emoji {
+        font-size: 64px;
+        line-height: 1;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 16px 0 8px;
+      }
+      p {
+        color: var(--suave);
+        line-height: 1.5;
+        margin: 0 0 24px;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 14px 16px;
+        margin-top: 12px;
+        border: 0;
+        border-radius: 14px;
+        font: inherit;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .btn-primario {
+        background: var(--acento);
+        color: var(--acento-texto);
+      }
+      .btn-secundario {
+        background: transparent;
+        color: var(--texto);
+        border: 2px solid var(--acento);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="emoji" aria-hidden="true">🐶</div>
+      <h1>Un perrito te está esperando</h1>
+
+      <!-- Android: puede abrir la app o descargarla -->
+      <section id="android" hidden>
+        <p>
+          Abre este perfil en la app de Qariño Animal. Si todavía no la tienes, descárgala en un
+          momento.
+        </p>
+        <a id="abrir" class="btn btn-primario" href="#">Abrir en la app</a>
+        <a id="descargar-android" class="btn btn-secundario" href="#">Descargar la app</a>
+      </section>
+
+      <!-- Cualquier otro dispositivo -->
+      <section id="otro" hidden>
+        <p>
+          Para conocer a este perro necesitas la app de Qariño Animal, disponible para Android. Abre
+          este enlace desde tu teléfono Android o descarga la app.
+        </p>
+        <a id="descargar-otro" class="btn btn-primario" href="#">Descargar la app</a>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        // Siempre apunta al APK del último release de GitHub (el archivo debe llamarse app-release.apk).
+        var DESCARGA_URL =
+          "https://github.com/BlackWallTec/dog-adoption-app/releases/latest/download/app-release.apk";
+        var PAQUETE = "com.app.android";
+        var HOST = "dog-adoption-app-mauve.vercel.app";
+
+        var id = new URLSearchParams(location.search).get("id") || "";
+        // Solo caracteres de un id (UUID); evita inyectar nada en la URL del intent.
+        if (!/^[A-Za-z0-9-]{1,64}$/.test(id)) id = "";
+
+        var esAndroid = /android/i.test(navigator.userAgent);
+
+        document.getElementById("descargar-android").href = DESCARGA_URL;
+        document.getElementById("descargar-otro").href = DESCARGA_URL;
+
+        if (!esAndroid) {
+          document.getElementById("otro").hidden = false;
+          return;
+        }
+
+        document.getElementById("android").hidden = false;
+
+        // Intent con package: abre la app si está instalada; si no, va a DESCARGA_URL.
+        var ruta = id ? "/perro?id=" + encodeURIComponent(id) : "/perro";
+        var intent =
+          "intent://" +
+          HOST +
+          ruta +
+          "#Intent;scheme=https;package=" +
+          PAQUETE +
+          ";S.browser_fallback_url=" +
+          encodeURIComponent(DESCARGA_URL) +
+          ";end";
+        document.getElementById("abrir").href = intent;
+      })();
+    </script>
+  </body>
+</html>
