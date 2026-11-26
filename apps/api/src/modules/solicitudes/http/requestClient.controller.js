@@ -588,8 +588,10 @@ export const getParaEditar = async (req, res) => {
 
 export const resubmitSolicitud = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!UUID_REGEX.test(String(id || ""))) {
+    const idUsuario = req.user.uuid;
+    const { id: idSolicitud } = req.params;
+
+    if (!UUID_REGEX.test(String(idSolicitud || ""))) {
       return res
         .status(400)
         .json({ success: false, message: "El identificador de la solicitud no es válido." });
