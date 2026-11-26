@@ -5,6 +5,7 @@ import com.app.android.data.dtos.dtosCatalogo.toDomain
 import com.app.android.domain.entities.entitiesCatalogo.DogFilters
 import com.app.android.domain.entities.entitiesCatalogo.DogSummary
 import com.app.android.domain.entities.entitiesCatalogo.FilterChoices
+import com.app.android.domain.entities.entitiesCatalogo.PaginatedDogs
 import com.app.android.domain.repoInterface.repoIntCatalogo.FilteredDogsRepository
 import javax.inject.Inject
 
@@ -23,7 +24,7 @@ class FilteredDogsRepositoryImpl
         }
 
         // Funcion que obtiene los perros filtrados (o sin filtros)
-        override suspend fun getDogs(filters: DogFilters): List<DogSummary> {
+        override suspend fun getDogs(filters: DogFilters): PaginatedDogs {
             val response =
                 api.fetchDogs(
                     sexo = filters.sexo,
@@ -34,6 +35,6 @@ class FilteredDogsRepositoryImpl
                     limit = filters.limit,
                     offset = filters.offset,
                 )
-            return response.data.orEmpty().map { it.toDomain() }
+            return response.toDomain()
         }
     }

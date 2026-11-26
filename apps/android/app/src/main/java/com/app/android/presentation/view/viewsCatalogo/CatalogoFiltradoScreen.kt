@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -23,18 +27,23 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,6 +67,7 @@ fun CatalogoFiltradoScreen(
     onApplyFilters: (FilterSelection) -> Unit,
     onClearFilters: () -> Unit,
     onRetry: () -> Unit,
+    onLoadNextPage: () -> Unit = {},
     onDogClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     onNavSelect: (Int) -> Unit = {},
@@ -114,6 +124,7 @@ fun CatalogoFiltradoScreen(
                 hayFiltros = !appliedFilters.isEmpty,
                 onClearFilters = onClearFilters,
                 onRetry = onRetry,
+                onLoadNextPage = onLoadNextPage,
                 onDogClick = onDogClick,
                 modifier =
                     Modifier
@@ -149,13 +160,49 @@ private fun CatalogoContenido(
     hayFiltros: Boolean,
     onClearFilters: () -> Unit,
     onRetry: () -> Unit,
+    onLoadNextPage: () -> Unit,
     onDogClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        CatalogUiState.Loading -> {
-            Box(modifier = modifier, contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        CatalogUiState.Loading, CatalogUiState.LoadingMore -> {
+            // Caso 1: Cargando la primera página
+            if (state is CatalogUiState.Loading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                // Caso 2: Cargando la siguiente página
+                Box(
+                    modifier = modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter,
+                ) {
+                    Surface(
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shadowElevation = 6.dp,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                            Text(
+                                text = "Cargando más perritos...",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -194,7 +241,24 @@ private fun CatalogoContenido(
         }
 
         is CatalogUiState.Success -> {
+            val gridState = rememberLazyGridState()
+
+            // Detectar cuando se llega casi al final del Scroll
+            LaunchedEffect(gridState, state.perros.size) {
+                snapshotFlow {
+                    gridState.layoutInfo.visibleItemsInfo
+                        .lastOrNull()
+                        ?.index
+                }.collect { lastVisibleIndex ->
+                    // Si el último elemento visible está entre los últimos 2 de la lista
+                    if (lastVisibleIndex != null && lastVisibleIndex >= state.perros.size - 2) {
+                        onLoadNextPage()
+                    }
+                }
+            }
+
             LazyVerticalGrid(
+                state = gridState,
                 modifier = modifier,
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(vertical = 16.dp),
@@ -204,21 +268,53 @@ private fun CatalogoContenido(
                 items(state.perros, key = { it.id }) { perro ->
                     Card(onClick = { onDogClick(perro.id) }) {
                         Column {
+                            // Imagen del perro
                             AsyncImage(
                                 model = perro.fotoUrl,
                                 contentDescription = perro.nombre,
                                 contentScale = ContentScale.Crop,
+                                placeholder = painterResource(com.app.android.R.drawable.logo),
+                                error = painterResource(com.app.android.R.drawable.logo),
+                                fallback = painterResource(com.app.android.R.drawable.logo),
                                 modifier =
                                     Modifier
                                         .fillMaxWidth()
                                         .height(150.dp),
                             )
+
                             Column(Modifier.padding(12.dp)) {
                                 Text(perro.nombre, fontWeight = FontWeight.Bold)
                                 // perro.edad ya trae la unidad ("1 año", "3 años")
                                 Text(perro.edad)
                                 Text(perro.sexo)
                             }
+                        }
+                    }
+                }
+
+                // Muestra mensaje final si no hay más perros
+                if (!state.hasMore && state.perros.isNotEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = "✨ Llegaste al fin del catálogo ✨",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF795548),
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "¡Anímate y adopta a tu nuevo mejor amigo! 🐶❤️",
+                                fontSize = 13.sp,
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center,
+                            )
                         }
                     }
                 }

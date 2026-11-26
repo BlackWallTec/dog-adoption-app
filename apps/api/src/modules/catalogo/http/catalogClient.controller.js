@@ -115,6 +115,11 @@ export const getDogs = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+      meta: {
+        per_page: limit,
+        current_page: Math.floor(offset / limit) + 1,
+        has_more: perros.length === limit, // Si trajo exactamente 'limit' perros, asume que hay más
+      },
     });
   }
 };

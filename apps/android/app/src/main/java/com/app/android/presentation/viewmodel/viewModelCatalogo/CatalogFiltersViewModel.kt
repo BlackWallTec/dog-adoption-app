@@ -28,6 +28,13 @@ class CatalogFiltersViewModel
         private val _uiState = MutableStateFlow<CatalogUiState>(CatalogUiState.Loading)
         val uiState: StateFlow<CatalogUiState> = _uiState.asStateFlow()
 
+        // === Vals de paginación ==
+        private var currentPage = 1
+        private var pageSize = 6
+        private var hasMore = true
+        private var isFetchingNextPage = false
+        private val accumulatedDogs = mutableListOf<DogCardUi>()
+
         // ya aplicados
         private val _appliedFilters = MutableStateFlow(FilterSelection())
         val appliedFilters: StateFlow<FilterSelection> = _appliedFilters.asStateFlow()
@@ -56,11 +63,20 @@ class CatalogFiltersViewModel
 
         fun onRetry() = reload(withOptions = true)
 
+        /**
+         * Carga inicial o al cambiar/limpiar filtros.
+         * Resetea la paginación y la lista acumulada.
+         */
         private fun reload(withOptions: Boolean = false) {
             // si se hace una busqueda nueva, borrar la pasada
             loadJob?.cancel()
             loadJob =
                 viewModelScope.launch {
+                    // === Reinicia la paginación ===
+                    currentPage = 1
+                    hasMore = true
+                    accumulatedDogs.clear()
+
                     _uiState.value = CatalogUiState.Loading
 
                     if (withOptions) {
@@ -81,12 +97,18 @@ class CatalogFiltersViewModel
                     }
 
                     try {
-                        val perros = getFilteredDogs(toDogFilters(_appliedFilters.value, _options.value))
+                        val filters = toDogFilters(_appliedFilters.value, _options.value, page = currentPage)
+                        val result = getFilteredDogs(filters)
+
+                        val nuevosPerros = result.dogs.map { it.toCardUi() }
+                        accumulatedDogs.addAll(nuevosPerros)
+                        hasMore = result.meta.hasMore || nuevosPerros.size >= pageSize
+
                         _uiState.value =
-                            if (perros.isEmpty()) {
+                            if (accumulatedDogs.isEmpty()) {
                                 CatalogUiState.Empty
                             } else {
-                                CatalogUiState.Success(perros.map { it.toCardUi() })
+                                CatalogUiState.Success(accumulatedDogs.toList())
                             }
                     } catch (e: CancellationException) {
                         throw e
@@ -98,10 +120,45 @@ class CatalogFiltersViewModel
                 }
         }
 
+        /**
+         * Invocar cuando el usuario llega al final del scroll en la lista.
+         * Carga la siguiente página de perros y los agrega a la lista existente.
+         */
+        fun onLoadNextPage() {
+            if (!hasMore || isFetchingNextPage || _uiState.value is CatalogUiState.Loading) return
+
+            isFetchingNextPage = true
+            val nextPage = currentPage + 1
+
+            viewModelScope.launch {
+                try {
+                    val filters = toDogFilters(_appliedFilters.value, _options.value, page = nextPage)
+                    val result = getFilteredDogs(filters)
+                    val nuevosPerros = result.dogs.map { it.toCardUi() }
+
+                    if (nuevosPerros.isNotEmpty()) {
+                        currentPage = nextPage
+                        accumulatedDogs.addAll(nuevosPerros)
+                        hasMore = result.meta.hasMore || nuevosPerros.size >= pageSize
+                        _uiState.value = CatalogUiState.Success(accumulatedDogs.toList())
+                    } else {
+                        hasMore = false
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Si falla la siguiente página, se conserva la lista que ya tenía cargada
+                } finally {
+                    isFetchingNextPage = false
+                }
+            }
+        }
+
         // pasar de seleccion a valores
         private fun toDogFilters(
             seleccion: FilterSelection,
             opciones: FilterOptions,
+            page: Int,
         ): DogFilters =
             DogFilters(
                 sexo = opciones.sexos.getOrNull(seleccion.sexoIndex),
@@ -118,6 +175,8 @@ class CatalogFiltersViewModel
                     seleccion.caracteristicas
                         .sorted()
                         .mapNotNull { idDe(choices.caracteristicas, opciones.caracteristicas.getOrNull(it)) },
+                limit = pageSize,
+                offset = (page - 1) * pageSize, // Aqui calculamos el offset para el backend
             )
 
         private fun idDe(
