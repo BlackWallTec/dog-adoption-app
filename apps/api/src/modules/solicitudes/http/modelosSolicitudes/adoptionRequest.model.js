@@ -225,7 +225,7 @@ class AdoptionRequestModel {
       .maybeSingle();
 
     if (error) {
-      throw new Error(`Error al reenviar la solicitud: ${error.message}`);
+      throw new error(`Error al reenviar la solicitud: ${error.message}`);
     }
     if (!data) {
       const conflicto = new Error("Esta solicitud ya no se puede editar.");
