@@ -34,3 +34,29 @@ el contador queda en 0 y el aviso usa la clase compartida `estado-error` con el 
 La búsqueda, los filtros, la paginación interactiva, el registro, la edición y la
 desactivación se ven en la misma pantalla porque pertenecen a otras historias. HU19B
 solo consume el listado.
+
+## Edición de la ficha (HU19C)
+
+El botón **Editar** de cada fila abre `adminPerros.edit.js`, que permite cambiar todo lo
+que se captura en el alta: nombre, sexo, edad, raza, tamaño, altura, **estado**,
+descripción, esterilizado, vacunado, **características**, **cuidados especiales** y las
+**fotos y videos**.
+
+- `perroForm.js` pinta, lee y valida el formulario y calcula qué cambió (`cambiosRespectoA`
+  para las columnas, `cambiosEnRelaciones` para características y cuidados). No hace
+  peticiones.
+- `perroMultimedia.js` es la galería: muestra lo que el perro ya tiene, **Quitar** marca un
+  archivo para quitar (con **Deshacer**) y **Agregar fotos o videos** suma archivos nuevos
+  (JPG, MP4 y MOV, hasta 20 por edición). Nada se aplica hasta guardar; si se cancela, no se
+  toca nada.
+- Al guardar, los archivos nuevos se suben al bucket `multimedia_perros` con
+  `POST /api/catalogo/admin/solicitar-subida` y luego se manda un solo
+  `PATCH /api/catalogo/admin/perros/:id` con **solo lo que cambió**:
+  columnas de la ficha, `caracteres` y `cuidados` (lista completa de ids),
+  `multimedia_agregar` (`[{ url, tipo }]`) y `multimedia_eliminar` (ids de `multimedia`).
+- Si falla la subida no se guarda nada y el formulario conserva lo capturado; los archivos
+  que ya se subieron no se vuelven a subir al reintentar.
+- Al quitar una foto o video también se borra el archivo del bucket (si ese borrado falla,
+  la ficha se guarda igual y el error queda en la consola del servidor).
+- No se editan `id_perro`, `fecha_ingreso` ni `activo` (este último es de HU27). El orden de
+  las fotos no se puede cambiar: la foto de la lista es la primera que devuelve la consulta.

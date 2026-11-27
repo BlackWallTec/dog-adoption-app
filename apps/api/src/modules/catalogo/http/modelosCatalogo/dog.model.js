@@ -7,6 +7,52 @@ const FICHA_ADMIN = `
   tamano ( id_tamano, nombre )
 `;
 
+// Ficha para el formulario de edición: lo anterior + fotos, carácter y cuidados del perro.
+const FICHA_ADMIN_DETALLE = `
+  ${FICHA_ADMIN},
+  multimedia ( id_multimedia, url, tipo, fecha_subida ),
+  perro_tiene_caracter ( id_caracter ),
+  perro_tiene_cuidado_especial ( id_cuidado )
+`;
+
+// Deja la tabla puente del perro con exactamente `ids`: quita los que sobran y agrega los que
+// faltan, sin borrar y reinsertar los que no cambian. Usa la clave de servicio porque la ruta
+// ya exige sesión de Administrador/Root y la clave anónima no puede borrar en estas tablas.
+async function sincronizarRelacion({ tabla, columna, idPerro, ids, campo }) {
+  const fallo = (error, accion) =>
+    Object.assign(new Error(`Error al ${accion} ${campo}: ${error.message}`), {
+      code: error.code,
+      campo,
+    });
+
+  const { data: actuales, error: errorLectura } = await supabaseAdmin
+    .from(tabla)
+    .select(columna)
+    .eq("id_perro", idPerro);
+  if (errorLectura) throw fallo(errorLectura, "consultar");
+
+  const yaTiene = new Set(actuales.map((fila) => String(fila[columna])));
+  const deseados = new Set(ids);
+  const quitar = [...yaTiene].filter((id) => !deseados.has(id));
+  const agregar = [...deseados].filter((id) => !yaTiene.has(id));
+
+  if (quitar.length > 0) {
+    const { error } = await supabaseAdmin
+      .from(tabla)
+      .delete()
+      .eq("id_perro", idPerro)
+      .in(columna, quitar);
+    if (error) throw fallo(error, "quitar");
+  }
+
+  if (agregar.length > 0) {
+    const { error } = await supabaseAdmin
+      .from(tabla)
+      .insert(agregar.map((id) => ({ id_perro: idPerro, [columna]: id })));
+    if (error) throw fallo(error, "agregar");
+  }
+}
+
 class DogModel {
   // HU24: ids de los perros que tienen TODAS las características pedidas.
   // Nota: PostgREST devuelve máximo 1000 filas por consulta, de sobra para este catálogo.
@@ -141,11 +187,12 @@ class DogModel {
     return data;
   }
 
-  // HU19C: ficha completa para el formulario de edición (admin). Devuelve null si no existe.
+  // HU19C: ficha completa para el formulario de edición (admin), con fotos, carácter y cuidados.
+  // Devuelve null si no existe.
   static async getDogAdminById(id) {
     const { data, error } = await supabaseAdmin
       .from("perro")
-      .select(FICHA_ADMIN)
+      .select(FICHA_ADMIN_DETALLE)
       .eq("id_perro", id)
       .maybeSingle();
 
@@ -174,6 +221,28 @@ class DogModel {
     }
 
     return data;
+  }
+
+  // HU19C: deja al perro con exactamente estas características (ids de `caracter`).
+  static async setDogCaracteres(idPerro, ids) {
+    return sincronizarRelacion({
+      tabla: "perro_tiene_caracter",
+      columna: "id_caracter",
+      campo: "caracteres",
+      idPerro,
+      ids,
+    });
+  }
+
+  // HU19C: deja al perro con exactamente estos cuidados especiales (ids de `cuidado_especial`).
+  static async setDogCuidados(idPerro, ids) {
+    return sincronizarRelacion({
+      tabla: "perro_tiene_cuidado_especial",
+      columna: "id_cuidado",
+      campo: "cuidados",
+      idPerro,
+      ids,
+    });
   }
 
   static async createFullDog(dogData) {

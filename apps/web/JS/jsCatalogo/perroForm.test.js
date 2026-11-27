@@ -1,7 +1,10 @@
 import { describe, expect, test } from "vite-plus/test";
 import {
+  cambiosEnRelaciones,
   cambiosRespectoA,
   escaparHtml,
+  idsDeRelacion,
+  mismoConjunto,
   nombreTamanoPorAltura,
   tamanoPorAltura,
   validarFormulario,
@@ -12,6 +15,7 @@ const perro = {
   sexo: "Hembra",
   edad_aprox: 3,
   tamano_medida: 40,
+  estado: "Disponible",
   descripcion: "Cariñosa",
   esterilizado: true,
   vacunado: false,
@@ -26,6 +30,7 @@ const formIgual = {
   id_raza: "r1",
   id_tamano: "t1",
   tamano_medida: "40",
+  estado: "Disponible",
   descripcion: "Cariñosa",
   esterilizado: true,
   vacunado: false,
@@ -81,8 +86,16 @@ describe("validarFormulario", () => {
       edad_aprox: "",
       id_raza: "",
       id_tamano: "",
+      estado: "",
     });
-    expect(Object.keys(e).sort()).toEqual(["edad_aprox", "id_raza", "id_tamano", "nombre", "sexo"]);
+    expect(Object.keys(e).sort()).toEqual([
+      "edad_aprox",
+      "estado",
+      "id_raza",
+      "id_tamano",
+      "nombre",
+      "sexo",
+    ]);
   });
 
   test("edad negativa o decimal es inválida; medida negativa también", () => {
@@ -126,5 +139,101 @@ describe("tamaño según la altura", () => {
     expect(
       validarFormulario({ ...formIgual, tamano_medida: "21.8" }).tamano_medida,
     ).toBeUndefined();
+  });
+});
+
+// ---- HU19C: estado, características y cuidados ----
+
+const perroCompleto = {
+  ...perro,
+  sexo: "Hembra     ", // CHAR con relleno
+  estado: "Disponible ",
+  perro_tiene_caracter: [{ id_caracter: "c1" }, { id_caracter: "c2" }],
+  perro_tiene_cuidado_especial: [{ id_cuidado: "u1" }],
+};
+
+// Lo que devuelve leerFormulario si el administrador no toca nada.
+const formSinTocar = {
+  ...formIgual,
+  caracteres: ["c1", "c2"],
+  cuidados: ["u1"],
+};
+
+describe("idsDeRelacion / mismoConjunto", () => {
+  test("saca los ids de la relación y tolera datos ausentes", () => {
+    expect(idsDeRelacion(perroCompleto, "perro_tiene_caracter", "id_caracter")).toEqual([
+      "c1",
+      "c2",
+    ]);
+    expect(idsDeRelacion({}, "perro_tiene_caracter", "id_caracter")).toEqual([]);
+    expect(idsDeRelacion(null, "perro_tiene_caracter", "id_caracter")).toEqual([]);
+    expect(
+      idsDeRelacion({ perro_tiene_caracter: [null, {}] }, "perro_tiene_caracter", "id_caracter"),
+    ).toEqual([]);
+  });
+
+  test("compara conjuntos sin importar el orden", () => {
+    expect(mismoConjunto(["a", "b"], ["b", "a"])).toBe(true);
+    expect(mismoConjunto([], [])).toBe(true);
+    expect(mismoConjunto(["a"], ["a", "b"])).toBe(false);
+    expect(mismoConjunto(["a", "b"], ["a", "c"])).toBe(false);
+  });
+});
+
+describe("cambiosRespectoA con estado", () => {
+  test("sin tocar nada no hay cambios (el relleno de la BD no cuenta)", () => {
+    expect(cambiosRespectoA(perroCompleto, formSinTocar)).toEqual({});
+  });
+
+  test("cambiar el estado se manda como cambio", () => {
+    expect(cambiosRespectoA(perroCompleto, { ...formSinTocar, estado: "Adoptado" })).toEqual({
+      estado: "Adoptado",
+    });
+  });
+
+  test("un perro sin estado en la BD manda el estado elegido", () => {
+    expect(cambiosRespectoA({ ...perroCompleto, estado: null }, formSinTocar)).toEqual({
+      estado: "Disponible",
+    });
+  });
+});
+
+describe("cambiosEnRelaciones", () => {
+  test("sin cambios no manda nada", () => {
+    expect(cambiosEnRelaciones(perroCompleto, formSinTocar)).toEqual({});
+    expect(
+      cambiosEnRelaciones(perroCompleto, { ...formSinTocar, caracteres: ["c2", "c1"] }),
+    ).toEqual({});
+  });
+
+  test("manda la lista completa cuando cambia el conjunto", () => {
+    expect(
+      cambiosEnRelaciones(perroCompleto, { ...formSinTocar, caracteres: ["c1", "c3"] }),
+    ).toEqual({ caracteres: ["c1", "c3"] });
+    expect(cambiosEnRelaciones(perroCompleto, { ...formSinTocar, cuidados: ["u1", "u2"] })).toEqual(
+      { cuidados: ["u1", "u2"] },
+    );
+  });
+
+  test("quitar todo es un cambio: se manda la lista vacía", () => {
+    expect(
+      cambiosEnRelaciones(perroCompleto, { ...formSinTocar, caracteres: [], cuidados: [] }),
+    ).toEqual({ caracteres: [], cuidados: [] });
+  });
+
+  test("agregar a un perro que no tenía nada", () => {
+    expect(cambiosEnRelaciones({}, { ...formSinTocar, caracteres: ["c1"], cuidados: [] })).toEqual({
+      caracteres: ["c1"],
+    });
+  });
+
+  test("si el formulario no trae la lista, no toca esa relación", () => {
+    expect(cambiosEnRelaciones(perroCompleto, { nombre: "x" })).toEqual({});
+  });
+});
+
+describe("validarFormulario con estado", () => {
+  test("el estado es obligatorio", () => {
+    expect(validarFormulario({ ...formIgual, estado: "" }).estado).toBe("Selecciona el estado.");
   });
 });

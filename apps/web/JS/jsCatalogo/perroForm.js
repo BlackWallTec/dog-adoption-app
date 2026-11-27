@@ -11,6 +11,7 @@ export function escaparHtml(texto) {
 }
 
 const SEXOS = ["Macho", "Hembra"];
+export const ESTADOS = ["Disponible", "En Tratamiento", "Adoptado"];
 
 function opciones(lista, idKey, seleccionado) {
   return lista
@@ -21,11 +22,55 @@ function opciones(lista, idKey, seleccionado) {
     .join("");
 }
 
+// Ids que el perro ya tiene en una relación (ej. perro_tiene_caracter -> id_caracter).
+export function idsDeRelacion(perro, relacion, columna) {
+  const filas = Array.isArray(perro?.[relacion]) ? perro[relacion] : [];
+  return filas.map((fila) => String(fila?.[columna] ?? "")).filter(Boolean);
+}
+
+// Dos listas de ids son iguales si tienen los mismos elementos, sin importar el orden.
+export function mismoConjunto(a, b) {
+  const x = new Set(a.map(String));
+  const y = new Set(b.map(String));
+  return x.size === y.size && [...x].every((id) => y.has(id));
+}
+
+// Insignias seleccionables (el mismo componente .badge-item del alta). Son botones para que
+// funcionen con teclado; `.active` marca las elegidas.
+function insignias(lista, idKey, textoKey, activos) {
+  if (lista.length === 0) return `<span class="field-hint">No hay opciones registradas.</span>`;
+  const elegidos = new Set(activos.map(String));
+  return lista
+    .map((o) => {
+      const activo = elegidos.has(String(o[idKey]));
+      return `<button type="button" class="badge-item ${activo ? "active" : ""}" data-id="${escaparHtml(o[idKey])}" aria-pressed="${activo}">${escaparHtml(o[textoKey])}</button>`;
+    })
+    .join("");
+}
+
+function conectarInsignias(contenedor) {
+  contenedor.querySelectorAll(".badge-item").forEach((insignia) => {
+    insignia.addEventListener("click", () => {
+      const activo = insignia.classList.toggle("active");
+      insignia.setAttribute("aria-pressed", String(activo));
+    });
+  });
+}
+
 // Pinta el formulario dentro de `contenedor` con los datos de `perro` (o vacío para un alta).
-export function pintarFormulario(contenedor, { perro = {}, razas, tamanos }) {
+// `caracteristicas` ({ id_caracter, nombre }) y `cuidados` ({ id_cuidado, descripcion }) son los
+// catálogos completos; las que el perro ya tiene salen marcadas. La galería de fotos se monta
+// aparte, en el elemento [data-galeria] que deja este formulario.
+export function pintarFormulario(
+  contenedor,
+  { perro = {}, razas, tamanos, caracteristicas = [], cuidados = [] },
+) {
   // La BD guarda sexo como CHAR con relleno ("Macho     "): se limpia para no duplicar opciones.
   const sexoActual = (perro.sexo ?? "").trim();
   const sexos = !sexoActual || SEXOS.includes(sexoActual) ? SEXOS : [...SEXOS, sexoActual];
+  const estadoActual = (perro.estado ?? "").trim();
+  const estados =
+    !estadoActual || ESTADOS.includes(estadoActual) ? ESTADOS : [...ESTADOS, estadoActual];
   contenedor.innerHTML = `
     <div class="form-grid">
       <label class="field">
@@ -68,6 +113,14 @@ export function pintarFormulario(contenedor, { perro = {}, razas, tamanos }) {
         <input name="tamano_medida" type="number" min="0" max="200" step="0.1" value="${escaparHtml(perro.tamano_medida)}" />
         <span class="field-error" data-error-for="tamano_medida"></span>
       </label>
+      <label class="field">
+        <span class="field-label">Estado *</span>
+        <select name="estado">
+          <option value="">Selecciona…</option>
+          ${estados.map((s) => `<option value="${escaparHtml(s)}" ${s === estadoActual ? "selected" : ""}>${escaparHtml(s)}</option>`).join("")}
+        </select>
+        <span class="field-error" data-error-for="estado"></span>
+      </label>
       <label class="field field-wide">
         <span class="field-label">Descripción</span>
         <textarea name="descripcion" rows="4" maxlength="1000">${escaparHtml(perro.descripcion)}</textarea>
@@ -77,13 +130,37 @@ export function pintarFormulario(contenedor, { perro = {}, razas, tamanos }) {
         <label class="check"><input name="esterilizado" type="checkbox" ${perro.esterilizado ? "checked" : ""} /> Esterilizado</label>
         <label class="check"><input name="vacunado" type="checkbox" ${perro.vacunado ? "checked" : ""} /> Vacunado</label>
       </div>
+      <div class="field field-wide">
+        <span class="field-label">Características</span>
+        <div class="badge-selector" data-grupo="caracteres">
+          ${insignias(caracteristicas, "id_caracter", "nombre", idsDeRelacion(perro, "perro_tiene_caracter", "id_caracter"))}
+        </div>
+        <span class="field-error" data-error-for="caracteres"></span>
+      </div>
+      <div class="field field-wide">
+        <span class="field-label">Cuidados especiales</span>
+        <div class="badge-selector" data-grupo="cuidados">
+          ${insignias(cuidados, "id_cuidado", "descripcion", idsDeRelacion(perro, "perro_tiene_cuidado_especial", "id_cuidado"))}
+        </div>
+        <span class="field-error" data-error-for="cuidados"></span>
+      </div>
+      <div class="field field-wide">
+        <span class="field-label">Fotos y videos</span>
+        <div data-galeria></div>
+        <span class="field-error" data-error-for="multimedia_agregar"></span>
+      </div>
     </div>
   `;
+  conectarInsignias(contenedor);
 }
 
 // Lee el formulario como objeto con los nombres de columna del API.
 export function leerFormulario(contenedor) {
   const v = (n) => contenedor.querySelector(`[name="${n}"]`);
+  const elegidos = (grupo) =>
+    [...contenedor.querySelectorAll(`[data-grupo="${grupo}"] .badge-item.active`)].map(
+      (insignia) => insignia.dataset.id,
+    );
   return {
     nombre: v("nombre").value,
     sexo: v("sexo").value,
@@ -91,9 +168,12 @@ export function leerFormulario(contenedor) {
     id_raza: v("id_raza").value,
     id_tamano: v("id_tamano").value,
     tamano_medida: v("tamano_medida").value,
+    estado: v("estado").value,
     descripcion: v("descripcion").value,
     esterilizado: v("esterilizado").checked,
     vacunado: v("vacunado").checked,
+    caracteres: elegidos("caracteres"),
+    cuidados: elegidos("cuidados"),
   };
 }
 
@@ -102,6 +182,7 @@ export function validarFormulario(d) {
   const e = {};
   if (!d.nombre.trim()) e.nombre = "El nombre es obligatorio.";
   if (!d.sexo) e.sexo = "Selecciona el sexo.";
+  if (!d.estado) e.estado = "Selecciona el estado.";
   const edad = d.edad_aprox === "" ? NaN : Number(d.edad_aprox);
   if (!Number.isInteger(edad) || edad < 0 || edad > 30) {
     e.edad_aprox = "Captura un entero entre 0 y 30.";
@@ -123,6 +204,7 @@ export function cambiosRespectoA(perro, d) {
     id_raza: String(perro.raza?.id_raza ?? ""),
     id_tamano: String(perro.tamano?.id_tamano ?? ""),
     tamano_medida: String(perro.tamano_medida ?? ""),
+    estado: perro.estado ?? "",
     descripcion: perro.descripcion ?? "",
     esterilizado: Boolean(perro.esterilizado),
     vacunado: Boolean(perro.vacunado),
@@ -132,6 +214,25 @@ export function cambiosRespectoA(perro, d) {
     const nuevo = typeof d[clave] === "string" ? d[clave].trim() : d[clave];
     const viejo = typeof original[clave] === "string" ? original[clave].trim() : original[clave];
     if (nuevo !== viejo) cambios[clave] = d[clave];
+  }
+  return cambios;
+}
+
+// Características y cuidados que cambiaron. Si cambió el conjunto, se manda la lista COMPLETA
+// de ids elegidos (el servidor deja al perro exactamente con esa lista).
+export function cambiosEnRelaciones(perro, d) {
+  const cambios = {};
+  if (
+    Array.isArray(d.caracteres) &&
+    !mismoConjunto(idsDeRelacion(perro, "perro_tiene_caracter", "id_caracter"), d.caracteres)
+  ) {
+    cambios.caracteres = d.caracteres;
+  }
+  if (
+    Array.isArray(d.cuidados) &&
+    !mismoConjunto(idsDeRelacion(perro, "perro_tiene_cuidado_especial", "id_cuidado"), d.cuidados)
+  ) {
+    cambios.cuidados = d.cuidados;
   }
   return cambios;
 }

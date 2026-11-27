@@ -3,7 +3,7 @@
   border: none;
   border-radius: 16px;
   padding: 0;
-  width: min(640px, 92vw);
+  width: min(720px, 92vw);
   max-height: 90vh;
   margin: auto;
   background: #ffffff;
@@ -171,6 +171,93 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+}
+
+/* Galería de fotos y videos de la ficha */
+.galeria {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.galeria-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.galeria-lista:empty {
+  display: none;
+}
+
+.galeria-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+.galeria-item img,
+.galeria-item video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.galeria-item.quitada img,
+.galeria-item.quitada video {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.galeria-etiqueta {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.galeria-quitar {
+  border: none;
+  border-top: 1px solid var(--md-sys-color-outline-variant);
+  background: #ffffff;
+  color: var(--md-sys-color-error);
+  padding: 8px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.galeria-item.quitada .galeria-quitar {
+  color: var(--md-sys-color-secondary);
+}
+
+.galeria-vacia,
+.galeria-aviso {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.galeria-aviso {
+  color: var(--md-sys-color-error);
+}
+
+.galeria-agregar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .toast {
