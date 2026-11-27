@@ -1,10 +1,16 @@
-// Archivo generado para el rediseño Qariño Animal. Ver CONTRATO.md.
 package com.app.android.presentation.designsystem.templates
 
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.app.android.presentation.designsystem.internal.QPlaceholder
+import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.designsystem.atoms.QButton
+import com.app.android.presentation.designsystem.atoms.QCard
+import com.app.android.presentation.designsystem.atoms.QText
+import com.app.android.presentation.designsystem.molecules.QStepIndicator
+import com.app.android.presentation.designsystem.organisms.QTopBar
+import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
  * Pasos del formulario de solicitud (Requisitos → Confirmar): QScreenScaffold + QTopBar con flecha +
@@ -13,7 +19,6 @@ import com.app.android.presentation.designsystem.internal.QPlaceholder
  *
  * Dueño: P4 (Templates).
  * Usa (obligatorio): QScreenScaffold, QTopBar, QStepIndicator, QButton.
- * TODO(P4): reemplazar QPlaceholder por la implementación real. NO cambiar la firma.
  */
 @Composable
 fun QFormStepTemplate(
@@ -29,5 +34,72 @@ fun QFormStepTemplate(
     isLoading: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    QPlaceholder("QFormStepTemplate", modifier, content)
+    QScreenScaffold(
+        modifier = modifier,
+        topBar = {
+            QTopBar(
+                title = title,
+                subtitle = subtitle,
+                onBack = onBack,
+            )
+        },
+        stickyAction = {
+            QButton(
+                text = primaryActionText,
+                onClick = onPrimaryAction,
+                enabled = primaryActionEnabled,
+                isLoading = isLoading,
+                fillMaxWidth = true,
+            )
+        },
+    ) {
+        QStepIndicator(currentStep = currentStep, totalSteps = totalSteps)
+        content()
+    }
+}
+
+@Composable
+private fun PreviewStep(
+    currentStep: Int,
+    primaryActionText: String = "Continuar",
+    primaryActionEnabled: Boolean = true,
+    isLoading: Boolean = false,
+) {
+    QarinoTheme {
+        QFormStepTemplate(
+            title = "Solicitud de adopción",
+            subtitle = "Datos generales",
+            currentStep = currentStep,
+            totalSteps = 6,
+            onBack = {},
+            primaryActionText = primaryActionText,
+            onPrimaryAction = {},
+            primaryActionEnabled = primaryActionEnabled,
+            isLoading = isLoading,
+        ) {
+            repeat(3) { index ->
+                QCard(modifier = Modifier.fillMaxWidth()) {
+                    QText(text = "Campo de ejemplo ${index + 1}")
+                }
+            }
+        }
+    }
+}
+
+@Preview(name = "Paso normal", showBackground = true, heightDp = 800)
+@Composable
+private fun QFormStepTemplatePreview() {
+    PreviewStep(currentStep = 2)
+}
+
+@Preview(name = "Botón deshabilitado", showBackground = true, heightDp = 800)
+@Composable
+private fun QFormStepTemplateDisabledPreview() {
+    PreviewStep(currentStep = 3, primaryActionEnabled = false)
+}
+
+@Preview(name = "Enviando (cargando)", showBackground = true, heightDp = 800)
+@Composable
+private fun QFormStepTemplateLoadingPreview() {
+    PreviewStep(currentStep = 6, primaryActionText = "Enviar solicitud", isLoading = true)
 }
