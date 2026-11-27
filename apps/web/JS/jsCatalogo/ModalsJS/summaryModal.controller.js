@@ -1,6 +1,7 @@
 // summaryModalJS/summaryModal.controller.js
 import * as apiService from "./Api.service.js";
 import { mostrarErrorFeedback } from "../../utils/feedbackHelper.js";
+import imageCompression from "browser-image-compression";
 
 export function initDogSummaryModal({ onBack, onSuccess, onError }) {
   // 1. Centralización de referencias DOM (Estilo @export)
@@ -201,14 +202,17 @@ export function initDogSummaryModal({ onBack, onSuccess, onError }) {
 
       if (currentData.archivos_multimedia && currentData.archivos_multimedia.length > 0) {
         const idPerroTemporal = `registro-${Date.now()}`;
+
         for (const file of currentData.archivos_multimedia) {
+          const archivoParaSubir = await comprimirImagen(file);
+
           const { uploadUrl, publicUrl } = await apiService.obtenerUrlFirmadaSupabase(
             idPerroTemporal,
-            file.name,
-            file.type,
+            archivoParaSubir.name,
+            archivoParaSubir.type,
           );
 
-          await apiService.subirArchivoASupabase(uploadUrl, file);
+          await apiService.subirArchivoASupabase(uploadUrl, archivoParaSubir);
           urlsSubidas.push(publicUrl);
         }
       }
@@ -242,6 +246,31 @@ export function initDogSummaryModal({ onBack, onSuccess, onError }) {
     close,
     ui,
   };
+}
+
+// Funcion de compresion de imagenes para que vaya super macro rapido fiuuuum
+async function comprimirImagen(archivoOriginal) {
+  if (!archivoOriginal.type.startsWith("image/")) {
+    return archivoOriginal;
+  }
+
+  const opciones = {
+    maxSizeMB: 0.8,
+    maxWidthOrHeight: 1600,
+    useWebWorker: true,
+    fileType: "image/webp",
+    initialQuality: 0.8,
+  };
+
+  try {
+    const archivoComprimido = await imageCompression(archivoOriginal, opciones);
+    const nuevoNombre = archivoOriginal.name.replace(/\.[^/.]+$/, "") + ".webp";
+
+    return new File([archivoComprimido], nuevoNombre, { type: "image/webp" });
+  } catch (error) {
+    console.warn("No se pudo comprimir la imagen; se subirá la original:", error);
+    return archivoOriginal;
+  }
 }
 
 function mostrarRecursoMultimedia(recurso, ui) {
