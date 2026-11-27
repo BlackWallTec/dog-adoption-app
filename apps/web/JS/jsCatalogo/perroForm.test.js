@@ -3,6 +3,7 @@ import {
   cambiosEnRelaciones,
   cambiosRespectoA,
   escaparHtml,
+  hayCambios,
   idsDeRelacion,
   mismoConjunto,
   nombreTamanoPorAltura,
@@ -267,5 +268,32 @@ describe("cambiosEnRelaciones", () => {
 describe("validarFormulario con estado", () => {
   test("el estado es obligatorio", () => {
     expect(validarFormulario({ ...formIgual, estado: "" }).estado).toBe("Selecciona el estado.");
+  });
+});
+
+describe("hayCambios (resalta el botón Guardar cambios)", () => {
+  test("sin tocar nada no hay cambios", () => {
+    expect(hayCambios(perroCompleto, formSinTocar)).toBe(false);
+    expect(hayCambios(perroCompleto, formSinTocar, { eliminar: [], nuevos: [] })).toBe(false);
+  });
+
+  test("cambiar un dato, el estado, el texto de cuidados o las características", () => {
+    expect(hayCambios(perroCompleto, { ...formSinTocar, nombre: "Lunita" })).toBe(true);
+    expect(hayCambios(perroCompleto, { ...formSinTocar, estado: "Adoptado" })).toBe(true);
+    expect(hayCambios(perroCompleto, { ...formSinTocar, cuidado_especial: "Dieta." })).toBe(true);
+    expect(hayCambios(perroCompleto, { ...formSinTocar, caracteres: ["c1"] })).toBe(true);
+  });
+
+  test("marcar una foto para quitar o agregar una nueva", () => {
+    expect(hayCambios(perroCompleto, formSinTocar, { eliminar: ["m1"], nuevos: [] })).toBe(true);
+    expect(
+      hayCambios(perroCompleto, formSinTocar, { eliminar: [], nuevos: [{ name: "a.jpg" }] }),
+    ).toBe(true);
+  });
+
+  test("si el administrador deshace lo que cambió, vuelve a no haber cambios", () => {
+    const editado = { ...formSinTocar, nombre: "Lunita" };
+    expect(hayCambios(perroCompleto, editado)).toBe(true);
+    expect(hayCambios(perroCompleto, { ...editado, nombre: "Luna" })).toBe(false);
   });
 });

@@ -232,6 +232,18 @@ export function cambiosEnRelaciones(perro, d) {
   return cambios;
 }
 
+// ¿Hay algo que guardar? (datos, características o fotos). Sirve para resaltar el botón
+// "Guardar cambios" en cuanto el administrador modifica algo. `fotos` es lo que devuelve
+// la galería: { eliminar: [ids], nuevos: [File] }.
+export function hayCambios(perro, datos, fotos = {}) {
+  return (
+    Object.keys(cambiosRespectoA(perro, datos)).length > 0 ||
+    Object.keys(cambiosEnRelaciones(perro, datos)).length > 0 ||
+    (fotos.eliminar?.length ?? 0) > 0 ||
+    (fotos.nuevos?.length ?? 0) > 0
+  );
+}
+
 export function mostrarErrores(contenedor, errores = {}) {
   contenedor.querySelectorAll("[data-error-for]").forEach((el) => {
     const msg = errores[el.dataset.errorFor] || "";

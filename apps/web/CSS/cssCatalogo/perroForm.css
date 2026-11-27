@@ -161,6 +161,45 @@
   cursor: not-allowed;
 }
 
+/* Botón "Guardar cambios" del diálogo.
+   El .btn-primary global usa --md-sys-color-on-secondary, que no está definido, y el texto
+   caía al gris heredado sobre el azul: aquí se fija blanco y en negritas. */
+.dialog-footer .btn-primary {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+/* Con cambios sin guardar: un azul más fuerte, con brillo y un leve levantado */
+.dialog-footer .btn-primary.con-cambios {
+  background-color: #0b4a9e;
+  box-shadow: 0 6px 16px rgba(11, 74, 158, 0.45);
+  transform: translateY(-1px);
+}
+
+.dialog-footer .btn-primary.con-cambios:hover:not(:disabled) {
+  background-color: #083a80;
+  opacity: 1;
+}
+
+.dialog-footer .btn-primary:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary-container);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog-footer .btn-primary {
+    transition: none;
+  }
+}
+
 .btn-secundario {
   background: none;
   border: 1.5px solid var(--md-sys-color-secondary);

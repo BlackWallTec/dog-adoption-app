@@ -4,6 +4,7 @@ import {
   cambiosEnRelaciones,
   cambiosRespectoA,
   conectarAlturaYTamano,
+  hayCambios,
   leerFormulario,
   mostrarErrores,
   pintarFormulario,
@@ -63,10 +64,22 @@ function liberarGaleria() {
   galeria = null;
 }
 
+// El botón "Guardar cambios" toma un azul más fuerte en cuanto hay algo que guardar
+// (clase `con-cambios`) y vuelve al azul normal si todo queda como estaba.
+function actualizarBotonGuardar() {
+  const conCambios =
+    Boolean(perroActual && galeria) &&
+    hayCambios(perroActual, leerFormulario(cuerpo), galeria.obtenerCambios());
+  btnGuardar.classList.toggle("con-cambios", conCambios);
+  btnGuardar.title = conCambios ? "Hay cambios sin guardar" : "";
+}
+
 function estadoCargando() {
   liberarGaleria();
   cuerpo.innerHTML = `<p class="dialog-status">Cargando ficha…</p>`;
   btnGuardar.disabled = true;
+  btnGuardar.classList.remove("con-cambios");
+  btnGuardar.title = "";
   mostrarAviso("");
 }
 
@@ -113,6 +126,7 @@ async function cargar() {
       multimedia: perroActual.multimedia,
     });
     btnGuardar.disabled = false;
+    actualizarBotonGuardar();
   } catch {
     estadoError("No se pudo conectar con el servidor. Revisa tu conexión.");
   }
@@ -227,8 +241,18 @@ dialogo?.addEventListener("cancel", (evento) => {
 // Al cerrar (guardar, cancelar o Esc) se liberan las vistas previas de archivos nuevos.
 // "close" llega de forma asíncrona: si el diálogo ya se volvió a abrir, no se toca la galería nueva.
 dialogo?.addEventListener("close", () => {
-  if (!dialogo.open) liberarGaleria();
+  if (!dialogo.open) {
+    liberarGaleria();
+    btnGuardar.classList.remove("con-cambios");
+  }
 });
+
+// Cualquier edición (teclear, elegir, activar una característica, tocar la galería o soltar
+// archivos) vuelve a evaluar si hay cambios. Los manejadores del propio control corren antes
+// que estos, así que el estado ya está actualizado al llegar aquí.
+for (const evento of ["input", "change", "click", "drop"]) {
+  cuerpo?.addEventListener(evento, actualizarBotonGuardar);
+}
 
 // Punto de entrada: lo llama la lista al presionar "Editar".
 export function abrirEdicion(id, callbackAlGuardar) {
