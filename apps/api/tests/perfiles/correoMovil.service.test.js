@@ -9,6 +9,8 @@ vi.mock("nodemailer", () => ({ default: { createTransport: vi.fn() } }));
 vi.mock("../../src/config/supabaseClient.js", () => ({ supabaseAdmin: {}, supabase: {} }));
 import {
   crearCorreoMovil,
+  crearCorreoMovilSupabase,
+  correoMovilHabilitado,
   enviarCodigoCorreo,
   verificarCorreoMovil,
   servicioCorreoMovil,
@@ -163,7 +165,7 @@ describe("Códigos de correo para Clientes", () => {
     for (const rol of ["Root", "Administrador"]) {
       usuarios.fetchByEmail.mockResolvedValue({ id_usuario: rol, rol });
       await servicio.solicitar(correo, "recuperar");
-      expect(verificarCorreoMovil({ uuid: rol, rol })).toBe(true);
+      await expect(verificarCorreoMovil({ uuid: rol, rol })).resolves.toBe(true);
     }
     expect(enviar).not.toHaveBeenCalled();
   });
@@ -172,12 +174,66 @@ describe("Códigos de correo para Clientes", () => {
     expect(await servicio.registrar("cliente", correo)).toEqual({ enviado: false });
     expect(servicio.estado("cliente").confirmado).toBe(false);
   });
-  it("conserva la validación anterior si está desactivado y rechaza el almacenamiento local en producción", () => {
+  it("conserva la validación anterior si está desactivado y rechaza el almacenamiento local en producción", async () => {
     vi.stubEnv("CORREO_MOVIL_MODO", "desactivado");
-    expect(verificarCorreoMovil({ uuid: "cliente", rol: "Cliente" })).toBe(true);
+    await expect(verificarCorreoMovil({ uuid: "cliente", rol: "Cliente" })).resolves.toBe(true);
     vi.stubEnv("CORREO_MOVIL_MODO", "local");
     vi.stubEnv("NODE_ENV", "production");
     expect(() => servicioCorreoMovil()).toThrow("producción");
+  });
+  it("permite seleccionar el almacenamiento Supabase en producción", () => {
+    vi.stubEnv("CORREO_MOVIL_MODO", "supabase");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("JWT_SECRET", "secreto-de-prueba");
+    expect(correoMovilHabilitado()).toBe(true);
+    expect(() => servicioCorreoMovil()).not.toThrow();
+  });
+  it("persiste un HMAC en Supabase antes de enviar el código", async () => {
+    const emitirCodigoCorreoMovil = vi.fn().mockResolvedValue("sent");
+    const enviarCodigo = vi.fn().mockResolvedValue(undefined);
+    const servicioSupabase = crearCorreoMovilSupabase({
+      usuarios: { emitirCodigoCorreoMovil },
+      enviar: enviarCodigo,
+      secreto: "secreto-de-prueba",
+      codigo: () => "012345",
+    });
+
+    await expect(servicioSupabase.registrar("cliente", correo)).resolves.toEqual({
+      enviado: true,
+    });
+    expect(emitirCodigoCorreoMovil).toHaveBeenCalledWith(
+      "cliente",
+      "confirmar",
+      expect.stringMatching(/^[a-f0-9]{64}$/),
+    );
+    expect(emitirCodigoCorreoMovil.mock.calls[0][2]).not.toBe("012345");
+    expect(enviarCodigo).toHaveBeenCalledWith({
+      para: correo,
+      codigo: "012345",
+      tipo: "confirmar",
+    });
+  });
+  it("valida el código Supabase y cambia la contraseña dentro de la operación atómica", async () => {
+    const consumirCodigoCorreoMovil = vi.fn().mockResolvedValue("ok");
+    const servicioSupabase = crearCorreoMovilSupabase({
+      usuarios: {
+        fetchByEmail: vi.fn().mockResolvedValue({ id_usuario: "cliente", rol: "Cliente" }),
+        consumirCodigoCorreoMovil,
+      },
+      enviar,
+      secreto: "secreto-de-prueba",
+    });
+
+    await expect(
+      servicioSupabase.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234"),
+    ).resolves.toEqual({ ok: true });
+    expect(consumirCodigoCorreoMovil).toHaveBeenCalledWith(
+      "cliente",
+      "recuperar",
+      expect.stringMatching(/^[a-f0-9]{64}$/),
+      expect.stringMatching(/^\$2[aby]\$/),
+    );
+    expect(consumirCodigoCorreoMovil.mock.calls[0][2]).not.toBe("012345");
   });
   it("usa Resend sin devolver el código ni exponer la clave al cliente", async () => {
     vi.stubEnv("RESEND_API_KEY", "clave-ficticia");
