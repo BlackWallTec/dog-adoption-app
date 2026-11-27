@@ -36,7 +36,8 @@ const patrones = {
   nombre: /^[\p{L}\p{M} '-]{1,100}$/u,
   apellidos: /^[\p{L}\p{M} '-]{1,150}$/u,
   calle: /^[\p{L}\p{M}\p{N} .,'/#-]{1,250}$/u,
-  correo: /^(?=.{1,254}$)[^\s@]+@(gmail\.com|outlook\.com|yahoo\.com|hotmail\.com|icloud\.com)$/i,
+  // Cualquier dominio con formato válido: usuario@dominio.tld (máx. 254 caracteres en total).
+  correo: /^(?=.{1,254}$)[^\s@]{1,64}@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i,
   contrasena: /^.{8,72}$/,
   telefono: /^(\d{10}|\d{12})$/,
   numero_exterior: /^\d{1,9}$/,
@@ -46,12 +47,12 @@ const patrones = {
   id_codigo_postal: /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
 };
 
-// Registro y correo usan el mismo formato y los mismos dominios permitidos.
+// Registro y correo usan el mismo formato. Android repite esta regla en CorreoUseCase.kt.
 export function validateEmail(correo) {
   const normalizado = typeof correo === "string" ? correo.trim().toLowerCase() : "";
   if (!patrones.correo.test(normalizado))
     throw new VALIDATION("Error de validación en los datos", {
-      correo: "Ingresa un correo válido de Gmail, Outlook, Yahoo, Hotmail o iCloud.",
+      correo: "Ingresa un correo válido, por ejemplo nombre@correo.com.",
     });
   return normalizado;
 }

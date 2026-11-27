@@ -159,7 +159,7 @@ describe("Controlador de correo y middleware compartido", () => {
     expect(dobles.solicitar).toHaveBeenCalledWith("prueba@gmail.com", "recuperar");
     expect(r.headers["cache-control"]).toBe("no-store");
   });
-  it.each([undefined, "invalido", "prueba@otro.com"])(
+  it.each([undefined, "invalido", "prueba@sin-punto"])(
     "rechaza el correo %s con la validación compartida",
     async (correo) => {
       const r = await request(app).post("/correo/recuperar").send({ correo });

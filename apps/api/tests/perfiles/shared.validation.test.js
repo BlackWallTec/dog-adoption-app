@@ -72,19 +72,29 @@ describe("Convención compartida de errores y validación", () => {
       body: { error: "Reintenta", code },
     });
   });
-  it.each(["gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "icloud.com"])(
-    "admite %s y normaliza",
-    (dominio) => {
-      expect(validateEmail(` Prueba@${dominio.toUpperCase()} `)).toBe(`prueba@${dominio}`);
-    },
-  );
+  it.each([
+    "gmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "hotmail.com",
+    "icloud.com",
+    "tec.mx",
+    "mi-empresa.org",
+    "correo.unam.mx",
+  ])("admite %s y normaliza", (dominio) => {
+    expect(validateEmail(` Prueba@${dominio.toUpperCase()} `)).toBe(`prueba@${dominio}`);
+  });
   it.each([
     undefined,
     null,
     "",
     "sin-correo",
-    "x@otro.com",
-    "x@GMAIL.COM.otro.com",
+    "x@sin-punto",
+    "x@.com",
+    "x@dominio.c",
+    "x@@gmail.com",
+    "a b@gmail.com",
+    "x@-guion.com",
     `${"x".repeat(250)}@gmail.com`,
   ])("rechaza %s con VALIDATION", (correo) => {
     expect(() => validateEmail(correo)).toThrow(VALIDATION);

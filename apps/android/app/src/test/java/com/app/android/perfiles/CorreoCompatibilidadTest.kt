@@ -91,8 +91,8 @@ class CorreoCompatibilidadTest {
         assertEquals("sesion-anterior", tokens.valor)
         assertEquals(0, tokens.borrados)
     }
-    @Test fun correoAdmiteLosCincoDominiosYNormalizaAntesDeLlamarAlRepo() = runBlocking {
-        for (dominio in listOf("gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "icloud.com")) {
+    @Test fun correoAdmiteCualquierDominioValidoYNormalizaAntesDeLlamarAlRepo() = runBlocking {
+        for (dominio in listOf("gmail.com", "outlook.com", "yahoo.com", "hotmail.com", "icloud.com", "tec.mx", "mi-empresa.org")) {
             val api = Api()
             val caso = CorreoUseCase(UsuarioRepositoryImpl(api, Tokens(), Gson()))
             val correo = " Prueba@${dominio.uppercase()} "
@@ -103,11 +103,11 @@ class CorreoCompatibilidadTest {
             assertEquals(List(4) { "prueba@$dominio" }, api.correos)
         }
     }
-    @Test fun correoRechazaOtrosDominiosYDatosInvalidosSinHacerPeticiones() = runBlocking {
+    @Test fun correoRechazaFormatosInvalidosSinHacerPeticiones() = runBlocking {
         val api = Api()
         val caso = CorreoUseCase(UsuarioRepositoryImpl(api, Tokens(), Gson()))
-        for (correo in listOf("", "sin-correo", "prueba@otro.com", "prueba@sub.gmail.com",
-            "prueba@gmail.com.otro.com", "prueba@@gmail.com", "a b@gmail.com", "a\nb@gmail.com",
+        for (correo in listOf("", "sin-correo", "prueba@sin-punto", "prueba@.com",
+            "prueba@dominio.c", "prueba@@gmail.com", "a b@gmail.com", "a\nb@gmail.com",
             "x".repeat(246) + "@gmail.com")) {
             assertTrue(caso.solicitar(correo, false).isFailure)
             assertTrue(caso.solicitar(correo, true).isFailure)
