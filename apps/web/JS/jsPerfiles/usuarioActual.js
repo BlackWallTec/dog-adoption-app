@@ -1,9 +1,10 @@
+import { UNAUTHENTICATED } from "@qarino/shared/errores.js";
 import { perfilesApi } from "./perfiles.api.js";
 
-const MUESTRA = Object.freeze({
-  nombre: "Ana",
-  apellidos: "Martínez",
-  rol: "Administrador",
+const VACIO = Object.freeze({
+  nombre: "",
+  apellidos: "",
+  rol: "",
 });
 
 /** @param {unknown} valor */
@@ -11,21 +12,38 @@ function limpio(valor) {
   return typeof valor === "string" ? valor.trim() : "";
 }
 
-/** Nombre y rol de quien tiene la sesión. Si /me o /profile fallan, queda el de muestra. */
-export async function usuarioActual() {
+/**
+ * Nombre y rol de la sesión.
+ * Un 401 se propaga: Inicio manda al login y el topbar no inventa una persona.
+ * Otro fallo deja el nombre vacío.
+ * @param {{
+ *   getSession: () => Promise<{ user?: { rol?: string } }>,
+ *   getProfile: () => Promise<{ profile?: { nombre?: string, apellidos?: string } }>,
+ * }} [api]
+ */
+export async function usuarioActual(api = perfilesApi) {
+  let sesion;
   try {
-    const [{ user }, { profile }] = await Promise.all([
-      perfilesApi.getSession(),
-      perfilesApi.getProfile(),
-    ]);
-    return {
-      nombre: limpio(profile?.nombre) || MUESTRA.nombre,
-      apellidos: limpio(profile?.apellidos),
-      rol: limpio(user?.rol) || MUESTRA.rol,
-    };
-  } catch {
-    return { ...MUESTRA };
+    sesion = await api.getSession();
+  } catch (error) {
+    if (error instanceof UNAUTHENTICATED) throw error;
+    return { ...VACIO };
   }
+
+  /** @type {{ nombre?: string, apellidos?: string } | null} */
+  let profile = null;
+  try {
+    const respuesta = await api.getProfile();
+    profile = respuesta?.profile ?? null;
+  } catch (error) {
+    if (error instanceof UNAUTHENTICATED) throw error;
+  }
+
+  return {
+    nombre: limpio(profile?.nombre),
+    apellidos: limpio(profile?.apellidos),
+    rol: limpio(sesion?.user?.rol),
+  };
 }
 
 /** @param {string} nombre @param {string} [apellidos] */

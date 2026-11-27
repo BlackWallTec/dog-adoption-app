@@ -56,6 +56,7 @@ function esqueletos(contenedor, cantidad, clase) {
  *   conteos: { solicitudes: number, donativos: number },
  *   actualizadoEn: Date | null,
  *   refrescando: boolean,
+ *   enConstruccion: boolean,
  * }} estado
  */
 function pintar(estado) {
@@ -77,12 +78,25 @@ function pintar(estado) {
   }
 
   raiz.append(
-    nodo("div", { class: "qa-dashboard" }, [
-      encabezado(estado, falloAlguno),
-      indicadores(estado.resumen),
-      cuerpo(estado, jornadaHref),
-    ]),
+    nodo(
+      "div",
+      { class: "qa-dashboard" },
+      estado.enConstruccion
+        ? [encabezado(estado, false), avisoProximamente()]
+        : [
+            encabezado(estado, falloAlguno),
+            indicadores(estado.resumen),
+            cuerpo(estado, jornadaHref),
+          ],
+    ),
   );
+}
+
+function avisoProximamente() {
+  return nodo("section", { class: "qa-card qa-empty-state" }, [
+    nodo("h2", { text: COPY.proximamenteTitulo }),
+    nodo("p", { text: COPY.proximamente }),
+  ]);
 }
 
 function encabezado(estado, falloAlguno) {
@@ -125,9 +139,11 @@ function encabezado(estado, falloAlguno) {
       nodo("a", { class: "qa-button qa-button--secondary", text: accion.texto, href: accion.href }),
     );
   }
-  const actualizar = boton(COPY.actualizar, () => void pagina.actualizar());
-  actualizar.setAttribute("aria-busy", String(estado.refrescando));
-  acciones.append(actualizar);
+  if (!estado.enConstruccion) {
+    const actualizar = boton(COPY.actualizar, () => void pagina.actualizar());
+    actualizar.setAttribute("aria-busy", String(estado.refrescando));
+    acciones.append(actualizar);
+  }
 
   return nodo("header", { class: "qa-dashboard__header" }, [texto, acciones]);
 }

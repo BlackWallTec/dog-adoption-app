@@ -1,6 +1,6 @@
-import { UNAUTHENTICATED } from "@qarino/shared/errores.js";
+import { FORBIDDEN, UNAUTHENTICATED } from "@qarino/shared/errores.js";
 import { rutaDe } from "../rutas.js";
-import { usuarioActual } from "../jsPerfiles/usuarioActual.js";
+import { rutaAccesoDenegado, usuarioDePanel } from "../jsPerfiles/accesoPanel.js";
 import { crearInicioRepositoryMock } from "./data/repositories/InicioRepositoryMock.js";
 import {
   COPY,
@@ -49,6 +49,7 @@ function estadoInicial() {
     conteos: { solicitudes: 0, donativos: 0 },
     actualizadoEn: null,
     refrescando: false,
+    enConstruccion: false,
   };
 }
 
@@ -71,12 +72,13 @@ function grupoDe(tarea) {
  *   obtenerUsuario: (opts: { signal: AbortSignal }) => Promise<{ nombre?: string, apellidos?: string, rol?: string }>,
  *   ahora?: () => Date,
  *   redirigir?: (ruta: string) => void,
+ *   enConstruccion?: boolean,
  * }} deps
  */
 export function crearInicio(deps) {
   const ahora = deps.ahora ?? (() => new Date());
   const redirigir = deps.redirigir ?? ((ruta) => window.location.replace(ruta));
-  let estado = estadoInicial();
+  let estado = { ...estadoInicial(), enConstruccion: Boolean(deps.enConstruccion) };
   /** @type {Set<(estado: typeof estado) => void>} */
   const oidores = new Set();
   /** @type {Record<Widget, AbortController | null>} */
@@ -101,10 +103,11 @@ export function crearInicio(deps) {
     for (const oir of oidores) oir(estado);
   }
 
-  function salir() {
+  /** @param {string} [ruta] */
+  function salir(ruta = rutaDe("login")) {
     if (redirigido) return;
     redirigido = true;
-    redirigir(rutaDe("login"));
+    redirigir(ruta);
   }
 
   /** @param {Widget} widget */
@@ -290,6 +293,10 @@ export function crearInicio(deps) {
         salir();
         return;
       }
+      if (error instanceof FORBIDDEN) {
+        salir(rutaAccesoDenegado());
+        return;
+      }
       aplicarError(widget);
     }
   }
@@ -307,9 +314,14 @@ export function crearInicio(deps) {
     if (conEsqueleto) {
       filtro = "todos";
       for (const widget of widgets) ponerCargando(widget);
+      await pedir("usuario");
+      if (!vivo || actual !== generacion || redirigido) return;
+      const resto = widgets.filter((widget) => widget !== "usuario");
+      await Promise.allSettled(resto.map((widget) => pedir(widget)));
+    } else {
+      await Promise.allSettled(widgets.map((widget) => pedir(widget)));
     }
-    await Promise.allSettled(widgets.map((widget) => pedir(widget)));
-    if (!vivo || actual !== generacion) return;
+    if (!vivo || actual !== generacion || redirigido) return;
     fijar({ actualizadoEn: ahora(), refrescando: false });
   }
 
@@ -328,15 +340,37 @@ export function crearInicio(deps) {
       return () => oidores.delete(oir);
     },
     iniciar() {
-      return cargarTodo(true);
+      if (!estado.enConstruccion) return cargarTodo(true);
+      return (async () => {
+        await pedir("usuario");
+        if (!vivo || redirigido) return;
+        fijar({
+          resumen: { estado: "vacio", datos: null, error: null },
+          pendientes: {
+            estado: "vacio",
+            datos: [],
+            filtro: "todos",
+            conteos: { ...CONTEOS_BANDEJA },
+            textoVacio: COPY.proximamente,
+          },
+          agenda: {
+            estado: "vacio",
+            datos: [],
+            alertaCobertura: null,
+            textoVacio: COPY.proximamente,
+          },
+          destacado: { estado: "oculto", datos: null },
+        });
+      })();
     },
     actualizar() {
+      if (estado.enConstruccion) return pedir("usuario");
       fijar({ refrescando: true });
       return cargarTodo(false);
     },
     /** @param {Widget} widget */
     reintentar(widget) {
-      if (!widgets.includes(widget)) return Promise.resolve();
+      if (estado.enConstruccion || !widgets.includes(widget)) return Promise.resolve();
       ponerCargando(widget);
       return pedir(widget);
     },
@@ -361,29 +395,43 @@ export function crearInicio(deps) {
 
 const ESCENARIOS = new Set(["ok", "vacio", "parcial", "error", "lento", "atrasado"]);
 
-/** @param {URLSearchParams} params */
-export function elegirFuenteInicio(params) {
-  const env = /** @type {{ DEV?: boolean, VITE_FUENTE_INICIO?: string }} */ (import.meta.env);
-  const dev = Boolean(env?.DEV);
-  const pedida = dev
-    ? params.get("fuente") || env?.VITE_FUENTE_INICIO || "mock"
-    : env?.VITE_FUENTE_INICIO || "mock";
-  const escenarioPedido = dev ? params.get("escenario") : null;
+/**
+ * En desarrollo, `?escenario=` elige el ejemplo. Fuera de desarrollo no se muestra:
+ * el resumen dice «Próximamente» y el menú no lleva conteos inventados.
+ * @param {URLSearchParams} params
+ * @param {{ DEV?: boolean, VITE_FUENTE_INICIO?: string }} [env]
+ */
+export function elegirFuenteInicio(params, env = import.meta.env) {
+  const entorno = /** @type {{ DEV?: boolean, VITE_FUENTE_INICIO?: string }} */ (env);
+  const dev = Boolean(entorno?.DEV);
+  if (!dev) {
+    return {
+      repositorio: crearInicioRepositoryMock({ escenario: "vacio" }),
+      enConstruccion: true,
+    };
+  }
+  const pedida = params.get("fuente") || entorno?.VITE_FUENTE_INICIO || "mock";
+  const escenarioPedido = params.get("escenario");
   const escenario = ESCENARIOS.has(escenarioPedido ?? "") ? escenarioPedido : "ok";
   if (pedida !== "mock")
     throw new Error(`La fuente ${pedida} se conecta cuando exista su repositorio.`);
-  return crearInicioRepositoryMock({
-    escenario: /** @type {"ok" | "vacio" | "parcial" | "error" | "lento" | "atrasado"} */ (
-      escenario
-    ),
-  });
+  return {
+    repositorio: crearInicioRepositoryMock({
+      escenario: /** @type {"ok" | "vacio" | "parcial" | "error" | "lento" | "atrasado"} */ (
+        escenario
+      ),
+    }),
+    enConstruccion: false,
+  };
 }
 
-/** Usa /me y /profile. Si no hay sesión, el saludo queda con el nombre de muestra. */
+/** Usa /me y /profile. Sin sesión, o con rol Cliente, la página manda al login. */
 export function crearPaginaInicio() {
+  const fuente = elegirFuenteInicio(new URLSearchParams(window.location.search));
   return crearInicio({
-    repositorio: elegirFuenteInicio(new URLSearchParams(window.location.search)),
-    obtenerUsuario: () => usuarioActual(),
+    repositorio: fuente.repositorio,
+    enConstruccion: fuente.enConstruccion,
+    obtenerUsuario: () => usuarioDePanel(),
     redirigir: (ruta) => window.location.replace(ruta),
   });
 }

@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test";
-import { UNAUTHENTICATED } from "@qarino/shared/errores.js";
-import { crearInicio, debeRefrescar } from "./inicio.js";
+import { FORBIDDEN, UNAUTHENTICATED } from "@qarino/shared/errores.js";
+import { crearInicio, debeRefrescar, elegirFuenteInicio } from "./inicio.js";
 import { COPY } from "./inicio.presentar.js";
 
 const AHORA = new Date("2026-11-26T14:15:00-06:00");
@@ -77,9 +77,12 @@ function crear(metodos, extra = {}) {
   };
   return crearInicio({
     repositorio,
-    obtenerUsuario: async () => ({ nombre: "Ana", apellidos: "Martínez", rol: "Administrador" }),
+    obtenerUsuario:
+      extra.obtenerUsuario ??
+      (async () => ({ nombre: "Ana", apellidos: "Martínez", rol: "Administrador" })),
     ahora: () => AHORA,
     redirigir: extra.redirigir ?? (() => {}),
+    enConstruccion: extra.enConstruccion ?? false,
   });
 }
 
@@ -154,6 +157,9 @@ test("iniciar pasa de carga a listo y publica textos, tono y enlaces", async () 
   expect(
     listo.agenda.datos.map((jornada) => jornada.nombre).every((nombre) => nombre === "Paseo"),
   ).toBe(true);
+  expect(listo.agenda.datos.every((item) => item.href === "/admin/voluntariado/calendario")).toBe(
+    true,
+  );
   expect(listo.agenda.alertaCobertura?.href).toBe("/admin/voluntariado/nueva?fecha=2026-11-30");
   expect(listo.destacado.estado).toBe("listo");
   expect(listo.destacado.datos?.href).toBe(
@@ -287,6 +293,90 @@ test("actualizar no regresa los widgets a carga", async () => {
   await refresco;
   expect(vm.estado().refrescando).toBe(false);
   expect(vm.estado().resumen.datos?.[0].valor).toBe("2");
+});
+
+test("fuera de desarrollo no publica el ejemplo ni los conteos", async () => {
+  let consultas = 0;
+  const vm = crear(
+    {
+      obtenerResumen: async () => {
+        consultas += 1;
+        return resumenLleno();
+      },
+      obtenerPendientes: async () => {
+        consultas += 1;
+        return [tarea()];
+      },
+    },
+    { enConstruccion: true },
+  );
+  await vm.iniciar();
+  expect(consultas).toBe(0);
+  expect(vm.estado().enConstruccion).toBe(true);
+  expect(vm.estado().conteos).toEqual({ solicitudes: 0, donativos: 0 });
+  expect(vm.estado().pendientes.textoVacio).toBe(COPY.proximamente);
+  expect(vm.estado().destacado.estado).toBe("oculto");
+  expect(vm.estado().usuario.datos?.saludo).toBe("¡Buenas tardes, Ana!");
+});
+
+test("elegirFuenteInicio ignora el ejemplo fuera de desarrollo", async () => {
+  const fuente = elegirFuenteInicio(new URLSearchParams("escenario=ok&fuente=mock"), {
+    DEV: false,
+  });
+  expect(fuente.enConstruccion).toBe(true);
+  await expect(fuente.repositorio.obtenerPendientes()).resolves.toEqual([]);
+  await expect(fuente.repositorio.obtenerPerroDestacado()).resolves.toBeNull();
+});
+
+test("elegirFuenteInicio en desarrollo usa el ejemplo con pendientes", async () => {
+  const fuente = elegirFuenteInicio(new URLSearchParams(), { DEV: true });
+  expect(fuente.enConstruccion).toBe(false);
+  await expect(fuente.repositorio.obtenerPendientes()).resolves.not.toEqual([]);
+});
+
+test("un 401 al leer la sesión redirige al login y no publica el ejemplo", async () => {
+  const rutas = [];
+  let consultas = 0;
+  const vm = crear(
+    {
+      obtenerPendientes: async () => {
+        consultas += 1;
+        return [tarea()];
+      },
+    },
+    {
+      redirigir: (ruta) => rutas.push(ruta),
+      obtenerUsuario: async () => {
+        throw new UNAUTHENTICATED();
+      },
+    },
+  );
+  await vm.iniciar();
+  expect(rutas).toEqual(["/admin/login"]);
+  expect(consultas).toBe(0);
+  expect(vm.estado().pendientes.datos).toEqual([]);
+});
+
+test("un Cliente no entra al panel y no se publica el ejemplo", async () => {
+  const rutas = [];
+  let consultas = 0;
+  const vm = crear(
+    {
+      obtenerPendientes: async () => {
+        consultas += 1;
+        return [tarea()];
+      },
+    },
+    {
+      redirigir: (ruta) => rutas.push(ruta),
+      obtenerUsuario: async () => {
+        throw new FORBIDDEN("Tu cuenta no tiene acceso al panel administrativo.");
+      },
+    },
+  );
+  await vm.iniciar();
+  expect(rutas).toEqual(["/admin/login?acceso=denegado"]);
+  expect(consultas).toBe(0);
 });
 
 test("un 401 redirige al login una sola vez", async () => {

@@ -1,5 +1,9 @@
+import { FORBIDDEN, UNAUTHENTICATED } from "@qarino/shared/errores.js";
 import { tituloDe } from "../JS/rutas.js";
-import { iniciales, nombreCompleto, usuarioActual } from "../JS/jsPerfiles/usuarioActual.js";
+import { rutaAccesoDenegado, usuarioDePanel } from "../JS/jsPerfiles/accesoPanel.js";
+import { iniciales, nombreCompleto } from "../JS/jsPerfiles/usuarioActual.js";
+
+const SIN_DATO = "—";
 
 class AdminTopbar extends HTMLElement {
   connectedCallback() {
@@ -34,13 +38,25 @@ class AdminTopbar extends HTMLElement {
   }
 
   async #cargarUsuario() {
-    const usuario = await usuarioActual();
     const avatar = this.querySelector(".user-avatar");
     const nombre = this.querySelector(".user-name");
     const rol = this.querySelector(".user-role");
-    if (avatar) avatar.textContent = iniciales(usuario.nombre, usuario.apellidos);
-    if (nombre) nombre.textContent = nombreCompleto(usuario);
-    if (rol) rol.textContent = usuario.rol;
+    /** @type {{ nombre: string, apellidos: string, rol: string }} */
+    let usuario = { nombre: "", apellidos: "", rol: "" };
+    try {
+      usuario = await usuarioDePanel();
+    } catch (error) {
+      if (error instanceof FORBIDDEN) {
+        window.location.replace(rutaAccesoDenegado());
+        return;
+      }
+      if (!(error instanceof UNAUTHENTICATED)) throw error;
+    }
+    const visible = nombreCompleto(usuario);
+    const letras = iniciales(usuario.nombre, usuario.apellidos);
+    if (avatar) avatar.textContent = letras || SIN_DATO;
+    if (nombre) nombre.textContent = visible || SIN_DATO;
+    if (rol) rol.textContent = usuario.rol || SIN_DATO;
   }
 }
 

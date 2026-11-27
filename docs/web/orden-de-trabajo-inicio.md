@@ -137,7 +137,7 @@ Checklist de la página al cerrar el paso: [§9](./guia-maestra-web.md#9-checkli
 
 ## 7. Shell, solo lo que Inicio necesita
 
-**Estado: hecho.** El topbar pide `/me` y `/profile`. Si no hay sesión, muestra a Ana Martínez en lugar de "Dummy Name". Solicitudes y Donativos del menú leen `estado.conteos` solo en Inicio. No hay archivo de logo, así que el logo roto se queda.
+**Estado: hecho.** El topbar pide `/me` y `/profile`. Si no hay sesión, muestra "—" y Inicio vuelve al login. Fuera de desarrollo el dashboard dice "Próximamente" y no publica el ejemplo. Solicitudes y Donativos del menú leen `estado.conteos` solo en Inicio, y en producción esos conteos quedan en cero. No hay archivo de logo, así que el logo roto se queda.
 
 | Pieza                  | Referencia                                                                                                              | Alcance                                                                                                      |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |

@@ -14,6 +14,8 @@ export const COPY = Object.freeze({
   mision: "Cada tarea acerca a un peludo a su nuevo hogar.",
   todoAlDia: "Todo al día",
   bandejaVacia: "Todo al día. No hay pendientes por ahora.",
+  proximamenteTitulo: "Próximamente",
+  proximamente: "Este resumen se conectará cuando haya datos reales.",
   agendaVacia: "No hay jornadas en las próximas 4 semanas.",
   listasParaEmitir: "Listas para emitir",
   sinIngresos: "Sin ingresos este mes",
@@ -363,7 +365,8 @@ export function presentarJornada(jornada) {
       jornada.cupoMaximo > 0
         ? Math.min(100, Math.round((jornada.inscritos / jornada.cupoMaximo) * 100))
         : null,
-    href: enlaceA("inscritos", { id: jornada.id }),
+    // Inscritos pide el programa con ?id=. Hasta que el id salga de la API, abre el calendario.
+    href: ENLACE_CALENDARIO,
   };
 }
 
