@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vite-plus/test";
-import { clasificarArchivo, esVideo, nombreSeguro } from "./perroMultimedia.js";
+import { clasificarArchivo, esVideo, nombreSeguro, resumenGaleria } from "./perroMultimedia.js";
 
 const archivo = (name, type = "") => ({ name, type });
 
@@ -53,5 +53,29 @@ describe("HU19C: esVideo", () => {
     expect(esVideo({ url: "https://x/a.MOV?token=1" })).toBe(true);
     expect(esVideo({ url: "https://x/a.jpg" })).toBe(false);
     expect(esVideo(null)).toBe(false);
+  });
+});
+
+describe("HU19C: resumenGaleria", () => {
+  test("cuenta lo que quedará tras guardar", () => {
+    expect(resumenGaleria({ existentes: 3 })).toBe("3 archivos");
+    expect(resumenGaleria({ existentes: 1 })).toBe("1 archivo");
+    expect(resumenGaleria({ existentes: 3, nuevos: 1 })).toBe("4 archivos · 1 nuevo");
+    expect(resumenGaleria({ existentes: 3, quitadas: 2, nuevos: 2 })).toBe(
+      "3 archivos · 2 nuevos · 2 por quitar",
+    );
+  });
+
+  test("sin archivos dice que no hay fotos ni videos", () => {
+    expect(resumenGaleria()).toBe("Sin fotos ni videos");
+    expect(resumenGaleria({ existentes: 2, quitadas: 2 })).toBe(
+      "Sin fotos ni videos · 2 por quitar",
+    );
+  });
+
+  test("nunca da un total negativo", () => {
+    expect(resumenGaleria({ existentes: 1, quitadas: 5 })).toBe(
+      "Sin fotos ni videos · 5 por quitar",
+    );
   });
 });
