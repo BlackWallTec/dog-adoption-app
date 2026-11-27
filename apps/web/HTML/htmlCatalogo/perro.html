@@ -122,7 +122,6 @@
         var DESCARGA_URL =
           "https://github.com/BlackWallTec/dog-adoption-app/releases/latest/download/app-release.apk";
         var PAQUETE = "com.app.android";
-        var HOST = "dog-adoption-app-mauve.vercel.app";
 
         var id = new URLSearchParams(location.search).get("id") || "";
         // Solo caracteres de un id (UUID); evita inyectar nada en la URL del intent.
@@ -140,13 +139,13 @@
 
         document.getElementById("android").hidden = false;
 
-        // Intent con package: abre la app si está instalada; si no, va a DESCARGA_URL.
-        var ruta = id ? "/perro?id=" + encodeURIComponent(id) : "/perro";
+        // Abre la app con su esquema propio (qarino://perro/<id>). Funciona en cualquier host
+        // (local, dev o producción). Si la app no está instalada, va a DESCARGA_URL.
+        var ruta = id ? "perro/" + encodeURIComponent(id) : "perro";
         var intent =
           "intent://" +
-          HOST +
           ruta +
-          "#Intent;scheme=https;package=" +
+          "#Intent;scheme=qarino;package=" +
           PAQUETE +
           ";S.browser_fallback_url=" +
           encodeURIComponent(DESCARGA_URL) +

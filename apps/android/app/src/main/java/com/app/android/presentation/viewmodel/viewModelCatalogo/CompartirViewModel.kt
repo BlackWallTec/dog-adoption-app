@@ -3,6 +3,7 @@ package com.app.android.presentation.viewmodel.viewModelCatalogo
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.android.BuildConfig
 import com.app.android.domain.entities.entitiesCatalogo.Dog
 import com.app.android.domain.entities.entitiesCatalogo.ShareContent
 import com.app.android.domain.entities.entitiesCatalogo.Perro
@@ -31,7 +32,7 @@ class CompartirViewModel @Inject constructor(): ViewModel(){
             edad=perro.edad,
             sexo=perro.sexo,
             descripcion=perro.descripcion,
-            enlace="https://dog-adoption-app-mauve.vercel.app/perro?id=\${perro.id}"
+            enlace = BuildConfig.WEB_URL.trimEnd('/') + "/perro?id=" + perro.id
         )
         _shareState.value= ShareUIState.ShareMenu(content)
     }

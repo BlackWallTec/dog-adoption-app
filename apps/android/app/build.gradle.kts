@@ -30,6 +30,7 @@ android {
         buildConfigField("String", "SUPABASE_URL", "\"${localProps.getProperty("SUPABASE_URL", "")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProps.getProperty("SUPABASE_ANON_KEY", "")}\"")
         buildConfigField("String", "BASE_URL", "\"${localProps.getProperty("BASE_URL", "")}\"")
+        buildConfigField("String", "WEB_URL", "\"${localProps.getProperty("WEB_URL", "")}\"")
     }
 
     buildTypes {

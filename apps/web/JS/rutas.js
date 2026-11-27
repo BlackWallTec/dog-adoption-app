@@ -82,6 +82,11 @@ export const PANTALLAS = [
     ruta: "/perro",
     archivo: "HTML/htmlCatalogo/perro.html",
   },
+  {
+    id: "perroPublico",
+    ruta: "/perro",
+    archivo: "/HTML/htmlCatalogo/perro.html",
+  },
 ];
 
 const porId = new Map(PANTALLAS.map((pantalla) => [pantalla.id, pantalla]));
