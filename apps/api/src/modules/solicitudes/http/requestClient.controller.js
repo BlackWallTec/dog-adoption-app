@@ -230,6 +230,68 @@ const formatMiSolicitud = (fila) => {
   };
 };
 
+// refactoreo de AllowedInput a extraerCampos(rawBody)
+
+const extraerCampos = (rawBody) => ({
+  idPerro: rawBody.idPerro ?? rawBody.id_perro,
+  ocupacion: rawBody.ocupacion,
+  tuvoMascotas: rawBody.tuvoMascotas ?? rawBody.tuvo_mascotas,
+  otrasMascotas: rawBody.otrasMascotas ?? rawBody.otras_mascotas,
+  motivoAdopcion: rawBody.motivoAdopcion ?? rawBody.motivo_adopcion,
+  dondeVivira: rawBody.dondeVivira ?? rawBody.donde_vivira,
+  personasEnCasa: rawBody.personasEnCasa ?? rawBody.personas_en_casa,
+  todosDeAcuerdo: rawBody.todosDeAcuerdo ?? rawBody.todos_de_acuerdo,
+  tipoVivienda: rawBody.tipoVivienda ?? rawBody.tipo_vivienda,
+  jardinPatio: rawBody.jardinPatio ?? rawBody.jardin_patio,
+  caseroAcepta: rawBody.caseroAcepta ?? rawBody.casero_acepta,
+  sobreMascotas: rawBody.sobreMascotas ?? rawBody.sobre_mascotas,
+  cuidadosBasicos: rawBody.cuidadosBasicos ?? rawBody.cuidados_basicos,
+  opinionEsterilizacion: rawBody.opinionEsterilizacion ?? rawBody.opinion_esterilizacion,
+  tieneVeterinario: rawBody.tieneVeterinario ?? rawBody.tiene_veterinario,
+  detalleVeterinario: rawBody.detalleVeterinario ?? rawBody.detalle_veterinario,
+  tiempoSolo: rawBody.tiempoSolo ?? rawBody.tiempo_solo,
+  rutinaDiaria: rawBody.rutinaDiaria ?? rawBody.rutina_diaria,
+  manejoComportamiento: rawBody.manejoComportamiento ?? rawBody.manejo_comportamiento,
+});
+
+// refactoreo de dbPayload a armarPayloadBD
+
+const armarPayloadBD = (allowedInput) => ({
+  ocupacion: allowedInput.ocupacion.trim(),
+  ha_tenido_mascotas: allowedInput.tuvoMascotas,
+  otras_mascotas: allowedInput.otrasMascotas,
+  motivo: allowedInput.motivoAdopcion.trim(),
+  donde_vivira: allowedInput.dondeVivira.trim(),
+  integrantes_hogar: allowedInput.personasEnCasa,
+  todos_de_acuerdo: allowedInput.todosDeAcuerdo,
+  tipo_vivienda: normalizeHouseType(allowedInput.tipoVivienda),
+  jardin_o_patio: allowedInput.jardinPatio.trim(),
+  casero_acepta: typeof allowedInput.caseroAcepta === "boolean" ? allowedInput.caseroAcepta : null,
+  sobre_mascotas:
+    typeof allowedInput.sobreMascotas === "string" && allowedInput.sobreMascotas.trim()
+      ? allowedInput.sobreMascotas.trim()
+      : null,
+  cuidados_basicos: allowedInput.cuidadosBasicos.trim(),
+  opinion_esterilizacion: allowedInput.opinionEsterilizacion.trim(),
+  tiene_veterinario: allowedInput.tieneVeterinario,
+  detalle_veterinario: allowedInput.detalleVeterinario.trim(),
+  tiempo_solo: allowedInput.tiempoSolo.trim(),
+  rutina_diaria: allowedInput.rutinaDiaria.trim(),
+  manejo_comportamiento: allowedInput.manejoComportamiento.trim(),
+  puede_editar: true,
+});
+
+// Refactoreado de tiposAdjuntos a tiposDeDocumentos
+const tiposDeDocumentos = (solicitud) =>
+  new Set(
+    (solicitud.documentos || [])
+      .map((rel) => first(rel.documento)?.tipo?.trim().toUpperCase())
+      .filter(Boolean),
+  );
+
+const esEditable = (solicitud) =>
+  first(solicitud.estado)?.descripcion?.trim() === "Rechazada" && solicitud.puede_editar === true;
+
 // ===== Rutas Cliente (solo las lecturas de momento; el envío lo agrega Lucca) =====
 
 // POST /api/solicitudes/cliente
@@ -239,27 +301,8 @@ export const createDraft = async (req, res) => {
     const rawBody = req.body && typeof req.body === "object" ? req.body : {};
 
     // Extraer solo campos permitidos (acepta camelCase y snake_case de Android; ignora extra fields y nunca acepta idUsuario)
-    const allowedInput = {
-      idPerro: rawBody.idPerro ?? rawBody.id_perro,
-      ocupacion: rawBody.ocupacion,
-      tuvoMascotas: rawBody.tuvoMascotas ?? rawBody.tuvo_mascotas,
-      otrasMascotas: rawBody.otrasMascotas ?? rawBody.otras_mascotas,
-      motivoAdopcion: rawBody.motivoAdopcion ?? rawBody.motivo_adopcion,
-      dondeVivira: rawBody.dondeVivira ?? rawBody.donde_vivira,
-      personasEnCasa: rawBody.personasEnCasa ?? rawBody.personas_en_casa,
-      todosDeAcuerdo: rawBody.todosDeAcuerdo ?? rawBody.todos_de_acuerdo,
-      tipoVivienda: rawBody.tipoVivienda ?? rawBody.tipo_vivienda,
-      jardinPatio: rawBody.jardinPatio ?? rawBody.jardin_patio,
-      caseroAcepta: rawBody.caseroAcepta ?? rawBody.casero_acepta,
-      sobreMascotas: rawBody.sobreMascotas ?? rawBody.sobre_mascotas,
-      cuidadosBasicos: rawBody.cuidadosBasicos ?? rawBody.cuidados_basicos,
-      opinionEsterilizacion: rawBody.opinionEsterilizacion ?? rawBody.opinion_esterilizacion,
-      tieneVeterinario: rawBody.tieneVeterinario ?? rawBody.tiene_veterinario,
-      detalleVeterinario: rawBody.detalleVeterinario ?? rawBody.detalle_veterinario,
-      tiempoSolo: rawBody.tiempoSolo ?? rawBody.tiempo_solo,
-      rutinaDiaria: rawBody.rutinaDiaria ?? rawBody.rutina_diaria,
-      manejoComportamiento: rawBody.manejoComportamiento ?? rawBody.manejo_comportamiento,
-    };
+    // lo refactoreo a funciones porque lo voy a ocupar también en edición
+    const allowedInput = extraerCampos(rawBody);
 
     const validationErrors = validateDraftBody(allowedInput);
     if (Object.keys(validationErrors).length > 0) {
@@ -280,31 +323,8 @@ export const createDraft = async (req, res) => {
       });
     }
 
-    const dbPayload = {
-      ocupacion: allowedInput.ocupacion.trim(),
-      ha_tenido_mascotas: allowedInput.tuvoMascotas,
-      otras_mascotas: allowedInput.otrasMascotas,
-      motivo: allowedInput.motivoAdopcion.trim(),
-      donde_vivira: allowedInput.dondeVivira.trim(),
-      integrantes_hogar: allowedInput.personasEnCasa,
-      todos_de_acuerdo: allowedInput.todosDeAcuerdo,
-      tipo_vivienda: normalizeHouseType(allowedInput.tipoVivienda),
-      jardin_o_patio: allowedInput.jardinPatio.trim(),
-      casero_acepta:
-        typeof allowedInput.caseroAcepta === "boolean" ? allowedInput.caseroAcepta : null,
-      sobre_mascotas:
-        typeof allowedInput.sobreMascotas === "string" && allowedInput.sobreMascotas.trim()
-          ? allowedInput.sobreMascotas.trim()
-          : null,
-      cuidados_basicos: allowedInput.cuidadosBasicos.trim(),
-      opinion_esterilizacion: allowedInput.opinionEsterilizacion.trim(),
-      tiene_veterinario: allowedInput.tieneVeterinario,
-      detalle_veterinario: allowedInput.detalleVeterinario.trim(),
-      tiempo_solo: allowedInput.tiempoSolo.trim(),
-      rutina_diaria: allowedInput.rutinaDiaria.trim(),
-      manejo_comportamiento: allowedInput.manejoComportamiento.trim(),
-      puede_editar: true,
-    };
+    // lo refactoreo a funciones porque lo voy a ocupar también en edición
+    const dbPayload = armarPayloadBD(allowedInput);
 
     const existingDraft = await adoptionRequestModel.getDraftRequest(idUsuario, idPerro);
 
@@ -475,11 +495,8 @@ export const submitSolicitud = async (req, res) => {
       manejoComportamiento: solicitud.manejo_comportamiento,
     });
 
-    const tiposAdjuntos = new Set(
-      (solicitud.documentos || [])
-        .map((rel) => first(rel.documento)?.tipo?.trim().toUpperCase())
-        .filter(Boolean),
-    );
+    // refactoreado a tiposDeDocumentos
+    const tiposAdjuntos = tiposDeDocumentos(solicitud);
 
     if (!tiposAdjuntos.has("INE") || !tiposAdjuntos.has("DOMICILIO")) {
       fieldErrors.documentos = "Faltan documentos obligatorios (INE y Comprobante de domicilio).";
@@ -509,5 +526,117 @@ export const submitSolicitud = async (req, res) => {
       success: false,
       message: error.message || "Error interno al enviar la solicitud.",
     });
+  }
+};
+
+// GET /api/solicitudes/cliente/:id/edicion
+
+export const getParaEditar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!UUID_REGEX.test(String(id || ""))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "El identificador de la solicitud no es válido." });
+    }
+    const solicitud = await adoptionRequestModel.getRequestWithDocuments(id, req.user.uuid);
+    if (!solicitud) {
+      return res.status(404).json({ success: false, message: "No se encontró la solicitud." });
+    }
+    if (!esEditable(solicitud)) {
+      return res
+        .status(409)
+        .json({ success: false, message: "Esta solicitud no se puede editar." });
+    }
+
+    const tipos = tiposDeDocumentos(solicitud);
+    return res.status(200).json({
+      success: true,
+      data: {
+        id_solicitud: solicitud.id_solicitud,
+        id_perro: solicitud.id_perro,
+        ocupacion: solicitud.ocupacion,
+        tuvo_mascotas: solicitud.ha_tenido_mascotas,
+        otras_mascotas: solicitud.otras_mascotas,
+        motivo_adopcion: solicitud.motivo,
+        donde_vivira: solicitud.donde_vivira,
+        personas_en_casa: solicitud.integrantes_hogar ?? 1,
+        todos_de_acuerdo: solicitud.todos_de_acuerdo,
+        tipo_vivienda: solicitud.tipo_vivienda,
+        jardin_patio: solicitud.jardin_o_patio,
+        casero_acepta: solicitud.casero_acepta,
+        sobre_mascotas: solicitud.sobre_mascotas,
+        cuidados_basicos: solicitud.cuidados_basicos,
+        opinion_esterilizacion: solicitud.opinion_esterilizacion,
+        tiene_veterinario: solicitud.tiene_veterinario,
+        detalle_veterinario: solicitud.detalle_veterinario,
+        tiempo_solo: solicitud.tiempo_solo,
+        rutina_diaria: solicitud.rutina_diaria,
+        manejo_comportamiento: solicitud.manejo_comportamiento,
+        // Android no descarga los archivos, solo necesita saber si ya existen
+        tiene_ine: tipos.has("INE"),
+        tiene_domicilio: tipos.has("DOMICILIO"),
+      },
+    });
+  } catch (error) {
+    console.error("getParaEditar", error.message);
+    return res.status(500).json({ success: false, message: "No se pudo consultar la solicitud." });
+  }
+};
+
+// PUT /api/solicitudes/:id/reenviar
+
+export const resubmitSolicitud = async (req, res) => {
+  try {
+    const idUsuario = req.user.uuid;
+    const { id: idSolicitud } = req.params;
+
+    if (!UUID_REGEX.test(String(idSolicitud || ""))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "El identificador de la solicitud no es válido." });
+    }
+    const solicitud = await adoptionRequestModel.getRequestWithDocuments(idSolicitud, idUsuario);
+    if (!solicitud) {
+      return res.status(404).json({ success: false, message: "No se encontró la solicitud." });
+    }
+    if (!esEditable(solicitud)) {
+      return res
+        .status(409)
+        .json({ success: false, message: "Esta solicitud ya no se puede editar." });
+    }
+
+    const rawBody = req.body && typeof req.body === "object" ? req.body : {};
+    // El perro no se puede cambiar
+    const allowedInput = { ...extraerCampos(rawBody), idPerro: solicitud.id_perro };
+
+    const fields = validateDraftBody(allowedInput);
+    const tipos = tiposDeDocumentos(solicitud);
+    if (!tipos.has("INE") || !tipos.has("DOMICILIO")) {
+      fields.documentos = "Faltan documentos obligatorios (INE y Comprobante de domicilio).";
+    }
+    if (Object.keys(fields).length > 0) {
+      return res.status(400).json({ error: "Datos inválidos.", code: "VALIDATION_ERROR", fields });
+    }
+
+    const idEstadoPendiente = await adoptionRequestModel.getStatusId("Pendiente de Revisión");
+    await adoptionRequestModel.resubmit(
+      idSolicitud,
+      idUsuario,
+      armarPayloadBD(allowedInput),
+      idEstadoPendiente,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Solicitud reenviada correctamente.",
+      data: { id_solicitud: idSolicitud, estado: "Pendiente de Revisión" },
+    });
+  } catch (error) {
+    if (error.code === "CONFLICT") {
+      return res.status(409).json({ success: false, message: error.message });
+    }
+    console.error("resubmitSolicitud", error.message);
+    return res.status(500).json({ success: false, message: "No se pudo reenviar la solicitud." });
   }
 };
