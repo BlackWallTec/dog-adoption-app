@@ -1,18 +1,17 @@
 import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 
 const FICHA_ADMIN = `
-  id_perro, nombre, sexo, edad_aprox, tamano_medida, descripcion,
+  id_perro, nombre, sexo, edad_aprox, tamano_medida, descripcion, cuidado_especial,
   esterilizado, vacunado, estado, fecha_ingreso,
   raza ( id_raza, nombre ),
   tamano ( id_tamano, nombre )
 `;
 
-// Ficha para el formulario de edición: lo anterior + fotos, carácter y cuidados del perro.
+// Ficha para el formulario de edición: lo anterior + fotos y carácter del perro.
 const FICHA_ADMIN_DETALLE = `
   ${FICHA_ADMIN},
   multimedia ( id_multimedia, url, tipo, fecha_subida ),
-  perro_tiene_caracter ( id_caracter ),
-  perro_tiene_cuidado_especial ( id_cuidado )
+  perro_tiene_caracter ( id_caracter )
 `;
 
 // Deja la tabla puente del perro con exactamente `ids`: quita los que sobran y agrega los que
@@ -187,7 +186,7 @@ class DogModel {
     return data;
   }
 
-  // HU19C: ficha completa para el formulario de edición (admin), con fotos, carácter y cuidados.
+  // HU19C: ficha completa para el formulario de edición (admin), con fotos y carácter.
   // Devuelve null si no existe.
   static async getDogAdminById(id) {
     const { data, error } = await supabaseAdmin
@@ -229,17 +228,6 @@ class DogModel {
       tabla: "perro_tiene_caracter",
       columna: "id_caracter",
       campo: "caracteres",
-      idPerro,
-      ids,
-    });
-  }
-
-  // HU19C: deja al perro con exactamente estos cuidados especiales (ids de `cuidado_especial`).
-  static async setDogCuidados(idPerro, ids) {
-    return sincronizarRelacion({
-      tabla: "perro_tiene_cuidado_especial",
-      columna: "id_cuidado",
-      campo: "cuidados",
       idPerro,
       ids,
     });

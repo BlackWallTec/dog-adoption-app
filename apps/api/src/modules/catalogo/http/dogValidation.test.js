@@ -87,30 +87,69 @@ const ID_B = "22222222-2222-4222-9222-222222222222";
 const URL_A = "https://x.supabase.co/storage/v1/object/public/multimedia_perros/a.jpg";
 const URL_B = "https://x.supabase.co/storage/v1/object/public/multimedia_perros/b.mp4";
 
-describe("validarCambiosPerro: características y cuidados", () => {
+describe("validarCambiosPerro: características", () => {
   test("acepta la lista completa, sin repetidos y limpia espacios", () => {
     const { errores, relaciones, valores } = validarCambiosPerro({
       caracteres: [ID_A, ` ${ID_B} `, ID_A],
-      cuidados: [ID_B],
     });
 
     expect(errores).toEqual({});
     expect(valores).toEqual({});
-    expect(relaciones).toEqual({ caracteres: [ID_A, ID_B], cuidados: [ID_B] });
+    expect(relaciones).toEqual({ caracteres: [ID_A, ID_B] });
   });
 
   test("una lista vacía es un cambio válido: quitar todo", () => {
-    const { errores, relaciones } = validarCambiosPerro({ caracteres: [], cuidados: [] });
+    const { errores, relaciones } = validarCambiosPerro({ caracteres: [] });
 
     expect(errores).toEqual({});
-    expect(relaciones).toEqual({ caracteres: [], cuidados: [] });
+    expect(relaciones).toEqual({ caracteres: [] });
   });
 
   test("rechaza ids que no son uuid o listas que no son arreglo", () => {
     expect(validarCambiosPerro({ caracteres: ["1"] }).errores.caracteres).toMatch(/ids válidos/);
-    expect(validarCambiosPerro({ cuidados: [42] }).errores.cuidados).toMatch(/ids válidos/);
+    expect(validarCambiosPerro({ caracteres: [42] }).errores.caracteres).toMatch(/ids válidos/);
     expect(validarCambiosPerro({ caracteres: ID_A }).errores.caracteres).toMatch(/ids válidos/);
     expect(validarCambiosPerro({ caracteres: null }).errores.caracteres).toMatch(/ids válidos/);
+  });
+});
+
+describe("validarCambiosPerro: cuidado especial (texto, HU20)", () => {
+  test("es una columna editable: se limpia con trim", () => {
+    const { errores, valores, relaciones } = validarCambiosPerro({
+      cuidado_especial: "  Le tiene miedo a los truenos.  ",
+    });
+
+    expect(errores).toEqual({});
+    expect(valores).toEqual({ cuidado_especial: "Le tiene miedo a los truenos." });
+    expect(relaciones).toEqual({});
+  });
+
+  test("vacío, solo espacios o null se guardan como null", () => {
+    for (const vacio of ["", "   ", null]) {
+      expect(validarCambiosPerro({ cuidado_especial: vacio }).valores).toEqual({
+        cuidado_especial: null,
+      });
+    }
+  });
+
+  test("respeta el tope de 500 caracteres del alta", () => {
+    expect(
+      validarCambiosPerro({ cuidado_especial: "a".repeat(500) }).valores.cuidado_especial,
+    ).toHaveLength(500);
+    expect(
+      validarCambiosPerro({ cuidado_especial: "a".repeat(501) }).errores.cuidado_especial,
+    ).toMatch(/500/);
+  });
+
+  test("rechaza valores que no son texto", () => {
+    expect(validarCambiosPerro({ cuidado_especial: 5 }).errores.cuidado_especial).toBeDefined();
+    expect(validarCambiosPerro({ cuidado_especial: ["x"] }).errores.cuidado_especial).toBeDefined();
+  });
+
+  test("`cuidados` (insignias de antes de HU20) ya no se acepta", () => {
+    expect(validarCambiosPerro({ cuidados: [ID_A] }).errores.cuidados).toBe(
+      "Este campo no se puede modificar.",
+    );
   });
 });
 

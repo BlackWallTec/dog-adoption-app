@@ -9,6 +9,7 @@ export const CAMPOS_EDITABLES = [
   "edad_aprox",
   "tamano_medida",
   "descripcion",
+  "cuidado_especial",
   "esterilizado",
   "vacunado",
   "estado",
@@ -16,21 +17,19 @@ export const CAMPOS_EDITABLES = [
   "id_tamano",
 ];
 
-// Relaciones que viven en otras tablas (carácter, cuidados y fotos/videos).
-// - caracteres / cuidados: lista COMPLETA de ids que debe tener el perro al terminar.
+// Relaciones que viven en otras tablas (carácter y fotos/videos).
+// - caracteres: lista COMPLETA de ids que debe tener el perro al terminar.
 // - multimedia_agregar: [{ url, tipo }] de archivos ya subidos al bucket.
 // - multimedia_eliminar: ids de multimedia que se quitan de la ficha.
-export const CAMPOS_RELACION = [
-  "caracteres",
-  "cuidados",
-  "multimedia_agregar",
-  "multimedia_eliminar",
-];
+// (Desde HU20 el cuidado especial es un texto en la columna `cuidado_especial` de `perro`,
+// ya no una relación con insignias.)
+export const CAMPOS_RELACION = ["caracteres", "multimedia_agregar", "multimedia_eliminar"];
 
 export const ESTADOS_PERRO = ["Disponible", "En Tratamiento", "Adoptado"];
 export const TIPOS_MULTIMEDIA = ["imagen", "video"];
 
 const EDAD_MAX = 30;
+const CUIDADO_MAX = 500; // mismo tope que el alta (HU20)
 const MULTIMEDIA_NUEVA_MAX = 20;
 const URL_MAX = 2048;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -130,6 +129,16 @@ export function validarCambiosPerro(body) {
     } else valores.descripcion = body.descripcion.trim();
   }
 
+  // Cuidado especial (HU20): texto libre; vacío se guarda como null.
+  if ("cuidado_especial" in body) {
+    if (esVacio(body.cuidado_especial)) valores.cuidado_especial = null;
+    else if (typeof body.cuidado_especial !== "string") {
+      errores.cuidado_especial = "Cuidado especial no válido.";
+    } else if (body.cuidado_especial.trim().length > CUIDADO_MAX) {
+      errores.cuidado_especial = `El cuidado especial no puede pasar de ${CUIDADO_MAX} caracteres.`;
+    } else valores.cuidado_especial = body.cuidado_especial.trim();
+  }
+
   for (const campo of ["esterilizado", "vacunado"]) {
     if (campo in body) {
       if (typeof body[campo] !== "boolean") errores[campo] = "Debe ser verdadero o falso.";
@@ -147,17 +156,14 @@ export function validarCambiosPerro(body) {
     }
   }
 
-  // Carácter y cuidados: lista completa (puede ir vacía para quitarlos todos).
-  const mensajesLista = {
-    caracteres: "Las características deben ser una lista de ids válidos.",
-    cuidados: "Los cuidados especiales deben ser una lista de ids válidos.",
-  };
-  for (const campo of ["caracteres", "cuidados"]) {
-    if (campo in body) {
-      const { lista, error } = listaDeUuids(body[campo], mensajesLista[campo]);
-      if (error) errores[campo] = error;
-      else relaciones[campo] = lista;
-    }
+  // Carácter: lista completa (puede ir vacía para quitarlos todos).
+  if ("caracteres" in body) {
+    const { lista, error } = listaDeUuids(
+      body.caracteres,
+      "Las características deben ser una lista de ids válidos.",
+    );
+    if (error) errores.caracteres = error;
+    else relaciones.caracteres = lista;
   }
 
   if ("multimedia_eliminar" in body) {

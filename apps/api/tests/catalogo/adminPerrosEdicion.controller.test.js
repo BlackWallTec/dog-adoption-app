@@ -4,7 +4,6 @@ const mocks = vi.hoisted(() => ({
   updateDog: vi.fn(),
   getDogAdminById: vi.fn(),
   setDogCaracteres: vi.fn(),
-  setDogCuidados: vi.fn(),
   removeDogMultimedia: vi.fn(),
   addDogMultimediaBulk: vi.fn(),
 }));
@@ -18,7 +17,6 @@ vi.mock("../../src/modules/catalogo/http/modelosCatalogo/dog.model.js", () => ({
     updateDog: mocks.updateDog,
     getDogAdminById: mocks.getDogAdminById,
     setDogCaracteres: mocks.setDogCaracteres,
-    setDogCuidados: mocks.setDogCuidados,
   },
 }));
 vi.mock("../../src/modules/catalogo/http/modelosCatalogo/multimedia.model.js", () => ({
@@ -84,14 +82,29 @@ describe("HU19C: PATCH /api/catalogo/admin/perros/:id", () => {
     expect(res.json).toHaveBeenCalledWith({ success: true, data: ficha });
   });
 
-  test("características y cuidados se sincronizan con la lista completa", async () => {
-    await patch({ caracteres: [ID_A], cuidados: [] });
+  test("las características se sincronizan con la lista completa", async () => {
+    await patch({ caracteres: [ID_A] });
 
     expect(mocks.updateDog).not.toHaveBeenCalled();
     expect(mocks.getDogAdminById).toHaveBeenCalledTimes(2); // existe + ficha final
     expect(mocks.setDogCaracteres).toHaveBeenCalledWith(ID, [ID_A]);
-    expect(mocks.setDogCuidados).toHaveBeenCalledWith(ID, []);
     expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test("el cuidado especial es una columna: va en el update, no en una relación", async () => {
+    await patch({ cuidado_especial: " Dieta especial. " });
+
+    expect(mocks.updateDog).toHaveBeenCalledWith(ID, { cuidado_especial: "Dieta especial." });
+    expect(mocks.setDogCaracteres).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  test("`cuidados` (insignias de antes de HU20) se rechaza con 400", async () => {
+    await patch({ cuidados: [ID_A] });
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json.mock.calls[0][0].errors).toHaveProperty("cuidados");
+    expect(mocks.updateDog).not.toHaveBeenCalled();
   });
 
   test("quita y agrega fotos en la misma edición, quitando primero", async () => {
@@ -111,15 +124,17 @@ describe("HU19C: PATCH /api/catalogo/admin/perros/:id", () => {
   test("edición completa: columnas, relaciones y fotos juntas", async () => {
     await patch({
       descripcion: "Nueva",
+      cuidado_especial: "Medicación diaria.",
       caracteres: [ID_A],
-      cuidados: [ID_B],
       multimedia_eliminar: [ID_A],
       multimedia_agregar: [{ url: "https://x/v.mp4", tipo: "video" }],
     });
 
-    expect(mocks.updateDog).toHaveBeenCalledWith(ID, { descripcion: "Nueva" });
+    expect(mocks.updateDog).toHaveBeenCalledWith(ID, {
+      descripcion: "Nueva",
+      cuidado_especial: "Medicación diaria.",
+    });
     expect(mocks.setDogCaracteres).toHaveBeenCalledTimes(1);
-    expect(mocks.setDogCuidados).toHaveBeenCalledTimes(1);
     expect(mocks.removeDogMultimedia).toHaveBeenCalledTimes(1);
     expect(mocks.addDogMultimediaBulk).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(200);
@@ -160,7 +175,7 @@ describe("HU19C: PATCH /api/catalogo/admin/perros/:id", () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json.mock.calls[0][0].errors).toHaveProperty("caracteres");
-    expect(mocks.setDogCuidados).not.toHaveBeenCalled();
+    expect(mocks.removeDogMultimedia).not.toHaveBeenCalled();
   });
 
   test("llave foránea de raza o tamaño: conserva el aviso de antes", async () => {
@@ -176,9 +191,9 @@ describe("HU19C: PATCH /api/catalogo/admin/perros/:id", () => {
   });
 
   test("si falla un paso intermedio: 500 y no sigue con los demás", async () => {
-    mocks.setDogCuidados.mockRejectedValue(new Error("sin conexión"));
+    mocks.setDogCaracteres.mockRejectedValue(new Error("sin conexión"));
 
-    await patch({ cuidados: [ID_A], multimedia_eliminar: [ID_B] });
+    await patch({ caracteres: [ID_A], multimedia_eliminar: [ID_B] });
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ success: false, message: "sin conexión" });

@@ -45,7 +45,7 @@ function programar(...resultados) {
 
 const ID_PERRO = "99999999-9999-4999-8999-999999999999";
 
-describe("HU19C: DogModel.setDogCaracteres / setDogCuidados", () => {
+describe("HU19C: DogModel.setDogCaracteres", () => {
   beforeEach(() => {
     fromAdmin.mockReset();
   });
@@ -71,26 +71,26 @@ describe("HU19C: DogModel.setDogCaracteres / setDogCuidados", () => {
   });
 
   test("si ya está igual no borra ni inserta nada", async () => {
-    programar({ data: [{ id_cuidado: "x" }, { id_cuidado: "y" }], error: null });
+    programar({ data: [{ id_caracter: "x" }, { id_caracter: "y" }], error: null });
 
-    await dogModel.setDogCuidados(ID_PERRO, ["y", "x"]);
+    await dogModel.setDogCaracteres(ID_PERRO, ["y", "x"]);
 
     expect(fromAdmin).toHaveBeenCalledTimes(1);
   });
 
   test("lista vacía quita todos los que tenía", async () => {
     const [, borrado] = programar(
-      { data: [{ id_cuidado: "x" }, { id_cuidado: "y" }], error: null },
+      { data: [{ id_caracter: "x" }, { id_caracter: "y" }], error: null },
       { error: null },
     );
 
-    await dogModel.setDogCuidados(ID_PERRO, []);
+    await dogModel.setDogCaracteres(ID_PERRO, []);
 
     expect(fromAdmin.mock.calls.map(([t]) => t)).toEqual([
-      "perro_tiene_cuidado_especial",
-      "perro_tiene_cuidado_especial",
+      "perro_tiene_caracter",
+      "perro_tiene_caracter",
     ]);
-    expect(buscar(borrado, "in")[0].slice(1)).toEqual(["id_cuidado", ["x", "y"]]);
+    expect(buscar(borrado, "in")[0].slice(1)).toEqual(["id_caracter", ["x", "y"]]);
   });
 
   test("un error de la base de datos conserva code y marca el campo", async () => {

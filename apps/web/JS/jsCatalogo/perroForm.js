@@ -12,6 +12,7 @@ export function escaparHtml(texto) {
 
 const SEXOS = ["Macho", "Hembra"];
 export const ESTADOS = ["Disponible", "En Tratamiento", "Adoptado"];
+const CUIDADO_MAX = 500; // mismo tope que el alta (HU20) y el servidor
 
 function opciones(lista, idKey, seleccionado) {
   return lista
@@ -58,13 +59,10 @@ function conectarInsignias(contenedor) {
 }
 
 // Pinta el formulario dentro de `contenedor` con los datos de `perro` (o vacío para un alta).
-// `caracteristicas` ({ id_caracter, nombre }) y `cuidados` ({ id_cuidado, descripcion }) son los
-// catálogos completos; las que el perro ya tiene salen marcadas. La galería de fotos se monta
+// `caracteristicas` ({ id_caracter, nombre }) es el catálogo completo; las que el perro ya tiene
+// salen marcadas. El cuidado especial es un texto libre (HU20). La galería de fotos se monta
 // aparte, en el elemento [data-galeria] que deja este formulario.
-export function pintarFormulario(
-  contenedor,
-  { perro = {}, razas, tamanos, caracteristicas = [], cuidados = [] },
-) {
+export function pintarFormulario(contenedor, { perro = {}, razas, tamanos, caracteristicas = [] }) {
   // La BD guarda sexo como CHAR con relleno ("Macho     "): se limpia para no duplicar opciones.
   const sexoActual = (perro.sexo ?? "").trim();
   const sexos = !sexoActual || SEXOS.includes(sexoActual) ? SEXOS : [...SEXOS, sexoActual];
@@ -126,6 +124,12 @@ export function pintarFormulario(
         <textarea name="descripcion" rows="4" maxlength="1000">${escaparHtml(perro.descripcion)}</textarea>
         <span class="field-error" data-error-for="descripcion"></span>
       </label>
+      <label class="field field-wide">
+        <span class="field-label">Cuidados especiales</span>
+        <textarea name="cuidado_especial" rows="3" maxlength="${CUIDADO_MAX}" placeholder="Ej: Le tiene miedo a los truenos. Dieta o alergia a: …">${escaparHtml(perro.cuidado_especial)}</textarea>
+        <span class="field-hint">Miedos, dieta o alergias, medicación, convivencia… (máx. ${CUIDADO_MAX} caracteres)</span>
+        <span class="field-error" data-error-for="cuidado_especial"></span>
+      </label>
       <div class="field-checks field-wide">
         <label class="check"><input name="esterilizado" type="checkbox" ${perro.esterilizado ? "checked" : ""} /> Esterilizado</label>
         <label class="check"><input name="vacunado" type="checkbox" ${perro.vacunado ? "checked" : ""} /> Vacunado</label>
@@ -136,13 +140,6 @@ export function pintarFormulario(
           ${insignias(caracteristicas, "id_caracter", "nombre", idsDeRelacion(perro, "perro_tiene_caracter", "id_caracter"))}
         </div>
         <span class="field-error" data-error-for="caracteres"></span>
-      </div>
-      <div class="field field-wide">
-        <span class="field-label">Cuidados especiales</span>
-        <div class="badge-selector" data-grupo="cuidados">
-          ${insignias(cuidados, "id_cuidado", "descripcion", idsDeRelacion(perro, "perro_tiene_cuidado_especial", "id_cuidado"))}
-        </div>
-        <span class="field-error" data-error-for="cuidados"></span>
       </div>
       <div class="field field-wide">
         <span class="field-label">Fotos y videos</span>
@@ -170,10 +167,10 @@ export function leerFormulario(contenedor) {
     tamano_medida: v("tamano_medida").value,
     estado: v("estado").value,
     descripcion: v("descripcion").value,
+    cuidado_especial: v("cuidado_especial").value,
     esterilizado: v("esterilizado").checked,
     vacunado: v("vacunado").checked,
     caracteres: elegidos("caracteres"),
-    cuidados: elegidos("cuidados"),
   };
 }
 
@@ -183,6 +180,9 @@ export function validarFormulario(d) {
   if (!d.nombre.trim()) e.nombre = "El nombre es obligatorio.";
   if (!d.sexo) e.sexo = "Selecciona el sexo.";
   if (!d.estado) e.estado = "Selecciona el estado.";
+  if ((d.cuidado_especial ?? "").trim().length > CUIDADO_MAX) {
+    e.cuidado_especial = `El cuidado especial no puede pasar de ${CUIDADO_MAX} caracteres.`;
+  }
   const edad = d.edad_aprox === "" ? NaN : Number(d.edad_aprox);
   if (!Number.isInteger(edad) || edad < 0 || edad > 30) {
     e.edad_aprox = "Captura un entero entre 0 y 30.";
@@ -206,6 +206,7 @@ export function cambiosRespectoA(perro, d) {
     tamano_medida: String(perro.tamano_medida ?? ""),
     estado: perro.estado ?? "",
     descripcion: perro.descripcion ?? "",
+    cuidado_especial: perro.cuidado_especial ?? "",
     esterilizado: Boolean(perro.esterilizado),
     vacunado: Boolean(perro.vacunado),
   };
@@ -218,8 +219,8 @@ export function cambiosRespectoA(perro, d) {
   return cambios;
 }
 
-// Características y cuidados que cambiaron. Si cambió el conjunto, se manda la lista COMPLETA
-// de ids elegidos (el servidor deja al perro exactamente con esa lista).
+// Características que cambiaron. Si cambió el conjunto, se manda la lista COMPLETA de ids
+// elegidos (el servidor deja al perro exactamente con esa lista).
 export function cambiosEnRelaciones(perro, d) {
   const cambios = {};
   if (
@@ -227,12 +228,6 @@ export function cambiosEnRelaciones(perro, d) {
     !mismoConjunto(idsDeRelacion(perro, "perro_tiene_caracter", "id_caracter"), d.caracteres)
   ) {
     cambios.caracteres = d.caracteres;
-  }
-  if (
-    Array.isArray(d.cuidados) &&
-    !mismoConjunto(idsDeRelacion(perro, "perro_tiene_cuidado_especial", "id_cuidado"), d.cuidados)
-  ) {
-    cambios.cuidados = d.cuidados;
   }
   return cambios;
 }

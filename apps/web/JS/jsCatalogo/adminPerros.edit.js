@@ -1,5 +1,5 @@
 // HU19C: el administrador modifica la ficha de un perro: datos, estado, características,
-// cuidados especiales y fotos/videos (agregar y quitar).
+// cuidado especial (texto, HU20) y fotos/videos (agregar y quitar).
 import {
   cambiosEnRelaciones,
   cambiosRespectoA,
@@ -82,12 +82,11 @@ async function cargar() {
   estadoCargando();
   try {
     // Ficha y catálogos en paralelo (flujo principal pasos 2 y 3 del análisis)
-    const [ficha, razas, tamanos, caracteristicas, cuidados] = await Promise.all([
+    const [ficha, razas, tamanos, caracteristicas] = await Promise.all([
       api(`/admin/perros/${encodeURIComponent(idActual)}`),
       api("/admin/razas"),
       api("/admin/tamanos"),
       api("/admin/caracteristicas"),
-      api("/admin/cuidado_especial"),
     ]);
 
     if (ficha.status === 404) {
@@ -97,7 +96,7 @@ async function cargar() {
       alGuardar();
       return;
     }
-    for (const r of [ficha, razas, tamanos, caracteristicas, cuidados]) {
+    for (const r of [ficha, razas, tamanos, caracteristicas]) {
       if (!r.ok) return estadoError(mensajeDeEstado(r.status, r.json));
     }
 
@@ -108,7 +107,6 @@ async function cargar() {
       razas: razas.json.data,
       tamanos: tamanos.json.data,
       caracteristicas: caracteristicas.json.data,
-      cuidados: cuidados.json.data,
     });
     conectarAlturaYTamano(cuerpo, tamanos.json.data);
     galeria = montarGaleria(cuerpo.querySelector("[data-galeria]"), {
@@ -227,7 +225,10 @@ dialogo?.addEventListener("cancel", (evento) => {
   if (guardando) evento.preventDefault();
 });
 // Al cerrar (guardar, cancelar o Esc) se liberan las vistas previas de archivos nuevos.
-dialogo?.addEventListener("close", liberarGaleria);
+// "close" llega de forma asíncrona: si el diálogo ya se volvió a abrir, no se toca la galería nueva.
+dialogo?.addEventListener("close", () => {
+  if (!dialogo.open) liberarGaleria();
+});
 
 // Punto de entrada: lo llama la lista al presionar "Editar".
 export function abrirEdicion(id, callbackAlGuardar) {

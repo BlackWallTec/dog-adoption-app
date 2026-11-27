@@ -17,6 +17,7 @@ const perro = {
   tamano_medida: 40,
   estado: "Disponible",
   descripcion: "Cariñosa",
+  cuidado_especial: "Le tiene miedo a los truenos.",
   esterilizado: true,
   vacunado: false,
   raza: { id_raza: "r1", nombre: "Mestizo" },
@@ -32,6 +33,7 @@ const formIgual = {
   tamano_medida: "40",
   estado: "Disponible",
   descripcion: "Cariñosa",
+  cuidado_especial: "Le tiene miedo a los truenos.",
   esterilizado: true,
   vacunado: false,
 };
@@ -142,21 +144,19 @@ describe("tamaño según la altura", () => {
   });
 });
 
-// ---- HU19C: estado, características y cuidados ----
+// ---- HU19C: estado, características y cuidado especial (texto, HU20) ----
 
 const perroCompleto = {
   ...perro,
   sexo: "Hembra     ", // CHAR con relleno
   estado: "Disponible ",
   perro_tiene_caracter: [{ id_caracter: "c1" }, { id_caracter: "c2" }],
-  perro_tiene_cuidado_especial: [{ id_cuidado: "u1" }],
 };
 
 // Lo que devuelve leerFormulario si el administrador no toca nada.
 const formSinTocar = {
   ...formIgual,
   caracteres: ["c1", "c2"],
-  cuidados: ["u1"],
 };
 
 describe("idsDeRelacion / mismoConjunto", () => {
@@ -198,6 +198,41 @@ describe("cambiosRespectoA con estado", () => {
   });
 });
 
+describe("cambiosRespectoA con cuidado especial (texto)", () => {
+  test("editar el texto se manda como cambio", () => {
+    expect(
+      cambiosRespectoA(perroCompleto, { ...formSinTocar, cuidado_especial: "Dieta especial." }),
+    ).toEqual({ cuidado_especial: "Dieta especial." });
+  });
+
+  test("borrar el texto se manda como cambio (el servidor lo guarda como null)", () => {
+    expect(cambiosRespectoA(perroCompleto, { ...formSinTocar, cuidado_especial: "" })).toEqual({
+      cuidado_especial: "",
+    });
+  });
+
+  test("null en la BD y campo vacío no cuentan como cambio, ni los espacios sobrantes", () => {
+    const sinTexto = { ...perroCompleto, cuidado_especial: null };
+    expect(cambiosRespectoA(sinTexto, { ...formSinTocar, cuidado_especial: "" })).toEqual({});
+    expect(cambiosRespectoA(sinTexto, { ...formSinTocar, cuidado_especial: "  " })).toEqual({});
+    expect(
+      cambiosRespectoA(perroCompleto, {
+        ...formSinTocar,
+        cuidado_especial: `  ${perroCompleto.cuidado_especial}  `,
+      }),
+    ).toEqual({});
+  });
+
+  test("más de 500 caracteres es inválido; 500 exactos no", () => {
+    expect(
+      validarFormulario({ ...formIgual, cuidado_especial: "a".repeat(501) }).cuidado_especial,
+    ).toMatch(/500/);
+    expect(
+      validarFormulario({ ...formIgual, cuidado_especial: "a".repeat(500) }).cuidado_especial,
+    ).toBeUndefined();
+  });
+});
+
 describe("cambiosEnRelaciones", () => {
   test("sin cambios no manda nada", () => {
     expect(cambiosEnRelaciones(perroCompleto, formSinTocar)).toEqual({});
@@ -210,19 +245,16 @@ describe("cambiosEnRelaciones", () => {
     expect(
       cambiosEnRelaciones(perroCompleto, { ...formSinTocar, caracteres: ["c1", "c3"] }),
     ).toEqual({ caracteres: ["c1", "c3"] });
-    expect(cambiosEnRelaciones(perroCompleto, { ...formSinTocar, cuidados: ["u1", "u2"] })).toEqual(
-      { cuidados: ["u1", "u2"] },
-    );
   });
 
   test("quitar todo es un cambio: se manda la lista vacía", () => {
-    expect(
-      cambiosEnRelaciones(perroCompleto, { ...formSinTocar, caracteres: [], cuidados: [] }),
-    ).toEqual({ caracteres: [], cuidados: [] });
+    expect(cambiosEnRelaciones(perroCompleto, { ...formSinTocar, caracteres: [] })).toEqual({
+      caracteres: [],
+    });
   });
 
   test("agregar a un perro que no tenía nada", () => {
-    expect(cambiosEnRelaciones({}, { ...formSinTocar, caracteres: ["c1"], cuidados: [] })).toEqual({
+    expect(cambiosEnRelaciones({}, { ...formSinTocar, caracteres: ["c1"] })).toEqual({
       caracteres: ["c1"],
     });
   });
