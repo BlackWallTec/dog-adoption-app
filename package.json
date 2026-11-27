@@ -14,6 +14,7 @@
     "postgres": "catalog:"
   },
   "devDependencies": {
+    "@redocly/cli": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "vite-plus": "catalog:"
   },

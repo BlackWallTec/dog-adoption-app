@@ -1,0 +1,5380 @@
+openapi: 3.1.0
+info:
+  title: Qariño Animal API
+  version: 0.40.0
+  summary: API REST del programa de adopción Qariño Animal
+  description: |
+    API REST de **Qariño Animal** (Express 5 + Supabase), usada por el panel web y por la app Android.
+
+    ## Autenticación
+
+    - **Web:** la sesión viaja en la cookie `token` (esquema `CookieAuth`). Se crea con `POST /api/perfiles/login`.
+    - **App Android:** se envían el encabezado `x-client: mobile` y `Authorization: Bearer <token>` (esquema `BearerAuth`). Sin `x-client: mobile`, el encabezado `Authorization` se ignora y la sesión se busca en la cookie.
+    - Las operaciones protegidas declaran `security`. Si falta el token o no es válido responden `401`; si el rol de la cuenta no tiene permiso, responden `403`.
+
+    ## Formato de errores
+
+    Cada módulo responde errores con una forma distinta. Cada operación documenta la suya:
+
+    - `ErrorEstandar`: `{ "error", "code", "fields" }`. Lo usan perfiles y el envío de solicitudes.
+    - `ErrorMensaje`: `{ "success": false, "message", "errors" }`. Lo usan catálogo, donativos y voluntariado.
+    - `ErrorSimple`: `{ "error" }`. Lo usan el middleware de autenticación y varias rutas de administración.
+    - `ErrorLimite`: `{ "ok": false, "error" }`. Lo devuelve el limitador de peticiones con `429`.
+
+    Algunas respuestas de voluntariado y catálogo usan la clave `sucess` (sin la `c`). Se documenta tal como la devuelve el servidor.
+
+    ## Límite de peticiones
+
+    Varias rutas tienen un límite por ventana de tiempo. Al excederlo responden `429`. Las rutas de perfiles usan Redis (Upstash) cuando está configurado.
+  contact:
+    name: Equipo Qariño Animal
+  license:
+    name: Propietario
+    identifier: UNLICENSED
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local
+  - url: https://dog-adoption-app-mauve.vercel.app
+    description: Servidor desplegado en Vercel
+
+tags:
+  - name: Catálogo
+    description: Consulta y administración del catálogo de perros en adopción (`/api/catalogo`).
+  - name: Donativos
+    description: Donativos, datos fiscales y CFDI (`/api/donativos`).
+  - name: Perfiles
+    description: Inicio de sesión, registro de cuentas, correo móvil y catálogo de códigos postales (`/api/perfiles`).
+  - name: Solicitudes
+    description: Solicitudes de adopción, documentos y revisión administrativa (`/api/solicitudes`).
+  - name: Voluntarios
+    description: Programas de voluntariado, inscripciones y calendario (`/api/voluntarios`).
+  - name: Salud
+    description: Verificación de disponibilidad del servicio.
+
+paths:
+  # ============================================================
+  # SALUD
+  # ============================================================
+  /api/health:
+    get:
+      tags: [Salud]
+      operationId: obtenerEstadoServicio
+      security: []
+      summary: Verificar disponibilidad
+      description: Responde `ok` si el servidor está en funcionamiento. No requiere autenticación.
+      responses:
+        "200":
+          description: El servicio está disponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstadoServicio"
+              example:
+                status: ok
+
+  # ============================================================
+  # PERFILES
+  # ============================================================
+  /api/perfiles/login:
+    post:
+      tags: [Perfiles]
+      operationId: iniciarSesion
+      security: []
+      summary: Iniciar sesión
+      description: |
+        Valida correo y contraseña. En web responde con la cookie `token` (HttpOnly). Con `x-client: mobile`
+        responde además el campo `token` en el cuerpo para usarlo como Bearer.
+
+        La duración de la sesión depende del rol: Root 1 hora, Administrador 6 horas y Cliente 72 horas.
+        Las cuentas de Cliente con correo móvil pendiente de confirmación reciben `403`.
+      parameters:
+        - $ref: "#/components/parameters/XClient"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              correo: ana@gmail.com
+              contrasena: contrasena123
+      responses:
+        "200":
+          description: Sesión iniciada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginRespuesta"
+              examples:
+                web:
+                  summary: Web (cookie)
+                  value:
+                    user:
+                      uuid: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                      rol: Cliente
+                movil:
+                  summary: Android (token en el cuerpo)
+                  value:
+                    user:
+                      uuid: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                      rol: Cliente
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiN2M5ZSJ9.firma
+        "400":
+          description: Faltan el correo o la contraseña.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Correo y contraseña son requeridos
+                code: BAD_REQUEST
+        "401":
+          description: Credenciales inválidas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Credenciales inválidas
+                code: INVALID_CREDENTIALS
+        "403":
+          description: El correo de la cuenta de Cliente aún no está confirmado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Confirma tu correo antes de iniciar sesión.
+                code: EMAIL_NOT_CONFIRMED
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoEstandar"
+
+  /api/perfiles/logout:
+    post:
+      tags: [Perfiles]
+      operationId: cerrarSesion
+      security: []
+      summary: Cerrar sesión
+      description: Elimina la cookie `token`. La app Android descarta su token localmente.
+      responses:
+        "200":
+          description: Sesión cerrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkRespuesta"
+              example:
+                ok: true
+
+  /api/perfiles/profile:
+    get:
+      tags: [Perfiles]
+      operationId: obtenerPerfil
+      summary: Obtener perfil del usuario
+      description: Devuelve los datos personales y de domicilio de la cuenta en sesión. El usuario sale del token.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Perfil del usuario en sesión.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [profile]
+                properties:
+                  profile:
+                    $ref: "#/components/schemas/PerfilUsuario"
+                example:
+                  profile:
+                    nombre: Ana
+                    apellidos: Pérez López
+                    fecha_nacimiento: "1995-04-12"
+                    telefono: "5512345678"
+                    calle: Av. Juárez
+                    numero_exterior: "45"
+                    codigo_postal: "06000"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoEstandar"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/perfiles/me:
+    get:
+      tags: [Perfiles]
+      operationId: obtenerSesion
+      summary: Consultar la sesión actual
+      description: Confirma que el token es válido y que la cuenta sigue existiendo. No devuelve el correo.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Sesión vigente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginRespuesta"
+              example:
+                user:
+                  uuid: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  rol: Cliente
+        "401":
+          $ref: "#/components/responses/NoAutenticadoEstandar"
+        "500":
+          $ref: "#/components/responses/ErrorInternoEstandar"
+
+  /api/perfiles/register:
+    post:
+      tags: [Perfiles]
+      operationId: registrarCliente
+      security: []
+      summary: Crear cuenta de Cliente
+      description: |
+        Alta pública de cuentas de Cliente. No requiere sesión. Responde `201` con el usuario creado.
+
+        Si el correo móvil está habilitado, la cuenta queda pendiente de confirmación (`requiereConfirmacion: true`)
+        y se envía un código al correo.
+      parameters:
+        - $ref: "#/components/parameters/XClient"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroCuenta"
+            example:
+              nombre: Ana
+              apellidos: Pérez López
+              fecha_nacimiento: "1995-04-12"
+              correo: ana@gmail.com
+              telefono: "5512345678"
+              contrasena: contrasena123
+              confirmContrasena: contrasena123
+              id_codigo_postal: 3f2b8c1e-7a4d-4e9b-9c2f-1d5e6a7b8c9d
+              calle: Av. Juárez
+              numero_exterior: "45"
+              numero_interior: null
+              privacidad: true
+      responses:
+        "201":
+          description: Cuenta creada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistroRespuesta"
+              example:
+                user:
+                  uuid: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  rol: Cliente
+                requiereConfirmacion: true
+                correoEnviado: true
+        "409":
+          description: Ya existe una cuenta con ese correo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Ya existe una cuenta con ese correo
+                code: EMAIL_EXISTS
+                fields:
+                  correo: Ya existe una cuenta con ese correo
+        "422":
+          $ref: "#/components/responses/ErrorValidacion"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoEstandar"
+
+  /api/perfiles/register-admin:
+    post:
+      tags: [Perfiles]
+      operationId: registrarAdministrador
+      summary: Crear cuenta de Administrador
+      description: Alta de cuentas de Administrador desde el panel web. Solo puede hacerla un usuario con rol `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroCuenta"
+      responses:
+        "201":
+          description: Administrador creado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistroRespuesta"
+              example:
+                user:
+                  uuid: 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+                  rol: Administrador
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "409":
+          description: Ya existe una cuenta con ese correo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Ya existe una cuenta con ese correo
+                code: EMAIL_EXISTS
+                fields:
+                  correo: Ya existe una cuenta con ese correo
+        "422":
+          $ref: "#/components/responses/ErrorValidacion"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoEstandar"
+
+  /api/perfiles/codigos-postales:
+    get:
+      tags: [Perfiles]
+      operationId: buscarCodigosPostales
+      security: []
+      summary: Buscar colonias por código postal
+      description: Devuelve las colonias que corresponden a un código postal. Se usa antes del inicio de sesión. Si el código no existe, `data` llega vacío.
+      parameters:
+        - name: cp
+          in: query
+          required: true
+          description: Código postal de 5 dígitos.
+          schema:
+            type: string
+            pattern: '^\d{5}$'
+            example: "06000"
+      responses:
+        "200":
+          description: Colonias del código postal.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CodigoPostal"
+                example:
+                  data:
+                    - id_codigo_postal: 3f2b8c1e-7a4d-4e9b-9c2f-1d5e6a7b8c9d
+                      codigo_postal: "06000"
+                      colonia: Centro
+                      municipio: Cuauhtémoc
+                      estado: Ciudad de México
+        "422":
+          description: El código postal no tiene 5 dígitos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Código postal inválido
+                code: VALIDATION_ERROR
+                fields:
+                  cp: El código postal debe tener 5 dígitos.
+        "500":
+          $ref: "#/components/responses/ErrorInternoEstandar"
+
+  /api/perfiles/correo-movil/config:
+    get:
+      tags: [Perfiles]
+      operationId: obtenerConfiguracionCorreoMovil
+      security: []
+      summary: Consultar si el correo móvil está habilitado
+      description: La app usa esta respuesta para decidir si muestra la confirmación de correo.
+      responses:
+        "200":
+          description: Configuración del correo móvil.
+          headers:
+            Cache-Control:
+              description: Siempre `no-store`.
+              schema:
+                type: string
+                example: no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfiguracionCorreoMovil"
+              example:
+                habilitado: false
+
+  /api/perfiles/correo-movil/reenviar:
+    post:
+      tags: [Perfiles]
+      operationId: reenviarCodigoConfirmacion
+      security: []
+      summary: Reenviar código de confirmación
+      description: |
+        Envía un nuevo código de confirmación de cuenta. Responde siempre `202` con el mismo mensaje genérico,
+        para no revelar si el correo pertenece a una cuenta. El código dura 15 minutos y puede pedirse de nuevo
+        cada minuto. La confirmación debe hacerse dentro de las 72 horas posteriores al registro.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreoRequest"
+            example:
+              correo: ana@gmail.com
+      responses:
+        "202":
+          $ref: "#/components/responses/RespuestaGenericaCorreo"
+        "422":
+          $ref: "#/components/responses/ErrorValidacion"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "503":
+          $ref: "#/components/responses/CorreoNoDisponible"
+
+  /api/perfiles/correo-movil/recuperar:
+    post:
+      tags: [Perfiles]
+      operationId: solicitarCodigoRecuperacion
+      security: []
+      summary: Solicitar código para recuperar contraseña
+      description: Envía un código de 6 dígitos al correo de la cuenta. Responde siempre `202` con el mismo mensaje genérico.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreoRequest"
+            example:
+              correo: ana@gmail.com
+      responses:
+        "202":
+          $ref: "#/components/responses/RespuestaGenericaCorreo"
+        "422":
+          $ref: "#/components/responses/ErrorValidacion"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "503":
+          $ref: "#/components/responses/CorreoNoDisponible"
+
+  /api/perfiles/correo-movil/confirmar:
+    post:
+      tags: [Perfiles]
+      operationId: confirmarCorreo
+      security: []
+      summary: Confirmar correo con código
+      description: Confirma la cuenta de Cliente con el código de 6 dígitos. El código se consume al usarse y tiene como máximo 5 intentos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreoConfirmarRequest"
+            example:
+              correo: ana@gmail.com
+              codigo: "482913"
+      responses:
+        "200":
+          $ref: "#/components/responses/OkCorreo"
+        "400":
+          $ref: "#/components/responses/CodigoInvalido"
+        "422":
+          $ref: "#/components/responses/ErrorValidacion"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "503":
+          $ref: "#/components/responses/CorreoNoDisponible"
+
+  /api/perfiles/correo-movil/restablecer:
+    post:
+      tags: [Perfiles]
+      operationId: restablecerContrasena
+      security: []
+      summary: Restablecer contraseña con código
+      description: |
+        Cambia la contraseña con el código recibido por correo. La nueva contraseña debe tener entre 8 y 72 bytes
+        y repetirse en `confirmContrasena`. El código no se consume si la contraseña no quedó guardada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreoRestablecerRequest"
+            example:
+              correo: ana@gmail.com
+              codigo: "482913"
+              contrasena: nuevaContrasena123
+              confirmContrasena: nuevaContrasena123
+      responses:
+        "200":
+          $ref: "#/components/responses/OkCorreo"
+        "400":
+          $ref: "#/components/responses/CodigoInvalido"
+        "422":
+          description: La nueva contraseña no cumple los requisitos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: Error de validación en los datos
+                code: VALIDATION_ERROR
+                fields:
+                  contrasena: Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "503":
+          description: No se pudo comprobar el cambio de contraseña o el correo móvil no está disponible.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEstandar"
+              example:
+                error: No se pudo comprobar el cambio de contraseña. Inténtalo de nuevo.
+                code: PASSWORD_UPDATE_FAILED
+
+  # ============================================================
+  # CATÁLOGO
+  # ============================================================
+  /api/catalogo/admin/solicitar-subida:
+    post:
+      tags: [Catálogo]
+      operationId: solicitarUrlSubidaMultimedia
+      summary: Solicitar URL de subida de multimedia
+      description: |
+        Genera una URL firmada para subir una foto o video del perro al bucket `multimedia_perros`. La URL vence
+        en 300 segundos. Después hay que registrar el perro con `POST /api/catalogo/admin/perros`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SolicitudSubida"
+            example:
+              id_perro_temporal: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              nombreArchivo: foto_perfil.jpg
+              tipoMime: image/jpeg
+      responses:
+        "200":
+          description: URL de subida generada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubidaMultimediaRespuesta"
+              example:
+                message: Pase de subida generado exitosamente
+                uploadUrl: https://xyzcompany.supabase.co/storage/v1/object/upload/sign/multimedia_perros/perros/7c9e6679/1732633200000_foto_perfil.jpg?token=abc
+                rutaFinal: perros/7c9e6679-7425-40de-944b-e07fc1f90ae7/1732633200000_foto_perfil.jpg
+                publicUrl: https://xyzcompany.supabase.co/storage/v1/object/public/multimedia_perros/perros/7c9e6679/1732633200000_foto_perfil.jpg
+        "400":
+          $ref: "#/components/responses/ErrorSimpleBadRequest"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/catalogo/admin/perros:
+    get:
+      tags: [Catálogo]
+      operationId: listarPerrosAdmin
+      summary: Listar todos los perros (administración)
+      description: Devuelve la ficha completa de cada perro, incluidos los inactivos.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Lista de perros.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PerroAdmin"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+    post:
+      tags: [Catálogo]
+      operationId: registrarPerro
+      summary: Registrar un perro
+      description: |
+        Crea el perro junto con sus relaciones (raza, tamaño, características y multimedia) mediante un procedimiento
+        almacenado. Los campos `nombre`, `sexo`, `esterilizado`, `vacunado`, `estado`, `id_raza`, `id_tamano`,
+        `multimedia` y `caracteres` son obligatorios.
+
+        Responde `200` (no `201`) con el perro creado.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NuevoPerro"
+            example:
+              nombre: Luna
+              sexo: Hembra
+              edad_aprox: 2
+              tamano_medida: 45.5
+              descripcion: Juguetona y tranquila con niños.
+              cuidado_especial: Requiere medicación para la alergia cada mañana.
+              esterilizado: true
+              vacunado: true
+              estado: Disponible
+              id_raza: 5d41402a-bc4b-4a76-b971-9d911017c592
+              id_tamano: 2b7e1516-28ae-4d2a-9b0a-8f3c5e2d1a9b
+              multimedia:
+                - url: https://xyzcompany.supabase.co/storage/v1/object/public/multimedia_perros/luna.jpg
+                  tipo: foto
+              caracteres:
+                - 9a1f3c2e-6b4d-4e8a-8c1f-2d3e4f5a6b7c
+      responses:
+        "200":
+          description: Perro registrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    description: Perro creado tal como lo devuelve el procedimiento almacenado.
+                    additionalProperties: true
+        "400":
+          description: Datos inválidos en la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: Datos inválidos en la solicitud.
+                errors:
+                  - El campo obligatorio 'nombre' está vacío.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/admin/perros/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdPerro"
+    get:
+      tags: [Catálogo]
+      operationId: obtenerPerroAdmin
+      summary: Obtener ficha de un perro (administración)
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Ficha del perro.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/PerroAdmin"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/PerroNoEncontrado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+    patch:
+      tags: [Catálogo]
+      operationId: actualizarPerroAdmin
+      summary: Editar ficha de un perro
+      description: |
+        Modifica solo los campos enviados. Los campos que no son editables (como `estado`, `fotos` o `id_perro`)
+        responden `400` con el detalle en `errors`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActualizacionPerro"
+            example:
+              nombre: Luna
+              edad_aprox: 3
+              descripcion: null
+              esterilizado: true
+      responses:
+        "200":
+          description: Ficha actualizada.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/PerroAdmin"
+        "400":
+          description: Campos inválidos o sin cambios.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              examples:
+                camposInvalidos:
+                  summary: Campos inválidos
+                  value:
+                    success: false
+                    message: Hay campos inválidos.
+                    errors:
+                      edad_aprox: La edad debe ser un entero entre 0 y 30.
+                raza:
+                  summary: Raza o tamaño inexistente
+                  value:
+                    success: false
+                    message: La raza o el tamaño seleccionado no existe.
+                    errors:
+                      id_raza: Revisa la raza.
+                      id_tamano: Revisa el tamaño.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/PerroNoEncontrado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/admin/perros/{id}/desactivar:
+    parameters:
+      - $ref: "#/components/parameters/IdPerro"
+    patch:
+      tags: [Catálogo]
+      operationId: desactivarPerro
+      summary: Desactivar un perro
+      description: Marca el perro como inactivo para que no aparezca en el catálogo de clientes.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Perro desactivado.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/PerroAdmin"
+        "400":
+          description: El identificador no tiene formato UUID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: El id del perro no tiene un formato UUID válido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró el perro.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: No se encontró el perro.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/admin/perros/bulk/activar:
+    patch:
+      tags: [Catálogo]
+      operationId: activarPerrosEnLote
+      summary: Activar o desactivar perros en lote
+      description: Cambia el estado activo de varios perros a la vez.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivacionEnLote"
+            example:
+              idList:
+                - 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                - 0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d
+              action: true
+      responses:
+        "200":
+          description: Cambio aplicado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MensajeExitoso"
+              example:
+                success: true
+                message: Success in bulking update
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/admin/tamanos:
+    get:
+      tags: [Catálogo]
+      operationId: listarTamanos
+      security: []
+      summary: Listar tamaños
+      description: |
+        Catálogo de tamaños para formularios de administración.
+
+        **Nota:** en la implementación actual esta ruta no tiene verificación de sesión.
+      responses:
+        "200":
+          description: Tamaños disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaCatalogo"
+              example:
+                success: true
+                data:
+                  - id_tamano: 2b7e1516-28ae-4d2a-9b0a-8f3c5e2d1a9b
+                    nombre: Mediano
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/admin/caracteristicas:
+    get:
+      tags: [Catálogo]
+      operationId: listarCaracteristicas
+      security: []
+      summary: Listar características de comportamiento
+      description: |
+        Catálogo de características (carácter) de los perros.
+
+        **Nota:** en la implementación actual esta ruta no tiene verificación de sesión.
+      responses:
+        "200":
+          description: Características disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaCatalogo"
+              example:
+                success: true
+                data:
+                  - id_caracter: 9a1f3c2e-6b4d-4e8a-8c1f-2d3e4f5a6b7c
+                    nombre: Juguetón
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/admin/razas:
+    get:
+      tags: [Catálogo]
+      operationId: listarRazas
+      security: []
+      summary: Listar razas
+      description: |
+        Catálogo de razas para formularios de administración.
+
+        **Nota:** en la implementación actual esta ruta no tiene verificación de sesión.
+      responses:
+        "200":
+          description: Razas disponibles.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaCatalogo"
+              example:
+                success: true
+                data:
+                  - id_raza: 5d41402a-bc4b-4a76-b971-9d911017c592
+                    nombre: Mestizo
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/cliente/perros:
+    get:
+      tags: [Catálogo]
+      operationId: listarPerrosCliente
+      security: []
+      summary: Listar perros disponibles para adopción
+      description: |
+        Lista los perros activos. Todos los filtros son opcionales y se combinan. Sin filtros se devuelve el catálogo completo.
+
+        Cada perro incluye `foto_url` con su primera imagen, o cadena vacía si no tiene.
+
+        **Nota:** la respuesta exitosa usa la clave `syuccess` en la implementación actual.
+      parameters:
+        - name: sexo
+          in: query
+          description: Sexo del perro. Valores válidos `Macho` o `Hembra` (sin distinguir mayúsculas).
+          schema:
+            type: string
+            enum: [Macho, Hembra]
+        - name: tamano
+          in: query
+          description: Identificador del tamaño.
+          schema:
+            type: string
+        - name: raza
+          in: query
+          description: Identificador de la raza.
+          schema:
+            type: string
+        - name: edad
+          in: query
+          description: "Rango de edad. `cachorro` (0 a 1 años), `adulto` (2 a 4 años), `senior` (5 años o más)."
+          schema:
+            type: string
+            enum: [cachorro, adulto, senior]
+        - name: caracter
+          in: query
+          description: Identificadores de características separados por coma. El perro debe tener todas.
+          schema:
+            type: string
+            example: 9a1f3c2e-6b4d-4e8a-8c1f-2d3e4f5a6b7c,1e2d3c4b-5a69-4788-9fed-cba987654321
+      responses:
+        "200":
+          description: Perros que coinciden con los filtros.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaPerrosCliente"
+              example:
+                syuccess: true
+                data:
+                  - id_perro: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    nombre: Luna
+                    sexo: Hembra
+                    edad_aprox: 2
+                    foto_url: https://xyzcompany.supabase.co/storage/v1/object/public/multimedia_perros/luna.jpg
+        "400":
+          description: Parámetro inválido, repetido o con un identificador mal formado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              examples:
+                parametroInvalido:
+                  summary: Valor de sexo no válido
+                  value:
+                    success: false
+                    message: "Parámetro inválido: sexo"
+                identificadorInvalido:
+                  summary: Identificador con formato incorrecto
+                  value:
+                    success: false
+                    message: "Parámetro inválido: tamano, raza o caracter"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/cliente/perros/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdPerro"
+    get:
+      tags: [Catálogo]
+      operationId: obtenerPerroCliente
+      security: []
+      summary: Obtener ficha de un perro
+      description: |
+        Devuelve la ficha del perro, su información de carácter y su multimedia.
+
+        **Nota:** el error `500` de esta ruta usa la clave `sucess` en la implementación actual.
+      responses:
+        "200":
+          description: Ficha completa del perro.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    required: [dog, behavior, multimedia]
+                    properties:
+                      dog:
+                        $ref: "#/components/schemas/PerroCliente"
+                      behavior:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: true
+                      multimedia:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Multimedia"
+        "500":
+          description: Error al consultar el perro.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensajeSucess"
+              example:
+                sucess: false
+                message: Error interno al consultar el perro.
+
+  /api/catalogo/cliente/filtros:
+    get:
+      tags: [Catálogo]
+      operationId: obtenerOpcionesFiltro
+      security: []
+      summary: Obtener opciones de filtro
+      description: Devuelve las opciones de razas, tamaños y características para construir los filtros del catálogo.
+      responses:
+        "200":
+          description: Opciones de filtro.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    required: [razas, tamanos, caracteres]
+                    properties:
+                      razas:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/OpcionFiltro"
+                      tamanos:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/OpcionFiltro"
+                      caracteres:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/OpcionFiltro"
+                example:
+                  success: true
+                  data:
+                    razas:
+                      - id: 5d41402a-bc4b-4a76-b971-9d911017c592
+                        nombre: Mestizo
+                    tamanos:
+                      - id: 2b7e1516-28ae-4d2a-9b0a-8f3c5e2d1a9b
+                        nombre: Mediano
+                    caracteres:
+                      - id: 9a1f3c2e-6b4d-4e8a-8c1f-2d3e4f5a6b7c
+                        nombre: Juguetón
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/catalogo/test-limit:
+    get:
+      tags: [Catálogo]
+      operationId: probarLimitePeticiones
+      security: []
+      summary: Probar el limitador de peticiones
+      description: |
+        Ruta de prueba del limitador. Permite 3 peticiones por minuto por IP y también se limita en desarrollo.
+        Úsela solo para verificar la configuración.
+      responses:
+        "200":
+          description: Petición aceptada.
+          headers:
+            X-RateLimit-Limit:
+              description: Límite de la ventana.
+              schema:
+                type: integer
+                example: 3
+            X-RateLimit-Remaining:
+              description: Peticiones restantes en la ventana.
+              schema:
+                type: integer
+                example: 2
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, mensaje, peticionesRestantes]
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  mensaje:
+                    type: string
+                    example: ✅ Petición exitosa
+                  peticionesRestantes:
+                    type: integer
+                    example: 2
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+
+  # ============================================================
+  # DONATIVOS
+  # ============================================================
+  /api/donativos/pendientes/resumen:
+    get:
+      tags: [Donativos]
+      operationId: obtenerResumenDonativosPendientes
+      security: []
+      summary: Contar donativos pendientes
+      description: Devuelve el total de donativos pendientes de validar. No requiere autenticación.
+      responses:
+        "200":
+          description: Total de pendientes.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [totalPendientes]
+                properties:
+                  totalPendientes:
+                    type: integer
+                    minimum: 0
+                    example: 4
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/cliente/datos-fiscales:
+    get:
+      tags: [Donativos]
+      operationId: obtenerDatosFiscales
+      summary: Consultar datos fiscales del donante
+      description: Devuelve los datos fiscales de la cuenta en sesión. Solo para rol `Cliente`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Datos fiscales.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/DatosFiscales"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/UsuarioNoEncontrado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+    put:
+      tags: [Donativos]
+      operationId: guardarDatosFiscales
+      summary: Guardar datos fiscales
+      description: Guarda o actualiza los datos fiscales para emitir el CFDI. El RFC se guarda en mayúsculas.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatosFiscalesEntrada"
+            example:
+              rfc: PEPJ950412ABC
+              razon_social: Ana Pérez López
+              regimen_fiscal: "612"
+              codigo_postal: "06000"
+              correo_facturacion: ana@gmail.com
+      responses:
+        "200":
+          description: Datos guardados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MensajeExitoso"
+              example:
+                success: true
+                message: Datos fiscales guardados.
+        "400":
+          description: Datos incompletos o inválidos.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, message, errores]
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Datos incompletos.
+                  errores:
+                    type: object
+                    additionalProperties:
+                      type: string
+                example:
+                  success: false
+                  message: Datos incompletos.
+                  errores:
+                    rfc: RFC inválido
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/UsuarioNoEncontrado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/donativos/cliente/datos-fiscales/constancia:
+    put:
+      tags: [Donativos]
+      operationId: subirConstanciaFiscal
+      summary: Subir constancia de situación fiscal
+      description: |
+        Guarda la constancia enviando el archivo crudo en el cuerpo de la petición (no es multipart).
+        Acepta PDF, JPG o PNG, con un máximo de 10 MB.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: Constancia guardada.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, message, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Constancia guardada.
+                  data:
+                    type: object
+                    required: [constancia_url]
+                    properties:
+                      constancia_url:
+                        type: string
+                        format: uri
+                        example: https://xyzcompany.supabase.co/storage/v1/object/public/constancias/7c9e6679.pdf
+        "400":
+          description: Tipo de archivo no permitido o cuerpo vacío.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: Sube tu constancia en PDF, JPG o PNG.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/UsuarioNoEncontrado"
+        "413":
+          description: El archivo supera los 10 MB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: El archivo supera el límite permitido.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/donativos/cliente/donativos:
+    post:
+      tags: [Donativos]
+      operationId: registrarDonativo
+      summary: Registrar un donativo
+      description: |
+        Registra un donativo con su comprobante. El monto va en la query y el comprobante es el archivo crudo
+        en el cuerpo (PDF, JPG o PNG, máximo 10 MB). El donativo queda pendiente de validar.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: monto
+          in: query
+          required: true
+          description: Monto mayor que cero, con como máximo dos decimales.
+          schema:
+            type: string
+            example: "500.00"
+        - name: referencia
+          in: query
+          required: false
+          description: Referencia opcional del pago, de hasta 200 caracteres.
+          schema:
+            type: string
+            maxLength: 200
+            example: Transferencia 0012345
+      requestBody:
+        required: true
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "201":
+          description: Donativo registrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DonativoRegistrado"
+              example:
+                success: true
+                message: Donativo registrado.
+                data:
+                  id_donativo: 1b4e28ba-2fa1-41d2-883f-0016d3cca427
+                  estado: Pendiente
+        "400":
+          description: Monto, referencia o comprobante inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              examples:
+                montoInvalido:
+                  summary: Monto inválido
+                  value:
+                    success: false
+                    message: Escribe un monto válido.
+                comprobanteInvalido:
+                  summary: Comprobante no permitido
+                  value:
+                    success: false
+                    message: Adjunta tu comprobante en PDF, JPG o PNG.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/UsuarioNoEncontrado"
+        "413":
+          description: El comprobante supera los 10 MB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: El comprobante supera el límite permitido.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/donativos/cliente/mis-donativos:
+    get:
+      tags: [Donativos]
+      operationId: listarMisDonativos
+      summary: Listar mis donativos
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Donativos del usuario en sesión.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DonativoCliente"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/donativos/cliente/mis-donativos/{idDonativo}/cfdi:
+    parameters:
+      - name: idDonativo
+        in: path
+        required: true
+        description: Identificador del donativo.
+        schema:
+          type: string
+          format: uuid
+    post:
+      tags: [Donativos]
+      operationId: solicitarCfdi
+      summary: Solicitar CFDI de un donativo
+      description: Crea la solicitud de CFDI para un donativo ya validado. Solo se puede pedir una vez por donativo.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "201":
+          description: Solicitud creada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MensajeExitoso"
+              example:
+                success: true
+                message: Solicitud de CFDI enviada
+        "400":
+          description: El donativo no es válido, no está validado o ya tiene una solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              examples:
+                noValidado:
+                  summary: Donativo sin validar
+                  value:
+                    success: false
+                    message: Tu donativo no esta validado
+                yaSolicitado:
+                  summary: Ya existe una solicitud
+                  value:
+                    success: false
+                    message: Ya existe una solicitud de CFDI para este donativo
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró el donativo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: No se encontró el donativo
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/donativos/cliente/cfdi:
+    get:
+      tags: [Donativos]
+      operationId: listarCfdiCliente
+      summary: Listar mis CFDI
+      description: Devuelve los CFDI ya cargados por el equipo para el donante en sesión. Devuelve el arreglo directamente, sin envoltorio.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: CFDI del donante.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CfdiCliente"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/cliente/cfdi/{idSolicitud}/{tipoArchivo}:
+    parameters:
+      - name: idSolicitud
+        in: path
+        required: true
+        description: Identificador de la solicitud de CFDI.
+        schema:
+          type: string
+          format: uuid
+      - name: tipoArchivo
+        in: path
+        required: true
+        description: Formato del archivo a descargar.
+        schema:
+          type: string
+          enum: [pdf, xml]
+    get:
+      tags: [Donativos]
+      operationId: descargarCfdiCliente
+      summary: Descargar PDF o XML de un CFDI
+      description: Descarga el archivo como adjunto. La respuesta no se guarda en caché.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Archivo del CFDI.
+          headers:
+            Content-Disposition:
+              description: Nombre de descarga, por ejemplo `attachment; filename="CFDI-<uuid>.pdf"`.
+              schema:
+                type: string
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Identificador o tipo de archivo inválido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              examples:
+                identificador:
+                  summary: Identificador inválido
+                  value:
+                    error: Identificador de solicitud inválido.
+                tipo:
+                  summary: Tipo de archivo inválido
+                  value:
+                    error: Tipo de archivo inválido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró el CFDI solicitado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: No se encontró el CFDI solicitado.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/pendientes:
+    get:
+      tags: [Donativos]
+      operationId: listarDonativosPendientes
+      summary: Listar donativos pendientes
+      description: Lista los donativos pendientes de validar. Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Donativos pendientes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DonativoPendienteAdmin"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/pendientes/{idDonativo}/aprobar:
+    parameters:
+      - name: idDonativo
+        in: path
+        required: true
+        description: Identificador del donativo.
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags: [Donativos]
+      operationId: aprobarDonativo
+      summary: Aprobar un donativo
+      description: Valida el donativo. Cambia su estado de pendiente a validado.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Donativo aprobado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DonativoAprobado"
+              example:
+                id_donativo: 1b4e28ba-2fa1-41d2-883f-0016d3cca427
+                estado: Validado
+        "400":
+          description: Identificador inválido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: Identificador de donativo inválido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "409":
+          description: El donativo ya no está pendiente o no existe.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: El donativo ya no está pendiente o no existe.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/solicitudes-cfdi:
+    get:
+      tags: [Donativos]
+      operationId: listarSolicitudesCfdiPendientes
+      summary: Listar solicitudes de CFDI pendientes
+      description: Lista las solicitudes de CFDI en espera. Indica si requieren revisión.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Solicitudes de CFDI pendientes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SolicitudCfdiPendiente"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/solicitudes-cfdi/{idSolicitud}:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitudCfdi"
+    get:
+      tags: [Donativos]
+      operationId: obtenerDetalleSolicitudCfdi
+      summary: Obtener detalle de una solicitud de CFDI
+      description: Incluye el donativo, los datos fiscales, el CFDI cargado y los motivos por los que requiere revisión.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Detalle de la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SolicitudCfdiDetalle"
+        "400":
+          description: Identificador inválido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: Identificador de solicitud inválido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró la solicitud pendiente de CFDI.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: No se encontró la solicitud pendiente de CFDI.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/solicitudes-cfdi/{idSolicitud}/validar-cfdi:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitudCfdi"
+    post:
+      tags: [Donativos]
+      operationId: validarCfdi
+      summary: Validar los archivos de un CFDI
+      description: |
+        Revisa el PDF y el XML sin guardarlos. Confirma que el RFC, el monto y el UUID coinciden con el donativo.
+        Úselo antes de `cargar-cfdi`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ArchivosCfdi"
+      responses:
+        "200":
+          description: Archivos válidos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CfdiValidado"
+              example:
+                valido: true
+                uuid: 6ba7b810-9dad-41d1-80b4-00c04fd430c8
+                rfc_receptor: PEPJ950412ABC
+                monto: 500
+                donativo:
+                  id_donativo: 1b4e28ba-2fa1-41d2-883f-0016d3cca427
+                  monto: 500
+                  rfc: PEPJ950412ABC
+        "400":
+          $ref: "#/components/responses/ErrorCfdi400"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ErrorCfdi404"
+        "409":
+          $ref: "#/components/responses/ErrorCfdi409"
+        "413":
+          $ref: "#/components/responses/ErrorArchivoGrande"
+        "415":
+          $ref: "#/components/responses/ErrorCfdi415"
+        "422":
+          $ref: "#/components/responses/ErrorCfdi422"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/solicitudes-cfdi/{idSolicitud}/cargar-cfdi:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitudCfdi"
+    post:
+      tags: [Donativos]
+      operationId: cargarCfdi
+      summary: Cargar CFDI y enviarlo por correo
+      description: |
+        Guarda el PDF y el XML validados y envía el CFDI al correo de facturación del donante. Requiere que el
+        administrador confirme la revisión del PDF con `confirmar_pdf=true`.
+
+        Si el envío de correo falla, el CFDI queda guardado y la respuesta incluye `correo.estado` = `Error`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ArchivosCfdiConfirmacion"
+      responses:
+        "201":
+          description: CFDI guardado. El resultado del correo viene en `correo`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CfdiAlmacenado"
+              example:
+                almacenado: true
+                correo:
+                  estado: Enviado
+        "400":
+          $ref: "#/components/responses/ErrorCfdi400"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ErrorCfdi404"
+        "409":
+          $ref: "#/components/responses/ErrorCfdi409"
+        "413":
+          $ref: "#/components/responses/ErrorArchivoGrande"
+        "415":
+          $ref: "#/components/responses/ErrorCfdi415"
+        "422":
+          $ref: "#/components/responses/ErrorCfdi422"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  /api/donativos/admin/solicitudes-cfdi/{idSolicitud}/reintentar-correo:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitudCfdi"
+    post:
+      tags: [Donativos]
+      operationId: reintentarCorreoCfdi
+      summary: Reintentar el envío del CFDI por correo
+      description: Vuelve a enviar el CFDI ya cargado. No aplica si el correo ya se envió o está en proceso.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Reenvío realizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CfdiAlmacenado"
+              example:
+                almacenado: true
+                correo:
+                  estado: Enviado
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ErrorCfdi404"
+        "409":
+          $ref: "#/components/responses/ErrorCfdi409"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoSimple"
+
+  # ============================================================
+  # SOLICITUDES
+  # ============================================================
+  /api/solicitudes:
+    post:
+      tags: [Solicitudes]
+      operationId: guardarBorradorSolicitud
+      summary: Crear o actualizar borrador de solicitud
+      description: |
+        Guarda el formulario de adopción como borrador para un perro. Si ya existe un borrador para ese perro,
+        lo actualiza y responde `200`. Si no existe, lo crea y responde `201`.
+
+        Acepta los nombres en camelCase de este esquema, y también sus equivalentes en snake_case que usa la app
+        (`id_perro`, `tuvo_mascotas`, `motivo_adopcion`, etc.). No acepta `idUsuario`; el usuario sale del token.
+
+        Si ya hay una solicitud enviada para el perro, responde `409`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BorradorSolicitud"
+            example:
+              idPerro: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              ocupacion: Diseñadora gráfica
+              tuvoMascotas: true
+              otrasMascotas: false
+              motivoAdopcion: Quiero compañía en casa.
+              dondeVivira: En la sala y el patio
+              personasEnCasa: 2
+              todosDeAcuerdo: true
+              tipoVivienda: Depto
+              jardinPatio: "No"
+              caseroAcepta: true
+              sobreMascotas: Tuve un gato durante 10 años.
+              cuidadosBasicos: Paseos diarios y agua fresca.
+              opinionEsterilizacion: Estoy de acuerdo.
+              tieneVeterinario: true
+              detalleVeterinario: Clínica Patitas, en mi colonia.
+              tiempoSolo: Menos de 4 horas al día.
+              rutinaDiaria: Trabajo desde casa.
+              manejoComportamiento: Refuerzo positivo.
+      responses:
+        "200":
+          description: Borrador actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BorradorRespuesta"
+              example:
+                success: true
+                data:
+                  id_solicitud: 4f8c1a2b-3d4e-4f5a-8b6c-7d8e9f0a1b2c
+                  estado: Borrador
+        "201":
+          description: Borrador creado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BorradorRespuesta"
+              example:
+                success: true
+                data:
+                  id_solicitud: 4f8c1a2b-3d4e-4f5a-8b6c-7d8e9f0a1b2c
+                  estado: Borrador
+        "400":
+          $ref: "#/components/responses/ErrorValidacionSolicitud"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "409":
+          $ref: "#/components/responses/SolicitudYaEnviada"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/cliente:
+    post:
+      tags: [Solicitudes]
+      operationId: guardarBorradorSolicitudCliente
+      summary: Crear o actualizar borrador de solicitud (ruta de cliente)
+      description: Misma operación que `POST /api/solicitudes`, expuesta bajo el prefijo `/cliente` que usa la app.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BorradorSolicitud"
+      responses:
+        "200":
+          description: Borrador actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BorradorRespuesta"
+        "201":
+          description: Borrador creado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BorradorRespuesta"
+        "400":
+          $ref: "#/components/responses/ErrorValidacionSolicitud"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "409":
+          $ref: "#/components/responses/SolicitudYaEnviada"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/{id}/documentos:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitud"
+    post:
+      tags: [Solicitudes]
+      operationId: subirDocumentoSolicitud
+      summary: Subir documento de la solicitud
+      description: |
+        Sube o reemplaza un documento de la solicitud. Acepta PDF, JPG o PNG de hasta 2 MB.
+        Solo el dueño de la solicitud puede subir documentos, y solo mientras la solicitud sea editable.
+        Al reemplazar, el documento anterior del mismo tipo se elimina.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/SubidaDocumento"
+      responses:
+        "200":
+          description: Documento registrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentoSubido"
+              example:
+                success: true
+                message: Documento subido y registrado exitosamente
+                id_documento: 9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b
+                url_archivo: https://xyzcompany.supabase.co/storage/v1/object/public/solicitudes/ine.pdf
+                fileName: ine.pdf
+                sizeBytes: 524288
+                data:
+                  id_documento: 9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b
+                  tipo: INE
+                  url_archivo: https://xyzcompany.supabase.co/storage/v1/object/public/solicitudes/ine.pdf
+                  nombre_archivo: ine.pdf
+                  tamano_bytes: 524288
+        "400":
+          description: Falta el archivo, el tipo es inválido o el identificador no es válido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              examples:
+                sinArchivo:
+                  summary: Sin archivo
+                  value:
+                    success: false
+                    error: No se proporcionó ningún archivo
+                    message: No se proporcionó ningún archivo
+                tipoInvalido:
+                  summary: Tipo inválido
+                  value:
+                    success: false
+                    message: Tipo de documento inválido. Usa INE o DOMICILIO.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          description: La solicitud pertenece a otro usuario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: No tienes permiso para modificar esta solicitud.
+        "404":
+          description: No se encontró la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: No se encontró la solicitud
+        "409":
+          description: La solicitud ya fue enviada y no admite cambios en documentos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: La solicitud ya fue enviada y no permite modificar documentos.
+        "413":
+          description: El archivo supera los 2 MB.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: El archivo supera los 2 MB.
+        "415":
+          description: Formato de archivo no permitido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: Formato no permitido. Usa PDF, JPG o PNG.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/{id}/enviar:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitud"
+    post:
+      tags: [Solicitudes]
+      operationId: enviarSolicitud
+      summary: Enviar solicitud de adopción
+      description: |
+        Envía el borrador a revisión. Valida todos los campos del formulario y exige los documentos INE y
+        comprobante de domicilio. Pasa la solicitud a `Pendiente de Revisión`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Solicitud enviada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SolicitudEnviada"
+              example:
+                success: true
+                message: Solicitud enviada correctamente.
+                data:
+                  id_solicitud: 4f8c1a2b-3d4e-4f5a-8b6c-7d8e9f0a1b2c
+                  estado: Pendiente de Revisión
+        "400":
+          $ref: "#/components/responses/ErrorValidacionSolicitud"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: No se encontró la solicitud.
+        "409":
+          $ref: "#/components/responses/SolicitudYaEnviada"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/cliente/activa:
+    get:
+      tags: [Solicitudes]
+      operationId: obtenerSolicitudActiva
+      summary: Consultar si hay una solicitud activa para un perro
+      description: Indica si el usuario ya tiene una solicitud para el perro. `data` es `null` si puede empezar una nueva.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: idPerro
+          in: query
+          required: true
+          description: Identificador del perro.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Estado de la solicitud activa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SolicitudActiva"
+              examples:
+                conSolicitud:
+                  summary: Ya tiene solicitud
+                  value:
+                    success: true
+                    data:
+                      id_solicitud: 4f8c1a2b-3d4e-4f5a-8b6c-7d8e9f0a1b2c
+                      estado: Borrador
+                sinSolicitud:
+                  summary: Puede empezar
+                  value:
+                    success: true
+                    data: null
+        "400":
+          $ref: "#/components/responses/ErrorMensajeSimple400"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/cliente/mis-solicitudes:
+    get:
+      tags: [Solicitudes]
+      operationId: listarMisSolicitudes
+      summary: Listar mis solicitudes enviadas
+      description: Devuelve las solicitudes enviadas del usuario. No incluye los borradores.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Solicitudes del usuario.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MiSolicitud"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/cliente/perfil:
+    get:
+      tags: [Solicitudes]
+      operationId: obtenerPerfilAdoptante
+      summary: Obtener perfil para la solicitud
+      description: Datos del adoptante que se muestran al inicio del formulario.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Perfil del adoptante.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/PerfilAdoptante"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró el perfil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: No se encontró el perfil.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/solicitudes/admin/solicitudes:
+    get:
+      tags: [Solicitudes]
+      operationId: listarSolicitudesAdmin
+      summary: Listar solicitudes (administración)
+      description: |
+        Lista paginada de solicitudes, de 10 por página. Incluye un resumen con los conteos por estado.
+        Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: perro
+          in: query
+          description: Filtra por identificador de perro. `todos` no filtra.
+          schema:
+            type: string
+            default: todos
+        - name: estado
+          in: query
+          description: Filtra por estado. `todos` no filtra, `pendientes` agrupa `por_revisar` y `en_revision`.
+          schema:
+            type: string
+            default: todos
+            enum: [todos, pendientes, por_revisar, en_revision, aprobada, rechazada]
+        - name: page
+          in: query
+          description: Número de página, empezando en 1.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: Página de solicitudes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaSolicitudesAdmin"
+        "400":
+          description: Número de página inválido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: El número de página no es válido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          description: No se pudieron cargar las solicitudes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: No se pudieron cargar las solicitudes.
+
+  /api/solicitudes/admin/solicitudes/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitud"
+    get:
+      tags: [Solicitudes]
+      operationId: obtenerSolicitudAdmin
+      summary: Obtener detalle de una solicitud (administración)
+      description: Devuelve las respuestas del formulario, los datos del adoptante, el perro y los documentos.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Detalle de la solicitud.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DetalleSolicitudAdmin"
+        "400":
+          description: Identificador inválido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: El id de la solicitud no es válido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          description: No se encontró la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: No se encontró la solicitud.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          description: No se pudo cargar el detalle.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: No se pudo cargar el detalle de la solicitud.
+
+  /api/solicitudes/admin/solicitudes/{id}/resolucion:
+    parameters:
+      - $ref: "#/components/parameters/IdSolicitud"
+    post:
+      tags: [Solicitudes]
+      operationId: resolverSolicitud
+      summary: Registrar decisión sobre una solicitud
+      description: |
+        Registra la decisión del administrador. Al rechazar es obligatorio enviar un comentario.
+        `puede_editar` solo aplica cuando la decisión es `rechazada` y permite al adoptante corregir y reenviar.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolucionSolicitud"
+            example:
+              state: rechazada
+              comment: Falta el comprobante de domicilio legible.
+              puede_editar: true
+      responses:
+        "200":
+          description: Resolución guardada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolucionRespuesta"
+              example:
+                message: Resolución guardada
+                data:
+                  id_solicitud: 4f8c1a2b-3d4e-4f5a-8b6c-7d8e9f0a1b2c
+                  estado: rechazada
+        "400":
+          description: Decisión inválida o falta el comentario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              examples:
+                decisionInvalida:
+                  summary: Decisión inválida
+                  value:
+                    error: Decisión inválida
+                comentarioRequerido:
+                  summary: Falta comentario al rechazar
+                  value:
+                    error: El comentario es obligatorio al rechazar la solicitud
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "409":
+          description: Conflicto con el estado actual de la solicitud.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: La solicitud ya no se puede resolver.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          description: No se pudo guardar la resolución.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorSimple"
+              example:
+                error: Error al guardar la resolución
+
+  # ============================================================
+  # VOLUNTARIOS
+  # ============================================================
+  /api/voluntarios/cliente/programas:
+    get:
+      tags: [Voluntarios]
+      operationId: listarProgramasVigentes
+      summary: Listar programas vigentes
+      description: Lista los programas abiertos. Indica el cupo disponible y si el usuario ya está inscrito.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Programas vigentes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaProgramas"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/voluntarios/cliente/mis-programas:
+    get:
+      tags: [Voluntarios]
+      operationId: listarMisProgramas
+      summary: Listar mis programas
+      description: Lista solo los programas en los que el usuario está inscrito.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Programas inscritos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaProgramas"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensaje"
+
+  /api/voluntarios/cliente/programas/{idPrograma}:
+    parameters:
+      - $ref: "#/components/parameters/IdPrograma"
+    get:
+      tags: [Voluntarios]
+      operationId: obtenerDetallePrograma
+      summary: Obtener detalle de un programa
+      description: Un programa cancelado o finalizado solo se muestra a quienes estuvieron inscritos.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Detalle del programa.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/DetallePrograma"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontrado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          description: Error interno al consultar el programa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensaje"
+              example:
+                success: false
+                message: Error interno al consultar el programa.
+
+  /api/voluntarios/programas/{idPrograma}/inscripciones:
+    parameters:
+      - $ref: "#/components/parameters/IdPrograma"
+    post:
+      tags: [Voluntarios]
+      operationId: inscribirseAPrograma
+      summary: Inscribirse a un programa
+      description: |
+        Inscribe al usuario en el programa. La validación de reglas y la inscripción se hacen en una sola transacción.
+
+        Códigos de error: `PROGRAMA_NO_ENCONTRADO` (404), `PROGRAMA_NO_DISPONIBLE`, `PROGRAMA_INICIADO`,
+        `YA_INSCRITO` y `SIN_CUPO` (409).
+
+        **Nota:** las respuestas usan la clave `sucess` en la implementación actual.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "201":
+          description: Inscripción registrada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InscripcionCreada"
+              example:
+                sucess: true
+                data:
+                  id_programa: 1b4e28ba-2fa1-41d2-883f-0016d3cca427
+                  fecha_inscripcion: "2026-11-20T10:00:00"
+                  estado: Aceptado
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontradoInscripcion"
+        "409":
+          $ref: "#/components/responses/ConflictoInscripcion"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoInscripcion"
+    patch:
+      tags: [Voluntarios]
+      operationId: cancelarInscripcion
+      summary: Cancelar mi inscripción
+      description: |
+        Cancela la inscripción del usuario. No borra la fila, cambia su estado de `Aceptado` a `Pendiente`.
+        No se puede cancelar una vez que el programa comenzó.
+
+        **Nota:** las respuestas usan la clave `sucess` en la implementación actual.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Inscripción cancelada.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sucess, data]
+                properties:
+                  sucess:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    additionalProperties: true
+                    description: Inscripción tras la cancelación.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontradoInscripcion"
+        "409":
+          description: El programa ya comenzó o el usuario no está inscrito.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorInscripcion"
+              examples:
+                iniciado:
+                  summary: Programa iniciado
+                  value:
+                    sucess: false
+                    code: PROGRAMA_INICIADO
+                    message: El programa ya comenzó, ya no puedes cancelar.
+                noInscrito:
+                  summary: No inscrito
+                  value:
+                    sucess: false
+                    code: NO_INSCRITO
+                    message: No estás inscrito en este programa.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoInscripcion"
+
+  /api/voluntarios/admin/programas/calendario:
+    get:
+      tags: [Voluntarios]
+      operationId: obtenerCalendarioProgramas
+      summary: Consultar calendario de programas
+      description: |
+        Devuelve los programas del rango ampliado a semanas completas y las semanas sin cobertura
+        (sin ningún programa activo). Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: desde
+          in: query
+          required: true
+          description: Fecha de inicio del rango, en formato `AAAA-MM-DD`.
+          schema:
+            type: string
+            format: date
+            example: "2026-11-01"
+        - name: hasta
+          in: query
+          required: true
+          description: Fecha de fin del rango, en formato `AAAA-MM-DD`.
+          schema:
+            type: string
+            format: date
+            example: "2026-11-30"
+      responses:
+        "200":
+          description: Calendario del rango.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalendarioProgramas"
+        "400":
+          $ref: "#/components/responses/RangoInvalido"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoVoluntariado"
+
+  /api/voluntarios/admin/programas/{idPrograma}:
+    parameters:
+      - $ref: "#/components/parameters/IdPrograma"
+    get:
+      tags: [Voluntarios]
+      operationId: obtenerProgramaParaEditar
+      summary: Obtener programa para editar
+      description: Devuelve los campos del programa, el número de inscritos activos y si todavía es editable.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Programa con sus datos de edición.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/ProgramaEditable"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontradoVoluntariado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoVoluntariado"
+    put:
+      tags: [Voluntarios]
+      operationId: editarPrograma
+      summary: Editar programa
+      description: |
+        Actualiza solo los campos enviados y valida el programa completo. Si hay empalmes con otros programas,
+        responde `409` con `code` = `OVERLAP` hasta que se envíe `confirmarEmpalme: true`.
+
+        Si el cupo es menor a los inscritos activos responde `409` con `CUPO_MENOR_A_INSCRITOS`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EdicionPrograma"
+            example:
+              cupoMaximo: 20
+              ubicacion: Parque Lira, zona de juegos
+              confirmarEmpalme: false
+      responses:
+        "200":
+          description: Programa actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultadoEdicionPrograma"
+              example:
+                success: true
+                data:
+                  programa:
+                    idPrograma: 1b4e28ba-2fa1-41d2-883f-0016d3cca427
+                    nombre: Jornada de paseo
+                  inscritosActivos: 5
+                  avisarInscritos: true
+        "400":
+          $ref: "#/components/responses/ValidacionVoluntariado"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontradoVoluntariado"
+        "409":
+          description: El programa no es editable, el cupo es menor a los inscritos o hay empalmes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorVoluntariado"
+              examples:
+                noEditable:
+                  summary: Programa no editable
+                  value:
+                    success: false
+                    code: PROGRAMA_NO_EDITABLE
+                    message: Este programa ya no se puede editar.
+                cupo:
+                  summary: Cupo menor a inscritos
+                  value:
+                    success: false
+                    code: CUPO_MENOR_A_INSCRITOS
+                    message: "Hay 5 inscritos, el cupo no puede ser menor."
+                    inscritosActivos: 5
+                empalme:
+                  summary: Empalme con otro programa
+                  value:
+                    success: false
+                    code: OVERLAP
+                    message: Existen jornadas que coinciden con el horario.
+                    empalmes:
+                      - idPrograma: 9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a
+                        nombre: Jornada de limpieza
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoVoluntariado"
+
+  /api/voluntarios/admin/programas/{idPrograma}/cancelacion:
+    parameters:
+      - $ref: "#/components/parameters/IdPrograma"
+    post:
+      tags: [Voluntarios]
+      operationId: cancelarPrograma
+      summary: Cancelar programa
+      description: Cancela el programa y devuelve el número de inscritos activos al momento de la cancelación.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelacionPrograma"
+            example:
+              motivo: Lluvia pronosticada para todo el día.
+      responses:
+        "200":
+          description: Programa cancelado.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    required: [programa, inscritosActivos]
+                    properties:
+                      programa:
+                        type: object
+                        additionalProperties: true
+                      inscritosActivos:
+                        type: integer
+                        minimum: 0
+                        example: 5
+        "400":
+          $ref: "#/components/responses/ValidacionVoluntariado"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontradoVoluntariado"
+        "409":
+          description: El programa ya no se puede cancelar.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorVoluntariado"
+              example:
+                success: false
+                code: PROGRAMA_NO_CANCELABLE
+                message: Este programa ya no se puede cancelar.
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoVoluntariado"
+
+  /api/voluntarios/admin/programas/{idPrograma}/inscritos:
+    parameters:
+      - $ref: "#/components/parameters/IdPrograma"
+    get:
+      tags: [Voluntarios]
+      operationId: listarInscritosPrograma
+      summary: Listar inscritos de un programa
+      description: Lista de inscritos con su contacto y su asistencia. Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Lista de inscritos.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: "#/components/schemas/ListaInscritos"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "404":
+          $ref: "#/components/responses/ProgramaNoEncontradoVoluntariado"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoVoluntariado"
+
+  /api/voluntarios/programas/tipos:
+    get:
+      tags: [Voluntarios]
+      operationId: listarTiposPrograma
+      summary: Listar tipos de programa
+      description: Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      responses:
+        "200":
+          description: Tipos de programa.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tipos]
+                properties:
+                  tipos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TipoPrograma"
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensajeVoluntariado"
+    post:
+      tags: [Voluntarios]
+      operationId: registrarTipoPrograma
+      summary: Registrar tipo de programa
+      description: Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NuevoTipoPrograma"
+            example:
+              nombre: Paseo
+              descripcion: Paseos con perros en el parque.
+      responses:
+        "201":
+          description: Tipo creado.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tipo]
+                properties:
+                  tipo:
+                    $ref: "#/components/schemas/TipoPrograma"
+        "400":
+          description: Datos del tipo inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensajeVoluntariado"
+              example:
+                message: Datos del tipo inválidos.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensajeVoluntariado"
+
+  /api/voluntarios/programas/empalmes:
+    get:
+      tags: [Voluntarios]
+      operationId: consultarEmpalmesPrograma
+      summary: Consultar empalmes de un horario
+      description: Devuelve los programas que se cruzan con un horario propuesto. Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      parameters:
+        - name: fechaInicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12-05"
+        - name: horaInicio
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{2}:\d{2}$'
+            example: "09:00"
+        - name: fechaFin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12-05"
+        - name: horaFin
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{2}:\d{2}$'
+            example: "13:00"
+      responses:
+        "200":
+          description: Empalmes encontrados. Puede ser una lista vacía.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [empalmes]
+                properties:
+                  empalmes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Empalme"
+        "400":
+          description: Faltan datos del horario.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensajeVoluntariado"
+              example:
+                message: Faltan fechas u horas.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensajeVoluntariado"
+
+  /api/voluntarios/programas:
+    post:
+      tags: [Voluntarios]
+      operationId: crearPrograma
+      summary: Crear programa de voluntariado
+      description: |
+        Crea un programa. Si el horario se cruza con otro programa responde `409` con `code` = `OVERLAP`
+        y la lista de `empalmes`. Para crearlo de todos modos, envíe `confirmarEmpalme: true`.
+        Solo para `Administrador` o `Root`.
+      security:
+        - BearerAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NuevoPrograma"
+            example:
+              nombre: Paseo en el parque
+              tipo: Paseo
+              descripcion: Paseo guiado con perros en adopción.
+              ubicacion: Parque Lira
+              fechaInicio: "2026-12-05"
+              horaInicio: "09:00"
+              fechaFin: "2026-12-05"
+              horaFin: "13:00"
+              cupoMaximo: 10
+              confirmarEmpalme: false
+      responses:
+        "201":
+          description: Programa creado.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, programa]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  programa:
+                    type: object
+                    additionalProperties: true
+                    description: Programa creado.
+        "400":
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMensajeVoluntariado"
+              example:
+                message: El campo nombre es inválido.
+        "401":
+          $ref: "#/components/responses/NoAutenticadoSimple"
+        "403":
+          $ref: "#/components/responses/SinPermisos"
+        "409":
+          description: El horario se cruza con otros programas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEmpalme"
+              example:
+                code: OVERLAP
+                message: Existen jornadas que coinciden con el horario.
+                empalmes:
+                  - idPrograma: 9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a
+                    nombre: Jornada de limpieza
+        "429":
+          $ref: "#/components/responses/LimiteDePeticiones"
+        "500":
+          $ref: "#/components/responses/ErrorInternoMensajeVoluntariado"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Token JWT (HS256) de la app Android. Requiere el encabezado `x-client: mobile`; sin él, el
+        encabezado `Authorization` se ignora.
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+      description: Cookie `token` del panel web. La crea `POST /api/perfiles/login`.
+
+  parameters:
+    XClient:
+      name: x-client
+      in: header
+      required: false
+      description: Usar `mobile` para que la respuesta incluya el `token` en el cuerpo, en lugar de la cookie.
+      schema:
+        type: string
+        enum: [mobile]
+    IdPerro:
+      name: id
+      in: path
+      required: true
+      description: Identificador del perro.
+      schema:
+        type: string
+        format: uuid
+    IdPrograma:
+      name: idPrograma
+      in: path
+      required: true
+      description: Identificador del programa de voluntariado.
+      schema:
+        type: string
+        format: uuid
+    IdSolicitud:
+      name: id
+      in: path
+      required: true
+      description: Identificador de la solicitud de adopción.
+      schema:
+        type: string
+        format: uuid
+    IdSolicitudCfdi:
+      name: idSolicitud
+      in: path
+      required: true
+      description: Identificador de la solicitud de CFDI.
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    NoAutenticadoSimple:
+      description: Falta el token, el token no es válido o venció.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          examples:
+            sinToken:
+              summary: Sin token
+              value:
+                error: No autenticado
+            tokenInvalido:
+              summary: Token inválido o vencido
+              value:
+                error: Token inválido o expirado
+    NoAutenticadoEstandar:
+      description: La sesión no es válida o la cuenta ya no existe.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEstandar"
+          example:
+            error: No autenticado
+            code: UNAUTHENTICATED
+    SinPermisos:
+      description: La cuenta no tiene el rol requerido para esta acción.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: No tienes permisos para esta acción
+    LimiteDePeticiones:
+      description: Se excedió el límite de peticiones de la ruta.
+      headers:
+        X-RateLimit-Limit:
+          description: Límite de la ventana.
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          description: Peticiones restantes.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorLimite"
+          example:
+            ok: false
+            error: "Demasiadas peticiones. Límite permitido: 10 cada 15 m."
+    ErrorValidacion:
+      description: Datos de registro inválidos. `fields` indica cada campo con error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEstandar"
+          example:
+            error: Error de validación en los datos
+            code: VALIDATION_ERROR
+            fields:
+              correo: Ingresa un correo válido de Gmail, Outlook, Yahoo, Hotmail o iCloud.
+              privacidad: Acepta la política de privacidad
+    CodigoInvalido:
+      description: El código es incorrecto, venció o ya no se puede usar.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEstandar"
+          example:
+            error: El código no es válido o venció. Solicita uno nuevo.
+            code: INVALID_EMAIL_CODE
+    OkCorreo:
+      description: Operación completada.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OkRespuesta"
+          example:
+            ok: true
+    RespuestaGenericaCorreo:
+      description: Solicitud recibida. Responde igual exista o no la cuenta.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MensajeGenerico"
+          example:
+            message: Si la cuenta corresponde, recibirás un código en tu correo.
+    CorreoNoDisponible:
+      description: El correo móvil no está habilitado o el proveedor de correo no responde.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEstandar"
+          example:
+            error: El correo móvil todavía no está habilitado.
+            code: EMAIL_UNAVAILABLE
+    ErrorInternoSimple:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: Error interno
+    ErrorInternoMensaje:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMensaje"
+          example:
+            success: false
+            message: Error interno al consultar los datos.
+    ErrorInternoEstandar:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEstandar"
+          example:
+            error: Error interno del servidor
+            code: INTERNAL_ERROR
+    ErrorInternoInscripcion:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorInscripcion"
+          example:
+            sucess: false
+            code: ERROR_INTERNO
+            message: Error interno al procesar la inscripción.
+    ErrorInternoVoluntariado:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVoluntariado"
+          example:
+            success: false
+            code: ERROR_INTERNO
+            message: Ocurrió un error. Intenta de nuevo.
+    ErrorInternoMensajeVoluntariado:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMensajeVoluntariado"
+          example:
+            message: Error al cargar los tipos.
+    ErrorSimpleBadRequest:
+      description: Datos incompletos o inválidos.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: Faltan datos del archivo (id_perro_temporal, nombreArchivo o tipoMime)
+    ErrorMensajeSimple400:
+      description: Falta un parámetro obligatorio.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMensaje"
+          example:
+            success: false
+            message: Faltan idPerro.
+    ErrorValidacionSolicitud:
+      description: Datos del formulario inválidos. `fields` indica cada campo con error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEstandar"
+          example:
+            error: Datos inválidos.
+            code: VALIDATION_ERROR
+            fields:
+              ocupacion: Faltan los datos generales (ocupación).
+              documentos: Faltan documentos obligatorios (INE y Comprobante de domicilio).
+    SolicitudYaEnviada:
+      description: La solicitud ya fue enviada o no puede modificarse.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMensaje"
+          example:
+            success: false
+            message: Ya tienes una solicitud enviada o activa para este perro.
+    PerroNoEncontrado:
+      description: No se encontró el perro.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMensaje"
+          example:
+            success: false
+            message: El perro ya no existe.
+    UsuarioNoEncontrado:
+      description: No se encontró el usuario.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMensaje"
+          example:
+            success: false
+            message: No se encontró el usuario.
+    ErrorCfdi400:
+      description: Datos inválidos, archivos faltantes o confirmación pendiente.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          examples:
+            confirmacion:
+              summary: Falta confirmar la revisión del PDF
+              value:
+                error: Confirma que revisaste el PDF y que corresponde al CFDI del XML.
+                codigo: CONFIRMACION_PDF_REQUERIDA
+            xmlMalformado:
+              summary: XML mal formado
+              value:
+                error: Adjunta únicamente un PDF y un XML.
+    ErrorCfdi404:
+      description: No se encontró la solicitud o el CFDI.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: No se encontró la solicitud pendiente de CFDI.
+    ErrorCfdi409:
+      description: Conflicto con el estado del CFDI, por ejemplo UUID duplicado o correo ya enviado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: Ya existe un CFDI con ese UUID.
+            codigo: UUID_DUPLICADO
+    ErrorArchivoGrande:
+      description: El archivo supera el tamaño permitido.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: El archivo supera el límite de 10 MB.
+    ErrorCfdi415:
+      description: Formato de archivo incorrecto.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: El archivo debe ser XML válido.
+            codigo: FORMATO_INCORRECTO
+    ErrorCfdi422:
+      description: El RFC o el monto no coinciden con el donativo, o el donativo no está validado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorSimple"
+          example:
+            error: El RFC del CFDI no coincide con los datos fiscales.
+            codigo: RFC_NO_COINCIDE
+    ProgramaNoEncontrado:
+      description: No se encontró el programa.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVoluntariado"
+          example:
+            success: false
+            code: PROGRAMA_NO_ENCONTRADO
+            message: Este programa ya no está disponible.
+    ProgramaNoEncontradoVoluntariado:
+      description: No se encontró el programa.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVoluntariado"
+          example:
+            success: false
+            code: PROGRAMA_NO_ENCONTRADO
+            message: No encontramos este programa.
+    ProgramaNoEncontradoInscripcion:
+      description: No se encontró el programa.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorInscripcion"
+          example:
+            sucess: false
+            code: PROGRAMA_NO_ENCONTRADO
+            message: No encontramos este programa.
+    ConflictoInscripcion:
+      description: La inscripción no se puede completar.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorInscripcion"
+          examples:
+            sinCupo:
+              summary: Sin cupo
+              value:
+                sucess: false
+                code: SIN_CUPO
+                message: El programa ya no tiene lugares.
+            yaInscrito:
+              summary: Ya inscrito
+              value:
+                sucess: false
+                code: YA_INSCRITO
+                message: Ya estás inscrito en este programa.
+            noDisponible:
+              summary: Programa no disponible
+              value:
+                sucess: false
+                code: PROGRAMA_NO_DISPONIBLE
+                message: El programa no está abierto a inscripciones.
+    RangoInvalido:
+      description: El rango de fechas no es válido.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVoluntariado"
+          example:
+            success: false
+            code: RANGO_INVALIDO
+            message: El rango de fechas no es válido.
+    ValidacionVoluntariado:
+      description: Datos del programa inválidos. `campo` indica el dato con error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorVoluntariado"
+          example:
+            success: false
+            code: VALIDACION
+            message: El campo nombre es inválido.
+            campo: nombre
+
+  schemas:
+    # ---------- Errores ----------
+    ErrorSimple:
+      type: object
+      description: Forma de error del middleware de autenticación y de varias rutas de administración.
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: No autenticado
+        codigo:
+          type: string
+          description: Código opcional para diferenciar el tipo de error, usado por algunas rutas de CFDI.
+          example: CONFIRMACION_PDF_REQUERIDA
+    ErrorEstandar:
+      type: object
+      description: Forma de error estándar del módulo de perfiles y del envío de solicitudes.
+      required: [error, code]
+      properties:
+        error:
+          type: string
+          example: Error de validación en los datos
+        code:
+          type: string
+          description: Código estable que la app usa para decidir qué mostrar.
+          example: VALIDATION_ERROR
+        fields:
+          type: object
+          description: Errores por campo.
+          additionalProperties:
+            type: string
+    ErrorMensaje:
+      type: object
+      description: Forma de error con `message`, usada por catálogo, donativos y algunas rutas de solicitudes.
+      required: [message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Datos inválidos.
+        error:
+          type: string
+          description: Presente en algunas respuestas de subida de documentos.
+        errors:
+          description: Lista de mensajes o mapa de errores por campo.
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: object
+              additionalProperties:
+                type: string
+        errores:
+          type: object
+          description: Errores por campo (usado por datos fiscales).
+          additionalProperties:
+            type: string
+    ErrorMensajeSucess:
+      type: object
+      description: Forma de error de `GET /api/catalogo/cliente/perros/{id}`, que usa la clave `sucess` en la implementación actual.
+      required: [sucess, message]
+      properties:
+        sucess:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error interno al consultar el perro.
+    ErrorVoluntariado:
+      type: object
+      description: Forma de error del módulo de voluntariado (administración y consulta de programas).
+      required: [success, code, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        code:
+          type: string
+          example: PROGRAMA_NO_ENCONTRADO
+        message:
+          type: string
+          example: Este programa ya no está disponible.
+        campo:
+          type: string
+          description: Campo con error, cuando aplica.
+        inscritosActivos:
+          type: integer
+        empalmes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Empalme"
+    ErrorInscripcion:
+      type: object
+      description: Forma de error de inscripciones. Usa la clave `sucess` en la implementación actual.
+      required: [sucess, code, message]
+      properties:
+        sucess:
+          type: boolean
+          example: false
+        code:
+          type: string
+          example: SIN_CUPO
+        message:
+          type: string
+          example: El programa ya no tiene lugares.
+    ErrorMensajeVoluntariado:
+      type: object
+      description: Forma de error de tipos, empalmes y creación de programas (solo `message`).
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Faltan fechas u horas.
+        code:
+          type: string
+          example: OVERLAP
+    ErrorEmpalme:
+      type: object
+      description: Respuesta de conflicto de horario al crear un programa.
+      required: [code, message, empalmes]
+      properties:
+        code:
+          type: string
+          example: OVERLAP
+        message:
+          type: string
+          example: Existen jornadas que coinciden con el horario.
+        empalmes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Empalme"
+    ErrorLimite:
+      type: object
+      description: Respuesta del limitador de peticiones.
+      required: [ok, error]
+      properties:
+        ok:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Demasiadas peticiones. Límite permitido: 60 cada 1 m."
+
+    # ---------- Genéricos ----------
+    EstadoServicio:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+    OkRespuesta:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          example: true
+    MensajeGenerico:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Si la cuenta corresponde, recibirás un código en tu correo.
+    MensajeExitoso:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operación completada.
+    ListaCatalogo:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    # ---------- Perfiles ----------
+    UsuarioSesion:
+      type: object
+      required: [uuid, rol]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        rol:
+          type: string
+          enum: [Root, Administrador, Cliente]
+          example: Cliente
+    LoginRequest:
+      type: object
+      required: [correo, contrasena]
+      properties:
+        correo:
+          type: string
+          format: email
+          example: ana@gmail.com
+        contrasena:
+          type: string
+          minLength: 1
+          example: contrasena123
+    LoginRespuesta:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/UsuarioSesion"
+        token:
+          type: string
+          description: "Solo cuando la petición incluye `x-client: mobile`."
+    PerfilUsuario:
+      type: object
+      description: Datos personales y de domicilio. El correo no se devuelve aquí.
+      required: [nombre, apellidos, fecha_nacimiento]
+      properties:
+        nombre:
+          type: string
+          example: Ana
+        apellidos:
+          type: string
+          example: Pérez López
+        fecha_nacimiento:
+          type: string
+          format: date
+          example: "1995-04-12"
+        telefono:
+          type: [string, "null"]
+          example: "5512345678"
+        calle:
+          type: [string, "null"]
+          example: Av. Juárez
+        numero_exterior:
+          type: [string, "null"]
+          example: "45"
+        codigo_postal:
+          type: [string, "null"]
+          example: "06000"
+    RegistroCuenta:
+      type: object
+      description: Datos para crear una cuenta. Las reglas de formato se aplican en el servidor.
+      required:
+        - nombre
+        - apellidos
+        - fecha_nacimiento
+        - correo
+        - telefono
+        - contrasena
+        - confirmContrasena
+        - id_codigo_postal
+        - calle
+        - numero_exterior
+        - privacidad
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+          example: Ana
+        apellidos:
+          type: string
+          maxLength: 150
+          example: Pérez López
+        fecha_nacimiento:
+          type: string
+          format: date
+          description: La persona debe tener al menos 18 años.
+          example: "1995-04-12"
+        correo:
+          type: string
+          format: email
+          maxLength: 254
+          description: Solo se aceptan dominios Gmail, Outlook, Yahoo, Hotmail e iCloud.
+          example: ana@gmail.com
+        telefono:
+          type: string
+          description: 10 o 12 dígitos. Puede empezar con `+`, que se elimina.
+          example: "5512345678"
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 72
+          example: contrasena123
+        confirmContrasena:
+          type: string
+          description: Debe ser idéntica a `contrasena`.
+          example: contrasena123
+        id_codigo_postal:
+          type: string
+          format: uuid
+          description: Identificador de la colonia del catálogo de códigos postales.
+          example: 3f2b8c1e-7a4d-4e9b-9c2f-1d5e6a7b8c9d
+        calle:
+          type: string
+          maxLength: 250
+          example: Av. Juárez
+        numero_exterior:
+          type: string
+          maxLength: 9
+          example: "45"
+        numero_interior:
+          type: [string, "null"]
+          maxLength: 9
+          example: null
+        privacidad:
+          type: boolean
+          description: Debe ser `true` (aceptación del aviso de privacidad).
+          example: true
+    RegistroRespuesta:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/UsuarioSesion"
+        requiereConfirmacion:
+          type: boolean
+          description: Solo aparece cuando la cuenta debe confirmar su correo.
+        correoEnviado:
+          type: boolean
+          description: Indica si el código de confirmación se envió.
+    CodigoPostal:
+      type: object
+      required: [id_codigo_postal, codigo_postal, colonia, municipio, estado]
+      properties:
+        id_codigo_postal:
+          type: string
+          format: uuid
+        codigo_postal:
+          type: string
+          example: "06000"
+        colonia:
+          type: string
+          example: Centro
+        municipio:
+          type: string
+          example: Cuauhtémoc
+        estado:
+          type: string
+          example: Ciudad de México
+    ConfiguracionCorreoMovil:
+      type: object
+      required: [habilitado]
+      properties:
+        habilitado:
+          type: boolean
+          example: false
+    CorreoRequest:
+      type: object
+      required: [correo]
+      properties:
+        correo:
+          type: string
+          format: email
+          example: ana@gmail.com
+    CorreoConfirmarRequest:
+      type: object
+      required: [correo, codigo]
+      properties:
+        correo:
+          type: string
+          format: email
+          example: ana@gmail.com
+        codigo:
+          type: string
+          pattern: '^\d{6}$'
+          example: "482913"
+    CorreoRestablecerRequest:
+      type: object
+      required: [correo, codigo, contrasena, confirmContrasena]
+      properties:
+        correo:
+          type: string
+          format: email
+          example: ana@gmail.com
+        codigo:
+          type: string
+          pattern: '^\d{6}$'
+          example: "482913"
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 72
+          example: nuevaContrasena123
+        confirmContrasena:
+          type: string
+          example: nuevaContrasena123
+
+    # ---------- Catálogo ----------
+    PerroAdmin:
+      type: object
+      description: Ficha completa del perro para administración.
+      properties:
+        id_perro:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Luna
+        sexo:
+          type: string
+          example: Hembra
+        edad_aprox:
+          type: [integer, "null"]
+          example: 2
+        tamano_medida:
+          type: [number, "null"]
+          example: 45.5
+        descripcion:
+          type: [string, "null"]
+        esterilizado:
+          type: boolean
+        vacunado:
+          type: boolean
+        estado:
+          type: string
+          example: Disponible
+        fecha_ingreso:
+          type: string
+          format: date-time
+        activo:
+          type: boolean
+        raza:
+          type: object
+          additionalProperties: true
+        tamano:
+          type: object
+          additionalProperties: true
+        multimedia:
+          type: array
+          items:
+            $ref: "#/components/schemas/Multimedia"
+      additionalProperties: true
+    PerroCliente:
+      type: object
+      description: Datos del perro para el catálogo de clientes.
+      properties:
+        id_perro:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Luna
+        sexo:
+          type: string
+          example: Hembra
+        edad_aprox:
+          type: [integer, "null"]
+        tamano_medida:
+          type: [number, "null"]
+        descripcion:
+          type: [string, "null"]
+        esterilizado:
+          type: boolean
+        vacunado:
+          type: boolean
+        estado:
+          type: string
+        activo:
+          type: boolean
+      additionalProperties: true
+    ListaPerrosCliente:
+      type: object
+      description: "Respuesta de la lista de perros. Usa la clave `syuccess` en la implementación actual."
+      required: [syuccess, data]
+      properties:
+        syuccess:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/PerroCliente"
+              - type: object
+                properties:
+                  foto_url:
+                    type: string
+                    description: Primera imagen del perro, o cadena vacía.
+                    example: https://xyzcompany.supabase.co/storage/v1/object/public/multimedia_perros/luna.jpg
+    Multimedia:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        tipo:
+          type: string
+          example: foto
+      additionalProperties: true
+    NuevoPerro:
+      type: object
+      description: Datos para registrar un perro. Los campos marcados como obligatorios deben enviarse.
+      required:
+        - nombre
+        - sexo
+        - esterilizado
+        - vacunado
+        - estado
+        - id_raza
+        - id_tamano
+        - multimedia
+        - caracteres
+      properties:
+        nombre:
+          type: string
+          example: Luna
+        sexo:
+          type: string
+          example: Hembra
+        edad_aprox:
+          type: integer
+          minimum: 0
+          maximum: 30
+          example: 2
+        tamano_medida:
+          type: number
+          minimum: 0
+          maximum: 200
+          example: 45.5
+        descripcion:
+          type: string
+          example: Juguetona y tranquila con niños.
+        cuidado_especial:
+          type: string
+          maxLength: 500
+          example: Requiere medicación para la alergia cada mañana.
+        esterilizado:
+          type: boolean
+          example: true
+        vacunado:
+          type: boolean
+          example: true
+        estado:
+          type: string
+          example: Disponible
+        id_raza:
+          type: string
+          format: uuid
+        id_tamano:
+          type: string
+          format: uuid
+        multimedia:
+          type: array
+          items:
+            $ref: "#/components/schemas/Multimedia"
+        caracteres:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ActualizacionPerro:
+      type: object
+      description: Campos editables de la ficha. Solo se aceptan estos campos.
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        nombre:
+          type: string
+          maxLength: 60
+          example: Luna
+        sexo:
+          type: string
+          maxLength: 20
+          example: Hembra
+        edad_aprox:
+          type: integer
+          minimum: 0
+          maximum: 30
+          example: 3
+        tamano_medida:
+          type: [number, "null"]
+          minimum: 0
+          maximum: 200
+          example: 45.5
+        descripcion:
+          type: [string, "null"]
+          maxLength: 1000
+          example: Le encanta correr.
+        esterilizado:
+          type: boolean
+          example: true
+        vacunado:
+          type: boolean
+          example: true
+        id_raza:
+          type: string
+          format: uuid
+        id_tamano:
+          type: string
+          format: uuid
+    ActivacionEnLote:
+      type: object
+      required: [idList, action]
+      properties:
+        idList:
+          type: array
+          items:
+            type: string
+            format: uuid
+        action:
+          type: boolean
+          description: "`true` activa, `false` desactiva."
+          example: true
+    OpcionFiltro:
+      type: object
+      required: [id, nombre]
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Mestizo
+    SolicitudSubida:
+      type: object
+      required: [id_perro_temporal, nombreArchivo, tipoMime]
+      properties:
+        id_perro_temporal:
+          type: string
+          format: uuid
+          description: Identificador temporal del perro antes de registrarlo.
+        nombreArchivo:
+          type: string
+          example: foto_perfil.jpg
+        tipoMime:
+          type: string
+          example: image/jpeg
+    SubidaMultimediaRespuesta:
+      type: object
+      required: [message, uploadUrl, rutaFinal, publicUrl]
+      properties:
+        message:
+          type: string
+          example: Pase de subida generado exitosamente
+        uploadUrl:
+          type: string
+          format: uri
+          description: URL firmada que vence en 300 segundos.
+        rutaFinal:
+          type: string
+          example: perros/7c9e6679-7425-40de-944b-e07fc1f90ae7/1732633200000_foto_perfil.jpg
+        publicUrl:
+          type: string
+          format: uri
+
+    # ---------- Donativos ----------
+    DatosFiscales:
+      type: object
+      required: [id_usuario, rfc, razon_social, regimen_fiscal, codigo_postal, correo_facturacion]
+      properties:
+        id_usuario:
+          type: string
+          format: uuid
+        rfc:
+          type: string
+          example: PEPJ950412ABC
+        razon_social:
+          type: string
+          example: Ana Pérez López
+        regimen_fiscal:
+          type: string
+          example: "612"
+        codigo_postal:
+          type: string
+          example: "06000"
+        correo:
+          type: string
+          format: email
+        correo_facturacion:
+          type: string
+          format: email
+          example: ana@gmail.com
+        constancia_url:
+          type: [string, "null"]
+          format: uri
+    DatosFiscalesEntrada:
+      type: object
+      description: Datos fiscales a guardar. El RFC debe tener el formato oficial y se guarda en mayúsculas.
+      required: [rfc, razon_social, regimen_fiscal, codigo_postal, correo_facturacion]
+      properties:
+        rfc:
+          type: string
+          example: PEPJ950412ABC
+        razon_social:
+          type: string
+          example: Ana Pérez López
+        regimen_fiscal:
+          type: string
+          example: "612"
+        codigo_postal:
+          type: string
+          pattern: '^\d{5}$'
+          example: "06000"
+        correo_facturacion:
+          type: string
+          format: email
+          example: ana@gmail.com
+    DonativoRegistrado:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Donativo registrado.
+        data:
+          type: object
+          required: [id_donativo, estado]
+          properties:
+            id_donativo:
+              type: string
+              format: uuid
+            estado:
+              type: string
+              example: Pendiente
+    DonativoCliente:
+      type: object
+      required: [id_donativo, monto, fecha, estado, cfdi_solicitado]
+      properties:
+        id_donativo:
+          type: string
+          format: uuid
+        monto:
+          type: number
+          example: 500
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          example: Validado
+        cfdi_solicitado:
+          type: boolean
+    CfdiCliente:
+      type: object
+      required: [id_solicitud_cfdi, uuid, fecha_carga, donativo]
+      properties:
+        id_solicitud_cfdi:
+          type: string
+          format: uuid
+        uuid:
+          type: string
+          format: uuid
+          description: UUID fiscal del CFDI.
+        fecha_carga:
+          type: string
+          format: date-time
+        donativo:
+          type: object
+          required: [id_donativo, monto, fecha]
+          properties:
+            id_donativo:
+              type: string
+              format: uuid
+            monto:
+              type: number
+            fecha:
+              type: string
+              format: date-time
+    DonativoPendienteAdmin:
+      type: object
+      required: [id_donativo, monto, fecha, estado, usuario]
+      properties:
+        id_donativo:
+          type: string
+          format: uuid
+        monto:
+          type: number
+          example: 500
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          example: Pendiente
+        usuario:
+          type: object
+          required: [nombre, apellidos]
+          properties:
+            nombre:
+              type: string
+            apellidos:
+              type: string
+    DonativoAprobado:
+      type: object
+      required: [id_donativo, estado]
+      properties:
+        id_donativo:
+          type: string
+          format: uuid
+        estado:
+          type: string
+          example: Validado
+    SolicitudCfdiPendiente:
+      type: object
+      required:
+        [id_solicitud_cfdi, id_donativo, fecha_solicitud, estado, donante, requiere_revision]
+      properties:
+        id_solicitud_cfdi:
+          type: string
+          format: uuid
+        id_donativo:
+          type: string
+          format: uuid
+        fecha_solicitud:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          example: Pendiente
+        donante:
+          type: string
+          example: Ana Pérez López
+        requiere_revision:
+          type: boolean
+    SolicitudCfdiDetalle:
+      type: object
+      description: Detalle de la solicitud con los datos necesarios para emitir el CFDI.
+      required: [donativo, datos_fiscales, cfdi, listo_para_emitir, motivos_revision]
+      properties:
+        donativo:
+          type: object
+          additionalProperties: true
+        datos_fiscales:
+          type: object
+          additionalProperties: true
+        cfdi:
+          type: [object, "null"]
+          additionalProperties: true
+        listo_para_emitir:
+          type: boolean
+        motivos_revision:
+          type: array
+          items:
+            type: string
+    ArchivosCfdi:
+      type: object
+      required: [pdf, xml]
+      properties:
+        pdf:
+          type: string
+          format: binary
+          description: PDF del CFDI, máximo 10 MB.
+        xml:
+          type: string
+          format: binary
+          description: XML del CFDI, máximo 5 MB.
+    ArchivosCfdiConfirmacion:
+      allOf:
+        - $ref: "#/components/schemas/ArchivosCfdi"
+        - type: object
+          required: [confirmar_pdf]
+          properties:
+            confirmar_pdf:
+              type: string
+              enum: ["true"]
+              description: Debe ser `true`. Confirma que el PDF corresponde al XML.
+    CfdiValidado:
+      type: object
+      required: [valido, uuid, rfc_receptor, monto, donativo]
+      properties:
+        valido:
+          type: boolean
+          example: true
+        uuid:
+          type: string
+          format: uuid
+        rfc_receptor:
+          type: string
+          example: PEPJ950412ABC
+        monto:
+          type: number
+          example: 500
+        donativo:
+          type: object
+          required: [id_donativo, monto, rfc]
+          properties:
+            id_donativo:
+              type: string
+              format: uuid
+            monto:
+              type: number
+            rfc:
+              type: string
+    CorreoCfdi:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          type: string
+          enum: [Enviado, Error]
+        mensaje:
+          type: string
+          description: Solo aparece cuando el envío falla.
+          example: No se pudo enviar el correo. Los archivos siguen disponibles en la app.
+    CfdiAlmacenado:
+      type: object
+      required: [almacenado, correo]
+      properties:
+        almacenado:
+          type: boolean
+          example: true
+        correo:
+          $ref: "#/components/schemas/CorreoCfdi"
+
+    # ---------- Solicitudes ----------
+    BorradorSolicitud:
+      type: object
+      description: |
+        Formulario de adopción. Los campos obligatorios dependen de la vivienda y de si hay mascotas:
+        `caseroAcepta` es obligatorio salvo que `tipoVivienda` sea `Casa`, y `sobreMascotas` es obligatorio
+        si `tuvoMascotas` u `otrasMascotas` son `true`.
+      required:
+        - idPerro
+        - ocupacion
+        - tuvoMascotas
+        - otrasMascotas
+        - motivoAdopcion
+        - dondeVivira
+        - personasEnCasa
+        - todosDeAcuerdo
+        - tipoVivienda
+        - jardinPatio
+        - cuidadosBasicos
+        - opinionEsterilizacion
+        - tieneVeterinario
+        - detalleVeterinario
+        - tiempoSolo
+        - rutinaDiaria
+        - manejoComportamiento
+      properties:
+        idPerro:
+          type: string
+          format: uuid
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        ocupacion:
+          type: string
+          maxLength: 100
+          example: Diseñadora gráfica
+        tuvoMascotas:
+          type: boolean
+          example: true
+        otrasMascotas:
+          type: boolean
+          example: false
+        motivoAdopcion:
+          type: string
+          maxLength: 100
+          example: Quiero compañía en casa.
+        dondeVivira:
+          type: string
+          maxLength: 100
+          example: En la sala y el patio
+        personasEnCasa:
+          type: integer
+          minimum: 1
+          example: 2
+        todosDeAcuerdo:
+          type: boolean
+          example: true
+        tipoVivienda:
+          type: string
+          description: "`Casa`, `Depto` u `Otro`. Acepta también `casa`, `departamento` u `otro`."
+          example: Depto
+        jardinPatio:
+          type: string
+          maxLength: 50
+          example: "No"
+        caseroAcepta:
+          type: boolean
+          description: Solo si la vivienda no es casa.
+          example: true
+        sobreMascotas:
+          type: string
+          maxLength: 250
+          example: Tuve un gato durante 10 años.
+        cuidadosBasicos:
+          type: string
+          maxLength: 250
+          example: Paseos diarios y agua fresca.
+        opinionEsterilizacion:
+          type: string
+          maxLength: 250
+          example: Estoy de acuerdo.
+        tieneVeterinario:
+          type: boolean
+          example: true
+        detalleVeterinario:
+          type: string
+          maxLength: 250
+          example: Clínica Patitas, en mi colonia.
+        tiempoSolo:
+          type: string
+          maxLength: 250
+          example: Menos de 4 horas al día.
+        rutinaDiaria:
+          type: string
+          maxLength: 250
+          example: Trabajo desde casa.
+        manejoComportamiento:
+          type: string
+          maxLength: 250
+          example: Refuerzo positivo.
+    BorradorRespuesta:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required: [id_solicitud, estado]
+          properties:
+            id_solicitud:
+              type: string
+              format: uuid
+            estado:
+              type: string
+              example: Borrador
+    SubidaDocumento:
+      type: object
+      required: [archivo]
+      properties:
+        archivo:
+          type: string
+          format: binary
+          description: PDF, JPG o PNG de hasta 2 MB.
+        tipo:
+          type: string
+          enum: [INE, DOMICILIO, IDENTIFICACION, COMPROBANTE_DOMICILIO]
+          description: Tipo de documento. Si se omite, se usa `INE`.
+          example: INE
+    DocumentoSubido:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Documento subido y registrado exitosamente
+        id_documento:
+          type: string
+          format: uuid
+        url_archivo:
+          type: string
+          format: uri
+        fileName:
+          type: string
+          example: ine.pdf
+        sizeBytes:
+          type: integer
+          example: 524288
+        data:
+          type: object
+          required: [id_documento, tipo, url_archivo, nombre_archivo, tamano_bytes]
+          properties:
+            id_documento:
+              type: string
+              format: uuid
+            tipo:
+              type: string
+              enum: [INE, DOMICILIO]
+            url_archivo:
+              type: string
+              format: uri
+            nombre_archivo:
+              type: string
+            tamano_bytes:
+              type: integer
+    SolicitudEnviada:
+      type: object
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Solicitud enviada correctamente.
+        data:
+          type: object
+          required: [id_solicitud, estado]
+          properties:
+            id_solicitud:
+              type: string
+              format: uuid
+            estado:
+              type: string
+              example: Pendiente de Revisión
+    SolicitudActiva:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: [object, "null"]
+          description: "`null` si el usuario no tiene solicitud activa para el perro."
+          required: [id_solicitud, estado]
+          properties:
+            id_solicitud:
+              type: string
+              format: uuid
+            estado:
+              type: [string, "null"]
+              example: Borrador
+    MiSolicitud:
+      type: object
+      required:
+        [id_solicitud, folio, fecha_solicitud, estado, perro, puede_editar, comentario_admin]
+      properties:
+        id_solicitud:
+          type: string
+          format: uuid
+        folio:
+          type: string
+          description: Primeros 8 caracteres del identificador, en mayúsculas, con prefijo `QA-`.
+          example: QA-4F8C1A2B
+        fecha_solicitud:
+          type: string
+          format: date-time
+        estado:
+          type: [string, "null"]
+          example: Pendiente de Revisión
+        perro:
+          type: [object, "null"]
+          properties:
+            nombre:
+              type: string
+              example: Luna
+            foto_url:
+              type: [string, "null"]
+              format: uri
+        puede_editar:
+          type: boolean
+        comentario_admin:
+          type: [string, "null"]
+    PerfilAdoptante:
+      type: object
+      required: [id_usuario, nombre_completo]
+      properties:
+        id_usuario:
+          type: string
+          format: uuid
+        nombre_completo:
+          type: string
+          example: Ana Pérez López
+        fecha_nacimiento:
+          type: string
+          format: date
+        ocupacion:
+          type: string
+          example: ""
+        domicilio:
+          type: string
+          example: Av. Juárez 45, Col. Centro, Cuauhtémoc, Ciudad de México · C.P. 06000
+        municipio:
+          type: string
+          example: Cuauhtémoc
+        telefono:
+          type: string
+          example: "5512345678"
+        correo:
+          type: string
+          format: email
+          example: ana@gmail.com
+    ListaSolicitudesAdmin:
+      type: object
+      required: [data, resumen, paginacion]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SolicitudAdminResumen"
+        resumen:
+          type: object
+          required: [todas, pendientes, aprobadas, rechazadas]
+          properties:
+            todas:
+              type: integer
+              example: 24
+            pendientes:
+              type: integer
+              example: 10
+            aprobadas:
+              type: integer
+              example: 8
+            rechazadas:
+              type: integer
+              example: 6
+        paginacion:
+          type: object
+          required: [page, page_size, total]
+          properties:
+            page:
+              type: integer
+              example: 1
+            page_size:
+              type: integer
+              example: 10
+            total:
+              type: integer
+              example: 24
+    SolicitudAdminResumen:
+      type: object
+      required: [id, folio, fecha, estado, adoptante, perro]
+      properties:
+        id:
+          type: string
+          format: uuid
+        folio:
+          type: string
+          example: QA-4F8C1A2B
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum: [por_revisar, en_revision, aprobada, rechazada]
+          description: Estado normalizado. `pendiente` y `borrador` se convierten a `por_revisar`.
+        adoptante:
+          type: object
+          required: [nombre, apellidos, email]
+          properties:
+            nombre:
+              type: string
+            apellidos:
+              type: string
+            email:
+              type: string
+              format: email
+        perro:
+          type: object
+          required: [id, nombre, foto_url]
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            foto_url:
+              type: string
+              format: uri
+    DetalleSolicitudAdmin:
+      type: object
+      required:
+        [
+          id,
+          folio,
+          fecha,
+          estado,
+          comentario_admin,
+          puede_editar,
+          adoptante,
+          perro,
+          secciones,
+          documentos,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        folio:
+          type: string
+          example: QA-4F8C1A2B
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum: [por_revisar, en_revision, aprobada, rechazada]
+        comentario_admin:
+          type: string
+        puede_editar:
+          type: boolean
+        adoptante:
+          type: object
+          additionalProperties: true
+        perro:
+          type: object
+          additionalProperties: true
+        secciones:
+          type: array
+          description: Respuestas agrupadas como en el formulario de la app.
+          items:
+            type: object
+            required: [titulo, respuestas]
+            properties:
+              titulo:
+                type: string
+                example: Tu hogar
+              respuestas:
+                type: array
+                items:
+                  type: object
+                  required: [pregunta, respuesta]
+                  properties:
+                    pregunta:
+                      type: string
+                    respuesta:
+                      description: Texto, número, `Sí`, `No` o `null` si no hubo respuesta.
+        documentos:
+          type: array
+          items:
+            type: object
+            required: [id, tipo, url, estado_revision]
+            properties:
+              id:
+                type: string
+                format: uuid
+              tipo:
+                type: string
+                example: INE
+              url:
+                type: string
+                format: uri
+              estado_revision:
+                type: string
+    ResolucionSolicitud:
+      type: object
+      required: [state]
+      properties:
+        state:
+          type: string
+          enum: [en_revision, periodo_prueba, aprobada, rechazada]
+          example: rechazada
+        comment:
+          type: string
+          description: Obligatorio cuando `state` es `rechazada`.
+          example: Falta el comprobante de domicilio legible.
+        puede_editar:
+          type: boolean
+          description: Solo aplica con `rechazada`. Permite al adoptante corregir y reenviar.
+          example: true
+    ResolucionRespuesta:
+      type: object
+      required: [message, data]
+      properties:
+        message:
+          type: string
+          example: Resolución guardada
+        data:
+          type: object
+          additionalProperties: true
+
+    # ---------- Voluntarios ----------
+    ProgramaResumen:
+      type: object
+      required:
+        [
+          id_programa,
+          nombre,
+          tipo,
+          fecha_inicio,
+          fecha_fin,
+          ubicacion,
+          cupo_maximo,
+          cupo_disponible,
+          usuario_inscrito,
+        ]
+      properties:
+        id_programa:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Paseo en el parque
+        tipo:
+          type: string
+          example: Paseo
+        fecha_inicio:
+          type: string
+          example: "2026-12-05T09:00:00"
+        fecha_fin:
+          type: string
+          example: "2026-12-05T13:00:00"
+        ubicacion:
+          type: string
+          example: Parque Lira
+        cupo_maximo:
+          type: [integer, "null"]
+          description: "`null` significa sin límite."
+          example: 10
+        cupo_disponible:
+          type: [integer, "null"]
+          minimum: 0
+          example: 6
+        usuario_inscrito:
+          type: boolean
+        estado_del_programa:
+          type: [string, "null"]
+          example: Abierto
+      additionalProperties: true
+    ListaProgramas:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramaResumen"
+    DetallePrograma:
+      allOf:
+        - $ref: "#/components/schemas/ProgramaResumen"
+        - type: object
+          properties:
+            descripcion:
+              type: [string, "null"]
+            tipo_descripcion:
+              type: [string, "null"]
+            inscritos:
+              type: integer
+              minimum: 0
+              example: 4
+    InscripcionCreada:
+      type: object
+      required: [sucess, data]
+      description: Respuesta de inscripción exitosa. Usa la clave `sucess` en la implementación actual.
+      properties:
+        sucess:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required: [id_programa, fecha_inscripcion, estado]
+          properties:
+            id_programa:
+              type: string
+              format: uuid
+            fecha_inscripcion:
+              type: string
+              example: "2026-11-20T10:00:00"
+            estado:
+              type: string
+              example: Aceptado
+    ProgramaEditable:
+      type: object
+      description: Datos del programa para su edición.
+      properties:
+        idPrograma:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          example: Paseo en el parque
+        tipo:
+          type: string
+          example: Paseo
+        descripcion:
+          type: [string, "null"]
+        ubicacion:
+          type: string
+          example: Parque Lira
+        fechaInicio:
+          type: string
+          format: date
+          example: "2026-12-05"
+        horaInicio:
+          type: string
+          example: "09:00"
+        fechaFin:
+          type: string
+          format: date
+          example: "2026-12-05"
+        horaFin:
+          type: string
+          example: "13:00"
+        cupoMaximo:
+          type: [integer, "null"]
+          example: 10
+        inscritosActivos:
+          type: integer
+          minimum: 0
+          example: 4
+        editable:
+          type: boolean
+      additionalProperties: true
+    EdicionPrograma:
+      type: object
+      description: Campos a cambiar. Los que no se envían conservan su valor actual.
+      additionalProperties: false
+      properties:
+        nombre:
+          type: string
+          maxLength: 50
+        tipo:
+          type: string
+          maxLength: 20
+        descripcion:
+          type: string
+          maxLength: 1000
+        ubicacion:
+          type: string
+          maxLength: 100
+        fechaInicio:
+          type: string
+          format: date
+        horaInicio:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+        fechaFin:
+          type: string
+          format: date
+        horaFin:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+        cupoMaximo:
+          type: integer
+          minimum: 1
+        confirmarEmpalme:
+          type: boolean
+          description: Confirma la creación o edición aunque haya empalmes.
+    ResultadoEdicionPrograma:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required: [programa, inscritosActivos, avisarInscritos]
+          properties:
+            programa:
+              type: object
+              additionalProperties: true
+            inscritosActivos:
+              type: integer
+              example: 5
+            avisarInscritos:
+              type: boolean
+              description: "`true` cuando cambian la fecha, la hora o la ubicación y hay inscritos."
+              example: true
+    CancelacionPrograma:
+      type: object
+      additionalProperties: false
+      properties:
+        motivo:
+          type: [string, "null"]
+          maxLength: 200
+          example: Lluvia pronosticada para todo el día.
+    ListaInscritos:
+      type: object
+      required: [programa, totalInscritos, inscritos]
+      properties:
+        programa:
+          type: object
+          required: [idPrograma, nombre, tipo, fechaInicio, fechaFin, ubicacion, cupoMaximo, estado]
+          properties:
+            idPrograma:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            tipo:
+              type: string
+            fechaInicio:
+              type: string
+            fechaFin:
+              type: string
+            ubicacion:
+              type: string
+            cupoMaximo:
+              type: [integer, "null"]
+            estado:
+              type: [string, "null"]
+        totalInscritos:
+          type: integer
+          example: 2
+        inscritos:
+          type: array
+          items:
+            type: object
+            required: [idUsuario, nombreCompleto, correo, telefono, fechaInscripcion, asistencia]
+            properties:
+              idUsuario:
+                type: string
+                format: uuid
+              nombreCompleto:
+                type: [string, "null"]
+              correo:
+                type: [string, "null"]
+              telefono:
+                type: [string, "null"]
+              fechaInscripcion:
+                type: string
+              asistencia:
+                type: [boolean, "null"]
+                description: "`true` asistió, `false` no asistió, `null` sin pase de lista."
+    CalendarioProgramas:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          required: [programas, semanasSinCobertura]
+          properties:
+            programas:
+              type: array
+              items:
+                type: object
+                required:
+                  [idPrograma, nombre, tipo, inicio, fin, ubicacion, cupoMaximo, inscritos, estado]
+                properties:
+                  idPrograma:
+                    type: string
+                    format: uuid
+                  nombre:
+                    type: string
+                  tipo:
+                    type: string
+                  inicio:
+                    type: string
+                  fin:
+                    type: string
+                  ubicacion:
+                    type: string
+                  cupoMaximo:
+                    type: [integer, "null"]
+                  inscritos:
+                    type: integer
+                  estado:
+                    type: string
+            semanasSinCobertura:
+              type: array
+              description: Semanas (lunes a lunes) sin ningún programa activo.
+              items:
+                type: object
+                required: [inicio, fin]
+                properties:
+                  inicio:
+                    type: string
+                    format: date
+                  fin:
+                    type: string
+                    format: date
+    TipoPrograma:
+      type: object
+      required: [nombre, descripcion]
+      properties:
+        nombre:
+          type: string
+          example: Paseo
+        descripcion:
+          type: string
+          example: Paseos con perros en el parque.
+      additionalProperties: true
+    NuevoTipoPrograma:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+          maxLength: 20
+          example: Paseo
+        descripcion:
+          type: string
+          maxLength: 200
+          default: ""
+          example: Paseos con perros en el parque.
+    Empalme:
+      type: object
+      description: Programa que se cruza con el horario propuesto.
+      properties:
+        idPrograma:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        fechaInicio:
+          type: string
+        fechaFin:
+          type: string
+      additionalProperties: true
+    NuevoPrograma:
+      type: object
+      required:
+        [
+          nombre,
+          tipo,
+          descripcion,
+          ubicacion,
+          fechaInicio,
+          horaInicio,
+          fechaFin,
+          horaFin,
+          cupoMaximo,
+        ]
+      properties:
+        nombre:
+          type: string
+          maxLength: 50
+          example: Paseo en el parque
+        tipo:
+          type: string
+          maxLength: 20
+          example: Paseo
+        descripcion:
+          type: string
+          maxLength: 1000
+          example: Paseo guiado con perros en adopción.
+        ubicacion:
+          type: string
+          maxLength: 100
+          example: Parque Lira
+        fechaInicio:
+          type: string
+          format: date
+          example: "2026-12-05"
+        horaInicio:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "09:00"
+        fechaFin:
+          type: string
+          format: date
+          example: "2026-12-05"
+        horaFin:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "13:00"
+        cupoMaximo:
+          type: integer
+          minimum: 1
+          example: 10
+        confirmarEmpalme:
+          type: boolean
+          description: Confirma la creación aunque el horario se cruce con otros programas.
+          example: false
