@@ -27,7 +27,7 @@ export const PANTALLAS = [
     etiqueta: "Voluntariado",
     icono: "volunteer_activism",
     ruta: "/admin/voluntariado",
-    archivo: "/HTML/htmlVoluntariado/adminVoluntariado.html",
+    archivo: "/HTML/htmlVoluntariado/adminCalendario.html",
   },
   {
     id: "nuevaJornada",
@@ -42,13 +42,6 @@ export const PANTALLAS = [
     titulo: "Voluntariado",
     ruta: "/admin/voluntariado/inscritos",
     archivo: "/HTML/htmlVoluntariado/adminInscritos.html",
-  },
-  {
-    id: "calendario",
-    grupo: "voluntariado",
-    titulo: "Voluntariado",
-    ruta: "/admin/voluntariado/calendario",
-    archivo: "/HTML/htmlVoluntariado/adminCalendario.html",
   },
   {
     id: "donativos",

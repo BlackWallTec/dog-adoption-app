@@ -13,7 +13,8 @@ const vieneDelCalendario = !modoEdicion && /^\d{4}-\d{2}-\d{2}$/.test(fechaCalen
 const URL_PROGRAMA = modoEdicion
   ? `${rutaDe("inscritos")}?id=${encodeURIComponent(idEdicion)}`
   : null;
-const URL_REGRESO = URL_PROGRAMA ?? (vieneDelCalendario ? rutaDe("calendario") : URL_VOLUNTARIADO);
+// Al editar regresa al programa; si no, al calendario (la pagina de voluntariado)
+const URL_REGRESO = URL_PROGRAMA ?? URL_VOLUNTARIADO;
 
 const TEXTOS = modoEdicion
   ? {

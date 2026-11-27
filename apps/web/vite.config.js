@@ -59,7 +59,6 @@ export default defineConfig({
         adminDonativos: r("HTML/htmlDonativos/adminDonativos.html"),
         resumenDonativos: r("HTML/htmlDonativos/resumenDonativos.html"),
         adminSolicitudesCfdi: r("HTML/htmlDonativos/adminSolicitudesCfdi.html"),
-        adminVoluntariado: r("HTML/htmlVoluntariado/adminVoluntariado.html"),
         adminInscritos: r("HTML/htmlVoluntariado/adminInscritos.html"),
         createVolunteering: r("HTML/htmlVoluntariado/createVolunteering.html"),
         adminCalendario: r("HTML/htmlVoluntariado/adminCalendario.html"),
