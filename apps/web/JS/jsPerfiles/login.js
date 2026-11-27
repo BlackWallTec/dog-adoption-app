@@ -1,12 +1,12 @@
 import { perfilesApi } from "./perfiles.api.js";
-import { createSessionView } from "./perfiles.session.js";
 import { fieldError, byId } from "./utils.js";
+import { rutaDe } from "../rutas.js";
+import { UNAUTHENTICATED } from "@qarino/shared/errores.js";
 
 const loginForm = byId("login-form");
 const loginEmail = byId("login-email");
 const loginPassword = byId("login-password");
 const passwordToggle = byId("toggle-password");
-const sessionView = createSessionView(perfilesApi);
 
 let activeRequest = 0;
 
@@ -89,7 +89,7 @@ loginForm.addEventListener("submit", async (event) => {
     passwordToggle.setAttribute("aria-pressed", "false");
     passwordToggle.setAttribute("aria-label", "Mostrar contraseña");
 
-    await sessionView.show(result);
+    window.location.replace(rutaDe("perros"));
   } catch (error) {
     if (request !== activeRequest) return;
 
@@ -102,8 +102,10 @@ loginForm.addEventListener("submit", async (event) => {
 async function restoreSession() {
   setBusy("login-submit", true, "Comprobando sesión…");
   try {
-    await sessionView.show(await perfilesApi.getSession());
+    await perfilesApi.getSession();
+    window.location.replace(rutaDe("perros"));
   } catch (error) {
+    if (error instanceof UNAUTHENTICATED) return;
     feedback("login-feedback", error.message ? error.message : "Error al comprobar sesión");
   } finally {
     setBusy("login-submit", false, "Iniciar sesión");

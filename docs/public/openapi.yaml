@@ -1,0 +1,107 @@
+openapi: 3.1.0
+info:
+  title: Qariño Animal API
+  version: 0.40.0
+  description: |
+    API REST de Qariño Animal (Express 5 + Supabase).
+
+    Autenticación: el panel web usa la cookie `token`. La app Android debe enviar
+    `x-client: mobile` junto con `Authorization: Bearer <token>`; sin `x-client`
+    el encabezado Bearer se ignora.
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local
+  - url: https://dog-adoption-app-mauve.vercel.app
+    description: Servidor desplegado en Vercel
+
+tags:
+  - name: Sistema
+    description: Verificación de disponibilidad del servicio
+  - name: Perfiles
+    description: Autenticación, registro y gestión de usuarios (`/api/perfiles`)
+  - name: Catálogo
+    description: Consulta y administración de perros (`/api/catalogo`)
+  - name: Solicitudes
+    description: Solicitudes de adopción y documentos (`/api/solicitudes`)
+  - name: Donativos
+    description: Donaciones, datos fiscales y CFDI (`/api/donativos`)
+  - name: Voluntarios
+    description: Programas e inscripciones de voluntariado (`/api/voluntarios`)
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+      description: Sesión del panel web.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sesión de la app Android. Requiere además el encabezado `x-client` con valor `mobile`.
+    mobileClient:
+      type: apiKey
+      in: header
+      name: x-client
+      description: Debe valer `mobile` para que se lea el encabezado `Authorization`.
+  responses:
+    NoAutenticado:
+      description: Falta el token o es inválido/expirado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Token inválido o expirado
+    SinPermisos:
+      description: El rol del usuario no tiene acceso
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No tienes permisos para esta acción
+    DemasiadasPeticiones:
+      description: Límite de peticiones excedido
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: false
+              error:
+                type: string
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Sistema
+      summary: Verificar estado de la API
+      security: []
+      responses:
+        "200":
+          description: El servidor está activo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
