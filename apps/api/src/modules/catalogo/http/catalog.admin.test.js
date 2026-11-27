@@ -9,6 +9,7 @@ const dogModel = vi.hoisted(() => ({
   getDogs: vi.fn(),
   getDogAdminById: vi.fn(),
   updateDog: vi.fn(),
+  setDogCaracteres: vi.fn(),
 }));
 // El controlador importa el cliente de Supabase directamente: se simula para no pedir variables .env.
 vi.mock("../../../config/supabaseClient.js", () => ({ supabase: {}, supabaseAdmin: {} }));
@@ -72,12 +73,29 @@ describe("PATCH /admin/perros/:id", () => {
 
   test("admin con datos válidos → 200 y solo manda los campos recibidos", async () => {
     dogModel.updateDog.mockResolvedValue({ id_perro: "1", nombre: "Luna" });
+    dogModel.getDogAdminById.mockResolvedValue({ id_perro: "1", nombre: "Luna" });
     const r = await pedir("PATCH", "/admin/perros/1", {
       rol: "Administrador",
       body: { nombre: " Luna ", vacunado: true },
     });
     expect(r.status).toBe(200);
     expect(dogModel.updateDog).toHaveBeenCalledWith("1", { nombre: "Luna", vacunado: true });
+  });
+
+  test("estado, cuidado especial y características en un solo PATCH → 200", async () => {
+    const caracter = "11111111-1111-4111-8111-111111111111";
+    dogModel.updateDog.mockResolvedValue({ id_perro: "1", estado: "Adoptado" });
+    dogModel.getDogAdminById.mockResolvedValue({ id_perro: "1", estado: "Adoptado" });
+    const r = await pedir("PATCH", "/admin/perros/1", {
+      rol: "Administrador",
+      body: { estado: "Adoptado", cuidado_especial: " Dieta especial. ", caracteres: [caracter] },
+    });
+    expect(r.status).toBe(200);
+    expect(dogModel.updateDog).toHaveBeenCalledWith("1", {
+      estado: "Adoptado",
+      cuidado_especial: "Dieta especial.",
+    });
+    expect(dogModel.setDogCaracteres).toHaveBeenCalledWith("1", [caracter]);
   });
 
   test("datos inválidos → 400 con errores por campo", async () => {
@@ -91,10 +109,20 @@ describe("PATCH /admin/perros/:id", () => {
     expect(dogModel.updateDog).not.toHaveBeenCalled();
   });
 
-  test("intentar cambiar estado → 400", async () => {
+  test("estado desconocido → 400", async () => {
     const r = await pedir("PATCH", "/admin/perros/1", {
       rol: "Administrador",
-      body: { estado: "Adoptado" },
+      body: { estado: "Perdido" },
+    });
+    expect(r.status).toBe(400);
+    expect((await r.json()).errors).toHaveProperty("estado");
+    expect(dogModel.updateDog).not.toHaveBeenCalled();
+  });
+
+  test("intentar cambiar activo (HU27) o el id → 400", async () => {
+    const r = await pedir("PATCH", "/admin/perros/1", {
+      rol: "Administrador",
+      body: { activo: false, id_perro: "otro" },
     });
     expect(r.status).toBe(400);
     expect(dogModel.updateDog).not.toHaveBeenCalled();

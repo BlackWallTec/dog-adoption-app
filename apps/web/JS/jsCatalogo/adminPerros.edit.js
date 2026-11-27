@@ -1,12 +1,17 @@
-// HU19C: el administrador modifica las características de la ficha de un perro.
+// HU19C: el administrador modifica la ficha de un perro: datos, estado, características,
+// cuidado especial (texto, HU20) y fotos/videos (agregar y quitar).
 import {
+  cambiosEnRelaciones,
   cambiosRespectoA,
   conectarAlturaYTamano,
+  hayCambios,
   leerFormulario,
   mostrarErrores,
   pintarFormulario,
   validarFormulario,
 } from "./perroForm.js";
+import { clasificarArchivo, montarGaleria, nombreSeguro } from "./perroMultimedia.js";
+import { obtenerUrlFirmadaSupabase, subirArchivoASupabase } from "./ModalsJS/Api.service.js";
 
 const dialogo = document.getElementById("dialog-editar-perro");
 const cuerpo = document.getElementById("editar-perro-cuerpo");
@@ -18,7 +23,12 @@ const toast = document.getElementById("toast");
 
 let perroActual = null; // ficha tal como llegó del API
 let idActual = null;
+let galeria = null; // fotos y videos de la ficha en pantalla
+let guardando = false;
 let alGuardar = () => {};
+// Archivos nuevos ya subidos al bucket (File -> url pública). Si el guardado falla después de
+// subir, el reintento no los vuelve a subir.
+let archivosSubidos = new Map();
 
 // fetch que devuelve { ok, status, json }. Un fallo de red lanza una excepción.
 async function api(ruta, opciones) {
@@ -49,9 +59,27 @@ function mensajeDeEstado(status, json) {
   return json.message || "No se pudo completar la operación.";
 }
 
+function liberarGaleria() {
+  galeria?.destruir();
+  galeria = null;
+}
+
+// El botón "Guardar cambios" toma un azul más fuerte en cuanto hay algo que guardar
+// (clase `con-cambios`) y vuelve al azul normal si todo queda como estaba.
+function actualizarBotonGuardar() {
+  const conCambios =
+    Boolean(perroActual && galeria) &&
+    hayCambios(perroActual, leerFormulario(cuerpo), galeria.obtenerCambios());
+  btnGuardar.classList.toggle("con-cambios", conCambios);
+  btnGuardar.title = conCambios ? "Hay cambios sin guardar" : "";
+}
+
 function estadoCargando() {
+  liberarGaleria();
   cuerpo.innerHTML = `<p class="dialog-status">Cargando ficha…</p>`;
   btnGuardar.disabled = true;
+  btnGuardar.classList.remove("con-cambios");
+  btnGuardar.title = "";
   mostrarAviso("");
 }
 
@@ -67,10 +95,11 @@ async function cargar() {
   estadoCargando();
   try {
     // Ficha y catálogos en paralelo (flujo principal pasos 2 y 3 del análisis)
-    const [ficha, razas, tamanos] = await Promise.all([
+    const [ficha, razas, tamanos, caracteristicas] = await Promise.all([
       api(`/admin/perros/${encodeURIComponent(idActual)}`),
       api("/admin/razas"),
       api("/admin/tamanos"),
+      api("/admin/caracteristicas"),
     ]);
 
     if (ficha.status === 404) {
@@ -80,7 +109,7 @@ async function cargar() {
       alGuardar();
       return;
     }
-    for (const r of [ficha, razas, tamanos]) {
+    for (const r of [ficha, razas, tamanos, caracteristicas]) {
       if (!r.ok) return estadoError(mensajeDeEstado(r.status, r.json));
     }
 
@@ -90,15 +119,59 @@ async function cargar() {
       perro: perroActual,
       razas: razas.json.data,
       tamanos: tamanos.json.data,
+      caracteristicas: caracteristicas.json.data,
     });
     conectarAlturaYTamano(cuerpo, tamanos.json.data);
+    galeria = montarGaleria(cuerpo.querySelector("[data-galeria]"), {
+      multimedia: perroActual.multimedia,
+    });
     btnGuardar.disabled = false;
+    actualizarBotonGuardar();
   } catch {
     estadoError("No se pudo conectar con el servidor. Revisa tu conexión.");
   }
 }
 
+// Sube al bucket los archivos nuevos (uno por uno) y devuelve [{ url, tipo }] para guardarlos
+// en la ficha. Lanza un Error con mensaje legible si alguno falla.
+async function subirArchivosNuevos(archivos) {
+  const subidos = [];
+  for (const [indice, archivo] of archivos.entries()) {
+    btnGuardar.textContent = `Subiendo ${indice + 1}/${archivos.length}…`;
+    let url = archivosSubidos.get(archivo);
+    if (!url) {
+      const { uploadUrl, publicUrl } = await obtenerUrlFirmadaSupabase(
+        idActual,
+        nombreSeguro(archivo.name),
+        archivo.type,
+      );
+      await subirArchivoASupabase(uploadUrl, archivo);
+      archivosSubidos.set(archivo, publicUrl);
+      url = publicUrl;
+    }
+    subidos.push({ url, tipo: clasificarArchivo(archivo)?.tipo ?? "imagen" });
+  }
+  return subidos;
+}
+
+function ponerGuardando(valor) {
+  guardando = valor;
+  btnGuardar.disabled = valor;
+  btnCancelar.disabled = valor;
+  btnGuardar.textContent = valor ? "Guardando…" : "Guardar cambios";
+}
+
+// Junta el aviso del servidor con los errores de campos que el formulario no tiene a la vista.
+function textoDeErrores(json) {
+  const errores = json.errors && !Array.isArray(json.errors) ? json.errors : {};
+  const sinLugar = Object.entries(errores)
+    .filter(([campo]) => !cuerpo.querySelector(`[data-error-for="${campo}"]`))
+    .map(([, mensaje]) => mensaje);
+  return [json.message || "Revisa los campos marcados.", ...sinLugar].join(" ");
+}
+
 async function guardar() {
+  if (guardando) return;
   mostrarAviso("");
   const datos = leerFormulario(cuerpo);
 
@@ -106,15 +179,32 @@ async function guardar() {
   mostrarErrores(cuerpo, errores);
   if (Object.keys(errores).length) return; // CA-03
 
-  const cambios = cambiosRespectoA(perroActual, datos);
-  if (Object.keys(cambios).length === 0) {
+  const fotos = galeria?.obtenerCambios() ?? { eliminar: [], nuevos: [] };
+  const cambios = {
+    ...cambiosRespectoA(perroActual, datos),
+    ...cambiosEnRelaciones(perroActual, datos),
+  };
+  if (fotos.eliminar.length > 0) cambios.multimedia_eliminar = fotos.eliminar;
+
+  if (Object.keys(cambios).length === 0 && fotos.nuevos.length === 0) {
     mostrarAviso("No hay cambios que guardar.", "info"); // CA-04
     return;
   }
 
-  btnGuardar.disabled = true;
-  btnGuardar.textContent = "Guardando…";
+  ponerGuardando(true);
   try {
+    if (fotos.nuevos.length > 0) {
+      try {
+        cambios.multimedia_agregar = await subirArchivosNuevos(fotos.nuevos);
+      } catch (error) {
+        // No se guardó nada de la ficha: el formulario conserva lo capturado para reintentar.
+        mostrarErrores(cuerpo, { multimedia_agregar: error.message });
+        mostrarAviso("No se pudieron subir las fotos. Intenta de nuevo.");
+        return;
+      }
+    }
+
+    btnGuardar.textContent = "Guardando…";
     const r = await api(`/admin/perros/${encodeURIComponent(idActual)}`, {
       method: "PATCH",
       body: JSON.stringify(cambios),
@@ -130,7 +220,7 @@ async function guardar() {
       alGuardar();
     } else if (r.status === 400 && r.json.errors) {
       mostrarErrores(cuerpo, r.json.errors);
-      mostrarAviso(r.json.message || "Revisa los campos marcados.");
+      mostrarAviso(textoDeErrores(r.json));
     } else {
       mostrarAviso(mensajeDeEstado(r.status, r.json)); // conserva lo capturado
     }
@@ -138,18 +228,37 @@ async function guardar() {
     // CA-05: error de red, el formulario conserva lo capturado y se puede reintentar
     mostrarAviso("No se pudo conectar con el servidor. Intenta de nuevo.");
   } finally {
-    btnGuardar.disabled = false;
-    btnGuardar.textContent = "Guardar cambios";
+    ponerGuardando(false);
   }
 }
 
 btnGuardar?.addEventListener("click", guardar);
 btnCancelar?.addEventListener("click", () => dialogo.close());
+// Con "Esc" no se puede cerrar mientras se sube o se guarda.
+dialogo?.addEventListener("cancel", (evento) => {
+  if (guardando) evento.preventDefault();
+});
+// Al cerrar (guardar, cancelar o Esc) se liberan las vistas previas de archivos nuevos.
+// "close" llega de forma asíncrona: si el diálogo ya se volvió a abrir, no se toca la galería nueva.
+dialogo?.addEventListener("close", () => {
+  if (!dialogo.open) {
+    liberarGaleria();
+    btnGuardar.classList.remove("con-cambios");
+  }
+});
+
+// Cualquier edición (teclear, elegir, activar una característica, tocar la galería o soltar
+// archivos) vuelve a evaluar si hay cambios. Los manejadores del propio control corren antes
+// que estos, así que el estado ya está actualizado al llegar aquí.
+for (const evento of ["input", "change", "click", "drop"]) {
+  cuerpo?.addEventListener(evento, actualizarBotonGuardar);
+}
 
 // Punto de entrada: lo llama la lista al presionar "Editar".
 export function abrirEdicion(id, callbackAlGuardar) {
   idActual = id;
   perroActual = null;
+  archivosSubidos = new Map();
   alGuardar = callbackAlGuardar || (() => {});
   titulo.textContent = "Editar perro";
   dialogo.showModal();
