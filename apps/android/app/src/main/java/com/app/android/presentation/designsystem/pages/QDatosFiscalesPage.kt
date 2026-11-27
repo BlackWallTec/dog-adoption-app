@@ -3,7 +3,6 @@ package com.app.android.presentation.designsystem.pages
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,11 +17,9 @@ import com.app.android.domain.entities.entitiesDonativos.DatosFiscales
 import com.app.android.domain.entities.entitiesDonativos.REGIMENES_FISCALES
 import com.app.android.domain.useCases.useCasesDonativos.ErroresDatosFiscales
 import com.app.android.presentation.designsystem.atoms.QButton
-import com.app.android.presentation.designsystem.atoms.QCard
 import com.app.android.presentation.designsystem.atoms.QText
 import com.app.android.presentation.designsystem.molecules.QErrorMessage
 import com.app.android.presentation.designsystem.molecules.QInfoMessage
-import com.app.android.presentation.designsystem.molecules.QLabeledRadioButton
 import com.app.android.presentation.designsystem.molecules.QLabeledSelectField
 import com.app.android.presentation.designsystem.molecules.QLabeledTextField
 import com.app.android.presentation.designsystem.molecules.QSection
@@ -36,14 +33,14 @@ import com.app.android.presentation.designsystem.theme.QTextStyle
 import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
- * Datos fiscales para pedir CFDI: RFC, razón social, régimen (lista de opciones que se abre bajo el
- * selector), código postal, correo de facturación y constancia de situación fiscal. Guardar y Cancelar al
+ * Datos fiscales para pedir CFDI: RFC, razón social, régimen (menú desplegable bajo el selector),
+ * código postal, correo de facturación y constancia de situación fiscal. Guardar y Cancelar al
  * final. El resultado del guardado se muestra en la página (antes era un snackbar). Elegir y validar el
  * archivo de la constancia lo hace quien conecta la página (onPickCertificate).
  *
  * Dueño: P5 (Páginas).
  * Usa (obligatorio): QDetailTemplate, QStateContent, QLabeledTextField, QLabeledSelectField,
- * QLabeledRadioButton, QUploadButton, QButton.
+ * QUploadButton, QButton.
  * Reemplaza a: DatosFiscalesScreen (DatosFiscalesRoute).
  */
 @Composable
@@ -79,7 +76,7 @@ fun QDatosFiscalesPage(
         title = "Datos fiscales",
         subtitle = "Guarda la información que usarás al solicitar un comprobante fiscal (CFDI).",
         onBack = onBack,
-        selectedTab = QTab.Donar,
+        selectedTab = QTab.Ajustes,
         onTabSelected = onTabSelected,
         modifier = modifier,
         onNotificationsClick = onNotificationsClick,
@@ -116,33 +113,21 @@ fun QDatosFiscalesPage(
                     errorText = fieldErrors.razonSocial,
                 )
 
-                Column(verticalArrangement = Arrangement.spacedBy(QSpacing.s)) {
-                    QLabeledSelectField(
-                        label = "Régimen fiscal",
-                        value = regimeText(data.regimenFiscal),
-                        onClick = { regimeOptionsOpen = !regimeOptionsOpen },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = "Selecciona tu régimen",
-                        errorText = fieldErrors.regimenFiscal,
-                    )
-                    if (regimeOptionsOpen) {
-                        QCard(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.selectableGroup()) {
-                                REGIMENES_FISCALES.forEach { (key, description) ->
-                                    QLabeledRadioButton(
-                                        text = "$key · $description",
-                                        selected = key == data.regimenFiscal,
-                                        onClick = {
-                                            onTaxRegimeChange(key)
-                                            regimeOptionsOpen = false
-                                        },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                QLabeledSelectField(
+                    label = "Régimen fiscal",
+                    value = regimeText(data.regimenFiscal),
+                    onClick = { regimeOptionsOpen = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Selecciona tu régimen",
+                    errorText = fieldErrors.regimenFiscal,
+                    expanded = regimeOptionsOpen,
+                    onDismissRequest = { regimeOptionsOpen = false },
+                    options = REGIMENES_FISCALES.map { (key, description) -> "$key · $description" },
+                    onOptionSelected = { index ->
+                        onTaxRegimeChange(REGIMENES_FISCALES[index].first)
+                        regimeOptionsOpen = false
+                    },
+                )
 
                 QLabeledTextField(
                     label = "Código postal",
