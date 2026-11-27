@@ -360,3 +360,13 @@ p {
   padding: 28px;
   margin-bottom: 24px;
 }
+
+/* Texto de ayuda del aviso de empalme */
+.overlap-ayuda {
+  margin-bottom: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.overlap-panel li {
+  margin-bottom: 4px;
+}

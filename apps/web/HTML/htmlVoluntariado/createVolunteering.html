@@ -22,7 +22,7 @@
           <main class="crear-programa">
             <header class="page-header">
               <a class="back-link" href="/admin/voluntariado" id="volverListado">
-                Volver a Voluntariado
+                Volver al calendario
               </a>
               <div class="header-content">
                 <div>
@@ -106,7 +106,7 @@
                     </div>
 
                     <p class="type-hint">El tipo de registrara antes de publicar el programa.</p>
-                    <button type="button" id="guardarTipoBtn" class="btn btn-secondary">
+                    <button type="button" id="guardarTipoBtn" class="btn btn-primary">
                       Guardar Tipo
                     </button>
                   </div>
@@ -190,11 +190,13 @@
 
               <!-- Advertencia de empalmes -->
               <div id="empalmesPanel" class="overlap-panel" hidden>
-                <h3>Existen jornadas con horarios coincidentes</h3>
+                <h3 id="empalmesTitulo">Este horario se cruza con otra jornada</h3>
+                <p id="empalmesIntro"></p>
                 <ul id="empalmesLista"></ul>
+                <p id="empalmesAyuda" class="overlap-ayuda"></p>
 
                 <button type="button" class="btn btn-outline" id="ajustarHorarioBtn">
-                  Ajustar horario
+                  Cambiar horario
                 </button>
 
                 <button type="button" class="btn btn-primary" id="confirmarEmpalmeBtn">

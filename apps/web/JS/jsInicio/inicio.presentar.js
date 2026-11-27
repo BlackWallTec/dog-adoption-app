@@ -1,6 +1,6 @@
 import { enlaceA, rutaDe } from "../rutas.js";
 
-export const ENLACE_CALENDARIO = rutaDe("calendario");
+export const ENLACE_CALENDARIO = rutaDe("voluntariado");
 import { superaSla } from "./domain/reglas/antiguedad.js";
 
 const ZONA = "America/Mexico_City";

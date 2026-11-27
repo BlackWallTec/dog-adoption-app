@@ -157,9 +157,7 @@ test("iniciar pasa de carga a listo y publica textos, tono y enlaces", async () 
   expect(
     listo.agenda.datos.map((jornada) => jornada.nombre).every((nombre) => nombre === "Paseo"),
   ).toBe(true);
-  expect(listo.agenda.datos.every((item) => item.href === "/admin/voluntariado/calendario")).toBe(
-    true,
-  );
+  expect(listo.agenda.datos.every((item) => item.href === "/admin/voluntariado")).toBe(true);
   expect(listo.agenda.alertaCobertura?.href).toBe("/admin/voluntariado/nueva?fecha=2026-11-30");
   expect(listo.destacado.estado).toBe("listo");
   expect(listo.destacado.datos?.href).toBe(

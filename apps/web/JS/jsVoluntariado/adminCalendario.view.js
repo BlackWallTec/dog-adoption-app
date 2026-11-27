@@ -26,8 +26,7 @@ const el = {
   btnReintentar: $("btn-reintentar"),
   menu: $("menu-programa"),
   menuTitulo: $("menu-titulo"),
-  menuInscritos: $("menu-inscritos"),
-  menuEditar: $("menu-editar"),
+  menuDetalles: $("menu-detalles"),
 };
 
 const MENSAJES_ERROR = {
@@ -200,15 +199,15 @@ function cargarEventos(info, exito, falla) {
 function abrirMenu(evento, clic) {
   const id = encodeURIComponent(evento.id);
   el.menuTitulo.textContent = evento.title;
-  el.menuInscritos.href = `${rutaDe("inscritos")}?id=${id}`;
-  el.menuEditar.href = `${rutaDe("nuevaJornada")}?id=${id}`;
+  // Los detalles muestran los inscritos y las acciones de editar y cancelar
+  el.menuDetalles.href = `${rutaDe("inscritos")}?id=${id}`;
 
   // Se muestra junto al clic sin salirse de la pantalla
   el.menu.hidden = false;
   const { width, height } = el.menu.getBoundingClientRect();
   el.menu.style.left = `${Math.min(clic.clientX, window.innerWidth - width - 8)}px`;
   el.menu.style.top = `${Math.min(clic.clientY, window.innerHeight - height - 8)}px`;
-  el.menuInscritos.focus();
+  el.menuDetalles.focus();
 }
 
 function cerrarMenu() {
@@ -226,6 +225,9 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.querySelector(".content-area").addEventListener("scroll", cerrarMenu);
+
+// La ruta sale de rutas.js el href del HTML queda como respaldo
+document.getElementById("btn-crear-jornada").href = rutaDe("nuevaJornada");
 
 // ==================== CALENDARIO ====================
 
@@ -251,7 +253,16 @@ const calendario = new Calendar(el.calendario, {
   events: cargarEventos,
 
   // Clases propias (adminCalendario.css); en la v7 ya no hay clases fc-*
-  buttonClass: (boton) => (boton.isSelected ? "btn-primary" : "btn-secundario"),
+  // Flechas circulares, "Hoy" con contorno y Mes/Semana como selector
+  buttonGroupClass: (grupo) => (grupo.hasSelection ? "cal-selector" : "cal-grupo"),
+  buttonClass: (boton) =>
+    [
+      "cal-boton",
+      boton.isIconOnly ? "cal-boton-icono" : "cal-boton-texto",
+      boton.isSelected && "cal-boton-activo",
+    ]
+      .filter(Boolean)
+      .join(" "),
   toolbarTitleClass: "calendario-titulo",
   eventClass: (arg) => `evento evento-${arg.event.extendedProps.estado.toLowerCase()}`,
   eventContent: contenidoPrograma,
