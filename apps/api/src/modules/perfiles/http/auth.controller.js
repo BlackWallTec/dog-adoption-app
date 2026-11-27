@@ -69,7 +69,7 @@ export const postLogin = async (req, res) => {
     // Extensión optativa: las cuentas anteriores y los roles web mantienen su acceso.
     const estadoCorreo =
       usuario.rol === ROLES.CLIENT && correoMovilHabilitado()
-        ? servicioCorreoMovil().estado(usuario.id_usuario)
+        ? await servicioCorreoMovil().estado(usuario.id_usuario)
         : null;
     if (estadoCorreo && (!estadoCorreo.confirmado || usuario.correo_pendiente_desde))
       throw new FORBIDDEN(

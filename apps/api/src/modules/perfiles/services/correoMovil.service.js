@@ -2,6 +2,7 @@ import { createHmac, randomInt } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 import Usuario from "../http/modelosPerfiles/user.model.js";
 import ROLES from "../../../config/roles.js";
 import {
@@ -12,9 +13,28 @@ import {
   SERVICE_UNAVAILABLE,
   ERROR_CODES,
 } from "@qarino/shared/errores.js";
+import { correoMovilHabilitado, modoCorreoMovil } from "./correoMovil.config.js";
+
+export { correoMovilHabilitado };
 
 const MINUTO = 60_000;
 const GENERICO = { message: "Si la cuenta corresponde, recibirás un código en tu correo." };
+
+function validarContrasena(contrasena, confirmContrasena) {
+  if (
+    typeof contrasena !== "string" ||
+    contrasena.length < 8 ||
+    Buffer.byteLength(contrasena, "utf8") > 72 ||
+    /[\r\n]/.test(contrasena) ||
+    contrasena !== confirmContrasena
+  )
+    throw new VALIDATION(
+      "Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.",
+      {
+        contrasena: "Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.",
+      },
+    );
+}
 
 // Extensión local: no sustituye bcrypt/JWT ni modifica las cuentas anteriores.
 // Los códigos siguen siendo locales; Supabase guarda el plazo pendiente para la limpieza.
@@ -135,20 +155,7 @@ export function crearCorreoMovil({
           invalido();
         }
         if (tipo === "recuperar") {
-          if (
-            typeof contrasena !== "string" ||
-            contrasena.length < 8 ||
-            Buffer.byteLength(contrasena, "utf8") > 72 ||
-            /[\r\n]/.test(contrasena) ||
-            contrasena !== confirmContrasena
-          )
-            throw new VALIDATION(
-              "Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.",
-              {
-                contrasena:
-                  "Usa al menos 8 caracteres, máximo 72 bytes, y repite la misma contraseña.",
-              },
-            );
+          validarContrasena(contrasena, confirmContrasena);
           await usuarios.updatePassword(id, await bcrypt.hash(contrasena, 10));
           // No consume el código ni confirma éxito si la contraseña no quedó guardada.
           const actualizado = await usuarios.fetchByEmail(correo);
@@ -175,25 +182,130 @@ export function crearCorreoMovil({
   };
 }
 
-let servicio;
-export const correoMovilHabilitado = () => process.env.CORREO_MOVIL_MODO === "local";
+export function crearCorreoMovilSupabase({
+  usuarios = Usuario,
+  enviar,
+  secreto,
+  codigo = () => String(randomInt(0, 1_000_000)).padStart(6, "0"),
+}) {
+  if (!secreto) throw new INTERNAL("Falta el secreto del servidor.");
+
+  const hash = (id, tipo, valor) =>
+    createHmac("sha256", secreto).update(`${id}:${tipo}:${valor}`).digest("hex");
+  const invalido = () => {
+    throw new BAD_REQUEST(
+      "El código no es válido o venció. Solicita uno nuevo.",
+      ERROR_CODES.INVALID_EMAIL_CODE,
+    );
+  };
+
+  async function emitir(id, correo, tipo) {
+    const valor = codigo();
+    const resultado = await usuarios.emitirCodigoCorreoMovil(id, tipo, hash(id, tipo, valor));
+    if (resultado === "rate_limited") {
+      throw new RATE_LIMITED("Espera un minuto antes de solicitar otro código.");
+    }
+    if (resultado === "expired") {
+      throw new BAD_REQUEST(
+        "El código no es válido o venció. Solicita uno nuevo.",
+        ERROR_CODES.INVALID_EMAIL_CODE,
+      );
+    }
+    if (resultado !== "sent") {
+      throw new SERVICE_UNAVAILABLE(
+        "No se pudo preparar el código de correo.",
+        ERROR_CODES.EMAIL_UNAVAILABLE,
+      );
+    }
+    await enviar({ para: correo, codigo: valor, tipo });
+  }
+
+  return {
+    estado(id) {
+      return usuarios.obtenerEstadoCorreoMovil(id);
+    },
+    async registrar(id, correo) {
+      try {
+        await emitir(id, correo, "confirmar");
+        return { enviado: true };
+      } catch {
+        console.error(
+          "No se entregó la confirmación móvil; la cuenta puede solicitar otro código.",
+        );
+        return { enviado: false };
+      }
+    },
+    async solicitar(correo, tipo) {
+      const usuario = await usuarios.fetchByEmail(correo);
+      if (usuario?.rol !== ROLES.CLIENT) return GENERICO;
+
+      const pendiente = Boolean(usuario.correo_pendiente_desde);
+      if (
+        (tipo === "confirmar" && !pendiente) ||
+        (tipo === "recuperar" && pendiente) ||
+        !["confirmar", "recuperar"].includes(tipo)
+      )
+        return GENERICO;
+
+      try {
+        await emitir(usuario.id_usuario, correo, tipo);
+      } catch (error) {
+        if (error instanceof BAD_REQUEST || error instanceof RATE_LIMITED) return GENERICO;
+        console.error("No se entregó el código de correo móvil.");
+      }
+      return GENERICO;
+    },
+    async consumir(correo, valor, tipo, contrasena, confirmContrasena) {
+      if (typeof valor !== "string" || !/^\d{6}$/.test(valor)) invalido();
+      if (!["confirmar", "recuperar"].includes(tipo)) invalido();
+
+      const usuario = await usuarios.fetchByEmail(correo);
+      if (usuario?.rol !== ROLES.CLIENT) invalido();
+
+      let contrasenaHash = null;
+      if (tipo === "recuperar") {
+        validarContrasena(contrasena, confirmContrasena);
+        contrasenaHash = await bcrypt.hash(contrasena, 10);
+      }
+
+      const resultado = await usuarios.consumirCodigoCorreoMovil(
+        usuario.id_usuario,
+        tipo,
+        hash(usuario.id_usuario, tipo, valor),
+        contrasenaHash,
+      );
+      if (resultado !== "ok") invalido();
+      return { ok: true };
+    },
+  };
+}
+
+let servicioLocal;
 export function servicioCorreoMovil() {
   if (!correoMovilHabilitado())
     throw new SERVICE_UNAVAILABLE(
       "El correo móvil todavía no está habilitado.",
       ERROR_CODES.EMAIL_UNAVAILABLE,
     );
-  if (process.env.NODE_ENV === "production")
+  const modo = modoCorreoMovil();
+  if (modo === "local" && process.env.NODE_ENV === "production")
     throw new SERVICE_UNAVAILABLE(
       "El almacenamiento local de correo no está habilitado en producción.",
       ERROR_CODES.EMAIL_UNAVAILABLE,
     );
-  servicio ??= crearCorreoMovil({
+  if (modo === "supabase") {
+    return crearCorreoMovilSupabase({
+      secreto: process.env.JWT_SECRET,
+      enviar: enviarCodigoCorreo,
+    });
+  }
+
+  servicioLocal ??= crearCorreoMovil({
     archivo: resolve(process.env.CORREO_MOVIL_ARCHIVO || ".local/correo-movil.json"),
     secreto: process.env.JWT_SECRET,
     enviar: enviarCodigoCorreo,
   });
-  return servicio;
+  return servicioLocal;
 }
 
 // La clave se usa sólo en el servidor. El código nunca se devuelve en respuestas HTTP.
@@ -224,7 +336,6 @@ export async function enviarCodigoCorreo({ para, codigo, tipo }) {
         "Falta SMTP_PASS para enviar con Gmail.",
         ERROR_CODES.EMAIL_UNAVAILABLE,
       );
-    const { default: nodemailer } = await import("nodemailer");
     return nodemailer
       .createTransport({
         service: "gmail",
@@ -258,8 +369,8 @@ export async function enviarCodigoCorreo({ para, codigo, tipo }) {
   return respuesta.json();
 }
 
-export function verificarCorreoMovil(usuario) {
+export async function verificarCorreoMovil(usuario) {
   if (!correoMovilHabilitado() || usuario.rol !== ROLES.CLIENT) return true;
-  const estado = servicioCorreoMovil().estado(usuario.uuid);
+  const estado = await servicioCorreoMovil().estado(usuario.uuid);
   return estado.confirmado && estado.version === (usuario.correoVersionMovil ?? 0);
 }

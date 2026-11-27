@@ -1,5 +1,6 @@
 import { supabase, supabaseAdmin } from "../../../../config/supabaseClient.js";
 import { instanciarError } from "@qarino/shared/errores.js";
+import { correoMovilHabilitado } from "../../services/correoMovil.config.js";
 
 // Se parametrizan las consultas, para que se traten como dato y no
 // como instrucción.
@@ -15,7 +16,7 @@ export default class Usuario {
       id_usuario,
       contrasena,
       rol,
-      ${process.env.CORREO_MOVIL_MODO === "local" ? "correo_pendiente_desde," : ""}
+      ${correoMovilHabilitado() ? "correo_pendiente_desde," : ""}
       datos_confidenciales!inner ( id_usuario )
       `,
       )
@@ -76,6 +77,35 @@ export default class Usuario {
     const { data, error } = await supabaseAdmin.rpc("confirmar_correo_cliente", { p_id: id });
     if (error) instanciarError("Error al confirmar el correo", error.code);
     return data === true;
+  }
+
+  static async obtenerEstadoCorreoMovil(id) {
+    const { data, error } = await supabaseAdmin.rpc("estado_correo_movil", {
+      p_id_usuario: id,
+    });
+    if (error) instanciarError("Error al consultar el estado del correo", error.code);
+    return data;
+  }
+
+  static async emitirCodigoCorreoMovil(id, tipo, codigoHash) {
+    const { data, error } = await supabaseAdmin.rpc("emitir_codigo_correo_movil", {
+      p_id_usuario: id,
+      p_tipo: tipo,
+      p_codigo_hash: codigoHash,
+    });
+    if (error) instanciarError("Error al emitir el código de correo", error.code);
+    return data;
+  }
+
+  static async consumirCodigoCorreoMovil(id, tipo, codigoHash, contrasenaHash) {
+    const { data, error } = await supabaseAdmin.rpc("consumir_codigo_correo_movil", {
+      p_id_usuario: id,
+      p_tipo: tipo,
+      p_codigo_hash: codigoHash,
+      p_contrasena_hash: contrasenaHash,
+    });
+    if (error) instanciarError("Error al consumir el código de correo", error.code);
+    return data;
   }
 
   // La recuperación sólo sustituye el hash del usuario validado por el código de correo.

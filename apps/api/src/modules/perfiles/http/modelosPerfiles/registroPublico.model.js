@@ -1,5 +1,6 @@
 import { getSqlSignup } from "../../../../config/postgresSignup.js";
 import { instanciarError, VALIDATION } from "@qarino/shared/errores.js";
+import { correoMovilHabilitado } from "../../services/correoMovil.config.js";
 
 /*
 Registro público de Clientes con el rol signup_service.
@@ -36,7 +37,7 @@ export default class RegistroPublico {
               fecha_nacimiento: usuario.fecha_nacimiento ?? null,
               aviso_privacidad_aceptado: usuario.aviso_privacidad_aceptado,
               // La marca nace en la misma transacción; reenviar códigos nunca cambia esta fecha.
-              ...(requiereConfirmacion
+              ...(requiereConfirmacion && correoMovilHabilitado()
                 ? { correo_pendiente_desde: tx`statement_timestamp()` }
                 : {}),
             },
@@ -47,7 +48,7 @@ export default class RegistroPublico {
             "contrasena",
             "fecha_nacimiento",
             "aviso_privacidad_aceptado",
-            ...(requiereConfirmacion ? ["correo_pendiente_desde"] : []),
+            ...(requiereConfirmacion && correoMovilHabilitado() ? ["correo_pendiente_desde"] : []),
           )}
         `;
 
