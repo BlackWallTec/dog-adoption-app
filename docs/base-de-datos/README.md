@@ -46,7 +46,9 @@ docs/base-de-datos/
     └── migraciones-antiguas/     ← migraciones aplicadas a mano antes de la migración base
 
 supabase/migrations/
-└── 20261119200351_remote_schema.sql   ← migración base (idéntica a 01_schema.sql)
+├── 20261119200351_remote_schema.sql   ← migración base (idéntica a 01_schema.sql)
+├── 20261120000000_perfiles_cuentas_pendientes_72h.sql
+└── 20261126183000_perfiles_codigos_correo_supabase.sql
 ```
 
 ## Migraciones
@@ -65,8 +67,9 @@ Se creó `supabase/migrations/20261119200351_remote_schema.sql` con el estado co
 npx supabase migration repair --status applied 20261119200351 --remote
 ```
 
-Hoy el historial local (`supabase/migrations/`) y el remoto coinciden: los dos tienen solo
-`20261119200351`.
+La migración base refleja el estado remoto extraído el 19 de noviembre. Las migraciones posteriores
+en el directorio agregan el plazo de confirmación de cuenta y el almacenamiento persistente de los
+códigos de correo de Perfiles; deben aplicarse en orden después de revisarlas.
 
 ### Migraciones antiguas
 
@@ -89,11 +92,19 @@ volver a ejecutar**:
 4. **No modificar `20261119200351_remote_schema.sql`.** Si se regenera `01_schema.sql`, la
    migración base se queda como está.
 
+### Códigos de correo de Perfiles
+
+La migración `20261126183000_perfiles_codigos_correo_supabase.sql` agrega estado privado de
+códigos y RPCs transaccionales para emitirlos, consumirlos y consultar la versión de sesión. Para
+habilitarlo en el entorno desplegado, primero hay que aplicar la migración y después configurar
+`CORREO_MOVIL_MODO=supabase`. El modo `local` continúa usando el archivo local y no se debe usar en
+producción.
+
 ## Transacciones / lógica de negocio
 
-La lógica transaccional vive en las **9 funciones** de `public`, que se llaman por RPC. Cada
-llamada se ejecuta dentro de una transacción. El detalle de cada una está en
-`historial/README.md` y en la sección 3 de `02_funciones_triggers.sql`.
+La extracción base contiene **9 funciones** en `public`; la migración de códigos de correo agrega
+3 RPCs. Cada llamada se ejecuta dentro de una transacción. El detalle de las funciones base está
+en `historial/README.md` y en la sección 3 de `02_funciones_triggers.sql`.
 
 `limpiar_datos_prueba()` vacía **todas** las tablas. Solo `service_role` puede ejecutarla.
 

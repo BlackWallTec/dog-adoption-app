@@ -24,7 +24,7 @@ Un `Authorization: Bearer` enviado **sin** `x-client: mobile` se ignora y la pet
 {% endhint %}
 
 1. **`apps/api/src/utils/getTokenFromReq.js`:** Lee el token de la petición según la tabla anterior (o de `req.token` si ya existe).
-2. **`apps/api/src/middleware/is-auth.js`** (`verificarToken`): Verifica el JWT con `JWT_SECRET` (algoritmo `HS256`), guarda los claims en `req.user` y valida la sesión de correo móvil (`verificarCorreoMovil`). Responde `401` con `"No autenticado"` o `"Token inválido o expirado"`.
+2. **`apps/api/src/middleware/is-auth.js`** (`verificarToken`): Verifica el JWT con `JWT_SECRET` (algoritmo `HS256`), guarda los claims en `req.user` y valida la sesión de correo móvil (`verificarCorreoMovil`). Responde `401` con `"No autenticado"` o `"Token inválido o expirado"`; si Supabase no puede validar el estado de correo, responde `503`.
 3. **`apps/api/src/middleware/require-role.js`** (`requireRole(...roles)`): Autorización por rol; compara `req.user.rol` con los roles permitidos y responde `403` si no coincide.
 
 Ejemplo:
@@ -56,6 +56,7 @@ Los valores forman parte del contrato de sesión con los clientes.
 
 - **`multer`** — carga de archivos (documentos de solicitudes y archivos de donativos).
 - **Resend / `nodemailer`** — envío de correo (CFDI y Perfiles), seleccionado con `MAIL_TRANSPORT`.
+- **Códigos de correo de Perfiles:** `CORREO_MOVIL_MODO=local` usa almacenamiento local solo para desarrollo; `CORREO_MOVIL_MODO=supabase` usa RPCs y almacenamiento persistente en Supabase.
 - **`fast-xml-parser`** — procesamiento de XML de CFDI en `donativos`.
 - **`bcryptjs`** — hash de contraseñas.
 

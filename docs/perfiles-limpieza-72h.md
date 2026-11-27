@@ -11,14 +11,21 @@ la marca pendiente en Supabase antes de mostrar éxito.
 | `user.model.js` y `auth.controller.js`                                   | Consultan la marca pendiente y bloquean el login de ese Cliente.                                                   |
 | `correoMovil.service.js`                                                 | Confirma en Supabase y conserva el límite original al reenviar.                                                    |
 | `correoMovil.service.test.js` y `correoMovil.routes.test.js`             | Verifican plazo fijo, errores de base y bloqueo sin archivo local.                                                 |
+| `20261126183000_perfiles_codigos_correo_supabase.sql`                    | Guarda hashes, vencimientos e intentos en Supabase y ofrece RPCs atómicos para producción.                         |
 
 ## Activación
 
-1. Ejecutar la migración completa en **Supabase → SQL Editor** como `postgres`,
-   antes de reiniciar la API con este código. Instala `pg_cron` y programa
-   `perfiles-cuentas-pendientes-72h`; no hace falta un temporizador en Android.
-2. Mantener `CORREO_MOVIL_MODO=local` para la demo. No cambia el proveedor Gmail/Resend.
-3. Reiniciar la API. Los registros nuevos quedan incluidos en la limpieza.
+1. Aplicar las migraciones pendientes después de revisarlas, con `npx supabase db push`.
+   La migración de 72 horas programa `perfiles-cuentas-pendientes-72h`; no hace falta un
+   temporizador en Android.
+2. Para la demo local, mantener `CORREO_MOVIL_MODO=local`. Para un despliegue, configurar
+   `CORREO_MOVIL_MODO=supabase` solo después de aplicar
+   `20261126183000_perfiles_codigos_correo_supabase.sql`.
+3. Configurar en el entorno del servidor `NODE_ENV=production`, `JWT_SECRET`, las variables de
+   Supabase y las credenciales del proveedor de correo (`MAIL_TRANSPORT`, `SMTP_USER`/`SMTP_PASS`
+   o `RESEND_API_KEY`/`MAIL_FROM`). No copiar secretos al cliente ni al repositorio.
+4. Desplegar la API y probar registro, reenvío, confirmación y recuperación antes de habilitarlo a
+   usuarios reales.
 
 La tarea procesa hasta 500 cuentas por ejecución. Las cuentas vencen a las 72 horas
 y se borran en la siguiente ejecución disponible (normalmente hasta cinco minutos después).
@@ -26,8 +33,9 @@ Borra primero sus contactos y después el usuario; las FK eliminan sus filas dep
 Root, Administradores, clientes anteriores y confirmados tienen marca NULL o un rol
 excluido, por lo que se conservan. No se marca retroactivamente ningún registro.
 
-Los códigos y versiones de sesión todavía usan el archivo local de la demo; esto
-no habilita su despliegue en varias instancias ni elimina la protección de producción.
+En modo `local`, los códigos y versiones de sesión usan un archivo local. En modo `supabase`,
+quedan en la base de datos con acceso restringido al backend y operaciones atómicas, para que se
+compartan entre instancias. No configures `supabase` antes de aplicar la migración nueva.
 
 Para revisar la tarea: `select jobid, schedule, active from cron.job where jobname = 'perfiles-cuentas-pendientes-72h';`.
 Para pausarla: `select cron.unschedule('perfiles-cuentas-pendientes-72h');`.

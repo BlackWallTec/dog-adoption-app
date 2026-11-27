@@ -54,7 +54,7 @@ cp apps/api/.env.example apps/api/.env
 | Auth           | `JWT_SECRET`                                                              | Genéralo con `openssl rand -base64 48`. Fuera de producción, el servidor no arranca sin él.                              |
 | Registro       | `SIGNUP_DATABASE_URL`                                                     | Conexión directa a Postgres con el rol `signup_service` (ver [Base de Datos](../arquitectura/base-de-datos-rls.md)).     |
 | Correo         | `MAIL_TRANSPORT`, `RESEND_API_KEY`, `MAIL_FROM`, `SMTP_USER`, `SMTP_PASS` | `MAIL_TRANSPORT=resend` (por defecto) o `gmail` con contraseña de aplicación (`SMTP_*`). Compartido por CFDI y Perfiles. |
-| Correo Android | `CORREO_MOVIL_MODO`                                                       | Por defecto `desactivado`.                                                                                               |
+| Correo Android | `CORREO_MOVIL_MODO`                                                       | `desactivado` por defecto; `local` para desarrollo o `supabase` tras aplicar su migración de producción.                 |
 | Rate limiting  | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`                      | Opcionales; sin ellas el limitador se desactiva.                                                                         |
 
 ### App Android (`apps/android/local.properties`)
