@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +51,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.app.android.presentation.view.atomicDesign.organism.FilterSheet
 import com.app.android.presentation.view.atomicDesign.organism.NavBar
 import com.app.android.presentation.view.atomicDesign.organism.SearchBar
@@ -270,7 +274,14 @@ private fun CatalogoContenido(
                         Column {
                             // Imagen del perro
                             AsyncImage(
-                                model = perro.fotoUrl,
+                                model =
+                                    ImageRequest
+                                        .Builder(LocalContext.current)
+                                        .data(perro.fotoUrl)
+                                        .crossfade(true)
+                                        .memoryCachePolicy(CachePolicy.ENABLED)
+                                        .diskCachePolicy(CachePolicy.ENABLED)
+                                        .build(),
                                 contentDescription = perro.nombre,
                                 contentScale = ContentScale.Crop,
                                 placeholder = painterResource(com.app.android.R.drawable.logo),

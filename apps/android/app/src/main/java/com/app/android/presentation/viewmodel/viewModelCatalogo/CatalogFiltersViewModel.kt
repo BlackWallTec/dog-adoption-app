@@ -102,6 +102,15 @@ class CatalogFiltersViewModel
 
                         val nuevosPerros = result.dogs.map { it.toCardUi() }
                         accumulatedDogs.addAll(nuevosPerros)
+
+                        // Ajuste de paginacion + cache
+                        currentPage =
+                            if (accumulatedDogs.isNotEmpty()) {
+                                Math.ceil(accumulatedDogs.size.toDouble() / pageSize).toInt()
+                            } else {
+                                1
+                            }
+
                         hasMore = result.meta.hasMore || nuevosPerros.size >= pageSize
 
                         _uiState.value =
@@ -147,7 +156,12 @@ class CatalogFiltersViewModel
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    // Si falla la siguiente página, se conserva la lista que ya tenía cargada
+                    hasMore = false
+                    _uiState.value =
+                        CatalogUiState.Success(
+                            perros = accumulatedDogs.toList(),
+                            hasMore = false,
+                        )
                 } finally {
                     isFetchingNextPage = false
                 }
