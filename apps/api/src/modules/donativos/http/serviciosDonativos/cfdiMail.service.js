@@ -1,6 +1,45 @@
+import nodemailer from "nodemailer";
+
 const URL_RESEND = "https://api.resend.com/emails";
 
 export async function enviarCfdiPorCorreo({ destinatario, nombre, uuid, pdf, xml }) {
+  const transporte = process.env.MAIL_TRANSPORT || "resend";
+  const asunto = "Tu comprobante fiscal digital";
+  const texto = `Hola${nombre ? ` ${nombre}` : ""}.\n\nAdjuntamos el PDF y XML de tu CFDI (${uuid}).`;
+  const adjuntos = [
+    { filename: `CFDI-${uuid}.pdf`, content: pdf },
+    { filename: `CFDI-${uuid}.xml`, content: xml },
+  ];
+
+  if (transporte === "gmail") {
+    const remitente = process.env.SMTP_USER?.trim();
+    const pass = process.env.SMTP_PASS?.replace(/\s/g, "");
+    if (!remitente || !pass) {
+      throw new Error("Falta configurar SMTP_USER y SMTP_PASS para enviar el CFDI con Gmail.");
+    }
+
+    return nodemailer
+      .createTransport({
+        service: "gmail",
+        auth: { user: remitente, pass },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 8000,
+        dnsTimeout: 8000,
+      })
+      .sendMail({
+        from: `Qariño Animal <${remitente}>`,
+        to: [destinatario],
+        subject: asunto,
+        text: texto,
+        attachments: adjuntos,
+      });
+  }
+
+  if (transporte !== "resend") {
+    throw new Error("Proveedor de correo CFDI inválido.");
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   const remitente = process.env.MAIL_FROM;
 
@@ -17,18 +56,12 @@ export async function enviarCfdiPorCorreo({ destinatario, nombre, uuid, pdf, xml
     body: JSON.stringify({
       from: remitente,
       to: [destinatario],
-      subject: "Tu comprobante fiscal digital",
-      text: `Hola${nombre ? ` ${nombre}` : ""}.\n\nAdjuntamos el PDF y XML de tu CFDI (${uuid}).`,
-      attachments: [
-        {
-          filename: `CFDI-${uuid}.pdf`,
-          content: pdf.toString("base64"),
-        },
-        {
-          filename: `CFDI-${uuid}.xml`,
-          content: xml.toString("base64"),
-        },
-      ],
+      subject: asunto,
+      text: texto,
+      attachments: adjuntos.map(({ filename, content }) => ({
+        filename,
+        content: content.toString("base64"),
+      })),
     }),
   });
 
