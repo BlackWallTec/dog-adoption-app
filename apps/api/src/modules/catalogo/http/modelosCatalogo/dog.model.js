@@ -79,8 +79,11 @@ class DogModel {
       .eq("activo", true)
       .eq("multimedia.tipo", "imagen")
       .order("fecha_subida", { referencedTable: "multimedia", ascending: true })
-      .limit(1, { foreignTable: "multimedia" })
-      .range(from, to);
+      .limit(1, { foreignTable: "multimedia" });
+
+    if (from !== undefined && to !== undefined) {
+      consulta = consulta.range(from, to);
+    }
 
     if (sexo) consulta = consulta.eq("sexo", sexo);
     if (tamano) consulta = consulta.eq("tamano.id_tamano", tamano);

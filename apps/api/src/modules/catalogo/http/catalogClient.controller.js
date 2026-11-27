@@ -89,20 +89,15 @@ export const getDogs = async (req, res) => {
 
   try {
     const perros = await dogModel.getDogs(filtros, from, to);
-    /*
-    for (const perro of perros) {
-      const fotos = await multimediaModel.getDogMultimediaById(perro.id_perro);
-      console.log("Fotos encontradas:", fotos);
-      if (fotos.length > 0) {
-        perro.foto_url = fotos[0].url;
-      } else {
-        perro.foto_url = "";
-      }
-    }
-      */
+
     res.status(200).json({
       success: true,
       data: perros,
+      meta: {
+        per_page: limit,
+        current_page: Math.floor(offset / limit) + 1,
+        has_more: perros.length === limit,
+      },
     });
   } catch (error) {
     // 22P02: un id (tamano, raza o caracter) no tiene el formato de la columna, p. ej. un uuid mal escrito
@@ -115,11 +110,6 @@ export const getDogs = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
-      meta: {
-        per_page: limit,
-        current_page: Math.floor(offset / limit) + 1,
-        has_more: perros.length === limit, // Si trajo exactamente 'limit' perros, asume que hay más
-      },
     });
   }
 };
