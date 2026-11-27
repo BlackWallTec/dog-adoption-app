@@ -112,6 +112,13 @@ fun ConfirmarRoute(
     var aceptaTerminos by remember(uiState.modoEdicion) { mutableStateOf(uiState.modoEdicion) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onErrorShown()
+        }
+    }
+
     LaunchedEffect(noEditable) {
         if (noEditable) {
             snackbarHostState.showSnackbar("Esta solicitud ya no se puede editar.")
