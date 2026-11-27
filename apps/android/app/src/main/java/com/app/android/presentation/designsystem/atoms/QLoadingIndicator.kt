@@ -1,21 +1,40 @@
-// Archivo generado para el rediseño Qariño Animal. Ver CONTRATO.md.
 package com.app.android.presentation.designsystem.atoms
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.app.android.presentation.designsystem.internal.QPlaceholder
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.designsystem.theme.QSpacing
+import com.app.android.presentation.designsystem.theme.QTheme
+import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
  * Indicador de carga circular en onAction.
  *
  * Dueño: P1 (Átomos).
  * Reemplaza a: EstadoCargando (indicador).
- * TODO(P1): reemplazar QPlaceholder por la implementación real. NO cambiar la firma.
  */
 @Composable
 fun QLoadingIndicator(
     modifier: Modifier = Modifier,
     contentDescription: String = "Cargando",
 ) {
-    QPlaceholder("QLoadingIndicator", modifier)
+    val description = contentDescription
+    CircularProgressIndicator(
+        modifier = modifier.semantics { this.contentDescription = description },
+        color = QTheme.colors.onAction,
+        trackColor = QTheme.colors.surfaceMuted,
+        strokeWidth = QSpacing.xs,
+    )
+}
+
+@Preview(showBackground = true, name = "QLoadingIndicator")
+@Composable
+private fun QLoadingIndicatorPreview() {
+    QarinoTheme {
+        QLoadingIndicator(modifier = Modifier.padding(QSpacing.l))
+    }
 }

@@ -1,4 +1,3 @@
-// Archivo generado para el rediseño Qariño Animal. Ver CONTRATO.md.
 package com.app.android.presentation.designsystem.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +37,7 @@ object QShapes {
 }
 
 object QSize {
+    val border = 1.dp // grosor de bordes (tags, campos, chips)
     val icon = 24.dp
     val iconSmall = 18.dp
     val buttonHeight = 48.dp

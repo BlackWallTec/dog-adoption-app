@@ -1,16 +1,19 @@
-// Archivo generado para el rediseño Qariño Animal. Ver CONTRATO.md.
 package com.app.android.presentation.designsystem.atoms
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.app.android.presentation.designsystem.internal.QPlaceholder
+import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.designsystem.theme.QTheme
+import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
  * Checkbox con colores del tema (marcado = onAction).
  *
  * Dueño: P1 (Átomos).
  * Reemplaza a: CheckBox.
- * TODO(P1): reemplazar QPlaceholder por la implementación real. NO cambiar la firma.
  */
 @Composable
 fun QCheckbox(
@@ -19,5 +22,31 @@ fun QCheckbox(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    QPlaceholder("QCheckbox", modifier)
+    val colors = QTheme.colors
+    Checkbox(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        enabled = enabled,
+        colors =
+            CheckboxDefaults.colors(
+                checkedColor = colors.onAction,
+                uncheckedColor = colors.fieldBorder,
+                checkmarkColor = colors.surface,
+                disabledCheckedColor = colors.border,
+                disabledUncheckedColor = colors.border,
+            ),
+    )
+}
+
+@Preview(showBackground = true, name = "QCheckbox")
+@Composable
+private fun QCheckboxPreview() {
+    QarinoTheme {
+        Row {
+            QCheckbox(checked = true, onCheckedChange = {})
+            QCheckbox(checked = false, onCheckedChange = {})
+            QCheckbox(checked = true, onCheckedChange = {}, enabled = false)
+        }
+    }
 }

@@ -1,16 +1,19 @@
-// Archivo generado para el rediseño Qariño Animal. Ver CONTRATO.md.
 package com.app.android.presentation.designsystem.atoms
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.app.android.presentation.designsystem.internal.QPlaceholder
+import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.designsystem.theme.QTheme
+import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
  * Radio con colores del tema (seleccionado = onAction).
  *
  * Dueño: P1 (Átomos).
  * Reemplaza a: SeleccionUnicaButton.
- * TODO(P1): reemplazar QPlaceholder por la implementación real. NO cambiar la firma.
  */
 @Composable
 fun QRadioButton(
@@ -19,5 +22,30 @@ fun QRadioButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    QPlaceholder("QRadioButton", modifier)
+    val colors = QTheme.colors
+    RadioButton(
+        selected = selected,
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        colors =
+            RadioButtonDefaults.colors(
+                selectedColor = colors.onAction,
+                unselectedColor = colors.fieldBorder,
+                disabledSelectedColor = colors.border,
+                disabledUnselectedColor = colors.border,
+            ),
+    )
+}
+
+@Preview(showBackground = true, name = "QRadioButton")
+@Composable
+private fun QRadioButtonPreview() {
+    QarinoTheme {
+        Row {
+            QRadioButton(selected = true, onClick = {})
+            QRadioButton(selected = false, onClick = {})
+            QRadioButton(selected = true, onClick = {}, enabled = false)
+        }
+    }
 }
