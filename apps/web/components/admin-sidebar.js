@@ -6,9 +6,10 @@ class AdminSidebar extends HTMLElement {
     const enlaces = PANTALLAS.filter((pantalla) => pantalla.etiqueta)
       .map(
         (pantalla) => `
-            <a href="${pantalla.ruta}" class="nav-item${activo === pantalla.id ? " active" : ""}">
+            <a href="${pantalla.ruta}" class="nav-item${activo === pantalla.id ? " active" : ""}" data-menu="${pantalla.id}">
               <span class="material-symbols-rounded">${pantalla.icono}</span>
               <span>${pantalla.etiqueta}</span>
+              <span class="nav-count" hidden></span>
             </a>`,
       )
       .join("");
@@ -35,6 +36,21 @@ class AdminSidebar extends HTMLElement {
           </div>
         </aside>
       `;
+  }
+
+  /** @param {{ solicitudes?: number, donativos?: number }} conteos */
+  ponerConteos(conteos = {}) {
+    this.#ponerConteo("solicitudes", conteos.solicitudes);
+    this.#ponerConteo("donativos", conteos.donativos);
+  }
+
+  /** @param {string} id @param {number | undefined} valor */
+  #ponerConteo(id, valor) {
+    const cifra = this.querySelector(`[data-menu="${id}"] .nav-count`);
+    if (!cifra) return;
+    const numero = Number(valor) || 0;
+    cifra.hidden = numero <= 0;
+    cifra.textContent = numero > 99 ? "99+" : String(numero);
   }
 }
 

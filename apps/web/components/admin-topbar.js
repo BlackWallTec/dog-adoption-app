@@ -1,4 +1,5 @@
 import { tituloDe } from "../JS/rutas.js";
+import { iniciales, nombreCompleto, usuarioActual } from "../JS/jsPerfiles/usuarioActual.js";
 
 class AdminTopbar extends HTMLElement {
   connectedCallback() {
@@ -19,18 +20,28 @@ class AdminTopbar extends HTMLElement {
           </button>
 
           <div class="user-profile">
-            <div class="user-avatar">AM</div>
+            <div class="user-avatar"></div>
             <div class="user-info">
-              <span class="user-name">Dummy Name</span>
-              <span class="user-role">Administradora</span>
+              <span class="user-name"></span>
+              <span class="user-role"></span>
             </div>
           </div>
         </div>
       </header>
     `;
+
+    void this.#cargarUsuario();
+  }
+
+  async #cargarUsuario() {
+    const usuario = await usuarioActual();
+    const avatar = this.querySelector(".user-avatar");
+    const nombre = this.querySelector(".user-name");
+    const rol = this.querySelector(".user-role");
+    if (avatar) avatar.textContent = iniciales(usuario.nombre, usuario.apellidos);
+    if (nombre) nombre.textContent = nombreCompleto(usuario);
+    if (rol) rol.textContent = usuario.rol;
   }
 }
-
-//  To Do: En la línea 20 hace falta remplazar el nombre del administrador hardcodeado por uno real
 
 customElements.define("admin-topbar", AdminTopbar);

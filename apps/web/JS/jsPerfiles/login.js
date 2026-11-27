@@ -89,7 +89,7 @@ loginForm.addEventListener("submit", async (event) => {
     passwordToggle.setAttribute("aria-pressed", "false");
     passwordToggle.setAttribute("aria-label", "Mostrar contraseña");
 
-    window.location.replace(rutaDe("perros"));
+    window.location.replace(rutaDe("inicio"));
   } catch (error) {
     if (request !== activeRequest) return;
 
@@ -103,7 +103,7 @@ async function restoreSession() {
   setBusy("login-submit", true, "Comprobando sesión…");
   try {
     await perfilesApi.getSession();
-    window.location.replace(rutaDe("perros"));
+    window.location.replace(rutaDe("inicio"));
   } catch (error) {
     if (error instanceof UNAUTHENTICATED) return;
     feedback("login-feedback", error.message ? error.message : "Error al comprobar sesión");
