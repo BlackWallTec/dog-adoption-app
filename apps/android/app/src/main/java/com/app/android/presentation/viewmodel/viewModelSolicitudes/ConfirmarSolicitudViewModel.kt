@@ -205,6 +205,7 @@ class ConfirmarSolicitudViewModel
                         SolicitudEnviadaSnapshot(
                             solicitudId = "",
                             mascota = estadoActual.mascota,
+                            actualizada = borrador.edicion != null,
                         )
 
                     val solicitudId = enviarSolicitudUseCase()

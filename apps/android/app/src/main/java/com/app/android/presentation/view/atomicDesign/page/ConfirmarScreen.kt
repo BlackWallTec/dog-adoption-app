@@ -93,6 +93,7 @@ data class ConfirmarSolicitudUiState(
 data class SolicitudEnviadaSnapshot(
     val solicitudId: String,
     val mascota: MascotaResumen,
+    val actualizada: Boolean = false,
 )
 
 // ---------- Route & Screen ----------

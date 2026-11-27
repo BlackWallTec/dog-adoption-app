@@ -28,6 +28,7 @@ fun EnviadaRoute(
     EnviadaScreen(
         solicitudId = solicitudId,
         mascota = mascota,
+        actualizada = confirmacion?.actualizada ?: false,
         onBackClick = onBack,
         onVerSolicitudesClick = onVerSolicitudes,
         onNavSelect = onNavSelect,
