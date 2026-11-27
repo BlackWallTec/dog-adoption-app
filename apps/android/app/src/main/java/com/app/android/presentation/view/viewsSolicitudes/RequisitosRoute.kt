@@ -17,6 +17,7 @@ fun RequisitosRoute(
     idPerro: String,
     onBack: () -> Unit, // regresar (a Catalogo)
     onIrADatosGenerales: () -> Unit, // navegar al paso 2 (ya no lleva id: todo está en el borrador)
+    onNavSelect: (Int) -> Unit = {},
     viewModel: RequisitosViewModel = hiltViewModel(),
 ) {
     val aceptado by viewModel.aceptado.collectAsState()
@@ -57,5 +58,6 @@ fun RequisitosRoute(
         errorMensaje = mensaje,
         onBackClick = onBack,
         onContinuarClick = { viewModel.onContinuar(idUsuario, idPerro) },
+        onNavSelect = onNavSelect,
     )
 }

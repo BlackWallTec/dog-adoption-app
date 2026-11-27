@@ -14,6 +14,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewMo
 fun TuHogarRoute(
     onBack: () -> Unit, // Regresar a Datos Generales
     onIrACompromiso: () -> Unit, // Navegar a Compromisos
+    onNavSelect: (Int) -> Unit = {},
     // 1. Hilt inyecta el ViewModel
     viewModel: TuHogarViewModel = hiltViewModel(),
 ) {
@@ -46,5 +47,6 @@ fun TuHogarRoute(
         onReintentar = { viewModel.onLoadTuHogar() },
         onBackClick = onBack,
         onContinuarClick = { viewModel.onContinuar() },
+        onNavSelect = onNavSelect,
     )
 }

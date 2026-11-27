@@ -60,8 +60,10 @@ class CompromisoViewModel
         // Cargar del borrador sin red
         fun onLoadCompromiso() {
             try {
-                _uiState.value = CompromisoUiState.Success(datos = getCompromisoUseCase())
-                if (getEdicionUseCase() != null) {
+                val datos = getCompromisoUseCase()
+                _uiState.value = CompromisoUiState.Success(datos = datos)
+                // Si este paso ya se guardó, los 3 checkboxes ya se aceptaron
+                if (datos != Compromiso() || getEdicionUseCase() != null) {
                     _acceptances.value = Acceptances(acceptsReturn = true, petSpending = true, petFollowing = true)
                 }
             } catch (e: Exception) {

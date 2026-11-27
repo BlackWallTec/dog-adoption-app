@@ -346,6 +346,7 @@ fun AppNavigation() {
                     idPerro = idPerro,
                     onBack = { navController.navigateUp() },
                     onIrADatosGenerales = { navController.navigate(Screen.DatosGenerales.crearRuta()) },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -374,6 +375,7 @@ fun AppNavigation() {
                     onIrATuHogar = {
                         navController.siguientePaso(desdeConfirmar, Screen.TuHogar.crearRuta())
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -396,6 +398,7 @@ fun AppNavigation() {
                     onIrACompromiso = {
                         navController.siguientePaso(desdeConfirmar, Screen.Compromiso.crearRuta())
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -424,6 +427,7 @@ fun AppNavigation() {
                     onIrADocumentoss = {
                         navController.siguientePaso(desdeConfirmar, Screen.Documentos.crearRuta())
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -446,6 +450,7 @@ fun AppNavigation() {
                     onContinuarClick = {
                         navController.siguientePaso(desdeConfirmar, Screen.Confirmar.ruta)
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -516,7 +521,7 @@ fun AppNavigation() {
                 EnviadaRoute(
                     solicitudId = solicitudId,
                     onBack = navController::irAlCatalogo,
-                    onVerSolicitudes = navController::irAlCatalogo,
+                    onVerSolicitudes = { navController.irAOpcionBarra(3) },
                     onNavSelect = navController::irAOpcionBarra,
                 )
             }

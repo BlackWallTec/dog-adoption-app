@@ -108,7 +108,8 @@ fun EnviadaScreen(
             Text(
                 text =
                     if (actualizada) {
-                        "Tu solicitud corregida ya está en revisión. Te notificaremos cuando haya novedades"
+                        "Tu solicitud ya está de nuevo en revisión. " +
+                            "¡Te notificaremos cuando haya novedades!"
                     } else {
                         "Te notificaremos cuando haya novedades"
                     },

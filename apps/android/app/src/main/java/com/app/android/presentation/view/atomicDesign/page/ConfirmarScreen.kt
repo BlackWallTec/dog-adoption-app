@@ -109,7 +109,7 @@ fun ConfirmarRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val noEditable by viewModel.noEditable.collectAsStateWithLifecycle()
-    var aceptaTerminos by remember { mutableStateOf(false) }
+    var aceptaTerminos by remember(uiState.modoEdicion) { mutableStateOf(uiState.modoEdicion) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(noEditable) {

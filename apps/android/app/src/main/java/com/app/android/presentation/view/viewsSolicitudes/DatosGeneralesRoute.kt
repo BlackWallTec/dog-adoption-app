@@ -14,6 +14,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.DatosGenerale
 fun DatosGeneralesRoute(
     onBack: () -> Unit, // regresar a Requisitos
     onIrATuHogar: () -> Unit, // navegar al paso 3
+    onNavSelect: (Int) -> Unit = {},
     viewModel: DatosGeneralesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -46,5 +47,6 @@ fun DatosGeneralesRoute(
         onReintentar = { viewModel.onLoadDatosGenerales() },
         onBackClick = onBack,
         onContinuarClick = { viewModel.onContinuar() },
+        onNavSelect = onNavSelect,
     )
 }
