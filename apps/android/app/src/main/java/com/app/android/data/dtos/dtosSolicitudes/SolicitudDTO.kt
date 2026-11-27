@@ -1,9 +1,13 @@
 package com.app.android.data.dtos.dtosSolicitudes
 
+import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
+import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudParaEditar
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
+import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.google.gson.annotations.SerializedName
 
 // ===== GET /api/solicitudes/cliente/activa =====
@@ -127,6 +131,39 @@ data class ApiErrorResponseDto(
     @SerializedName("fields") val fields: Map<String, String>?,
 )
 
+// ===== GET /api/solicitudes/cliente/:id/edicion =====
+
+data class ApiResponseSolicitudEdicionDto(
+    @SerializedName("success") val success: Boolean?,
+    @SerializedName("data") val data: SolicitudEdicionDto?,
+    @SerializedName("message") val message: String?,
+)
+
+data class SolicitudEdicionDto(
+    @SerializedName("id_solicitud") val idSolicitud: String?,
+    @SerializedName("id_perro") val idPerro: String?,
+    @SerializedName("ocupacion") val ocupacion: String?,
+    @SerializedName("tuvo_mascotas") val tuvoMascotas: Boolean?,
+    @SerializedName("otras_mascotas") val otrasMascotas: Boolean?,
+    @SerializedName("motivo_adopcion") val motivoAdopcion: String?,
+    @SerializedName("donde_vivira") val dondeVivira: String?,
+    @SerializedName("personas_en_casa") val personasEnCasa: Int?,
+    @SerializedName("todos_de_acuerdo") val todosDeAcuerdo: Boolean?,
+    @SerializedName("tipo_vivienda") val tipoVivienda: String?,
+    @SerializedName("jardin_patio") val jardinPatio: String?,
+    @SerializedName("casero_acepta") val caseroAcepta: Boolean?,
+    @SerializedName("sobre_mascotas") val sobreMascotas: String?,
+    @SerializedName("cuidados_basicos") val cuidadosBasicos: String?,
+    @SerializedName("opinion_esterilizacion") val opinionEsterilizacion: String?,
+    @SerializedName("tiene_veterinario") val tieneVeterinario: Boolean?,
+    @SerializedName("detalle_veterinario") val detalleVeterinario: String?,
+    @SerializedName("tiempo_solo") val tiempoSolo: String?,
+    @SerializedName("rutina_diaria") val rutinaDiaria: String?,
+    @SerializedName("manejo_comportamiento") val manejoComportamiento: String?,
+    @SerializedName("tiene_ine") val tieneIne: Boolean?,
+    @SerializedName("tiene_domicilio") val tieneDomicilio: Boolean?,
+)
+
 // ===== MAPPERS: DTO -> Entity =====
 
 fun SolicitudActivaDto.toDomain(): SolicitudResumen =
@@ -154,6 +191,7 @@ fun DatosGeneralesDto.toDomain(): DatosGenerales =
         telefono = telefono ?: "",
         correo = correo ?: "",
     )
+
 fun SolicitudClienteDto.toDomain(): SolicitudCliente =
     SolicitudCliente(
         idSolicitud = idSolicitud ?: "",
@@ -164,4 +202,42 @@ fun SolicitudClienteDto.toDomain(): SolicitudCliente =
         fotoUrl = perro?.fotoUrl?.takeIf { it.isNotBlank() },
         edicionHabilitada = puedeEditar ?: false,
         comentarioAdmin = comentarioAdmin?.takeIf { it.isNotBlank() },
+    )
+
+fun SolicitudEdicionDto.toDomain(): SolicitudParaEditar =
+    SolicitudParaEditar(
+        idSolicitud = idSolicitud ?: "",
+        idPerro = idPerro ?: "",
+        ocupacion = ocupacion ?: "",
+        tuHogar =
+            TuHogar(
+                hadPet = tuvoMascotas,
+                otherPets = otrasMascotas,
+                whyAdopt = motivoAdopcion ?: "",
+                whereLive = dondeVivira ?: "",
+                peopleInHouse = personasEnCasa ?: 1,
+                allAgree = todosDeAcuerdo,
+                // La BD guarda "Depto"; aceptamos las dos formas
+                houseType =
+                    when (tipoVivienda?.trim()?.lowercase()) {
+                        "depto", "departamento" -> HouseType.DEPARTAMENTO
+                        "otro" -> HouseType.OTRO
+                        else -> HouseType.CASA
+                    },
+                hasGarden = jardinPatio ?: "",
+                petAccept = caseroAcepta,
+                aboutPets = sobreMascotas ?: "",
+            ),
+        compromiso =
+            Compromiso(
+                petNeeds = cuidadosBasicos ?: "",
+                petSterilization = opinionEsterilizacion ?: "",
+                hasVet = tieneVeterinario,
+                vetDetail = detalleVeterinario ?: "",
+                timeAlone = tiempoSolo ?: "",
+                dailyRoutine = rutinaDiaria ?: "",
+                dogManagement = manejoComportamiento ?: "",
+            ),
+        tieneIne = tieneIne ?: false,
+        tieneDomicilio = tieneDomicilio ?: false,
     )

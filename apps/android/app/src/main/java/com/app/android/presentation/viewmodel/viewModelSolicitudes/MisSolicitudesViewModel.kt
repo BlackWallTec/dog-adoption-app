@@ -3,7 +3,9 @@ package com.app.android.presentation.viewmodel.viewModelSolicitudes
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.android.domain.repoInterface.repoIntSolicitudes.NoEditableException
 import com.app.android.domain.useCases.useCasesSolicitudes.GetMisSolicitudesUseCase
+import com.app.android.domain.useCases.useCasesSolicitudes.IniciarEdicionUseCase
 import com.app.android.presentation.util.utilSolicitudes.toItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +19,16 @@ class MisSolicitudesViewModel
     @Inject
     constructor(
         private val getMisSolicitudesUseCase: GetMisSolicitudesUseCase,
+        private val iniciarEdicionUseCase: IniciarEdicionUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<MisSolicitudesUiState>(MisSolicitudesUiState.Loading)
         val uiState: StateFlow<MisSolicitudesUiState> = _uiState
+
+        // Estados de edición
+        private val _edicionState = MutableStateFlow<EdicionUiState>(EdicionUiState.Idle)
+        val edicionState: StateFlow<EdicionUiState> = _edicionState
+
+        // ===== INICIAR EDICIÓN =====
 
         // Se llama al antrar a la pantalla y con el botón de Reintentar
         fun onLoadSolicitudes() {
@@ -39,5 +48,32 @@ class MisSolicitudesViewModel
                         )
                 }
             }
+        }
+
+        fun onEditar(
+            idUsuario: String,
+            idSolicitud: String,
+        ) {
+            if (_edicionState.value is EdicionUiState.Loading) return
+            _edicionState.value = EdicionUiState.Loading
+            viewModelScope.launch {
+                try {
+                    iniciarEdicionUseCase(idUsuario, idSolicitud)
+                    _edicionState.value = EdicionUiState.Lista
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: NoEditableException) {
+                    _edicionState.value = EdicionUiState.NoEditable("Esta solicitud ya no se puede editar.")
+                    onLoadSolicitudes()
+                } catch (e: Exception) {
+                    Log.e("SOLICITUDES", "Error al iniciar la edición: ${e.message}", e)
+                    _edicionState.value =
+                        EdicionUiState.Error("No se pudo abrir tu solicitud. Revisa tu conexión e inténtalo de nuevo.")
+                }
+            }
+        }
+
+        fun onEdicionAtendida() {
+            _edicionState.value = EdicionUiState.Idle
         }
     }

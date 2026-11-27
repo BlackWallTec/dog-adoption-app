@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudHttpException
 import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
+import com.app.android.domain.repoInterface.repoIntSolicitudes.NoEditableException
 import com.app.android.domain.useCases.useCasesCatalogo.GetDogByIdUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.EnviarSolicitudUseCase
 import com.app.android.presentation.view.atomicDesign.page.CampoResumen
@@ -35,6 +36,8 @@ class ConfirmarSolicitudViewModel
     ) : ViewModel() {
         @Suppress("ktlint:standard:backing-property-naming")
         private val _enviando = MutableStateFlow(false)
+        private val _noEditable = MutableStateFlow(false)
+        val noEditable: StateFlow<Boolean> = _noEditable.asStateFlow()
         private val _errorMessage = MutableStateFlow<String?>(null)
         val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
@@ -84,6 +87,7 @@ class ConfirmarSolicitudViewModel
                 val dg = borrador.datosGenerales
                 val hogar = borrador.tuHogar
                 val comp = borrador.compromiso
+                val edicion = borrador.edicion
 
                 val hasPets = hogar?.hadPet == true || hogar?.otherPets == true
 
@@ -158,8 +162,10 @@ class ConfirmarSolicitudViewModel
 
                 val docs =
                     listOfNotNull(
-                        borrador.documentos?.identificacion?.nombre,
-                        borrador.documentos?.comprobanteDomicilio?.nombre,
+                        borrador.documentos?.identificacion?.nombre
+                            ?: if (edicion?.tieneIneEnServidor == true) "Identificación (enviada anteriormente)" else null,
+                        borrador.documentos?.comprobanteDomicilio?.nombre
+                            ?: if (edicion?.tieneDomicilioEnServidor == true) "Comprobante de domicilio (enviado anteriormente)" else null,
                     )
 
                 ConfirmarSolicitudUiState(
@@ -167,6 +173,7 @@ class ConfirmarSolicitudViewModel
                     secciones = secciones,
                     documentos = docs,
                     enviando = enviando,
+                    modoEdicion = edicion != null,
                 )
             }.stateIn(
                 scope = viewModelScope,
@@ -209,6 +216,14 @@ class ConfirmarSolicitudViewModel
                     onSuccess(solicitudId)
                 } catch (e: Exception) {
                     if (e is CancellationException) throw e
+
+                    if (e is NoEditableException) {
+                        borradorRepo.limpiar()
+                        _enviando.value = false
+                        _noEditable.value = true
+                        return@launch
+                    }
+
                     val statusCode = (e as? SolicitudHttpException)?.statusCode
                     val msg =
                         when (statusCode) {

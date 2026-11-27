@@ -7,15 +7,19 @@ sealed class Screen(
     val ruta: String,
 ) {
     object Catalogo : Screen("catalogo_screen")
+
     // Pantallas de perfiles
     object Login : Screen("login_screen")
 
     object Registro : Screen("registro_screen")
 
     object Cuenta : Screen("cuenta_screen")
+
     object Correo : Screen("correo_screen?recuperar={recuperar}&correo={correo}") {
-        fun crearRuta(correo: String, recuperar: Boolean) =
-            "correo_screen?recuperar=$recuperar&correo=${android.net.Uri.encode(correo)}"
+        fun crearRuta(
+            correo: String,
+            recuperar: Boolean,
+        ) = "correo_screen?recuperar=$recuperar&correo=${android.net.Uri.encode(correo)}"
     }
 
     object Configuracion : Screen("configuracion_screen")
@@ -66,18 +70,26 @@ sealed class Screen(
     }
 
     // Paso 2 · Datos generales (todo sale del borrador, no lleva parámetros)
-    object DatosGenerales : Screen("solicitud_datos_generales")
+    object DatosGenerales : Screen("solicitud_datos_generales?desdeConfirmar={desdeConfirmar}") {
+        fun crearRuta(desdeConfirmar: Boolean = false) = "solicitud_datos_generales?desdeConfirmar=$desdeConfirmar"
+    }
 
     // Paso 3 · Tu hogar
-    object TuHogar : Screen("solicitud_tu_hogar")
+    object TuHogar : Screen("solicitud_tu_hogar?desdeConfirmar={desdeConfirmar}") {
+        fun crearRuta(desdeConfirmar: Boolean = false) = "solicitud_tu_hogar?desdeConfirmar=$desdeConfirmar"
+    }
 
     // Paso 4 · Compromiso (todo sale del borrador, no lleva parámetros)
     // object Compromiso : Screen("solicitud_compromiso")
 
-    object Compromiso : Screen("solicitud_compromiso")
+    object Compromiso : Screen("solicitud_compromiso?desdeConfirmar={desdeConfirmar}") {
+        fun crearRuta(desdeConfirmar: Boolean = false) = "solicitud_compromiso?desdeConfirmar=$desdeConfirmar"
+    }
 
     // Paso 5 · Documentos
-    object Documentos : Screen("solicitud_documentos")
+    object Documentos : Screen("solicitud_documentos?desdeConfirmar={desdeConfirmar}") {
+        fun crearRuta(desdeConfirmar: Boolean = false) = "solicitud_documentos?desdeConfirmar=$desdeConfirmar"
+    }
 
     // Paso 6 · Confirmar (aquí está el único botón que escribe en la BD: Enviar solicitud)
     object Confirmar : Screen("solicitud_confirmar")

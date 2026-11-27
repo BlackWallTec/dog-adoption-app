@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.useCases.useCasesSolicitudes.CompromisoErrors
 import com.app.android.domain.useCases.useCasesSolicitudes.GetCompromisoUseCase
+import com.app.android.domain.useCases.useCasesSolicitudes.GetEdicionUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.GuardarCompromisoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +46,7 @@ class CompromisoViewModel
     constructor(
         private val getCompromisoUseCase: GetCompromisoUseCase,
         private val guardarCompromisoUseCase: GuardarCompromisoUseCase,
+        private val getEdicionUseCase: GetEdicionUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<CompromisoUiState>(CompromisoUiState.Loading)
         val uiState: StateFlow<CompromisoUiState> = _uiState
@@ -59,6 +61,9 @@ class CompromisoViewModel
         fun onLoadCompromiso() {
             try {
                 _uiState.value = CompromisoUiState.Success(datos = getCompromisoUseCase())
+                if (getEdicionUseCase() != null) {
+                    _acceptances.value = Acceptances(acceptsReturn = true, petSpending = true, petFollowing = true)
+                }
             } catch (e: Exception) {
                 _uiState.value = CompromisoUiState.Error("No se pudieron cargar tus respuestas.")
                 Log.e("SOLICITUDES", "Error al cargar compromiso: ${e.message}", e)

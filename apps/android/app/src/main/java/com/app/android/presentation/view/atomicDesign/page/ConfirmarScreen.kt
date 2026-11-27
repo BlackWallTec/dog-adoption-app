@@ -87,6 +87,7 @@ data class ConfirmarSolicitudUiState(
     val secciones: List<SeccionResumen>, // datos generales, tu hogar, compromiso
     val documentos: List<String>, // nombres de archivo
     val enviando: Boolean = false,
+    val modoEdicion: Boolean = false,
 )
 
 data class SolicitudEnviadaSnapshot(
@@ -98,20 +99,22 @@ data class SolicitudEnviadaSnapshot(
 @Composable
 fun ConfirmarRoute(
     onBack: () -> Unit,
-    onEditarSeccion: (SeccionSolicitud) -> Unit,
+    onEditarSeccion: (SeccionSolicitud, Boolean) -> Unit,
     onEnviarExitoso: (String) -> Unit = {},
     onUnauthorized: () -> Unit = {},
+    onNoEditable: () -> Unit = {},
     viewModel: ConfirmarSolicitudViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val noEditable by viewModel.noEditable.collectAsStateWithLifecycle()
     var aceptaTerminos by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.onErrorShown()
+    LaunchedEffect(noEditable) {
+        if (noEditable) {
+            snackbarHostState.showSnackbar("Esta solicitud ya no se puede editar.")
+            onNoEditable()
         }
     }
 
@@ -124,7 +127,7 @@ fun ConfirmarRoute(
             aceptaTerminos = aceptaTerminos,
             onAceptaTerminosChange = { aceptaTerminos = it },
             onBackClick = onBack,
-            onEditarClick = onEditarSeccion,
+            onEditarClick = { seccion -> onEditarSeccion(seccion, uiState.modoEdicion) },
             onEnviarClick = {
                 viewModel.enviarSolicitud(
                     onSuccess = { solicitudId ->
@@ -251,7 +254,13 @@ fun ConfirmarSolicitudScreen(
                     ),
             ) {
                 Text(
-                    text = if (state.enviando) "Enviando..." else "Enviar solicitud",
+                    text =
+                        when {
+                            state.enviando && state.modoEdicion -> "Reenviando..."
+                            state.enviando -> "Enviando..."
+                            state.modoEdicion -> "Reenviar solicitud"
+                            else -> "Enviar solicitud"
+                        },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
