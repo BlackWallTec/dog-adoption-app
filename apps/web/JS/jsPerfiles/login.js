@@ -2,6 +2,7 @@ import { perfilesApi } from "./perfiles.api.js";
 import { fieldError, byId } from "./utils.js";
 import { rutaDe } from "../rutas.js";
 import { UNAUTHENTICATED } from "@qarino/shared/errores.js";
+import { MENSAJE_SIN_ACCESO, puedeEntrarAlPanel } from "./accesoPanel.js";
 
 const loginForm = byId("login-form");
 const loginEmail = byId("login-email");
@@ -89,7 +90,13 @@ loginForm.addEventListener("submit", async (event) => {
     passwordToggle.setAttribute("aria-pressed", "false");
     passwordToggle.setAttribute("aria-label", "Mostrar contraseña");
 
-    window.location.replace(rutaDe("perros"));
+    if (!puedeEntrarAlPanel(result.user?.rol)) {
+      await perfilesApi.logout();
+      feedback("login-feedback", MENSAJE_SIN_ACCESO);
+      return;
+    }
+
+    window.location.replace(rutaDe("inicio"));
   } catch (error) {
     if (request !== activeRequest) return;
 
@@ -102,14 +109,23 @@ loginForm.addEventListener("submit", async (event) => {
 async function restoreSession() {
   setBusy("login-submit", true, "Comprobando sesión…");
   try {
-    await perfilesApi.getSession();
-    window.location.replace(rutaDe("perros"));
+    const { user } = await perfilesApi.getSession();
+    if (!puedeEntrarAlPanel(user.rol)) {
+      await perfilesApi.logout();
+      feedback("login-feedback", MENSAJE_SIN_ACCESO);
+      return;
+    }
+    window.location.replace(rutaDe("inicio"));
   } catch (error) {
     if (error instanceof UNAUTHENTICATED) return;
     feedback("login-feedback", error.message ? error.message : "Error al comprobar sesión");
   } finally {
     setBusy("login-submit", false, "Iniciar sesión");
   }
+}
+
+if (new URLSearchParams(window.location.search).get("acceso") === "denegado") {
+  feedback("login-feedback", MENSAJE_SIN_ACCESO);
 }
 
 void restoreSession();

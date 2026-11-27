@@ -99,6 +99,17 @@ export function rutaDe(id) {
   return pantalla.ruta;
 }
 
+/** @param {string} id @param {Record<string, string | number | null | undefined>} [params] */
+export function enlaceA(id, params = {}) {
+  const ruta = rutaDe(id);
+  const search = new URLSearchParams();
+  for (const [clave, valor] of Object.entries(params)) {
+    if (valor != null && valor !== "") search.set(clave, String(valor));
+  }
+  const consulta = search.toString();
+  return consulta ? `${ruta}?${consulta}` : ruta;
+}
+
 export function pantallaPorUbicacion(pathname) {
   const actual = normalizarRuta(pathname);
   return (
