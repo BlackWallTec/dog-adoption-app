@@ -254,7 +254,16 @@ const calendario = new Calendar(el.calendario, {
   events: cargarEventos,
 
   // Clases propias (adminCalendario.css); en la v7 ya no hay clases fc-*
-  buttonClass: (boton) => (boton.isSelected ? "btn-primary" : "btn-secundario"),
+  // Flechas circulares, "Hoy" con contorno y Mes/Semana como selector
+  buttonGroupClass: (grupo) => (grupo.hasSelection ? "cal-selector" : "cal-grupo"),
+  buttonClass: (boton) =>
+    [
+      "cal-boton",
+      boton.isIconOnly ? "cal-boton-icono" : "cal-boton-texto",
+      boton.isSelected && "cal-boton-activo",
+    ]
+      .filter(Boolean)
+      .join(" "),
   toolbarTitleClass: "calendario-titulo",
   eventClass: (arg) => `evento evento-${arg.event.extendedProps.estado.toLowerCase()}`,
   eventContent: contenidoPrograma,

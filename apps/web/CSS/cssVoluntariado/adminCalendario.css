@@ -158,30 +158,88 @@
 }
 
 /* ==================== BARRA DE HERRAMIENTAS (buttonClass) ==================== */
-/* Se reusan btn-primary (global) y btn-secundario (Inscritos).
-   Se antepone .calendario-card para ganarle al tema de FullCalendar */
-.calendario-card .btn-primary {
-  color: #ffffff;
+/* Se usa #calendario para ganarle a los estilos del tema de FullCalendar */
+
+/* Grupo de flechas anterior / siguiente */
+#calendario .cal-grupo {
+  display: inline-flex;
+  gap: 8px;
 }
 
-.calendario-card .btn-secundario {
+/* Base de todos los botones: blanco con contorno, como los secundarios del panel */
+#calendario .cal-boton {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 20px;
-  background-color: #ffffff;
+  justify-content: center;
   border: 1px solid var(--md-sys-color-outline-variant);
-  color: var(--md-sys-color-secondary);
+  background-color: #ffffff;
+  color: var(--md-sys-color-on-surface);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
+  box-shadow: none;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
-.calendario-card .btn-primary,
-.calendario-card .btn-secundario {
-  padding: 8px 16px;
+#calendario .cal-boton:hover:not(:disabled) {
+  background-color: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
+}
+
+#calendario .cal-boton:focus-visible {
+  outline: 2px solid var(--md-sys-color-on-surface);
+  outline-offset: 2px;
+}
+
+/* "Hoy" se deshabilita cuando ya estás en el periodo actual */
+#calendario .cal-boton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Flechas: botones circulares */
+#calendario .cal-boton-icono {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Botones de texto ("Hoy") */
+#calendario .cal-boton-texto {
+  padding: 8px 18px;
+  border-radius: 20px;
+}
+
+/* Selector Mes / Semana: una sola pastilla con la opción activa en amarillo */
+#calendario .cal-selector {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 24px;
+  background-color: #ffffff;
+}
+
+#calendario .cal-selector .cal-boton {
+  padding: 6px 16px;
+  border-color: transparent;
+  border-radius: 20px;
+  background-color: transparent;
+}
+
+#calendario .cal-selector .cal-boton:hover:not(.cal-boton-activo) {
+  background-color: var(--md-sys-color-surface-container);
+  border-color: transparent;
+}
+
+#calendario .cal-selector .cal-boton-activo,
+#calendario .cal-selector .cal-boton-activo:hover {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-surface);
+  font-weight: 700;
 }
 
 .calendario-titulo {
