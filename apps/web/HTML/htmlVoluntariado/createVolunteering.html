@@ -190,11 +190,13 @@
 
               <!-- Advertencia de empalmes -->
               <div id="empalmesPanel" class="overlap-panel" hidden>
-                <h3>Existen jornadas con horarios coincidentes</h3>
+                <h3 id="empalmesTitulo">Este horario se cruza con otra jornada</h3>
+                <p id="empalmesIntro"></p>
                 <ul id="empalmesLista"></ul>
+                <p id="empalmesAyuda" class="overlap-ayuda"></p>
 
                 <button type="button" class="btn btn-outline" id="ajustarHorarioBtn">
-                  Ajustar horario
+                  Cambiar horario
                 </button>
 
                 <button type="button" class="btn btn-primary" id="confirmarEmpalmeBtn">

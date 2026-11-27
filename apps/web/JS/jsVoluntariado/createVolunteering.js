@@ -227,15 +227,47 @@ function sinProgramaActual(empalmes = []) {
 }
 
 // Muestra jornadas con empalmes en  el horario elegido
+// Fecha legible: "22 nov 2026, 08:00"
+function fechaLegible(fecha, hora) {
+  const valor = new Date(`${fecha}T${hora}`);
+  if (Number.isNaN(valor.getTime())) return `${fecha} ${hora}`;
+  return valor.toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short", hour12: false });
+}
+
+// Rango legible: mismo dia "22 nov 2026, de 08:00 a 12:00"; si no "del ... al ..."
+function rangoLegible(programa) {
+  if (programa.fechaInicio === programa.fechaFin) {
+    const dia = fechaLegible(programa.fechaInicio, programa.horaInicio).split(",")[0];
+    return `${dia}, de ${programa.horaInicio} a ${programa.horaFin}`;
+  }
+  return `del ${fechaLegible(programa.fechaInicio, programa.horaInicio)} al ${fechaLegible(programa.fechaFin, programa.horaFin)}`;
+}
+
+// Muestra las jornadas que se cruzan con el horario elegido, en lenguaje claro
 function mostrarEmpalmes(empalmes) {
+  const total = empalmes.length;
+  const accion = modoEdicion ? "guardarla" : "crearla";
+
+  document.getElementById("empalmesTitulo").textContent =
+    total === 1
+      ? "Este horario se cruza con otra jornada"
+      : "Este horario se cruza con otras jornadas";
+  document.getElementById("empalmesIntro").textContent =
+    total === 1
+      ? "Ya hay 1 jornada programada en esas fechas:"
+      : `Ya hay ${total} jornadas programadas en esas fechas:`;
+  document.getElementById("empalmesAyuda").textContent =
+    `Puedes cambiar el horario, o ${accion} de todos modos y las jornadas quedarán al mismo tiempo.`;
+
   const lista = document.getElementById("empalmesLista");
   lista.replaceChildren();
 
   for (const programa of empalmes) {
     const elemento = document.createElement("li");
-    elemento.textContent =
-      `${programa.nombre} — ${programa.fechaInicio} ${programa.horaInicio} a ` +
-      `${programa.fechaFin} ${programa.horaFin} — Cupo: ${programa.cupoMaximo}`;
+    const nombre = document.createElement("strong");
+    nombre.textContent = programa.nombre;
+    const personas = programa.cupoMaximo === 1 ? "1 persona" : `${programa.cupoMaximo} personas`;
+    elemento.append(nombre, `, ${rangoLegible(programa)} (cupo de ${personas})`);
     lista.appendChild(elemento);
   }
   panelEmpalmes.hidden = false;
