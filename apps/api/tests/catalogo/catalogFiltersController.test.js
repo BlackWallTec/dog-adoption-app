@@ -102,29 +102,31 @@ describe("HU24: GET /cliente/perros con filtros", () => {
     vi.restoreAllMocks();
   });
 
-  test("sin filtros: mismo comportamiento y misma forma de respuesta de siempre", async () => {
-    mocks.getDogs.mockResolvedValue([{ id_perro: "p1" }]);
+  test("sin filtros: comportamiento y paginación por defecto", async () => {
+    mocks.getDogs.mockResolvedValue([
+      { id_perro: "p1", multimedia: [{ url: "https://foto/1.jpg" }] },
+    ]);
 
     await getDogs({ query: {} }, res);
 
-    expect(mocks.getDogs).toHaveBeenCalledWith({});
+    expect(mocks.getDogs).toHaveBeenCalledWith({}, 0, 9);
     expect(res.status).toHaveBeenCalledWith(200);
-    // Se conserva la clave "syuccess" tal cual la lee hoy la HU16
     expect(res.json).toHaveBeenCalledWith({
-      syuccess: true,
-      data: [{ id_perro: "p1", foto_url: "https://foto/1.jpg" }],
+      success: true,
+      data: [{ id_perro: "p1", multimedia: [{ url: "https://foto/1.jpg" }] }],
+      meta: { per_page: 10, current_page: 1, has_more: false },
     });
   });
 
-  test("perro sin fotos -> foto_url vacío", async () => {
-    mocks.getDogs.mockResolvedValue([{ id_perro: "p1" }]);
-    mocks.getDogMultimediaById.mockResolvedValue([]);
+  test("perro sin fotos -> multimedia vacío", async () => {
+    mocks.getDogs.mockResolvedValue([{ id_perro: "p1", multimedia: [] }]);
 
     await getDogs({ query: {} }, res);
 
     expect(res.json).toHaveBeenCalledWith({
-      syuccess: true,
-      data: [{ id_perro: "p1", foto_url: "" }],
+      success: true,
+      data: [{ id_perro: "p1", multimedia: [] }],
+      meta: { per_page: 10, current_page: 1, has_more: false },
     });
   });
 
@@ -133,13 +135,21 @@ describe("HU24: GET /cliente/perros con filtros", () => {
 
     await getDogs({ query: { sexo: "hembra", edad: "senior", caracter: "c1,c2" } }, res);
 
-    expect(mocks.getDogs).toHaveBeenCalledWith({
-      sexo: "Hembra",
-      edad: { min: 5, max: null },
-      caracteres: ["c1", "c2"],
-    });
+    expect(mocks.getDogs).toHaveBeenCalledWith(
+      {
+        sexo: "Hembra",
+        edad: { min: 5, max: null },
+        caracteres: ["c1", "c2"],
+      },
+      0,
+      9,
+    );
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ syuccess: true, data: [] });
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      data: [],
+      meta: { per_page: 10, current_page: 1, has_more: false },
+    });
   });
 
   test("ningún perro cumple -> 200 con lista vacía, no es error", async () => {
@@ -148,7 +158,11 @@ describe("HU24: GET /cliente/perros con filtros", () => {
     await getDogs({ query: { raza: "no-existe" } }, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ syuccess: true, data: [] });
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      data: [],
+      meta: { per_page: 10, current_page: 1, has_more: false },
+    });
   });
 
   test("parámetro inválido -> 400 y no consulta la BD", async () => {

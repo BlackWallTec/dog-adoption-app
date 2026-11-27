@@ -47,9 +47,9 @@ describe("HU24: DogModel.getDogs con filtros", () => {
 
     expect(data).toEqual([{ id_perro: "p1" }]);
     expect(fromMock).toHaveBeenCalledWith("perro");
-    expect(metodos(perros.llamadas)).toEqual(["select", "eq", "order"]);
-    expect(buscar(perros.llamadas, "eq")[0].slice(1)).toEqual(["activo", true]);
-    expect(buscar(perros.llamadas, "order")[0].slice(1)).toEqual([
+    expect(metodos(perros.llamadas)).toEqual(["select", "eq", "eq", "order", "limit", "order"]);
+    expect(buscar(perros.llamadas, "eq").map(([, ...a]) => a)).toContainEqual(["activo", true]);
+    expect(buscar(perros.llamadas, "order").map(([, ...a]) => a)).toContainEqual([
       "fecha_ingreso",
       { ascending: false },
     ]);
@@ -63,7 +63,7 @@ describe("HU24: DogModel.getDogs con filtros", () => {
 
   test("filtros vacíos equivalen a no mandar filtros", async () => {
     await dogModel.getDogs({});
-    expect(metodos(perros.llamadas)).toEqual(["select", "eq", "order"]);
+    expect(metodos(perros.llamadas)).toEqual(["select", "eq", "eq", "order", "limit", "order"]);
   });
 
   test("sexo -> eq sexo", async () => {
@@ -108,7 +108,7 @@ describe("HU24: DogModel.getDogs con filtros", () => {
   test("varios filtros se acumulan (AND)", async () => {
     await dogModel.getDogs({ sexo: "Macho", edad: { min: 0, max: 1 }, raza: "r-1" });
     const nombres = metodos(perros.llamadas);
-    expect(nombres.filter((n) => n === "eq")).toHaveLength(3); // activo + sexo + raza
+    expect(nombres.filter((n) => n === "eq")).toHaveLength(4); // activo + sexo + raza
     expect(nombres).toContain("gte");
     expect(nombres).toContain("lte");
   });

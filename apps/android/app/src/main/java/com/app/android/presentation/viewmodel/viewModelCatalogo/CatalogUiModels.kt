@@ -5,10 +5,11 @@ data class FilterSelection(
     val edadIndex: Int = -1,
     val sexoIndex: Int = -1,
     val razaIndex: Int = -1,
-    val caracteristicas: Set<Int> = emptySet()
+    val caracteristicas: Set<Int> = emptySet(),
 ) {
     val activeCount: Int
-        get() = (if (tamanoIndex >= 0) 1 else 0) +
+        get() =
+            (if (tamanoIndex >= 0) 1 else 0) +
                 (if (edadIndex >= 0) 1 else 0) +
                 (if (sexoIndex >= 0) 1 else 0) +
                 (if (razaIndex >= 0) 1 else 0) +
@@ -23,7 +24,7 @@ data class FilterOptions(
     val edades: List<String> = listOf("Cachorro", "Adulto", "Senior"),
     val sexos: List<String> = listOf("Macho", "Hembra"),
     val razas: List<String> = emptyList(),
-    val caracteristicas: List<String> = emptyList()
+    val caracteristicas: List<String> = emptyList(),
 )
 
 data class DogCardUi(
@@ -33,12 +34,22 @@ data class DogCardUi(
     val sexo: String,
     val tamano: String,
     val raza: String,
-    val fotoUrl: String? = null
+    val fotoUrl: String? = null,
 )
 
 sealed interface CatalogUiState {
     object Loading : CatalogUiState
+
+    object LoadingMore : CatalogUiState
+
     object Empty : CatalogUiState
-    data class Success(val perros: List<DogCardUi>) : CatalogUiState
-    data class Error(val mensaje: String) : CatalogUiState
+
+    data class Success(
+        val perros: List<DogCardUi>,
+        val hasMore: Boolean = false,
+    ) : CatalogUiState
+
+    data class Error(
+        val mensaje: String,
+    ) : CatalogUiState
 }
