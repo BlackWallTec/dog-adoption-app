@@ -56,10 +56,28 @@ export function esVideo(item) {
   return extension === "mp4" || extension === "mov" || extension === "webm";
 }
 
+// Texto de resumen bajo el título: "4 archivos · 1 nuevo · 1 por quitar".
+export function resumenGaleria({ existentes = 0, quitadas = 0, nuevos = 0 } = {}) {
+  const total = Math.max(existentes - quitadas, 0) + nuevos;
+  const partes = [
+    total === 0 ? "Sin fotos ni videos" : `${total} ${total === 1 ? "archivo" : "archivos"}`,
+  ];
+  if (nuevos > 0) partes.push(`${nuevos} ${nuevos === 1 ? "nuevo" : "nuevos"}`);
+  if (quitadas > 0) partes.push(`${quitadas} por quitar`);
+  return partes.join(" · ");
+}
+
 function el(etiqueta, props = {}, ...hijos) {
   const nodo = document.createElement(etiqueta);
   Object.assign(nodo, props);
   nodo.append(...hijos.filter(Boolean));
+  return nodo;
+}
+
+// Ícono de Material Symbols (la página ya carga la fuente). Decorativo: el botón lleva su aria-label.
+function icono(nombre) {
+  const nodo = el("span", { className: "material-symbols-rounded", textContent: nombre });
+  nodo.setAttribute("aria-hidden", "true");
   return nodo;
 }
 
@@ -74,44 +92,56 @@ function crearMedia({ url, video, texto }) {
 // ([{ id_multimedia, url, tipo }]). Devuelve:
 //   obtenerCambios() -> { eliminar: [id_multimedia], nuevos: [File] }
 //   destruir()       -> libera las vistas previas temporales
+// Los archivos se agregan con el mosaico "Agregar" o arrastrándolos sobre la galería.
 export function montarGaleria(contenedor, { multimedia = [] } = {}) {
   const existentes = multimedia.filter((m) => m?.id_multimedia && m?.url);
   const quitadas = new Set();
   let nuevos = []; // { id, file, url, video }
   let contador = 0;
+  const recientes = new Set(); // ids recién agregados: solo ellos hacen la animación de entrada
 
+  const resumen = el("p", { className: "galeria-resumen" });
   const lista = el("div", { className: "galeria-lista" });
-  const vacia = el("p", {
-    className: "galeria-vacia",
-    textContent: "Este perro todavía no tiene fotos ni videos.",
+  const ayuda = el("p", {
+    className: "galeria-ayuda",
+    textContent: `JPG, MP4 o MOV · hasta ${MAX_NUEVOS} por edición · también puedes arrastrarlos aquí. Los cambios se aplican al guardar.`,
   });
   const aviso = el("p", { className: "galeria-aviso" });
   aviso.setAttribute("role", "status");
   aviso.hidden = true;
   const entrada = el("input", { type: "file", multiple: true, accept: ACCEPT, hidden: true });
-  const agregar = el("button", {
-    type: "button",
-    className: "btn-secundario galeria-agregar",
-    textContent: "Agregar fotos o videos",
-  });
+  const agregar = el(
+    "button",
+    { type: "button", className: "galeria-agregar" },
+    icono("add_photo_alternate"),
+    el("span", { textContent: "Agregar" }),
+  );
+  const raiz = el("div", { className: "galeria" }, resumen, lista, ayuda, aviso, entrada);
 
   function mostrarAviso(texto) {
     aviso.textContent = texto;
     aviso.hidden = !texto;
   }
 
-  function tarjeta({ url, video, texto, etiqueta, accion, onAccion, quitada }) {
+  function tarjeta({ url, video, texto, nueva, quitada, accion, onAccion }) {
+    const clases = ["galeria-item", quitada && "quitada", recientes.has(nueva) && "entra"];
+    const boton = el("button", {
+      type: "button",
+      className: "galeria-accion",
+      title: accion,
+      onclick: onAccion,
+    });
+    boton.setAttribute("aria-label", `${accion}: ${texto}`);
+    boton.append(icono(quitada ? "undo" : "close"));
+
     return el(
       "figure",
-      { className: `galeria-item ${quitada ? "quitada" : ""}` },
+      { className: clases.filter(Boolean).join(" ") },
       crearMedia({ url, video, texto }),
-      etiqueta ? el("span", { className: "galeria-etiqueta", textContent: etiqueta }) : null,
-      el("button", {
-        type: "button",
-        className: "galeria-quitar",
-        textContent: accion,
-        onclick: onAccion,
-      }),
+      video ? el("span", { className: "galeria-tipo" }, icono("play_circle"), "Video") : null,
+      nueva ? el("span", { className: "galeria-insignia", textContent: "Nueva" }) : null,
+      quitada ? el("span", { className: "galeria-velo" }, icono("delete"), "Se quitará") : null,
+      boton,
     );
   }
 
@@ -123,10 +153,9 @@ export function montarGaleria(contenedor, { multimedia = [] } = {}) {
         tarjeta({
           url: item.url,
           video: esVideo(item),
-          texto: `Archivo ${indice + 1} de la ficha`,
-          etiqueta: quitada ? "Se quitará" : "",
-          accion: quitada ? "Deshacer" : "Quitar",
+          texto: `archivo ${indice + 1} de la ficha`,
           quitada,
+          accion: quitada ? "Deshacer" : "Quitar",
           onAccion: () => {
             if (quitadas.has(item.id_multimedia)) quitadas.delete(item.id_multimedia);
             else quitadas.add(item.id_multimedia);
@@ -141,8 +170,8 @@ export function montarGaleria(contenedor, { multimedia = [] } = {}) {
         tarjeta({
           url: nuevo.url,
           video: nuevo.video,
-          texto: `Vista previa de ${nuevo.file.name}`,
-          etiqueta: "Nueva",
+          texto: `vista previa de ${nuevo.file.name}`,
+          nueva: nuevo.id,
           accion: "Quitar",
           onAccion: () => {
             URL.revokeObjectURL(nuevo.url);
@@ -153,8 +182,13 @@ export function montarGaleria(contenedor, { multimedia = [] } = {}) {
         }),
       );
     }
-    lista.replaceChildren(...tarjetas);
-    vacia.hidden = tarjetas.length > 0;
+    lista.replaceChildren(...tarjetas, agregar);
+    recientes.clear();
+    resumen.textContent = resumenGaleria({
+      existentes: existentes.length,
+      quitadas: quitadas.size,
+      nuevos: nuevos.length,
+    });
     agregar.disabled = nuevos.length >= MAX_NUEVOS;
   }
 
@@ -178,8 +212,10 @@ export function montarGaleria(contenedor, { multimedia = [] } = {}) {
                 lastModified: archivo.lastModified,
               });
         contador += 1;
+        const id = `nuevo-${contador}`;
+        recientes.add(id);
         nuevos.push({
-          id: `nuevo-${contador}`,
+          id,
           file: normalizado,
           url: URL.createObjectURL(normalizado),
           video: info.tipo === "video",
@@ -204,9 +240,26 @@ export function montarGaleria(contenedor, { multimedia = [] } = {}) {
     entrada.value = "";
   });
 
-  contenedor.replaceChildren(
-    el("div", { className: "galeria" }, vacia, lista, aviso, agregar, entrada),
-  );
+  // Arrastrar y soltar archivos sobre toda la galería (se ignora lo que no sean archivos).
+  const traeArchivos = (evento) => Array.from(evento.dataTransfer?.types ?? []).includes("Files");
+  for (const nombre of ["dragenter", "dragover"]) {
+    raiz.addEventListener(nombre, (evento) => {
+      if (!traeArchivos(evento)) return;
+      evento.preventDefault();
+      raiz.classList.add("arrastrando");
+    });
+  }
+  raiz.addEventListener("dragleave", (evento) => {
+    if (!raiz.contains(evento.relatedTarget)) raiz.classList.remove("arrastrando");
+  });
+  raiz.addEventListener("drop", (evento) => {
+    if (!traeArchivos(evento)) return;
+    evento.preventDefault();
+    raiz.classList.remove("arrastrando");
+    agregarArchivos(Array.from(evento.dataTransfer.files));
+  });
+
+  contenedor.replaceChildren(raiz);
   pintar();
 
   return {
