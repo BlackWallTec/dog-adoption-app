@@ -26,8 +26,7 @@ const el = {
   btnReintentar: $("btn-reintentar"),
   menu: $("menu-programa"),
   menuTitulo: $("menu-titulo"),
-  menuInscritos: $("menu-inscritos"),
-  menuEditar: $("menu-editar"),
+  menuDetalles: $("menu-detalles"),
 };
 
 const MENSAJES_ERROR = {
@@ -200,15 +199,15 @@ function cargarEventos(info, exito, falla) {
 function abrirMenu(evento, clic) {
   const id = encodeURIComponent(evento.id);
   el.menuTitulo.textContent = evento.title;
-  el.menuInscritos.href = `${rutaDe("inscritos")}?id=${id}`;
-  el.menuEditar.href = `${rutaDe("nuevaJornada")}?id=${id}`;
+  // Los detalles muestran los inscritos y las acciones de editar y cancelar
+  el.menuDetalles.href = `${rutaDe("inscritos")}?id=${id}`;
 
   // Se muestra junto al clic sin salirse de la pantalla
   el.menu.hidden = false;
   const { width, height } = el.menu.getBoundingClientRect();
   el.menu.style.left = `${Math.min(clic.clientX, window.innerWidth - width - 8)}px`;
   el.menu.style.top = `${Math.min(clic.clientY, window.innerHeight - height - 8)}px`;
-  el.menuInscritos.focus();
+  el.menuDetalles.focus();
 }
 
 function cerrarMenu() {
