@@ -17,7 +17,7 @@ import com.app.android.presentation.designsystem.theme.QTheme
 import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
- * Etiqueta (Label) + QSelectField (+ error).
+ * Etiqueta (Label) + QSelectField (+ error). Las opciones del menú desplegable pasan directo al QSelectField.
  *
  * Dueño: P2 (Moléculas).
  * Usa (obligatorio): QText, QSelectField.
@@ -32,6 +32,10 @@ fun QLabeledSelectField(
     placeholder: String = "Seleccionar",
     errorText: String? = null,
     enabled: Boolean = true,
+    expanded: Boolean = false,
+    onDismissRequest: () -> Unit = {},
+    options: List<String> = emptyList(),
+    onOptionSelected: (Int) -> Unit = {},
 ) {
     Column(modifier = modifier) {
         QText(text = label, style = QTextStyle.Label)
@@ -43,6 +47,10 @@ fun QLabeledSelectField(
             placeholder = placeholder,
             enabled = enabled,
             isError = errorText != null,
+            expanded = expanded,
+            onDismissRequest = onDismissRequest,
+            options = options,
+            onOptionSelected = onOptionSelected,
         )
         if (errorText != null) {
             Spacer(modifier = Modifier.height(QSpacing.xs))
@@ -64,5 +72,21 @@ private fun QLabeledSelectFieldPreview() {
             QLabeledSelectField(label = "Hasta", value = null, onClick = {}, errorText = "Elige una fecha posterior a la inicial.")
             QLabeledSelectField(label = "Hora", value = null, onClick = {}, placeholder = "Elige una hora", enabled = false)
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF3EEDF, heightDp = 320, name = "QLabeledSelectField - menú abierto")
+@Composable
+private fun QLabeledSelectFieldMenuPreview() {
+    QarinoTheme {
+        QLabeledSelectField(
+            label = "Régimen fiscal",
+            value = null,
+            onClick = {},
+            placeholder = "Selecciona tu régimen",
+            expanded = true,
+            options = listOf("605 · Sueldos y Salarios", "612 · Actividades Empresariales", "626 · Régimen Simplificado de Confianza"),
+            modifier = Modifier.fillMaxWidth().padding(QSpacing.l),
+        )
     }
 }

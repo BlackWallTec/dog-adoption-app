@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +27,8 @@ import com.app.android.presentation.designsystem.theme.QarinoTheme
 
 /**
  * Campo que abre un selector (fecha, hora, lista). Mismo estilo visual que el campo de texto pero en
- * forma pill; muestra placeholder si value es null.
+ * forma pill; muestra placeholder si value es null. Si se le pasan options, abre un menú desplegable abajo
+ * del campo (expanded lo controla quien lo usa).
  *
  * Dueño: P1 (Átomos).
  * Reemplaza a: FilterDropdown (la parte visual).
@@ -39,6 +42,10 @@ fun QSelectField(
     trailingIcon: ImageVector? = null,
     enabled: Boolean = true,
     isError: Boolean = false,
+    expanded: Boolean = false,
+    onDismissRequest: () -> Unit = {},
+    options: List<String> = emptyList(),
+    onOptionSelected: (Int) -> Unit = {},
 ) {
     val colors = QTheme.colors
     val textColor =
@@ -66,8 +73,26 @@ fun QSelectField(
         horizontalArrangement = Arrangement.spacedBy(QSpacing.s),
     ) {
         QText(text = value ?: placeholder, color = textColor, maxLines = 1, modifier = Modifier.weight(1f))
-        if (trailingIcon != null) {
-            QIcon(icon = trailingIcon, contentDescription = null, tint = colors.textSecondary)
+        // Con menú se pone la flechita aunque no la pidan, para que se vea que se despliega
+        val icon = trailingIcon ?: if (options.isNotEmpty()) QIcons.ExpandMore else null
+        if (icon != null) {
+            QIcon(icon = icon, contentDescription = null, tint = colors.textSecondary)
+        }
+        // El menú se pega al campo; sin opciones no se dibuja nada
+        if (options.isNotEmpty()) {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = onDismissRequest,
+                containerColor = colors.surface,
+                shape = QShapes.small,
+            ) {
+                options.forEachIndexed { index, option ->
+                    DropdownMenuItem(
+                        text = { QText(text = option) },
+                        onClick = { onOptionSelected(index) },
+                    )
+                }
+            }
         }
     }
 }
@@ -91,5 +116,19 @@ private fun QSelectFieldPreview() {
             QSelectField(value = null, onClick = {}, isError = true, modifier = Modifier.fillMaxWidth())
             QSelectField(value = null, onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth())
         }
+    }
+}
+
+@Preview(showBackground = true, heightDp = 320, name = "QSelectField - menú abierto")
+@Composable
+private fun QSelectFieldMenuPreview() {
+    QarinoTheme {
+        QSelectField(
+            value = "626 · Régimen Simplificado de Confianza",
+            onClick = {},
+            expanded = true,
+            options = listOf("605 · Sueldos y Salarios", "612 · Actividades Empresariales", "626 · Régimen Simplificado de Confianza"),
+            modifier = Modifier.fillMaxWidth().padding(QSpacing.l),
+        )
     }
 }
