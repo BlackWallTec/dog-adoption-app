@@ -17,5 +17,6 @@ HU57 valida el PDF y XML del CFDI antes de guardarlos en el bucket privado `cfdi
 La API compara UUID, RFC receptor y total del XML con la solicitud; el administrador confirma
 visualmente que el PDF corresponda al comprobante. Los archivos se entregan al titular mediante
 rutas autenticadas de cliente. La migración `supabase/migrations/20261119000000_add_cfdi_delivery_to_solicitud.sql`
-agrega referencias y estado de correo. El envío usa `RESEND_API_KEY` y `MAIL_FROM`; si falla, los
+agrega referencias y estado de correo. El envío usa el transporte compartido `src/utils/correo.js`
+(`MAIL_TRANSPORT=resend` con `RESEND_API_KEY`/`MAIL_FROM`, o `gmail` con `SMTP_USER`/`SMTP_PASS`); si falla, los
 archivos permanecen disponibles en la app y un administrador puede reintentar el correo.
