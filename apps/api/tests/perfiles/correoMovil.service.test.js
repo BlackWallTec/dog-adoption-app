@@ -9,6 +9,7 @@ vi.mock("nodemailer", () => ({ default: { createTransport: vi.fn() } }));
 vi.mock("../../src/config/supabaseClient.js", () => ({ supabaseAdmin: {}, supabase: {} }));
 import {
   crearCorreoMovil,
+  crearCorreoMovilSupabase,
   enviarCodigoCorreo,
   verificarCorreoMovil,
   servicioCorreoMovil,
@@ -163,7 +164,7 @@ describe("Códigos de correo para Clientes", () => {
     for (const rol of ["Root", "Administrador"]) {
       usuarios.fetchByEmail.mockResolvedValue({ id_usuario: rol, rol });
       await servicio.solicitar(correo, "recuperar");
-      expect(verificarCorreoMovil({ uuid: rol, rol })).toBe(true);
+      expect(await verificarCorreoMovil({ uuid: rol, rol })).toBe(true);
     }
     expect(enviar).not.toHaveBeenCalled();
   });
@@ -172,9 +173,9 @@ describe("Códigos de correo para Clientes", () => {
     expect(await servicio.registrar("cliente", correo)).toEqual({ enviado: false });
     expect(servicio.estado("cliente").confirmado).toBe(false);
   });
-  it("conserva la validación anterior si está desactivado y rechaza el almacenamiento local en producción", () => {
+  it("conserva la validación anterior si está desactivado y rechaza el almacenamiento local en producción", async () => {
     vi.stubEnv("CORREO_MOVIL_MODO", "desactivado");
-    expect(verificarCorreoMovil({ uuid: "cliente", rol: "Cliente" })).toBe(true);
+    expect(await verificarCorreoMovil({ uuid: "cliente", rol: "Cliente" })).toBe(true);
     vi.stubEnv("CORREO_MOVIL_MODO", "local");
     vi.stubEnv("NODE_ENV", "production");
     expect(() => servicioCorreoMovil()).toThrow("producción");
@@ -227,5 +228,166 @@ describe("Códigos de correo para Clientes", () => {
       enviarCodigoCorreo({ para: correo, codigo: "012345", tipo: "confirmar" }),
     ).rejects.toThrow("Falta SMTP_PASS");
     expect(nodemailer.createTransport).not.toHaveBeenCalled();
+  });
+});
+
+// Doble en memoria con la misma semántica que las RPC de la migración
+// perfiles_codigos_correo_supabase: 72 h desde el registro, 15 min, 1 min y 5 intentos.
+function baseSupabase(t) {
+  const usuario = {
+    id_usuario: "cliente",
+    rol: "Cliente",
+    contrasena: "hash-anterior",
+    correo_pendiente_desde: new Date(t.ahora).toISOString(),
+  };
+  const fila = { version: 0 };
+  return {
+    usuario,
+    fila,
+    fetchByEmail: vi.fn(async () => ({ ...usuario })),
+    obtenerEstadoCorreoMovil: vi.fn(async () => ({
+      confirmado: usuario.correo_pendiente_desde === null,
+      version: fila.version,
+    })),
+    emitirCodigoCorreoMovil: vi.fn(async (_id, tipo, hash) => {
+      if (usuario.rol !== "Cliente") return "not_eligible";
+      const pendiente = usuario.correo_pendiente_desde;
+      if ((tipo === "confirmar") !== Boolean(pendiente)) return "not_eligible";
+      const vence =
+        tipo === "confirmar" ? Date.parse(pendiente) + 72 * 3_600_000 : t.ahora + 15 * 60_000;
+      if (vence <= t.ahora) return "expired";
+      if (fila[tipo] && fila[tipo].enviado > t.ahora - 60_000) return "rate_limited";
+      fila[tipo] = { hash, enviado: t.ahora, vence, intentos: 0 };
+      return "sent";
+    }),
+    consumirCodigoCorreoMovil: vi.fn(async (_id, tipo, hash, contrasenaHash) => {
+      const pendiente = usuario.correo_pendiente_desde;
+      if (tipo === "confirmar" && (!pendiente || Date.parse(pendiente) + 72 * 3_600_000 <= t.ahora))
+        return "invalid";
+      if (tipo === "recuperar" && (pendiente || !contrasenaHash)) return "invalid";
+      const d = fila[tipo];
+      if (!d || d.vence <= t.ahora || d.intentos >= 5) return "invalid";
+      if (d.hash !== hash) {
+        d.intentos += 1;
+        return "invalid";
+      }
+      if (tipo === "confirmar") usuario.correo_pendiente_desde = null;
+      else {
+        usuario.contrasena = contrasenaHash;
+        fila.version += 1;
+      }
+      delete fila[tipo];
+      return "ok";
+    }),
+  };
+}
+
+describe("Códigos de correo en modo supabase", () => {
+  let t, db, sb, enviarSb, codigoSb;
+  const invalido = { code: ERROR_CODES.INVALID_EMAIL_CODE };
+  beforeEach(() => {
+    t = { ahora: 1_700_000_000_000 };
+    db = baseSupabase(t);
+    enviarSb = vi.fn().mockResolvedValue({});
+    codigoSb = vi.fn().mockReturnValue("012345");
+    sb = crearCorreoMovilSupabase({
+      usuarios: db,
+      enviar: enviarSb,
+      codigo: codigoSb,
+      secreto: "secreto-de-prueba",
+    });
+  });
+
+  it("envía el código real, guarda sólo el hash y confirma una sola vez", async () => {
+    expect(await sb.registrar("cliente", correo)).toEqual({ enviado: true });
+    expect(enviarSb).toHaveBeenCalledWith({ para: correo, codigo: "012345", tipo: "confirmar" });
+    const [, , hash] = db.emitirCodigoCorreoMovil.mock.calls[0];
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(hash).not.toContain("012345");
+    expect(await sb.estado("cliente")).toEqual({ confirmado: false, version: 0 });
+    await expect(sb.consumir(correo, "012345", "confirmar")).resolves.toEqual({ ok: true });
+    expect(await sb.estado("cliente")).toEqual({ confirmado: true, version: 0 });
+    await expect(sb.consumir(correo, "012345", "confirmar")).rejects.toMatchObject(invalido);
+  });
+
+  it("rechaza códigos incorrectos, mal formados y bloquea tras cinco intentos", async () => {
+    await sb.registrar("cliente", correo);
+    await expect(sb.consumir(correo, "12345", "confirmar")).rejects.toMatchObject(invalido);
+    expect(db.consumirCodigoCorreoMovil).not.toHaveBeenCalled();
+    for (let i = 0; i < 5; i++)
+      await expect(sb.consumir(correo, "999999", "confirmar")).rejects.toMatchObject(invalido);
+    await expect(sb.consumir(correo, "012345", "confirmar")).rejects.toMatchObject(invalido);
+  });
+
+  it("reenviar respeta el minuto de espera y no prolonga las 72 horas", async () => {
+    await sb.registrar("cliente", correo);
+    await sb.solicitar(correo, "confirmar");
+    expect(enviarSb).toHaveBeenCalledTimes(1);
+    t.ahora += 71 * 3_600_000;
+    codigoSb.mockReturnValue("654321");
+    await sb.solicitar(correo, "confirmar");
+    expect(enviarSb).toHaveBeenCalledTimes(2);
+    await expect(sb.consumir(correo, "012345", "confirmar")).rejects.toMatchObject(invalido);
+    t.ahora += 3_600_000;
+    await expect(sb.consumir(correo, "654321", "confirmar")).rejects.toMatchObject(invalido);
+    expect(await sb.solicitar(correo, "confirmar")).toEqual({
+      message: "Si la cuenta corresponde, recibirás un código en tu correo.",
+    });
+    expect(enviarSb).toHaveBeenCalledTimes(2);
+  });
+
+  it("recupera la contraseña con bcrypt, sube la versión y vence a los 15 minutos", async () => {
+    db.usuario.correo_pendiente_desde = null;
+    await sb.solicitar(correo, "recuperar");
+    await expect(
+      sb.consumir(correo, "012345", "recuperar", "Nueva1234", "Otra12345"),
+    ).rejects.toMatchObject({ code: ERROR_CODES.VALIDATION });
+    expect(db.consumirCodigoCorreoMovil).not.toHaveBeenCalled();
+    await sb.consumir(correo, "012345", "recuperar", "Nueva1234", "Nueva1234");
+    expect(await bcrypt.compare("Nueva1234", db.usuario.contrasena)).toBe(true);
+    expect((await sb.estado("cliente")).version).toBe(1);
+
+    t.ahora += 60_000;
+    codigoSb.mockReturnValue("111111");
+    await sb.solicitar(correo, "recuperar");
+    t.ahora += 15 * 60_000;
+    await expect(
+      sb.consumir(correo, "111111", "recuperar", "Otra12345", "Otra12345"),
+    ).rejects.toMatchObject(invalido);
+  });
+
+  it("no envía recuperación a cuentas pendientes ni códigos a Root o Administradores", async () => {
+    await sb.solicitar(correo, "recuperar");
+    for (const rol of ["Root", "Administrador"]) {
+      db.usuario.rol = rol;
+      await sb.solicitar(correo, "recuperar");
+      await expect(sb.consumir(correo, "012345", "confirmar")).rejects.toMatchObject(invalido);
+    }
+    expect(db.emitirCodigoCorreoMovil).not.toHaveBeenCalled();
+    expect(enviarSb).not.toHaveBeenCalled();
+  });
+
+  it("responde igual para correos desconocidos y reporta la entrega fallida al registrar", async () => {
+    db.fetchByEmail.mockResolvedValueOnce(null);
+    const desconocido = await sb.solicitar("nadie@example.com", "confirmar");
+    expect(await sb.solicitar(correo, "confirmar")).toEqual(desconocido);
+    enviarSb.mockRejectedValueOnce(new Error("proveedor caído"));
+    t.ahora += 60_000;
+    expect(await sb.registrar("cliente", correo)).toEqual({ enviado: false });
+  });
+
+  it("propaga fallas de Supabase al consumir para que el código no se pierda", async () => {
+    await sb.registrar("cliente", correo);
+    db.consumirCodigoCorreoMovil.mockRejectedValueOnce(new Error("sin conexión"));
+    await expect(sb.consumir(correo, "012345", "confirmar")).rejects.toThrow("sin conexión");
+    await expect(sb.consumir(correo, "012345", "confirmar")).resolves.toEqual({ ok: true });
+  });
+
+  it("servicioCorreoMovil usa Supabase en producción y verifica la versión de sesión", async () => {
+    vi.stubEnv("CORREO_MOVIL_MODO", "supabase");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("JWT_SECRET", "secreto");
+    expect(() => servicioCorreoMovil()).not.toThrow();
+    expect(await verificarCorreoMovil({ uuid: "admin", rol: "Administrador" })).toBe(true);
   });
 });

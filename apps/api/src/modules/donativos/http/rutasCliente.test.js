@@ -26,7 +26,7 @@ const crearRes = () => {
 };
 
 // Corre los middlewares de la ruta uno por uno hasta que alguno conteste
-const probarRuta = (metodo, ruta, token) => {
+const probarRuta = async (metodo, ruta, token) => {
   const capa = router.stack.find((c) => c.route?.path === ruta && c.route.methods[metodo]);
   const req = {
     get: (h) => ({ "x-client": "mobile", authorization: token && `Bearer ${token}` })[h],
@@ -41,7 +41,8 @@ const probarRuta = (metodo, ruta, token) => {
   // solo los dos primeros: verificarToken y requireRole
   for (const h of handlers.slice(0, 2)) {
     const antes = paso;
-    h(req, res, next);
+    // verificarToken es asíncrono: consulta el estado de correo cuando está habilitado.
+    await h(req, res, next);
     if (paso === antes) break;
   }
   return { res, paso, req };
@@ -52,24 +53,24 @@ beforeAll(() => {
 });
 
 describe("rutas de cliente de donativos protegidas", () => {
-  it.each(RUTAS_CLIENTE)("%s %s sin token regresa 401", (metodo, ruta) => {
-    const { res, paso } = probarRuta(metodo, ruta);
+  it.each(RUTAS_CLIENTE)("%s %s sin token regresa 401", async (metodo, ruta) => {
+    const { res, paso } = await probarRuta(metodo, ruta);
 
     expect(paso).toBe(0);
     expect(res.status).toHaveBeenCalledWith(401);
   });
 
-  it.each(RUTAS_CLIENTE)("%s %s con un administrador regresa 403", (metodo, ruta) => {
+  it.each(RUTAS_CLIENTE)("%s %s con un administrador regresa 403", async (metodo, ruta) => {
     const token = jwt.sign({ uuid: ID_USUARIO, rol: "Administrador" }, process.env.JWT_SECRET);
-    const { res, paso } = probarRuta(metodo, ruta, token);
+    const { res, paso } = await probarRuta(metodo, ruta, token);
 
     expect(paso).toBe(1);
     expect(res.status).toHaveBeenCalledWith(403);
   });
 
-  it.each(RUTAS_CLIENTE)("%s %s con un cliente sí pasa", (metodo, ruta) => {
+  it.each(RUTAS_CLIENTE)("%s %s con un cliente sí pasa", async (metodo, ruta) => {
     const token = jwt.sign({ uuid: ID_USUARIO, rol: "Cliente" }, process.env.JWT_SECRET);
-    const { res, paso, req } = probarRuta(metodo, ruta, token);
+    const { res, paso, req } = await probarRuta(metodo, ruta, token);
 
     expect(paso).toBe(2);
     expect(res.status).not.toHaveBeenCalled();

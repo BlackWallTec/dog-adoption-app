@@ -18,7 +18,7 @@ Ahora un ruta que verifica el token:
 router.get("/me", verificarToken, authController.getMe);
 */
 
-export default function verificarToken(req, res, next) {
+export default async function verificarToken(req, res, next) {
   // En capa de request verifica existencia de la cookie y el token
 
   const esMovil = req.get("x-client") === "mobile";
@@ -40,12 +40,27 @@ export default function verificarToken(req, res, next) {
     req.user = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ["HS256"],
     });
-    // Sin la extensión habilitada conserva la validación original. No afecta Root ni Administrador.
-    if (!verificarCorreoMovil(req.user)) throw new Error("Sesión de correo no válida");
-    next();
   } catch {
     return res.status(401).json({
       error: "Token inválido o expirado",
     });
   }
+
+  // Sin la extensión habilitada conserva la validación original. No afecta Root ni Administrador.
+  // En modo supabase consulta la base: una falla de conexión responde 503, no cierra la sesión.
+  let sesionVigente;
+  try {
+    sesionVigente = await verificarCorreoMovil(req.user);
+  } catch {
+    console.error("No se pudo validar el estado de correo de la sesión.");
+    return res.status(503).json({
+      error: "No se pudo validar la sesión. Inténtalo más tarde.",
+    });
+  }
+  if (!sesionVigente) {
+    return res.status(401).json({
+      error: "Token inválido o expirado",
+    });
+  }
+  return next();
 }
