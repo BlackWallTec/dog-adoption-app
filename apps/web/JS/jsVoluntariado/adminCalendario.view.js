@@ -227,6 +227,9 @@ document.addEventListener("keydown", (event) => {
 
 document.querySelector(".content-area").addEventListener("scroll", cerrarMenu);
 
+// La ruta sale de rutas.js el href del HTML queda como respaldo
+document.getElementById("btn-crear-jornada").href = rutaDe("nuevaJornada");
+
 // ==================== CALENDARIO ====================
 
 const calendario = new Calendar(el.calendario, {

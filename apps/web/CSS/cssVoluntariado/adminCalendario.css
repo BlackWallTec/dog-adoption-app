@@ -46,6 +46,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
   margin-bottom: 24px;
 }
 
@@ -283,4 +285,35 @@
 .menu-opcion .material-symbols-rounded {
   font-size: 20px;
   color: var(--md-sys-color-secondary);
+}
+
+/* ==================== CREAR JORNADA ==================== */
+/* Mismo estilo de boton principal del panel: amarillo, redondeado y texto oscuro */
+.btn-crear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 24px;
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-surface);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn-crear:hover {
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.btn-crear:focus-visible {
+  outline: 2px solid var(--md-sys-color-on-surface);
+  outline-offset: 2px;
+}
+
+.btn-crear .material-symbols-rounded {
+  font-size: 20px;
 }
