@@ -385,9 +385,9 @@ export const getPerroAdminById = async (req, res) => {
 };
 
 // PATCH /api/catalogo/admin/perros/:id
-// Acepta cualquier combinación de: columnas de la ficha (incluido `estado`), `caracteres` y
-// `cuidados` (lista completa de ids), `multimedia_agregar` ([{ url, tipo }]) y
-// `multimedia_eliminar` (ids). Supabase no da transacciones desde aquí, así que los pasos van
+// Acepta cualquier combinación de: columnas de la ficha (incluidos `estado` y el texto
+// `cuidado_especial` de HU20), `caracteres` (lista completa de ids), `multimedia_agregar`
+// ([{ url, tipo }]) y `multimedia_eliminar` (ids). Supabase no da transacciones desde aquí, así que los pasos van
 // en orden y, si uno falla, los anteriores ya quedaron guardados: volver a enviar los mismos
 // cambios es seguro porque cada paso solo aplica la diferencia.
 export const updatePerroAdmin = async (req, res) => {
@@ -412,7 +412,6 @@ export const updatePerroAdmin = async (req, res) => {
     }
 
     if (relaciones.caracteres) await dogModel.setDogCaracteres(id, relaciones.caracteres);
-    if (relaciones.cuidados) await dogModel.setDogCuidados(id, relaciones.cuidados);
     if (relaciones.multimedia_eliminar) {
       await multimediaModel.removeDogMultimedia(id, relaciones.multimedia_eliminar);
     }
