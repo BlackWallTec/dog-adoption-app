@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Administración | Inicio</title>
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@800&family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded"
+    />
+
+    <link rel="stylesheet" href="../../CSS/layoutAdmin.css" />
+    <link rel="stylesheet" href="../../CSS/foundations/tokens.inicio.css" />
+    <link rel="stylesheet" href="../../CSS/cssInicio/adminInicio.css" />
+
+    <script type="module" src="../../components/admin-sidebar.js"></script>
+    <script type="module" src="../../components/admin-topbar.js"></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <admin-sidebar></admin-sidebar>
+
+      <div class="main-wrapper">
+        <admin-topbar></admin-topbar>
+
+        <main class="content-area qa-page"></main>
+      </div>
+    </div>
+
+    <script type="module" src="../../JS/jsInicio/inicio.view.js"></script>
+  </body>
+</html>

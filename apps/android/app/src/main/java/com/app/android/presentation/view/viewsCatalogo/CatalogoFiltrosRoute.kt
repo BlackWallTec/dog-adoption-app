@@ -26,6 +26,7 @@ fun CatalogoFiltrosRoute(
         onApplyFilters = viewModel::onApplyFilters,
         onClearFilters = viewModel::onClearFilters,
         onRetry = viewModel::onRetry,
+        onLoadNextPage = viewModel::onLoadNextPage,
         onDogClick = onDogClick,
         onNavSelect = onNavSelect,
         modifier = modifier,

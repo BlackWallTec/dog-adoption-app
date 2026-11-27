@@ -79,20 +79,25 @@ export const getDogs = async (req, res) => {
     });
   }
 
+  // 1. Leer limit y offset con valores seguros por defecto
+  const limit = Math.min(parseInt(req.query.limit) || 10, 20); // Tope máximo de 20
+  const offset = parseInt(req.query.offset) || 0;
+
+  // En Supabase .range(from, to) es INCLUSIVO en ambos extremos
+  const from = offset;
+  const to = offset + limit - 1;
+
   try {
-    const perros = await dogModel.getDogs(filtros);
-    for (const perro of perros) {
-      const fotos = await multimediaModel.getDogMultimediaById(perro.id_perro);
-      console.log("Fotos encontradas:", fotos);
-      if (fotos.length > 0) {
-        perro.foto_url = fotos[0].url;
-      } else {
-        perro.foto_url = "";
-      }
-    }
+    const perros = await dogModel.getDogs(filtros, from, to);
+
     res.status(200).json({
-      syuccess: true,
+      success: true,
       data: perros,
+      meta: {
+        per_page: limit,
+        current_page: Math.floor(offset / limit) + 1,
+        has_more: perros.length === limit,
+      },
     });
   } catch (error) {
     // 22P02: un id (tamano, raza o caracter) no tiene el formato de la columna, p. ej. un uuid mal escrito

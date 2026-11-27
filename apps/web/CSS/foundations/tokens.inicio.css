@@ -1,0 +1,96 @@
+/* Tokens del dashboard de Inicio. Solo lo carga adminInicio.html.
+   Los componentes leen semánticos. Los primitivos no salen de este archivo. */
+
+:root {
+  /* Primitivos de color */
+  --qa-ref-yellow-500: #fdd254;
+  --qa-ref-yellow-100: #ffedad;
+  --qa-ref-yellow-900: #3d2e00;
+  --qa-ref-blue-700: #245a94;
+  --qa-ref-blue-600: #2f6fb5;
+  --qa-ref-blue-100: #d8e8ff;
+  --qa-ref-neutral-0: #ffffff;
+  --qa-ref-neutral-50: #f8f2e6;
+  --qa-ref-neutral-100: #f1ebdd;
+  --qa-ref-neutral-300: #d2cabb;
+  --qa-ref-neutral-600: #696456;
+  --qa-ref-neutral-800: #3a3a3a;
+  --qa-ref-green-100: #e4f3e8;
+  --qa-ref-green-700: #26734d;
+  --qa-ref-amber-100: #fff1cc;
+  --qa-ref-amber-800: #7a5200;
+  --qa-ref-red-100: #fce8e6;
+  --qa-ref-red-700: #ba1a1a;
+
+  /* Familia. El peso va en cada estilo. */
+  --qa-font-display: "Nunito", sans-serif;
+
+  /* Superficie, texto, borde, marca, acento, foco */
+  --qa-color-bg: var(--qa-ref-neutral-50);
+  --qa-color-surface: var(--qa-ref-neutral-0);
+  --qa-color-surface-muted: var(--qa-ref-neutral-100);
+  --qa-color-border: var(--qa-ref-neutral-300);
+  --qa-color-text: var(--qa-ref-neutral-800);
+  --qa-color-text-muted: var(--qa-ref-neutral-600);
+  --qa-color-brand: var(--qa-ref-yellow-500);
+  --qa-color-brand-soft: var(--qa-ref-yellow-100);
+  --qa-color-on-brand: var(--qa-ref-yellow-900);
+  --qa-color-accent: var(--qa-ref-blue-600);
+  --qa-color-accent-soft: var(--qa-ref-blue-100);
+  --qa-color-on-accent: var(--qa-ref-neutral-0);
+  --qa-focus-ring: 0 0 0 3px color-mix(in srgb, var(--qa-ref-blue-600) 40%, transparent);
+
+  /* Tonos: fondo, texto y borde */
+  --qa-tone-neutral-bg: var(--qa-ref-neutral-100);
+  --qa-tone-neutral-fg: var(--qa-ref-neutral-600);
+  --qa-tone-neutral-border: var(--qa-tone-neutral-fg);
+  --qa-tone-info-bg: var(--qa-ref-blue-100);
+  --qa-tone-info-fg: var(--qa-ref-blue-700);
+  --qa-tone-info-border: var(--qa-tone-info-fg);
+  --qa-tone-success-bg: var(--qa-ref-green-100);
+  --qa-tone-success-fg: var(--qa-ref-green-700);
+  --qa-tone-success-border: var(--qa-tone-success-fg);
+  --qa-tone-warning-bg: var(--qa-ref-amber-100);
+  --qa-tone-warning-fg: var(--qa-ref-amber-800);
+  --qa-tone-warning-border: var(--qa-tone-warning-fg);
+  --qa-tone-danger-bg: var(--qa-ref-red-100);
+  --qa-tone-danger-fg: var(--qa-ref-red-700);
+  --qa-tone-danger-border: var(--qa-tone-danger-fg);
+
+  /* Saludo (28/34) y numeral del KPI (32/36, cifras tabulares en la clase) */
+  --qa-text-display: 800 1.75rem/2.125rem var(--qa-font-display);
+  --qa-text-numeral: 800 2rem/2.25rem var(--qa-font-display);
+
+  /* Espacio, base 4 px */
+  --qa-space-1: 4px;
+  --qa-space-2: 8px;
+  --qa-space-3: 12px;
+  --qa-space-4: 16px;
+  --qa-space-5: 20px;
+  --qa-space-6: 24px;
+  --qa-space-8: 32px;
+  --qa-space-10: 40px;
+  --qa-space-12: 48px;
+
+  /* Radios */
+  --qa-radius-sm: 8px;
+  --qa-radius-md: 12px;
+  --qa-radius-lg: 16px;
+  --qa-radius-xl: 20px;
+  --qa-radius-pill: 999px;
+
+  /* Elevación */
+  --qa-elevation-0: none;
+  --qa-elevation-1: 0 1px 2px rgb(58 58 58 / 6%), 0 1px 3px rgb(58 58 58 / 4%);
+  --qa-elevation-2: 0 4px 12px rgb(58 58 58 / 8%);
+  --qa-elevation-3: 0 10px 30px rgb(0 0 0 / 15%);
+}
+
+.qa-text-display {
+  font: var(--qa-text-display);
+}
+
+.qa-text-numeral {
+  font: var(--qa-text-numeral);
+  font-variant-numeric: tabular-nums;
+}

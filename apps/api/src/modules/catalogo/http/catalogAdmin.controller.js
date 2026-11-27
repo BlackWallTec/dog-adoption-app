@@ -385,8 +385,13 @@ export const getPerroAdminById = async (req, res) => {
 };
 
 // PATCH /api/catalogo/admin/perros/:id
+// Acepta cualquier combinación de: columnas de la ficha (incluidos `estado` y el texto
+// `cuidado_especial` de HU20), `caracteres` (lista completa de ids), `multimedia_agregar`
+// ([{ url, tipo }]) y `multimedia_eliminar` (ids). Supabase no da transacciones desde aquí, así que los pasos van
+// en orden y, si uno falla, los anteriores ya quedaron guardados: volver a enviar los mismos
+// cambios es seguro porque cada paso solo aplica la diferencia.
 export const updatePerroAdmin = async (req, res) => {
-  const { errores, valores } = validarCambiosPerro(req.body);
+  const { errores, valores, relaciones } = validarCambiosPerro(req.body);
   if (Object.keys(errores).length > 0) {
     return res.status(400).json({
       success: false,
@@ -395,21 +400,41 @@ export const updatePerroAdmin = async (req, res) => {
     });
   }
 
+  const { id } = req.params;
+  const noExiste = () =>
+    res.status(404).json({ success: false, message: "El perro ya no existe." });
+
   try {
-    const perro = await dogModel.updateDog(req.params.id, valores);
-    if (!perro) {
-      return res.status(404).json({ success: false, message: "El perro ya no existe." });
+    if (Object.keys(valores).length > 0) {
+      if (!(await dogModel.updateDog(id, valores))) return noExiste();
+    } else if (!(await dogModel.getDogAdminById(id))) {
+      return noExiste();
     }
+
+    if (relaciones.caracteres) await dogModel.setDogCaracteres(id, relaciones.caracteres);
+    if (relaciones.multimedia_eliminar) {
+      await multimediaModel.removeDogMultimedia(id, relaciones.multimedia_eliminar);
+    }
+    if (relaciones.multimedia_agregar) {
+      await multimediaModel.addDogMultimediaBulk(id, relaciones.multimedia_agregar);
+    }
+
+    // Se vuelve a leer para devolver la ficha ya con las relaciones nuevas.
+    const perro = await dogModel.getDogAdminById(id);
+    if (!perro) return noExiste();
     return res.status(200).json({ success: true, data: perro });
   } catch (error) {
-    if (error.code === ID_INVALIDO) {
-      return res.status(404).json({ success: false, message: "El perro ya no existe." });
-    }
+    if (error.code === ID_INVALIDO) return noExiste();
     if (error.code === FK_INEXISTENTE) {
+      const errors = error.campo
+        ? { [error.campo]: "Alguno de los valores seleccionados ya no existe." }
+        : { id_raza: "Revisa la raza.", id_tamano: "Revisa el tamaño." };
       return res.status(400).json({
         success: false,
-        message: "La raza o el tamaño seleccionado no existe.",
-        errors: { id_raza: "Revisa la raza.", id_tamano: "Revisa el tamaño." },
+        message: error.campo
+          ? "Alguno de los valores seleccionados ya no existe."
+          : "La raza o el tamaño seleccionado no existe.",
+        errors,
       });
     }
     return res.status(500).json({

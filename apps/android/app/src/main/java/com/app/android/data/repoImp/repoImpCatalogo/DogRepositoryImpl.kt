@@ -21,6 +21,8 @@ class DogRepositoryImpl
 
         override suspend fun getDogs(): List<Dog> {
             val dogDTOs: List<ApiResponseDetailDogDto> = api.fetchDogsRemote()
+            // Print de json crudo
+            Log.d("DOG_DEBUG", "DTO: $dogDTOs")
             return dogDTOs.map { it.toDomain() }
         }
     }

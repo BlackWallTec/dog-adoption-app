@@ -34,3 +34,30 @@ el contador queda en 0 y el aviso usa la clase compartida `estado-error` con el 
 La búsqueda, los filtros, la paginación interactiva, el registro, la edición y la
 desactivación se ven en la misma pantalla porque pertenecen a otras historias. HU19B
 solo consume el listado.
+
+## Edición de la ficha (HU19C)
+
+El botón **Editar** de cada fila abre `adminPerros.edit.js`, que permite cambiar todo lo
+que se captura en el alta: nombre, sexo, edad, raza, tamaño, altura, **estado**,
+descripción, esterilizado, vacunado, **características**, el texto de **cuidados
+especiales** (columna `cuidado_especial`, hasta 500 caracteres, como en el alta de HU20) y
+las **fotos y videos**.
+
+- `perroForm.js` pinta, lee y valida el formulario y calcula qué cambió (`cambiosRespectoA`
+  para las columnas, `cambiosEnRelaciones` para las características). No hace peticiones.
+- `perroMultimedia.js` es la galería, un mosaico de fotos: la X de cada foto la marca para
+  quitar (se atenúa con "Se quitará" y el botón pasa a **Deshacer**) y el mosaico punteado
+  **Agregar**, o arrastrar archivos sobre la galería, suma archivos nuevos (etiqueta "Nueva";
+  JPG, MP4 y MOV, hasta 20 por edición). Un resumen indica cuántos archivos quedarán, cuántos
+  son nuevos y cuántos se quitan. Nada se aplica hasta guardar; si se cancela, no se toca nada.
+- Al guardar, los archivos nuevos se suben al bucket `multimedia_perros` con
+  `POST /api/catalogo/admin/solicitar-subida` y luego se manda un solo
+  `PATCH /api/catalogo/admin/perros/:id` con **solo lo que cambió**:
+  columnas de la ficha (incluidos `estado` y `cuidado_especial`), `caracteres` (lista
+  completa de ids), `multimedia_agregar` (`[{ url, tipo }]`) y `multimedia_eliminar` (ids de `multimedia`).
+- Si falla la subida no se guarda nada y el formulario conserva lo capturado; los archivos
+  que ya se subieron no se vuelven a subir al reintentar.
+- Al quitar una foto o video también se borra el archivo del bucket (si ese borrado falla,
+  la ficha se guarda igual y el error queda en la consola del servidor).
+- No se editan `id_perro`, `fecha_ingreso` ni `activo` (este último es de HU27). El orden de
+  las fotos no se puede cambiar: la foto de la lista es la primera que devuelve la consulta.
