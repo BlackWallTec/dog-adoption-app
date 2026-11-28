@@ -68,3 +68,4 @@ apps/api/performance_test/performance_reports
 !/apps/api/performance_test/performance_reports/REPORTES".vitest/" 
 ".vitest/" 
 ".vitest/" 
+.vitest/
