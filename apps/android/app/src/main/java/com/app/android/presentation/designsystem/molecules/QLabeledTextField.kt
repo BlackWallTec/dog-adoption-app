@@ -27,6 +27,7 @@ import com.app.android.presentation.designsystem.theme.QarinoTheme
 /**
  * Etiqueta (BodyStrong) + QTextField + texto de ayuda (Caption) o de error (Caption en error).
  * Si hay errorText, el campo se pinta en error y se muestra ese texto en lugar de la ayuda.
+ * readOnly muestra el valor sin dejar editarlo.
  *
  * Dueño: P2 (Moléculas).
  * Usa (obligatorio): QText, QTextField.
@@ -47,6 +48,7 @@ fun QLabeledTextField(
     minLines: Int = 1,
     isPassword: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    readOnly: Boolean = false,
 ) {
     Column(modifier = modifier) {
         QText(text = label, style = QTextStyle.BodyStrong)
@@ -63,6 +65,7 @@ fun QLabeledTextField(
             minLines = minLines,
             isPassword = isPassword,
             keyboardOptions = keyboardOptions,
+            readOnly = readOnly,
         )
         // El error tiene prioridad sobre la ayuda: nunca se muestran los dos a la vez
         val supporting = errorText ?: helperText
@@ -133,6 +136,14 @@ private fun QLabeledTextFieldPreview() {
                 onValueChange = {},
                 placeholder = "",
                 enabled = false,
+            )
+            QLabeledTextField(
+                label = "Nombre (de tu perfil)",
+                value = "Persona Ejemplo",
+                onValueChange = {},
+                placeholder = "",
+                readOnly = true,
+                helperText = "Este dato viene de tu perfil y no se puede cambiar aquí.",
             )
         }
     }

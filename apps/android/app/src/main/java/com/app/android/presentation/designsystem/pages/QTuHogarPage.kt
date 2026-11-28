@@ -2,6 +2,8 @@ package com.app.android.presentation.designsystem.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.selection.selectableGroup
@@ -181,7 +183,8 @@ private fun YesNoQuestion(
     )
 }
 
-// Pregunta de opción única con radios en fila.
+// Pregunta de opción única con radios en fila. Si no caben en una línea, bajan a la siguiente.
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun OptionsQuestion(
     question: String,
@@ -192,7 +195,7 @@ private fun OptionsQuestion(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(QSpacing.xs)) {
         QText(text = question, style = QTextStyle.BodyStrong)
-        Row(
+        FlowRow(
             modifier = Modifier.selectableGroup(),
             horizontalArrangement = Arrangement.spacedBy(QSpacing.l),
         ) {

@@ -5,11 +5,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.app.android.presentation.view.atomicDesign.page.DatosGeneralesScreen
+import com.app.android.presentation.designsystem.pages.QDatosGeneralesPage
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.DatosGeneralesUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.DatosGeneralesViewModel
 
-// ROUTE: conecta el DatosGeneralesViewModel con la page DatosGeneralesScreen
+// ROUTE: conecta el DatosGeneralesViewModel con la página QDatosGeneralesPage (paso 2)
 @Composable
 fun DatosGeneralesRoute(
     onBack: () -> Unit, // regresar a Requisitos
@@ -19,7 +19,7 @@ fun DatosGeneralesRoute(
     val uiState by viewModel.uiState.collectAsState()
     val listo by viewModel.listo.collectAsState()
 
-    // Al entrar: carga del borrador (si ya lleno este paso) o del perfil
+    // Al entrar: carga del borrador (si ya llenó este paso) o del perfil
     LaunchedEffect(Unit) {
         viewModel.onLoadDatosGenerales()
     }
@@ -34,17 +34,17 @@ fun DatosGeneralesRoute(
 
     val success = uiState as? DatosGeneralesUiState.Success
 
-    DatosGeneralesScreen(
-        cargando = uiState is DatosGeneralesUiState.Loading,
-        errorCarga = (uiState as? DatosGeneralesUiState.Error)?.mensaje,
-        datos = success?.datos,
-        edad = success?.edad,
-        errorOcupacion = success?.errores?.ocupacion,
-        onOcupacionChange = viewModel::onOcupacionChange,
-        guardando = false, // guardar es instanttt (memoria)
-        errorGuardar = null, // y no puede fallar por red
-        onReintentar = { viewModel.onLoadDatosGenerales() },
-        onBackClick = onBack,
-        onContinuarClick = { viewModel.onContinuar() },
+    QDatosGeneralesPage(
+        isLoading = uiState is DatosGeneralesUiState.Loading,
+        loadError = (uiState as? DatosGeneralesUiState.Error)?.mensaje,
+        data = success?.datos,
+        age = success?.edad,
+        occupationError = success?.errores?.ocupacion,
+        onOccupationChange = viewModel::onOcupacionChange,
+        isSaving = false, // guardar es instantáneo (memoria)
+        saveError = null, // y no puede fallar por red
+        onRetry = { viewModel.onLoadDatosGenerales() },
+        onBack = onBack,
+        onContinue = { viewModel.onContinuar() },
     )
 }

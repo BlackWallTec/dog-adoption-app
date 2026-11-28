@@ -5,11 +5,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.app.android.presentation.view.atomicDesign.page.RequisitosScreen
+import com.app.android.presentation.designsystem.pages.QRequisitosPage
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.RequisitosUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.RequisitosViewModel
 
-// ROUTE: conecta el RequisitosViewModel con la page RequisitosScreen
+private const val MENSAJE_BLOQUEADA =
+    "Ya tienes una solicitud activa para este perro. Puedes revisarla en Solicitudes."
+
+// ROUTE: conecta el RequisitosViewModel con la página QRequisitosPage (paso 1)
 @Composable
 fun RequisitosRoute(
     idUsuario: String,
@@ -21,7 +24,7 @@ fun RequisitosRoute(
     val aceptado by viewModel.aceptado.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
-    // Borrador iniciado → navegamos y avisamos (el papelito)
+    // Borrador iniciado → navegamos y avisamos
     LaunchedEffect(uiState) {
         if (uiState is RequisitosUiState.Lista) {
             onIrADatosGenerales()
@@ -29,21 +32,20 @@ fun RequisitosRoute(
         }
     }
 
-    // Traducimos el estado a un mensaje para la page
+    // Traducimos el estado a un mensaje para la página
     val mensaje =
         when (val estado = uiState) {
             is RequisitosUiState.Error -> estado.mensaje
-            is RequisitosUiState.Bloqueada ->
-                "Ya tienes una solicitud activa para este perro. Puedes revisarla en Solicitudes."
+            is RequisitosUiState.Bloqueada -> MENSAJE_BLOQUEADA
             else -> null
         }
 
-    RequisitosScreen(
-        aceptado = aceptado,
-        onAceptadoChange = viewModel::onAceptadoChange,
-        cargando = uiState is RequisitosUiState.Loading,
-        errorMensaje = mensaje,
-        onBackClick = onBack,
-        onContinuarClick = { viewModel.onContinuar(idUsuario, idPerro) },
+    QRequisitosPage(
+        accepted = aceptado,
+        onAcceptedChange = viewModel::onAceptadoChange,
+        isLoading = uiState is RequisitosUiState.Loading,
+        errorMessage = mensaje,
+        onBack = onBack,
+        onContinue = { viewModel.onContinuar(idUsuario, idPerro) },
     )
 }

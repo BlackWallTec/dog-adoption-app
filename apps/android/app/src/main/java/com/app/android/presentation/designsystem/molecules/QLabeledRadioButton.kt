@@ -55,7 +55,7 @@ fun QLabeledRadioButton(
         QText(
             text = text,
             color = if (enabled) QTheme.colors.textPrimary else QTheme.colors.disabledContent,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f, fill = false),
         )
     }
 }

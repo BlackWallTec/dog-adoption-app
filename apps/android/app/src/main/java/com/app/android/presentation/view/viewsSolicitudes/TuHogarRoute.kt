@@ -5,16 +5,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
+import com.app.android.presentation.designsystem.pages.QTuHogarPage
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.TuHogarViewModel
 
-// Conecta TuHogar viewModel con la page TuHogar
+// ROUTE: conecta el TuHogarViewModel con la página QTuHogarPage (paso 3)
 @Composable
 fun TuHogarRoute(
     onBack: () -> Unit, // Regresar a Datos Generales
-    onIrACompromiso: () -> Unit, // Navegar a Compromisos
-    // 1. Hilt inyecta el ViewModel
+    onIrACompromiso: () -> Unit, // Navegar a Compromiso
     viewModel: TuHogarViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -24,7 +23,8 @@ fun TuHogarRoute(
     LaunchedEffect(Unit) {
         viewModel.onLoadTuHogar()
     }
-    // Si se guardo bien se navega y avisa
+
+    // Si se guardó bien se navega y avisa
     LaunchedEffect(listo) {
         if (listo) {
             onIrACompromiso()
@@ -32,19 +32,19 @@ fun TuHogarRoute(
         }
     }
 
-    // Se traducen los dos estados a paametros para la page
-
     val success = uiState as? TuHogarUiState.Success
-    TuHogarScreen(
-        cargando = uiState is TuHogarUiState.Loading,
-        errorCarga = (uiState as? TuHogarUiState.Error)?.mensaje,
-        datos = success?.datos,
-        errores = success?.errores,
-        onDatosChange = viewModel::onDatosChange,
-        guardando = false, // guardar es instantáneo (memoria)
-        errorGuardar = null, // y no puede fallar por red
-        onReintentar = { viewModel.onLoadTuHogar() },
-        onBackClick = onBack,
-        onContinuarClick = { viewModel.onContinuar() },
+
+    // petName se queda con su valor por defecto: el ViewModel no expone el nombre del perro
+    QTuHogarPage(
+        isLoading = uiState is TuHogarUiState.Loading,
+        loadError = (uiState as? TuHogarUiState.Error)?.mensaje,
+        data = success?.datos,
+        errors = success?.errores,
+        onDataChange = viewModel::onDatosChange,
+        isSaving = false, // guardar es instantáneo (memoria)
+        saveError = null, // y no puede fallar por red
+        onRetry = { viewModel.onLoadTuHogar() },
+        onBack = onBack,
+        onContinue = { viewModel.onContinuar() },
     )
 }

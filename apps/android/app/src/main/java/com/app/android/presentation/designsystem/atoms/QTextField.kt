@@ -30,7 +30,7 @@ import com.app.android.presentation.designsystem.theme.QarinoTheme
 /**
  * Campo de texto: fondo surface, borde 1.dp fieldBorder (error = error), radio QRadius.small, alto
  * mínimo QSize.fieldHeight. leadingIcon en onAction. isPassword oculta el texto y muestra trailing de
- * ver/ocultar.
+ * ver/ocultar. readOnly muestra el valor sin dejar editarlo (se puede seleccionar y copiar).
  *
  * Dueño: P1 (Átomos).
  * Reemplaza a: FloatingLabelTextField, FormField, WritableCard.
@@ -50,6 +50,7 @@ fun QTextField(
     minLines: Int = 1,
     isPassword: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    readOnly: Boolean = false,
 ) {
     val colors = QTheme.colors
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -93,6 +94,7 @@ fun QTextField(
         onValueChange = onValueChange,
         modifier = modifier.heightIn(min = QSize.fieldHeight),
         enabled = enabled,
+        readOnly = readOnly,
         textStyle = QTypography.of(QTextStyle.Body),
         placeholder = {
             QText(text = placeholder, color = colors.textSecondary, maxLines = if (singleLine) 1 else Int.MAX_VALUE)
@@ -176,6 +178,13 @@ private fun QTextFieldPreview() {
                 onValueChange = {},
                 placeholder = "",
                 enabled = false,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            QTextField(
+                value = "Solo lectura (readOnly)",
+                onValueChange = {},
+                placeholder = "",
+                readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
