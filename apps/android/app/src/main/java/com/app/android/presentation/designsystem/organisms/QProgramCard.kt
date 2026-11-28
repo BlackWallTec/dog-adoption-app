@@ -31,6 +31,9 @@ import com.app.android.presentation.designsystem.theme.QarinoTheme
  * QIconLabel; cupo con QCapacity. Toda la tarjeta llama onClick. Botones según estado: inscrito → cancelar
  * (si onCancel != null); no inscrito → inscribirme (si onEnroll != null, deshabilitado si está lleno).
  *
+ * El texto y el estado de los botones se pueden cambiar (enrollText, enrollEnabled, cancelText, cancelEnabled)
+ * para mostrar "Sin lugares", "Ya comenzó", "Inscribiendo…", "Cancelando…", etc.
+ *
  * Dueño: P3 (Organismos).
  * Usa (obligatorio): QCard, QTag, QIconButton, QText, QIconLabel, QCapacity, QButton.
  * Reemplaza a: TarjetaVoluntariado, TarjetaFechaLugar.
@@ -50,6 +53,10 @@ fun QProgramCard(
     enrolled: Boolean = false,
     onEnroll: (() -> Unit)? = null,
     onCancel: (() -> Unit)? = null,
+    enrollText: String = "Inscribirme",
+    enrollEnabled: Boolean = true,
+    cancelText: String = "Cancelar inscripción",
+    cancelEnabled: Boolean = true,
 ) {
     val colors = QTheme.colors
     QCard(
@@ -99,16 +106,17 @@ fun QProgramCard(
             )
             if (enrolled && onCancel != null) {
                 QButton(
-                    text = "Cancelar inscripción",
+                    text = cancelText,
                     onClick = onCancel,
                     variant = QButtonVariant.Destructive,
+                    enabled = cancelEnabled,
                     fillMaxWidth = true,
                 )
             } else if (!enrolled && onEnroll != null) {
                 QButton(
-                    text = "Inscribirme",
+                    text = enrollText,
                     onClick = onEnroll,
-                    enabled = !isFull,
+                    enabled = enrollEnabled && !isFull,
                     fillMaxWidth = true,
                 )
             }
@@ -146,6 +154,20 @@ private fun QProgramCardPreview() {
                 isFull = true,
                 onClick = {},
                 onEnroll = {},
+                enrollText = "Sin lugares",
+            )
+            QProgramCard(
+                type = "Voluntariado",
+                title = "Programa que ya comenzó",
+                date = "Dom. 15 nov. 2026",
+                time = "09:00 – 11:00 h",
+                location = "Refugio Principal",
+                capacityText = "5/25 lugares ocupados",
+                capacityProgress = 0.2f,
+                onClick = {},
+                onEnroll = {},
+                enrollText = "Ya comenzó",
+                enrollEnabled = false,
             )
             QProgramCard(
                 type = "Voluntariado",
@@ -158,6 +180,20 @@ private fun QProgramCardPreview() {
                 enrolled = true,
                 onClick = {},
                 onCancel = {},
+            )
+            QProgramCard(
+                type = "Voluntariado",
+                title = "Cancelando inscripción",
+                date = "Dom. 22 nov. 2026",
+                time = "09:00 – 11:00 h",
+                location = "Refugio Principal",
+                capacityText = "12/25 lugares ocupados",
+                capacityProgress = 0.48f,
+                enrolled = true,
+                onClick = {},
+                onCancel = {},
+                cancelText = "Cancelando…",
+                cancelEnabled = false,
             )
         }
     }

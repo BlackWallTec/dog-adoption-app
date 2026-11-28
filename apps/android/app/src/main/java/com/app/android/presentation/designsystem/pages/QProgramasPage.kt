@@ -4,12 +4,18 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.android.domain.entities.entitiesVoluntariado.ErroresFiltrosProgramas
 import com.app.android.domain.entities.entitiesVoluntariado.FiltrosProgramas
 import com.app.android.presentation.designsystem.atoms.QButton
+import com.app.android.presentation.designsystem.molecules.QInfoMessage
+import com.app.android.presentation.designsystem.organisms.QConfirmDialog
 import com.app.android.presentation.designsystem.organisms.QDateTimeFilterPanel
 import com.app.android.presentation.designsystem.organisms.QProgramCard
 import com.app.android.presentation.designsystem.organisms.QTab
@@ -32,7 +38,9 @@ private const val DEFAULT_PICKER_HOUR = 9
 /**
  * Catálogo de programas de voluntariado (pestaña Ayudar): botón "Mis voluntariados", panel para filtrar por
  * día y hora (abre los selectores nativos de fecha y hora) y la lista de QProgramCard. El panel solo se
- * muestra cuando la lista ya cargó. Si los filtros no encuentran nada, ofrece limpiarlos.
+ * muestra cuando la lista ya cargó. Si los filtros no encuentran nada, ofrece limpiarlos. Cancelar una
+ * inscripción pide confirmación en un diálogo antes de llamar a onCancel. `message` muestra un aviso
+ * (por ejemplo "Inscripción cancelada") arriba de la lista.
  *
  * Dueño: P5 (Páginas).
  * Usa (obligatorio): QMainTabTemplate, QDateTimeFilterPanel, QProgramCard, QStateContent.
@@ -56,10 +64,14 @@ fun QProgramasPage(
     modifier: Modifier = Modifier,
     onNotificationsClick: () -> Unit = {},
     notificationCount: Int = 0,
+    message: String? = null,
 ) {
     val context = LocalContext.current
     val selected = filters.seleccionados
     val noMatches = filters.sinCoincidencias
+    val errors = filters.errores
+    // Programa que espera confirmación para cancelar (null = diálogo cerrado).
+    var programToCancel by remember { mutableStateOf<ProgramaUi?>(null) }
 
     QMainTabTemplate(
         title = "Programas",
@@ -70,6 +82,10 @@ fun QProgramasPage(
         onNotificationsClick = onNotificationsClick,
         notificationCount = notificationCount,
     ) {
+        if (message != null) {
+            QInfoMessage(text = message)
+        }
+
         QButton(text = "Mis voluntariados", onClick = onMyVolunteeringClick, fillMaxWidth = true)
 
         if (!isLoading && errorMessage == null) {
@@ -92,7 +108,10 @@ fun QProgramasPage(
                 },
                 onClear = onClearFilters,
                 onApply = onApplyFilters,
-                errorText = filters.errores.firstMessage(),
+                fromDateError = errors.fechaDesde,
+                toDateError = errors.fechaHasta,
+                fromTimeError = errors.horaDesde,
+                toTimeError = errors.horaHasta,
             )
         }
 
@@ -111,14 +130,29 @@ fun QProgramasPage(
                     program = program,
                     onClick = { onProgramClick(program.id) },
                     onEnroll = { onEnroll(program.id) },
-                    onCancel = { onCancel(program.id) },
+                    onCancel = { programToCancel = program },
                 )
             }
         }
     }
+
+    programToCancel?.let { program ->
+        QConfirmDialog(
+            title = "¿Cancelar tu inscripción?",
+            description = "Si cancelas, liberarás tu lugar en ${program.titulo}. ¿Quieres continuar?",
+            confirmText = "Sí, cancelar",
+            onConfirm = {
+                onCancel(program.id)
+                programToCancel = null
+            },
+            onDismiss = { programToCancel = null },
+            destructive = true,
+        )
+    }
 }
 
-// Traduce lo que decidió el ViewModel (accion, botonHabilitado) a los botones de QProgramCard.
+// Traduce lo que decidió el ViewModel (accion, textoBoton, botonHabilitado) a los botones de QProgramCard.
+// El texto del botón viene del ViewModel: "Inscribirme", "Sin lugares", "Ya comenzó", "Inscribiendo…", etc.
 @Composable
 private fun ProgramItem(
     program: ProgramaUi,
@@ -126,10 +160,7 @@ private fun ProgramItem(
     onEnroll: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val isFull = program.progresoCupo >= 1f
     val canCancel = program.accion == AccionPrograma.CANCELAR
-    // Lleno: el botón se ve deshabilitado. Otros motivos (ya comenzó, no disponible): sin botón.
-    val showEnroll = !canCancel && (program.botonHabilitado || isFull)
     QProgramCard(
         type = program.tipo,
         title = program.titulo,
@@ -139,15 +170,17 @@ private fun ProgramItem(
         capacityText = program.textoCupo,
         capacityProgress = program.progresoCupo,
         onClick = onClick,
-        isFull = isFull,
+        isFull = program.progresoCupo >= 1f,
         enrolled = canCancel,
-        onEnroll = if (showEnroll) onEnroll else null,
+        onEnroll = if (canCancel) null else onEnroll,
         onCancel = if (canCancel) onCancel else null,
+        enrollText = program.textoBoton,
+        enrollEnabled = program.botonHabilitado,
+        // Cancelar solo cambia de texto mientras se procesa ("Cancelando…"); si no, usa el texto normal.
+        cancelText = if (program.botonHabilitado) "Cancelar inscripción" else program.textoBoton,
+        cancelEnabled = program.botonHabilitado,
     )
 }
-
-// QDateTimeFilterPanel solo tiene un mensaje de error: se muestra el primero que haya.
-private fun ErroresFiltrosProgramas.firstMessage(): String? = fechaDesde ?: fechaHasta ?: horaDesde ?: horaHasta
 
 private fun pickDate(
     context: Context,
@@ -184,6 +217,7 @@ private fun previewProgram(
     title: String,
     capacityText: String,
     progress: Float,
+    buttonText: String = "Inscribirme",
     enabled: Boolean = true,
     action: AccionPrograma = AccionPrograma.INSCRIBIRSE,
 ) = ProgramaUi(
@@ -195,7 +229,7 @@ private fun previewProgram(
     ubicacion = "Refugio Qariño · Querétaro",
     textoCupo = capacityText,
     progresoCupo = progress,
-    textoBoton = if (enabled) "Inscribirme" else "Sin lugares",
+    textoBoton = buttonText,
     botonHabilitado = enabled,
     accion = action,
 )
@@ -203,8 +237,16 @@ private fun previewProgram(
 private val previewPrograms =
     listOf(
         previewProgram("1", "Paseos y socialización de fin de semana", "8/25 lugares ocupados · 17 disponibles", 8f / 25f),
-        previewProgram("2", "Jornada de limpieza", "10/10 lugares ocupados · 0 disponibles", 1f, enabled = false),
-        previewProgram("3", "Bazar de donativos", "3/15 lugares ocupados · 12 disponibles", 0.2f, action = AccionPrograma.CANCELAR),
+        previewProgram("2", "Jornada de limpieza", "10/10 lugares ocupados · 0 disponibles", 1f, "Sin lugares", enabled = false),
+        previewProgram("3", "Taller de adiestramiento", "5/15 lugares ocupados · 10 disponibles", 1f / 3f, "Ya comenzó", enabled = false),
+        previewProgram(
+            id = "4",
+            title = "Bazar de donativos",
+            capacityText = "3/15 lugares ocupados · 12 disponibles",
+            progress = 0.2f,
+            buttonText = "Cancelar",
+            action = AccionPrograma.CANCELAR,
+        ),
     )
 
 @Composable
@@ -213,6 +255,7 @@ private fun PreviewProgramas(
     errorMessage: String? = null,
     programs: List<ProgramaUi> = previewPrograms,
     filters: FiltrosProgramasUiState = FiltrosProgramasUiState(),
+    message: String? = null,
 ) {
     QarinoTheme {
         QProgramasPage(
@@ -229,14 +272,15 @@ private fun PreviewProgramas(
             onCancel = {},
             onMyVolunteeringClick = {},
             onTabSelected = {},
+            message = message,
         )
     }
 }
 
-@Preview(showBackground = true, heightDp = 1600, name = "QProgramasPage - lista")
+@Preview(showBackground = true, heightDp = 1800, name = "QProgramasPage - lista")
 @Composable
 private fun QProgramasPagePreview() {
-    PreviewProgramas()
+    PreviewProgramas(message = "Inscripción cancelada.")
 }
 
 @Preview(showBackground = true, heightDp = 800, name = "QProgramasPage - cargando")
