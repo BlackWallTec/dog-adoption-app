@@ -38,8 +38,7 @@ private const val COMMITMENT_NOTICE =
  * Detalle de un programa de voluntariado: tipo (+ estado si ya no admite inscripciones), título, descripción,
  * tarjeta con fecha, horario, lugar y cupo, aviso de compromiso y botón fijo según la acción
  * (Inscribirme / Ya estás inscrito / Cupo lleno). Si el programa ya no existe ofrece volver a programas.
- *
- * Dueño: P5 (Páginas).
+ * message (opcional) muestra arriba un aviso de la inscripción (por ejemplo, sin cupo o sin conexión).
  * Usa (obligatorio): QDetailTemplate, QSection, QCard, QCapacity, QInfoMessage, QButton, QStateContent.
  * Reemplaza a: DetalleProgramaPage (DetalleProgramaScreen).
  */
@@ -64,6 +63,7 @@ fun QDetalleProgramaPage(
     modifier: Modifier = Modifier,
     typeDescription: String? = null,
     isEnrolling: Boolean = false,
+    message: String? = null,
     onNotificationsClick: () -> Unit = {},
     notificationCount: Int = 0,
 ) {
@@ -94,6 +94,8 @@ fun QDetalleProgramaPage(
                 null
             },
     ) {
+        message?.let { QInfoMessage(text = it) }
+
         QStateContent(
             isLoading = isLoading,
             errorMessage = errorMessage,
@@ -167,6 +169,7 @@ private fun PreviewDetallePrograma(
     isNotFound: Boolean = false,
     action: AccionDetalle = AccionDetalle.Inscribirme,
     description: String? = "Acompaña a los perros del refugio en un paseo tranquilo.\n\nTrae ropa cómoda, zapatos cerrados y agua.",
+    message: String? = null,
 ) {
     QarinoTheme {
         QDetalleProgramaPage(
@@ -187,6 +190,7 @@ private fun PreviewDetallePrograma(
             onEnroll = {},
             onTabSelected = {},
             typeDescription = "Paseos y socialización con los perros",
+            message = message,
         )
     }
 }
@@ -195,6 +199,12 @@ private fun PreviewDetallePrograma(
 @Composable
 private fun QDetalleProgramaPagePreview() {
     PreviewDetallePrograma()
+}
+
+@Preview(showBackground = true, heightDp = 900, name = "QDetalleProgramaPage - con mensaje")
+@Composable
+private fun QDetalleProgramaPageMessagePreview() {
+    PreviewDetallePrograma(message = "Este programa ya no tiene lugares disponibles.")
 }
 
 @Preview(showBackground = true, heightDp = 900, name = "QDetalleProgramaPage - finalizado")
