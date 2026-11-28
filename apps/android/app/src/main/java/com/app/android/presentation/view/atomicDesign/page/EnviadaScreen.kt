@@ -41,6 +41,7 @@ import com.app.android.presentation.view.ui.theme.InverseSurface
 import com.app.android.presentation.view.ui.theme.Secondary
 import com.app.android.presentation.view.ui.theme.SecondaryContainer
 import com.app.android.presentation.view.ui.theme.Surface
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.MascotaResumen
 
 @Suppress("ktlint:standard:function-naming")
 @Composable

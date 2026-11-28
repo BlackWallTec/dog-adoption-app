@@ -5,8 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.android.presentation.view.atomicDesign.page.EnviadaScreen
-import com.app.android.presentation.view.atomicDesign.page.MascotaResumen
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.EnviadaViewModel
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.MascotaResumen
 
 @Suppress("ktlint:standard:function-naming")
 @Composable

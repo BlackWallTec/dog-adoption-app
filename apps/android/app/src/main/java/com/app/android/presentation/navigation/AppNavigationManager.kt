@@ -24,7 +24,6 @@ import androidx.navigation.navDeepLink
 import com.app.android.domain.entities.entitiesPerfiles.Sesion
 import com.app.android.presentation.view.atomicDesign.page.ConfirmarRoute
 import com.app.android.presentation.view.atomicDesign.page.DonativoEnviadoScreen
-import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
 import com.app.android.presentation.view.atomicDesign.page.TuHogarScreen
 import com.app.android.presentation.view.atomicDesign.page.UploadDocumentsRoute
 import com.app.android.presentation.view.viewsCatalogo.CatalogoFiltrosRoute
@@ -51,6 +50,7 @@ import com.app.android.presentation.view.viewsVoluntariado.MisProgramasScreen
 import com.app.android.presentation.view.viewsVoluntariado.ProgramasScreen
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionUiState
 import com.app.android.presentation.viewmodel.viewModelPerfiles.SesionViewModel
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionSolicitud
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.DetalleProgramaViewModel
 
 // Regreso al catálogo sin dejar pantallas anteriores encima.

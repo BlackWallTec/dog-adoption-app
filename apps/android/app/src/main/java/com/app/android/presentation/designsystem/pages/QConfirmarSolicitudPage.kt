@@ -27,11 +27,11 @@ import com.app.android.presentation.designsystem.templates.QFormStepTemplate
 import com.app.android.presentation.designsystem.theme.QSpacing
 import com.app.android.presentation.designsystem.theme.QTextStyle
 import com.app.android.presentation.designsystem.theme.QarinoTheme
-import com.app.android.presentation.view.atomicDesign.page.CampoResumen
-import com.app.android.presentation.view.atomicDesign.page.ConfirmarSolicitudUiState
-import com.app.android.presentation.view.atomicDesign.page.MascotaResumen
-import com.app.android.presentation.view.atomicDesign.page.SeccionResumen
-import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.CampoResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.ConfirmarSolicitudUiState
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.MascotaResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionSolicitud
 
 private const val TOTAL_STEPS = 6
 private val PET_PHOTO_SIZE = 64.dp

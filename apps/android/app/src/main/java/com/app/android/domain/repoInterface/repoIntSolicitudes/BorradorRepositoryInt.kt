@@ -1,7 +1,7 @@
 package com.app.android.domain.repoInterface.repoIntSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
-import com.app.android.presentation.view.atomicDesign.page.SolicitudEnviadaSnapshot
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SolicitudEnviadaSnapshot
 import kotlinx.coroutines.flow.StateFlow
 
 // CONTRATO: el borrador en memoria, compartido por las 6 pantallas de la solicitud.
