@@ -4,6 +4,7 @@ import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudRepositoryFake
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.useCases.useCasesSolicitudes.GetCompromisoUseCase
+import com.app.android.domain.useCases.useCasesSolicitudes.GetEdicionUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.GuardarCompromisoUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.IniciarBorradorUseCase
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.Acceptances
@@ -150,8 +151,12 @@ class CompromisoUnitTest {
     @Test
     fun `viewmodel_load_and_save_success_flow`() {
         prepararBorradorValido()
-        val viewModel = CompromisoViewModel(GetCompromisoUseCase(borradorRepository), guardarCompromisoUseCase)
-
+        val viewModel =
+            CompromisoViewModel(
+                GetCompromisoUseCase(borradorRepository),
+                guardarCompromisoUseCase,
+                GetEdicionUseCase(borradorRepository),
+            )
         // 1. Cargar estado inicial
         viewModel.onLoadCompromiso()
         val initialState = viewModel.uiState.value
@@ -174,7 +179,12 @@ class CompromisoUnitTest {
     @Test
     fun `viewmodel_save_with_errors_does_not_set_ready`() {
         prepararBorradorValido()
-        val viewModel = CompromisoViewModel(GetCompromisoUseCase(borradorRepository), guardarCompromisoUseCase)
+        val viewModel =
+            CompromisoViewModel(
+                GetCompromisoUseCase(borradorRepository),
+                guardarCompromisoUseCase,
+                GetEdicionUseCase(borradorRepository),
+            )
         viewModel.onLoadCompromiso()
 
         // Los checkboxes marcados, para que sí llegue a validar
@@ -196,7 +206,12 @@ class CompromisoUnitTest {
     @Test
     fun `viewmodel_does_not_continue_until_all_checkboxes_are_accepted`() {
         prepararBorradorValido()
-        val viewModel = CompromisoViewModel(GetCompromisoUseCase(borradorRepository), guardarCompromisoUseCase)
+        val viewModel =
+            CompromisoViewModel(
+                GetCompromisoUseCase(borradorRepository),
+                guardarCompromisoUseCase,
+                GetEdicionUseCase(borradorRepository),
+            )
         viewModel.onLoadCompromiso()
         viewModel.onDatosChange(datosValidos())
 

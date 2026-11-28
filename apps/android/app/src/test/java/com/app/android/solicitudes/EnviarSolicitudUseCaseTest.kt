@@ -3,6 +3,7 @@ package com.app.android.solicitudes
 import com.app.android.data.TokenProvider
 import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudHttpException
+import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.Compromiso
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
@@ -11,6 +12,7 @@ import com.app.android.domain.entities.entitiesSolicitudes.DocumentosSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudParaEditar
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.app.android.domain.entities.entitiesSolicitudes.TuHogar
 import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
@@ -33,6 +35,21 @@ class EnviarSolicitudUseCaseTest {
         var createCalled = false
         var uploadedDocs = mutableListOf<DocumentType>()
         var finalizeCalled = false
+
+        var reenviarCalled = false
+        var reenviarId: String? = null
+
+        override suspend fun getSolicitudParaEditar(idSolicitud: String): SolicitudParaEditar =
+            throw NotImplementedError("No se usa en estos tests")
+
+        override suspend fun reenviarSolicitud(
+            idSolicitud: String,
+            borrador: BorradorSolicitud,
+        ) {
+            if (shouldFail) throw SolicitudHttpException(failCode, failMessage)
+            reenviarCalled = true
+            reenviarId = idSolicitud
+        }
 
         override suspend fun getSolicitudActiva(idPerro: String): SolicitudResumen? = null
 
