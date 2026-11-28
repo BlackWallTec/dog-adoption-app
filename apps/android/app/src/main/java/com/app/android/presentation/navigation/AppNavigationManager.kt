@@ -305,6 +305,7 @@ fun AppNavigation() {
                 onAdoptClick = { dogId ->
                     navController.navigate(Screen.Requisitos.crearRuta(dogId))
                 },
+                onNavSelect = navController::irAOpcionBarra,
             )
         }
 

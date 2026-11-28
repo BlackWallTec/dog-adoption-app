@@ -21,7 +21,7 @@ import com.app.android.presentation.designsystem.theme.QRadius
 import com.app.android.presentation.designsystem.theme.QSpacing
 import com.app.android.presentation.designsystem.theme.QTheme
 import com.app.android.presentation.designsystem.theme.QarinoTheme
-
+import android.util.Log
 private val PREVIEW_SIZE = 120.dp
 
 /**
@@ -55,6 +55,9 @@ fun QPhoto(
             contentDescription = contentDescription,
             modifier = photoModifier,
             contentScale = ContentScale.Crop,
+            onError = { state ->
+                Log.e("QPhoto", "url=$model", state.result.throwable)
+            },
         )
     }
 }
