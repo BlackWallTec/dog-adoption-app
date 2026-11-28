@@ -25,13 +25,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.app.android.presentation.designsystem.pages.QConfirmarSolicitudPage
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -58,43 +55,15 @@ import com.app.android.presentation.view.ui.theme.Surface
 import com.app.android.presentation.view.ui.theme.SurfaceContainer
 import com.app.android.presentation.view.ui.theme.SurfaceContainerHigh
 import com.app.android.presentation.view.ui.theme.SurfaceContainerLow
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.CampoResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.ConfirmarSolicitudUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.ConfirmarSolicitudViewModel
-
-// ---------- UI state (plain data, no ViewModel yet) ----------
-
-enum class SeccionSolicitud { DATOS_GENERALES, TU_HOGAR, COMPROMISO, DOCUMENTOS }
-
-data class CampoResumen(
-    val etiqueta: String,
-    val valor: String, // "Pendiente" cuando no hay dato
-)
-
-data class SeccionResumen(
-    val tipo: SeccionSolicitud,
-    val titulo: String,
-    val campos: List<CampoResumen>,
-)
-
-data class MascotaResumen(
-    val nombre: String,
-    val detalle: String, // "2 años · Macho · Mediano"
-    val raza: String, // "Mestizo · Querétaro"
-    val fotoUrl: String? = null,
-)
-
-data class ConfirmarSolicitudUiState(
-    val mascota: MascotaResumen,
-    val secciones: List<SeccionResumen>, // datos generales, tu hogar, compromiso
-    val documentos: List<String>, // nombres de archivo
-    val enviando: Boolean = false,
-)
-
-data class SolicitudEnviadaSnapshot(
-    val solicitudId: String,
-    val mascota: MascotaResumen,
-)
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.MascotaResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionSolicitud
 
 // ---------- Route & Screen ----------
+// Conecta ConfirmarSolicitudViewModel con la pagina nueva del design system
 @Composable
 fun ConfirmarRoute(
     onBack: () -> Unit,
@@ -105,37 +74,21 @@ fun ConfirmarRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    var aceptaTerminos by remember { mutableStateOf(false) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.onErrorShown()
-        }
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Surface,
-    ) { innerPadding ->
-        ConfirmarSolicitudScreen(
-            state = uiState,
-            aceptaTerminos = aceptaTerminos,
-            onAceptaTerminosChange = { aceptaTerminos = it },
-            onBackClick = onBack,
-            onEditarClick = onEditarSeccion,
-            onEnviarClick = {
-                viewModel.enviarSolicitud(
-                    onSuccess = { solicitudId ->
-                        onEnviarExitoso(solicitudId)
-                    },
-                    onUnauthorized = onUnauthorized,
-                )
-            },
-            modifier = Modifier.padding(innerPadding),
-        )
-    }
+    // La casilla de terminos ya vive en la pagina.
+    // El error se queda visible; enviarSolicitud lo limpia al reintentar.
+    QConfirmarSolicitudPage(
+        state = uiState,
+        onBack = onBack,
+        onEditSection = onEditarSeccion,
+        onSubmit = {
+            viewModel.enviarSolicitud(
+                onSuccess = onEnviarExitoso,
+                onUnauthorized = onUnauthorized,
+            )
+        },
+        errorMessage = errorMessage,
+    )
 }
 
 // PAGE: paso 6 de 6 (Confirmar). Sin estado propio: todo entra por parametros.

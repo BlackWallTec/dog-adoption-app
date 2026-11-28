@@ -24,7 +24,7 @@ import com.app.android.presentation.designsystem.theme.QIcons
 import com.app.android.presentation.designsystem.theme.QSpacing
 import com.app.android.presentation.designsystem.theme.QTextStyle
 import com.app.android.presentation.designsystem.theme.QarinoTheme
-import com.app.android.presentation.view.atomicDesign.page.MascotaResumen
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.MascotaResumen
 
 private val PET_PHOTO_SIZE = 64.dp
 

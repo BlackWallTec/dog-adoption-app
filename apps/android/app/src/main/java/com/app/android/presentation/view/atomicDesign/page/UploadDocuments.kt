@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
+import com.app.android.presentation.designsystem.pages.QDocumentosPage
 import com.app.android.presentation.util.utilSolicitudes.readPickedFile
 import com.app.android.presentation.view.atomicDesign.atomic.AppButton
 import com.app.android.presentation.view.atomicDesign.atomic.ButtonVariant
@@ -42,6 +43,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.DocumentSlot
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.UploadDocumentsViewModel
 
+// Conecta UploadDocumentsViewModel con la pagina nueva del design system
 @Composable
 fun UploadDocumentsRoute(
     onBackClick: () -> Unit = {},
@@ -65,22 +67,17 @@ fun UploadDocumentsRoute(
             pendingType = null
         }
 
-    AndroidTheme {
-        UploadDocuments(
-            uiState = uiState,
-            onPickFile = { type ->
-                pendingType = type
-                filePicker.launch(arrayOf("application/pdf", "image/jpeg", "image/png"))
-            },
-            onErrorShown = viewModel::onErrorShown,
-            onBackClick = onBackClick,
-            onNotificacionesClick = onNotificacionesClick,
-            onContinuarClick = {
-                viewModel.onContinuarClicked(onSuccess = onContinuarClick)
-            },
-            onNavSelect = onNavSelect,
-        )
-    }
+    // La pagina muestra el error dentro del formulario; se limpia al elegir otro archivo
+    QDocumentosPage(
+        state = uiState,
+        onPickFile = { type ->
+            viewModel.onErrorShown()
+            pendingType = type
+            filePicker.launch(arrayOf("application/pdf", "image/jpeg", "image/png"))
+        },
+        onBack = onBackClick,
+        onContinue = { viewModel.onContinuarClicked(onSuccess = onContinuarClick) },
+    )
 }
 
 // Main function that calls the atoms and molecules

@@ -2,7 +2,7 @@ package com.app.android.data.repoImp.repoImpSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
-import com.app.android.presentation.view.atomicDesign.page.SolicitudEnviadaSnapshot
+import com.app.android.presentation.viewmodel.viewModelSolicitudes.SolicitudEnviadaSnapshot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

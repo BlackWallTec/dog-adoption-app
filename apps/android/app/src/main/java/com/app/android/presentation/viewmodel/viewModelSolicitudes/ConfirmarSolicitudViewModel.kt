@@ -7,12 +7,6 @@ import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.useCases.useCasesCatalogo.GetDogByIdUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.EnviarSolicitudUseCase
-import com.app.android.presentation.view.atomicDesign.page.CampoResumen
-import com.app.android.presentation.view.atomicDesign.page.ConfirmarSolicitudUiState
-import com.app.android.presentation.view.atomicDesign.page.MascotaResumen
-import com.app.android.presentation.view.atomicDesign.page.SeccionResumen
-import com.app.android.presentation.view.atomicDesign.page.SeccionSolicitud
-import com.app.android.presentation.view.atomicDesign.page.SolicitudEnviadaSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
