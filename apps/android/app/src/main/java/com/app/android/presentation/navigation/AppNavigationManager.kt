@@ -456,8 +456,9 @@ fun AppNavigation() {
                 EnviadaRoute(
                     solicitudId = solicitudId,
                     onBack = navController::irAlCatalogo,
-                    onVerSolicitudes = navController::irAlCatalogo,
+                    onVerSolicitudes = { navController.irAOpcionBarra(3) },
                     onNavSelect = navController::irAOpcionBarra,
+                    onVerCatalogo = navController::irAlCatalogo,
                 )
             }
         }
