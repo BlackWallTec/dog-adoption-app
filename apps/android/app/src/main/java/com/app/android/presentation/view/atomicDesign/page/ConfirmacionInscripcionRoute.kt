@@ -4,13 +4,9 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.android.presentation.view.atomicDesign.organism.ConfirmActionDialog
-import com.app.android.presentation.view.atomicDesign.page.VolunteeringConfirmationScreen
+import com.app.android.presentation.designsystem.pages.QConfirmacionInscripcionPage
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasViewModel
 
 // Conecta la confirmación con el ViewModel COMPARTIDO del catálogo.
@@ -28,7 +24,6 @@ fun ConfirmacionInscripcionRoute(
     val programaConfirmado by viewModel.programaConfirmado.collectAsStateWithLifecycle()
     val programa = programaConfirmado // copia local para el smart cast
     val contexto = LocalContext.current
-    var confirmandoCancelacion by remember { mutableStateOf(false) }
 
     // HU37: esta pantalla no tiene snackbar, así que los avisos (éxito o error al cancelar) salen como Toast
     LaunchedEffect(Unit) {
@@ -45,33 +40,21 @@ fun ConfirmacionInscripcionRoute(
         return
     }
 
-    VolunteeringConfirmationScreen(
-        tipoBadge = programa.tipo,
-        tituloPrograma = programa.titulo,
-        fecha = programa.fecha,
-        horario = programa.horario,
-        ubicacion = programa.ubicacion,
-        textoCupo = programa.textoCupo,
-        progresoCupo = programa.progresoCupo,
-        onBackClick = onBack,
-        onExplorarProgramasClick = onExplorarProgramas,
-        onNavSelect = onNavSelect,
-        onVerMisProgramasClick = onVerMisVoluntariados,
-        onVerDetalleProgramaClick = { onVerDetalle(programa.id) }, // HU36
-        onCancelarInscripcionClick = { confirmandoCancelacion = true },
+    // El diálogo "¿Cancelar tu inscripción?" ya vive dentro de la página:
+    // onCancelEnrollment solo se llama cuando el usuario ya confirmó.
+    QConfirmacionInscripcionPage(
+        type = programa.tipo,
+        title = programa.titulo,
+        date = programa.fecha,
+        time = programa.horario,
+        location = programa.ubicacion,
+        capacityText = programa.textoCupo,
+        capacityProgress = programa.progresoCupo,
+        onBack = onBack,
+        onProgramClick = { onVerDetalle(programa.id) }, // HU36
+        onCancelEnrollment = { viewModel.cancelarInscripcion(programa.id) },
+        onMyVolunteeringClick = onVerMisVoluntariados,
+        onExploreProgramsClick = onExplorarProgramas,
+        onTabSelected = { onNavSelect(it.ordinal) },
     )
-
-    // Confirmación antes de cancelar: la acción libera el lugar y otra persona puede tomarlo
-    if (confirmandoCancelacion) {
-        ConfirmActionDialog(
-            titulo = "¿Cancelar tu inscripción?",
-            descripcion = "Si cancelas, liberarás tu lugar en ${programa.titulo}. ¿Quieres continuar?",
-            textoConfirmar = "Sí, cancelar",
-            onConfirmar = {
-                viewModel.cancelarInscripcion(programa.id)
-                confirmandoCancelacion = false
-            },
-            onDismiss = { confirmandoCancelacion = false },
-        )
-    }
 }
