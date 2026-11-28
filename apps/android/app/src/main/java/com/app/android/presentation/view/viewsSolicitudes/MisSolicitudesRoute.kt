@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.app.android.presentation.designsystem.pages.QMisSolicitudesPage
 import com.app.android.presentation.view.atomicDesign.page.MisSolicitudesScreen
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.MisSolicitudesUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.MisSolicitudesViewModel
@@ -25,15 +26,14 @@ fun MisSolicitudesRoute(
         viewModel.onLoadSolicitudes()
     }
 
-    // Se traducen los tres estados a parámetros para la page
-    val success = uiState as? MisSolicitudesUiState.Success
-    MisSolicitudesScreen(
-        cargando = uiState is MisSolicitudesUiState.Loading,
-        errorCarga = (uiState as? MisSolicitudesUiState.Error)?.mensaje,
-        solicitudes = success?.solicitudes.orEmpty(),
-        onReintentar = { viewModel.onLoadSolicitudes() },
-        onEditarClick = onEditar,
-        onVerCatalogoClick = onVerCatalogo,
-        onNavSelect = onNavSelect,
+    // Se traducen los tres estados a parametros para la page
+    QMisSolicitudesPage(
+        isLoading = uiState is MisSolicitudesUiState.Loading,
+        errorMessage = (uiState as? MisSolicitudesUiState.Error)?.mensaje,
+        requests = (uiState as? MisSolicitudesUiState.Success)?.solicitudes.orEmpty(),
+        onRetry = { viewModel.onLoadSolicitudes() },
+        onEditClick = onEditar,
+        onCatalogClick = onVerCatalogo,
+        onTabSelected = { onNavSelect(it.ordinal) },
     )
 }
