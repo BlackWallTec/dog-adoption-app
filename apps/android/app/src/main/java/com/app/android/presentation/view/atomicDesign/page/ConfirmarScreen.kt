@@ -25,13 +25,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.app.android.presentation.designsystem.pages.QConfirmarSolicitudPage
 import com.app.android.presentation.view.atomicDesign.molecule.basicMolecules.IndicadorPasos
 import com.app.android.presentation.view.atomicDesign.organism.AppTopBar
 import com.app.android.presentation.view.ui.theme.AndroidTheme
@@ -66,6 +63,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionResume
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.SeccionSolicitud
 
 // ---------- Route & Screen ----------
+// Conecta ConfirmarSolicitudViewModel con la pagina nueva del design system
 @Composable
 fun ConfirmarRoute(
     onBack: () -> Unit,
@@ -76,37 +74,21 @@ fun ConfirmarRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    var aceptaTerminos by remember { mutableStateOf(false) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.onErrorShown()
-        }
-    }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Surface,
-    ) { innerPadding ->
-        ConfirmarSolicitudScreen(
-            state = uiState,
-            aceptaTerminos = aceptaTerminos,
-            onAceptaTerminosChange = { aceptaTerminos = it },
-            onBackClick = onBack,
-            onEditarClick = onEditarSeccion,
-            onEnviarClick = {
-                viewModel.enviarSolicitud(
-                    onSuccess = { solicitudId ->
-                        onEnviarExitoso(solicitudId)
-                    },
-                    onUnauthorized = onUnauthorized,
-                )
-            },
-            modifier = Modifier.padding(innerPadding),
-        )
-    }
+    // La casilla de terminos ya vive en la pagina.
+    // El error se queda visible; enviarSolicitud lo limpia al reintentar.
+    QConfirmarSolicitudPage(
+        state = uiState,
+        onBack = onBack,
+        onEditSection = onEditarSeccion,
+        onSubmit = {
+            viewModel.enviarSolicitud(
+                onSuccess = onEnviarExitoso,
+                onUnauthorized = onUnauthorized,
+            )
+        },
+        errorMessage = errorMessage,
+    )
 }
 
 // PAGE: paso 6 de 6 (Confirmar). Sin estado propio: todo entra por parametros.
