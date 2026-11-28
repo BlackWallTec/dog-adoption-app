@@ -1,6 +1,5 @@
 package com.app.android.presentation.view.viewsVoluntariado
 
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,13 +10,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.android.presentation.view.atomicDesign.organism.ConfirmActionDialog
-import com.app.android.presentation.view.atomicDesign.page.ProgramasPage
-import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramaUi
+import com.app.android.presentation.designsystem.pages.QProgramasPage
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasUiState
 import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramasViewModel
+import kotlinx.coroutines.delay
 
-// Conecta el ViewModel (Hilt) con la página. No dibuja nada por sí misma.
+private const val MESSAGE_DURATION_MS = 4_000L
+
+// Conecta el ViewModel (Hilt) con la página nueva. No dibuja nada por sí misma.
 @Suppress("ktlint:standard:function-naming")
 @Composable
 fun ProgramasScreen(
@@ -30,16 +30,16 @@ fun ProgramasScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filtrosState by viewModel.filtroState.collectAsStateWithLifecycle()
+    var mensaje by remember { mutableStateOf<String?>(null) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    var programaPorCancelar by remember {
-        mutableStateOf<ProgramaUi?>(null)
-    }
-
-    // Muestra los mensajes de inscripción y cancelación.
+    // Guarda el último mensaje de inscripción o cancelación y lo quita solo después de unos segundos.
     LaunchedEffect(viewModel) {
-        viewModel.mensajes.collect { mensaje ->
-            snackbarHostState.showSnackbar(mensaje)
+        viewModel.mensajes.collect { mensaje = it }
+    }
+    LaunchedEffect(mensaje) {
+        if (mensaje != null) {
+            delay(MESSAGE_DURATION_MS)
+            mensaje = null
         }
     }
 
@@ -52,42 +52,21 @@ fun ProgramasScreen(
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.actualizarProgramas() }
 
-    ProgramasPage(
-        uiState = uiState,
-        onReintentar = viewModel::cargarProgramas,
-        onBackClick = onBackClick,
-        onInscribirse = viewModel::inscribirse,
-        onCancelar = { id ->
-            programaPorCancelar =
-                (uiState as? ProgramasUiState.Success)
-                    ?.programas
-                    ?.find { it.id == id }
-        },
-        snackbarHostState = snackbarHostState,
-        onNavSelect = onNavSelect,
-        onMisVoluntariados = onMisVoluntariados,
-        onVerDetalle = onVerDetalle, // HU36
-        filtrosState = filtrosState,
-        onFiltrosChange = viewModel::actualizarFiltros,
-        onAplicarFiltros = viewModel::aplicarFiltros,
-        onLimpiarFiltros = viewModel::limpiarFiltros,
+    QProgramasPage(
+        isLoading = uiState is ProgramasUiState.Loading,
+        errorMessage = (uiState as? ProgramasUiState.Error)?.mensaje,
+        programs = (uiState as? ProgramasUiState.Success)?.programas.orEmpty(),
+        filters = filtrosState,
+        onFiltersChange = viewModel::actualizarFiltros,
+        onApplyFilters = viewModel::aplicarFiltros,
+        onClearFilters = viewModel::limpiarFiltros,
+        onRetry = viewModel::cargarProgramas,
+        onProgramClick = { id -> onVerDetalle?.invoke(id) }, // HU36
+        onEnroll = viewModel::inscribirse,
+        // La página ya pide confirmación antes de llamar a este callback.
+        onCancel = viewModel::cancelarInscripcion,
+        onMyVolunteeringClick = onMisVoluntariados,
+        onTabSelected = { tab -> onNavSelect(tab.ordinal) },
+        message = mensaje,
     )
-
-    // Solicita confirmación antes de cancelar la inscripción.
-    programaPorCancelar?.let { programa ->
-        ConfirmActionDialog(
-            titulo = "¿Cancelar tu inscripción?",
-            descripcion =
-                "Si cancelas, liberarás tu lugar en ${programa.titulo}. " +
-                        "¿Quieres continuar?",
-            textoConfirmar = "Sí, cancelar",
-            onConfirmar = {
-                viewModel.cancelarInscripcion(programa.id)
-                programaPorCancelar = null
-            },
-            onDismiss = {
-                programaPorCancelar = null
-            },
-        )
-    }
 }

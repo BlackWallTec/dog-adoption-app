@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.app.android.presentation.designsystem.molecules.QInfoMessage
 import com.app.android.presentation.designsystem.organisms.QConfirmDialog
 import com.app.android.presentation.designsystem.organisms.QProgramCard
 import com.app.android.presentation.designsystem.organisms.QTab
@@ -18,7 +19,8 @@ import com.app.android.presentation.viewmodel.viewModelVoluntariado.ProgramaUi
 
 /**
  * "Mis Programas": programas vigentes en los que la persona está inscrita. Cada tarjeta permite cancelar
- * la inscripción (si el programa no ha empezado) después de confirmar en un diálogo.
+ * la inscripción (si el programa no ha empezado) después de confirmar en un diálogo. `message` muestra un
+ * aviso (por ejemplo "Inscripción cancelada") arriba de la lista.
  *
  * Dueño: P5 (Páginas).
  * Usa (obligatorio): QDetailTemplate, QProgramCard, QConfirmDialog, QStateContent.
@@ -37,6 +39,7 @@ fun QMisVoluntariadosPage(
     modifier: Modifier = Modifier,
     onNotificationsClick: () -> Unit = {},
     notificationCount: Int = 0,
+    message: String? = null,
 ) {
     // Programa que espera confirmación para cancelar (null = diálogo cerrado).
     var programToCancel by remember { mutableStateOf<ProgramaUi?>(null) }
@@ -51,6 +54,10 @@ fun QMisVoluntariadosPage(
         onNotificationsClick = onNotificationsClick,
         notificationCount = notificationCount,
     ) {
+        if (message != null) {
+            QInfoMessage(text = message)
+        }
+
         QStateContent(
             isLoading = isLoading,
             errorMessage = errorMessage,
@@ -72,6 +79,9 @@ fun QMisVoluntariadosPage(
                     isFull = program.progresoCupo >= 1f,
                     enrolled = true,
                     onCancel = if (canCancel) ({ programToCancel = program }) else null,
+                    // Mientras se cancela, el ViewModel pone "Cancelando…" y apaga el botón.
+                    cancelText = if (program.botonHabilitado) "Cancelar inscripción" else program.textoBoton,
+                    cancelEnabled = program.botonHabilitado,
                 )
             }
         }
@@ -114,6 +124,7 @@ private fun PreviewMisVoluntariados(
     isLoading: Boolean = false,
     errorMessage: String? = null,
     programs: List<ProgramaUi> = previewMyPrograms,
+    message: String? = null,
 ) {
     QarinoTheme {
         QMisVoluntariadosPage(
@@ -125,6 +136,7 @@ private fun PreviewMisVoluntariados(
             onProgramClick = {},
             onCancelEnrollment = {},
             onTabSelected = {},
+            message = message,
         )
     }
 }
@@ -133,6 +145,12 @@ private fun PreviewMisVoluntariados(
 @Composable
 private fun QMisVoluntariadosPagePreview() {
     PreviewMisVoluntariados()
+}
+
+@Preview(showBackground = true, heightDp = 800, name = "QMisVoluntariadosPage - con aviso")
+@Composable
+private fun QMisVoluntariadosPageMessagePreview() {
+    PreviewMisVoluntariados(message = "Inscripción cancelada.")
 }
 
 @Preview(showBackground = true, heightDp = 800, name = "QMisVoluntariadosPage - vacío")

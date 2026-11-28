@@ -23,6 +23,9 @@ import com.app.android.presentation.designsystem.theme.QarinoTheme
  * en filas de 2 columnas iguales, botones Limpiar y Aplicar filtros del mismo ancho y mensaje de error
  * opcional. Los selectores solo avisan con su onClick; quien lo usa abre los pickers.
  *
+ * Cada selector puede mostrar su propio error (fromDateError, toDateError, fromTimeError, toTimeError).
+ * errorText queda como error general, debajo de los botones.
+ *
  * Dueño: P3 (Organismos).
  * Usa (obligatorio): QSectionHeader, QText, QLabeledSelectField, QButton, QErrorMessage.
  * Reemplaza a: FiltrosProgramasPanel, FilterActionBar.
@@ -43,6 +46,10 @@ fun QDateTimeFilterPanel(
     title: String = "Filtrar Programa",
     description: String = "Selecciona las fechas y el horario de tu preferencia.",
     errorText: String? = null,
+    fromDateError: String? = null,
+    toDateError: String? = null,
+    fromTimeError: String? = null,
+    toTimeError: String? = null,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -60,12 +67,14 @@ fun QDateTimeFilterPanel(
                     value = fromDate,
                     onClick = onFromDateClick,
                     modifier = Modifier.weight(1f),
+                    errorText = fromDateError,
                 )
                 QLabeledSelectField(
                     label = "Hasta",
                     value = toDate,
                     onClick = onToDateClick,
                     modifier = Modifier.weight(1f),
+                    errorText = toDateError,
                 )
             }
             QText(text = "Hora:", style = QTextStyle.BodyStrong)
@@ -75,12 +84,14 @@ fun QDateTimeFilterPanel(
                     value = fromTime,
                     onClick = onFromTimeClick,
                     modifier = Modifier.weight(1f),
+                    errorText = fromTimeError,
                 )
                 QLabeledSelectField(
                     label = "Hasta",
                     value = toTime,
                     onClick = onToTimeClick,
                     modifier = Modifier.weight(1f),
+                    errorText = toTimeError,
                 )
             }
         }
@@ -136,6 +147,20 @@ private fun QDateTimeFilterPanelPreview() {
                 onClear = {},
                 onApply = {},
                 errorText = "La fecha final debe ser posterior a la inicial.",
+            )
+            QDateTimeFilterPanel(
+                fromDate = "22/11/2026",
+                toDate = null,
+                fromTime = null,
+                toTime = "08:00",
+                onFromDateClick = {},
+                onToDateClick = {},
+                onFromTimeClick = {},
+                onToTimeClick = {},
+                onClear = {},
+                onApply = {},
+                toDateError = "Elige una fecha final.",
+                fromTimeError = "Elige una hora inicial.",
             )
         }
     }
