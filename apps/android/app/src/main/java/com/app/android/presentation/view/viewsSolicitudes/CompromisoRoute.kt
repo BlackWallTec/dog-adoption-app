@@ -14,6 +14,7 @@ import com.app.android.presentation.viewmodel.viewModelSolicitudes.CompromisoVie
 fun CompromisoRoute(
     onBack: () -> Unit, // Regresar a Tu Hogar
     onIrADocumentoss: () -> Unit, // Navegar a Compromisos
+    onNavSelect: (Int) -> Unit = {},
     // 1. Hilt inyecta el ViewModel
     viewModel: CompromisoViewModel = hiltViewModel(),
 ) {
@@ -48,5 +49,6 @@ fun CompromisoRoute(
         onReintentar = { viewModel.onLoadCompromiso() },
         onBackClick = onBack,
         onContinuarClick = { viewModel.onContinuar() },
+        onNavSelect = onNavSelect,
     )
 }

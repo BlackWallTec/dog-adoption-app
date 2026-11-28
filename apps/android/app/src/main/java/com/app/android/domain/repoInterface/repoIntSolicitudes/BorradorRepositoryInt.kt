@@ -17,6 +17,8 @@ interface BorradorRepositoryInt {
         idPerro: String,
     )
 
+    fun reemplazar(nuevo: BorradorSolicitud)
+
     // Cambia el borrador actual. Ejemplo: actualizar { it.copy(tuHogar = nuevo) }
     fun actualizar(cambio: (BorradorSolicitud) -> BorradorSolicitud)
 

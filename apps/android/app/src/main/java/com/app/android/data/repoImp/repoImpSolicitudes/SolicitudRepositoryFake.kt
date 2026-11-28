@@ -2,10 +2,11 @@ package com.app.android.data.repoImp.repoImpSolicitudes
 
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
-import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
-import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
+import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudParaEditar
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
@@ -69,9 +70,7 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
         activas["$idUsuario|$idPerro"] = solicitud
     }
 
-    override suspend fun getSolicitudActiva(
-        idPerro: String,
-    ): SolicitudResumen? {
+    override suspend fun getSolicitudActiva(idPerro: String): SolicitudResumen? {
         simularRed()
         return activas.entries.firstOrNull { it.key.endsWith("|$idPerro") }?.value
     }
@@ -106,4 +105,12 @@ class SolicitudRepositoryFake : SolicitudRepositoryInt {
     }
 
     private suspend fun simularRed() = delay(500)
+
+    override suspend fun getSolicitudParaEditar(idSolicitud: String): SolicitudParaEditar =
+        throw NotImplementedError("El Fake no simula la edición todavía")
+
+    override suspend fun reenviarSolicitud(
+        idSolicitud: String,
+        borrador: BorradorSolicitud,
+    ): Unit = throw NotImplementedError("El Fake no simula el reenvío todavía")
 }

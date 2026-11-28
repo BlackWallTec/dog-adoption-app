@@ -6,7 +6,9 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import com.app.android.data.TokenProvider
 import com.app.android.data.repoImp.repoImpSolicitudes.SolicitudHttpException
+import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
+import com.app.android.domain.entities.entitiesSolicitudes.EdicionSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.repoInterface.repoIntSolicitudes.BorradorRepositoryInt
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
@@ -61,6 +63,10 @@ class EnviarSolicitudUseCase
                     ?: throw IllegalStateException("No hay una solicitud en borrador activa.")
 
             try {
+                val edicion = borrador.edicion
+
+                if (edicion != null) return reenviar(borrador, edicion)
+
                 val docs =
                     borrador.documentos
                         ?: throw IllegalStateException("Faltan los documentos adjuntos.")
@@ -110,6 +116,50 @@ class EnviarSolicitudUseCase
             }
         }
 
+        private suspend fun reenviar(
+            borrador: BorradorSolicitud,
+            edicion: EdicionSolicitud,
+        ): String {
+            if (!hayCambios(borrador, edicion.original)) throw SinCambiosException()
+            val ine = borrador.documentos?.identificacion
+            val dom = borrador.documentos?.comprobanteDomicilio
+            val ineComprimida = ine?.let { compressFileToMax2Mb(it.uri, it.mimeType, it.nombre) }
+            val domComprimida = dom?.let { compressFileToMax2Mb(it.uri, it.mimeType, it.nombre) }
+
+            ineComprimida?.let { (bytes, file) ->
+                solicitudRepo.subirDocumento(
+                    edicion.idSolicitud,
+                    DocumentType.INE,
+                    file,
+                    bytes,
+                )
+            }
+            domComprimida?.let { (bytes, file) ->
+                solicitudRepo.subirDocumento(
+                    edicion.idSolicitud,
+                    DocumentType.DOMICILIO,
+                    file,
+                    bytes,
+                )
+            }
+            solicitudRepo.reenviarSolicitud(
+                edicion.idSolicitud,
+                borrador,
+            )
+            borradorRepo.limpiar()
+            return edicion.idSolicitud
+        }
+
+        private fun hayCambios(
+            borrador: BorradorSolicitud,
+            original: BorradorSolicitud,
+        ): Boolean =
+            borrador.datosGenerales?.ocupacion != original.datosGenerales?.ocupacion ||
+                borrador.tuHogar != original.tuHogar ||
+                borrador.compromiso != original.compromiso ||
+                borrador.documentos?.identificacion != null ||
+                borrador.documentos?.comprobanteDomicilio != null
+
         private suspend fun compressFileToMax2Mb(
             uriString: String,
             mimeType: String,
@@ -136,7 +186,9 @@ class EnviarSolicitudUseCase
                 }
 
                 if (!isImage) {
-                    throw IllegalStateException("El archivo supera los 2 MB y no es una imagen. Por favor seleccione un archivo más pequeño.")
+                    throw IllegalStateException(
+                        "El archivo supera los 2 MB y no es una imagen. Por favor seleccione un archivo más pequeño.",
+                    )
                 }
 
                 ensureActive()
@@ -152,7 +204,9 @@ class EnviarSolicitudUseCase
 
                 val bitmap =
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
-                        ?: throw IllegalStateException("El archivo supera los 2 MB y no pudo procesarse como imagen. Por favor recapture o seleccione una imagen más pequeña.")
+                        ?: throw IllegalStateException(
+                            "El archivo supera los 2 MB y no pudo procesarse como imagen. Por favor recapture o seleccione una imagen más pequeña.",
+                        )
 
                 try {
                     ensureActive()
@@ -180,7 +234,9 @@ class EnviarSolicitudUseCase
                             )
                         return@withContext Pair(compressedBytes, newPickedFile)
                     } else {
-                        throw IllegalStateException("La imagen no pudo reducirse a menos de 2 MB. Por favor recapture o seleccione una imagen más pequeña.")
+                        throw IllegalStateException(
+                            "La imagen no pudo reducirse a menos de 2 MB. Por favor recapture o seleccione una imagen más pequeña.",
+                        )
                     }
                 } finally {
                     bitmap.recycle()
@@ -206,12 +262,14 @@ class EnviarSolicitudUseCase
             return inSampleSize
         }
 
-        private fun isImageUri(uriString: String): Boolean {
-            return try {
+        private fun isImageUri(uriString: String): Boolean =
+            try {
                 val type = context.contentResolver.getType(Uri.parse(uriString))
                 type?.startsWith("image/") == true
             } catch (_: Exception) {
                 false
             }
-        }
     }
+
+// La lanza este caso de uso cuando el usuario toca Reenviar sin haber cambiado nada
+class SinCambiosException : Exception("No hiciste cambios en tu solicitud.")

@@ -61,6 +61,18 @@ private fun NavController.irAlCatalogo() {
     }
 }
 
+// Después de guardar un paso, si viene de confirmar
+private fun NavController.siguientePaso(
+    desdeConfirmar: Boolean,
+    siguiente: String,
+) {
+    if (desdeConfirmar) {
+        popBackStack(Screen.Confirmar.ruta, inclusive = false)
+    } else {
+        navigate(siguiente)
+    }
+}
+
 // Al perder la sesión, saco las pantallas privadas de la pila.
 private fun NavController.irAlLogin() {
     navigate(Screen.Login.ruta) {
@@ -333,15 +345,24 @@ fun AppNavigation() {
                     idUsuario = sesion.usuario.id, // El id sale de la sesión actual.
                     idPerro = idPerro,
                     onBack = { navController.navigateUp() },
-                    onIrADatosGenerales = {
-                        navController.navigate(Screen.DatosGenerales.ruta)
-                    },
+                    onIrADatosGenerales = { navController.navigate(Screen.DatosGenerales.crearRuta()) },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
 
         // SOLICITUDES: Paso 2 - Datos generales
-        composable(route = Screen.DatosGenerales.ruta) {
+        composable(
+            route = Screen.DatosGenerales.ruta,
+            arguments =
+                listOf(
+                    navArgument("desdeConfirmar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+        ) { backStackEntry ->
+            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
             // Estos datos necesitan una sesión válida.
             ConSesion(
                 estadoSesion,
@@ -352,32 +373,48 @@ fun AppNavigation() {
                 DatosGeneralesRoute(
                     onBack = { navController.navigateUp() },
                     onIrATuHogar = {
-                        navController.navigate(Screen.TuHogar.ruta)
+                        navController.siguientePaso(desdeConfirmar, Screen.TuHogar.crearRuta())
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
 
         // SOLICITUDES: Paso 3 - Tu Hogar
-        composable(route = Screen.TuHogar.ruta) {
-            // Estos datos necesitan una sesión válida.
-            ConSesion(
-                estadoSesion,
-                navController,
-                sesionViewModel,
-                { destinoTrasLogin = it },
-            ) { _ ->
+        composable(
+            route = Screen.TuHogar.ruta,
+            arguments =
+                listOf(
+                    navArgument("desdeConfirmar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+        ) { backStackEntry ->
+            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
+            ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
                 TuHogarRoute(
                     onBack = { navController.navigateUp() },
                     onIrACompromiso = {
-                        navController.navigate(Screen.Compromiso.ruta)
+                        navController.siguientePaso(desdeConfirmar, Screen.Compromiso.crearRuta())
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
 
-        // Paso 4 - Compromiso
-        composable(route = Screen.Compromiso.ruta) {
+        // SOLICITUDES: Paso 4 - Compromiso
+        composable(
+            route = Screen.Compromiso.ruta,
+            arguments =
+                listOf(
+                    navArgument("desdeConfirmar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+        ) { backStackEntry ->
+            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
             // Estos datos necesitan una sesión válida.
             ConSesion(
                 estadoSesion,
@@ -388,19 +425,32 @@ fun AppNavigation() {
                 CompromisoRoute(
                     onBack = { navController.navigateUp() },
                     onIrADocumentoss = {
-                        navController.navigate(Screen.Documentos.ruta)
+                        navController.siguientePaso(desdeConfirmar, Screen.Documentos.crearRuta())
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
-        // Paso 5 - Documentos
-        composable(route = Screen.Documentos.ruta) {
+
+        // SOLICITUDES Paso 5 - Documentos
+        composable(
+            route = Screen.Documentos.ruta,
+            arguments =
+                listOf(
+                    navArgument("desdeConfirmar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+        ) { backStackEntry ->
+            val desdeConfirmar = backStackEntry.arguments?.getBoolean("desdeConfirmar") ?: false
             ConSesion(estadoSesion, navController, sesionViewModel, { destinoTrasLogin = it }) { _ ->
                 UploadDocumentsRoute(
                     onBackClick = { navController.navigateUp() },
                     onContinuarClick = {
-                        navController.navigate(Screen.Confirmar.ruta)
+                        navController.siguientePaso(desdeConfirmar, Screen.Confirmar.ruta)
                     },
+                    onNavSelect = navController::irAOpcionBarra,
                 )
             }
         }
@@ -415,15 +465,27 @@ fun AppNavigation() {
             ) { _ ->
                 ConfirmarRoute(
                     onBack = { navController.navigateUp() },
-                    onEditarSeccion = { seccion ->
-                        val rutaDestino =
-                            when (seccion) {
-                                SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.ruta
-                                SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.ruta
-                                SeccionSolicitud.COMPROMISO -> Screen.Compromiso.ruta
-                                SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.ruta
-                            }
-                        navController.popBackStack(rutaDestino, inclusive = false)
+                    onEditarSeccion = { seccion, modoEdicion ->
+                        if (modoEdicion) {
+                            // Viene de Mis solicitudes: no hay pasos atrás en la pila, se navega al paso
+                            val ruta =
+                                when (seccion) {
+                                    SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.crearRuta(desdeConfirmar = true)
+                                    SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.crearRuta(desdeConfirmar = true)
+                                    SeccionSolicitud.COMPROMISO -> Screen.Compromiso.crearRuta(desdeConfirmar = true)
+                                    SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.crearRuta(desdeConfirmar = true)
+                                }
+                            navController.navigate(ruta)
+                        } else {
+                            val rutaDestino =
+                                when (seccion) {
+                                    SeccionSolicitud.DATOS_GENERALES -> Screen.DatosGenerales.ruta
+                                    SeccionSolicitud.TU_HOGAR -> Screen.TuHogar.ruta
+                                    SeccionSolicitud.COMPROMISO -> Screen.Compromiso.ruta
+                                    SeccionSolicitud.DOCUMENTOS -> Screen.Documentos.ruta
+                                }
+                            navController.popBackStack(rutaDestino, inclusive = false)
+                        }
                     },
                     onEnviarExitoso = { solicitudId ->
                         navController.navigate(Screen.SolicitudEnviada.crearRuta(solicitudId)) {
@@ -432,6 +494,9 @@ fun AppNavigation() {
                     },
                     onUnauthorized = {
                         navController.irAlLogin()
+                    },
+                    onNoEditable = {
+                        navController.popBackStack(Screen.MisSolicitudes.ruta, inclusive = false)
                     },
                 )
             }
@@ -456,7 +521,7 @@ fun AppNavigation() {
                 EnviadaRoute(
                     solicitudId = solicitudId,
                     onBack = navController::irAlCatalogo,
-                    onVerSolicitudes = navController::irAlCatalogo,
+                    onVerSolicitudes = { navController.irAOpcionBarra(3) },
                     onNavSelect = navController::irAOpcionBarra,
                 )
             }
@@ -470,11 +535,11 @@ fun AppNavigation() {
                 navController,
                 sesionViewModel,
                 { destinoTrasLogin = it },
-            ) {
+            ) { sesion ->
+                // <- antes era solo ") {"
                 MisSolicitudesRoute(
-                    onEditar = {
-                        // navegar a la edición de la solicitud HU09.
-                    },
+                    idUsuario = sesion.usuario.id,
+                    onIrAConfirmar = { navController.navigate(Screen.Confirmar.ruta) },
                     onVerCatalogo = { navController.popBackStack(Screen.Catalogo.ruta, inclusive = false) },
                     onNavSelect = navController::irAOpcionBarra,
                 )

@@ -6,12 +6,14 @@ import com.app.android.data.dtos.dtosSolicitudes.CrearSolicitudRequestDto
 import com.app.android.data.dtos.dtosSolicitudes.toDomain
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
-import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
 import com.app.android.domain.entities.entitiesSolicitudes.HouseType
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudParaEditar
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
+import com.app.android.domain.repoInterface.repoIntSolicitudes.NoEditableException
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.google.gson.Gson
 import okhttp3.MediaType.Companion.toMediaType
@@ -22,172 +24,223 @@ import java.io.IOException
 import javax.inject.Inject
 
 class SolicitudRepositoryImpl
-@Inject
-constructor(
-    private val api: SolicitudApiService,
-) : SolicitudRepositoryInt {
-    override suspend fun getSolicitudActiva(
-        idPerro: String,
-    ): SolicitudResumen? {
-        try {
-            val respuesta = api.fetchActiveRemote(idPerro)
-            if (respuesta.success != true) {
-                throw SolicitudHttpException(400, respuesta.message ?: "Error al consultar solicitud activa")
+    @Inject
+    constructor(
+        private val api: SolicitudApiService,
+    ) : SolicitudRepositoryInt {
+        override suspend fun getSolicitudActiva(idPerro: String): SolicitudResumen? {
+            try {
+                val respuesta = api.fetchActiveRemote(idPerro)
+                if (respuesta.success != true) {
+                    throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "Error al consultar solicitud activa",
+                    )
+                }
+                return respuesta.data?.toDomain()
+            } catch (e: HttpException) {
+                throw e.toFriendlyException()
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
             }
-            return respuesta.data?.toDomain()
-        } catch (e: HttpException) {
-            throw e.toFriendlyException()
-        } catch (e: SolicitudHttpException) {
-            throw e
-        } catch (_: IOException) {
-            throw Exception("No se pudo conectar con el servidor.")
+        }
+
+        override suspend fun getPerfil(): DatosGenerales {
+            try {
+                val respuesta = api.fetchProfileRemote()
+                if (respuesta.success != true) {
+                    throw SolicitudHttpException(400, respuesta.message ?: "Error al obtener perfil")
+                }
+                return respuesta.data?.toDomain()
+                    ?: throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "No se encontró el perfil",
+                    )
+            } catch (e: HttpException) {
+                throw e.toFriendlyException()
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
+        }
+
+        override suspend fun getMisSolicitudes(): List<SolicitudCliente> {
+            try {
+                val respuesta = api.fetchMisSolicitudesRemote()
+                if (respuesta.success != true) {
+                    throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "Error al obtener las solicitudes",
+                    )
+                }
+                return respuesta.data?.map { it.toDomain() }
+                    ?: throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "No se encontraron solicitudes",
+                    )
+            } catch (e: HttpException) {
+                throw e.toFriendlyException()
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
+        }
+
+        override suspend fun crearOReutilizarBorrador(borrador: BorradorSolicitud): String {
+            val request = borrador.toRequestDto()
+
+            try {
+                val response = api.crearOReutilizarBorrador(request)
+                if (response.success != true) {
+                    throw SolicitudHttpException(
+                        400,
+                        response.message ?: "No se pudo crear o reutilizar el borrador.",
+                    )
+                }
+                val data =
+                    response.data
+                        ?: throw SolicitudHttpException(
+                            400,
+                            response.message ?: "El servidor no devolvió datos de la solicitud.",
+                        )
+                return data.idSolicitud
+                    ?: throw SolicitudHttpException(
+                        400,
+                        response.message ?: "No se pudo obtener el id de la solicitud.",
+                    )
+            } catch (e: HttpException) {
+                throw e.toFriendlyException()
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
+        }
+
+        override suspend fun subirDocumento(
+            solicitudId: String,
+            type: DocumentType,
+            file: PickedFile,
+            bytes: ByteArray,
+        ): UploadedDocument {
+            val tipoBody = type.name.toRequestBody("text/plain".toMediaType())
+            val archivoPart =
+                MultipartBody.Part.createFormData(
+                    "archivo",
+                    file.name,
+                    bytes.toRequestBody(file.mimeType.toMediaType()),
+                )
+
+            try {
+                val response = api.uploadDocument(solicitudId, tipoBody, archivoPart)
+                if (response.success != true) {
+                    throw SolicitudHttpException(400, response.message ?: "Error al subir documento")
+                }
+                val data =
+                    response.data
+                        ?: throw SolicitudHttpException(
+                            400,
+                            response.message ?: "El servidor no devolvió datos del documento subido.",
+                        )
+                val nombre =
+                    data.nombreArchivo
+                        ?: throw SolicitudHttpException(
+                            400,
+                            "El servidor no devolvió el nombre del archivo subido.",
+                        )
+                val tamano =
+                    data.tamanoBytes
+                        ?: throw SolicitudHttpException(
+                            400,
+                            "El servidor no devolvió el tamaño del archivo subido.",
+                        )
+                return UploadedDocument(
+                    type = type,
+                    fileName = nombre,
+                    sizeBytes = tamano,
+                )
+            } catch (e: HttpException) {
+                throw e.toFriendlyException()
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
+        }
+
+        override suspend fun finalizarSolicitud(solicitudId: String) {
+            try {
+                val response = api.finalizarSolicitud(solicitudId)
+                if (response.success != true) {
+                    throw SolicitudHttpException(
+                        400,
+                        response.message ?: "Error al finalizar la solicitud",
+                    )
+                }
+            } catch (e: HttpException) {
+                throw e.toFriendlyException()
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
+        }
+
+        override suspend fun getSolicitudParaEditar(idSolicitud: String): SolicitudParaEditar {
+            try {
+                val respuesta = api.fetchSolicitudEdicionRemote(idSolicitud)
+                if (respuesta.success != true) {
+                    throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "Error al consultar la solicitud",
+                    )
+                }
+                return respuesta.data?.toDomain()
+                    ?: throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "No se encontró la solicitud",
+                    )
+            } catch (e: HttpException) {
+                val friendly = e.toFriendlyException()
+                // 404 y 409 = ya no se puede editar
+                if (friendly.statusCode == 404 || friendly.statusCode == 409) {
+                    throw NoEditableException(friendly.message)
+                }
+                throw friendly
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
+        }
+
+        override suspend fun reenviarSolicitud(
+            idSolicitud: String,
+            borrador: BorradorSolicitud,
+        ) {
+            try {
+                val respuesta = api.putReenvioRemote(idSolicitud, borrador.toRequestDto())
+                if (respuesta.success != true) {
+                    throw SolicitudHttpException(
+                        400,
+                        respuesta.message ?: "Error al reenviar la solicitud",
+                    )
+                }
+            } catch (e: HttpException) {
+                val friendly = e.toFriendlyException()
+                if (friendly.statusCode == 409) throw NoEditableException(friendly.message)
+                throw friendly
+            } catch (e: SolicitudHttpException) {
+                throw e
+            } catch (_: IOException) {
+                throw Exception("No se pudo conectar con el servidor.")
+            }
         }
     }
-
-    override suspend fun getPerfil(): DatosGenerales {
-        try {
-            val respuesta = api.fetchProfileRemote()
-            if (respuesta.success != true) {
-                throw SolicitudHttpException(400, respuesta.message ?: "Error al obtener perfil")
-            }
-            return respuesta.data?.toDomain()
-                ?: throw SolicitudHttpException(400, respuesta.message ?: "No se encontró el perfil")
-        } catch (e: HttpException) {
-            throw e.toFriendlyException()
-        } catch (e: SolicitudHttpException) {
-            throw e
-        } catch (_: IOException) {
-            throw Exception("No se pudo conectar con el servidor.")
-        }
-    }
-
-    override suspend fun getMisSolicitudes(): List<SolicitudCliente> {
-        try {
-            val respuesta = api.fetchMisSolicitudesRemote()
-            if (respuesta.success != true) {
-                throw SolicitudHttpException(400, respuesta.message ?: "Error al obtener las solicitudes")
-            }
-            return respuesta.data?.map { it.toDomain() }
-                ?: throw SolicitudHttpException(400, respuesta.message ?: "No se encontraron solicitudes")
-        } catch (e: HttpException) {
-            throw e.toFriendlyException()
-        } catch (e: SolicitudHttpException) {
-            throw e
-        } catch (_: IOException) {
-            throw Exception("No se pudo conectar con el servidor.")
-        }
-    }
-
-    override suspend fun crearOReutilizarBorrador(borrador: BorradorSolicitud): String {
-        val dg = borrador.datosGenerales
-        val hogar = borrador.tuHogar
-        val comp = borrador.compromiso
-
-        val request =
-            CrearSolicitudRequestDto(
-                idPerro = borrador.idPerro,
-                ocupacion = dg?.ocupacion?.trim() ?: "",
-                tuvoMascotas = hogar?.hadPet,
-                otrasMascotas = hogar?.otherPets,
-                motivoAdopcion = hogar?.whyAdopt?.trim() ?: "",
-                dondeVivira = hogar?.whereLive?.trim() ?: "",
-                personasEnCasa = hogar?.peopleInHouse ?: 1,
-                todosDeAcuerdo = hogar?.allAgree,
-                tipoVivienda =
-                    when (hogar?.houseType) {
-                        HouseType.CASA -> "Casa"
-                        HouseType.DEPARTAMENTO -> "Departamento"
-                        HouseType.OTRO -> "Otro"
-                        null -> "Casa"
-                    },
-                jardinPatio = hogar?.hasGarden?.trim() ?: "",
-                caseroAcepta = hogar?.petAccept,
-                sobreMascotas = hogar?.aboutPets?.trim() ?: "",
-                cuidadosBasicos = comp?.petNeeds?.trim() ?: "",
-                opinionEsterilizacion = comp?.petSterilization?.trim() ?: "",
-                tieneVeterinario = comp?.hasVet,
-                detalleVeterinario = comp?.vetDetail?.trim() ?: "",
-                tiempoSolo = comp?.timeAlone?.trim() ?: "",
-                rutinaDiaria = comp?.dailyRoutine?.trim() ?: "",
-                manejoComportamiento = comp?.dogManagement?.trim() ?: "",
-            )
-
-        try {
-            val response = api.crearOReutilizarBorrador(request)
-            if (response.success != true) {
-                throw SolicitudHttpException(400, response.message ?: "No se pudo crear o reutilizar el borrador.")
-            }
-            val data =
-                response.data
-                    ?: throw SolicitudHttpException(400, response.message ?: "El servidor no devolvió datos de la solicitud.")
-            return data.idSolicitud
-                ?: throw SolicitudHttpException(400, response.message ?: "No se pudo obtener el id de la solicitud.")
-        } catch (e: HttpException) {
-            throw e.toFriendlyException()
-        } catch (e: SolicitudHttpException) {
-            throw e
-        } catch (_: IOException) {
-            throw Exception("No se pudo conectar con el servidor.")
-        }
-    }
-
-    override suspend fun subirDocumento(
-        solicitudId: String,
-        type: DocumentType,
-        file: PickedFile,
-        bytes: ByteArray,
-    ): UploadedDocument {
-        val tipoBody = type.name.toRequestBody("text/plain".toMediaType())
-        val archivoPart =
-            MultipartBody.Part.createFormData(
-                "archivo",
-                file.name,
-                bytes.toRequestBody(file.mimeType.toMediaType()),
-            )
-
-        try {
-            val response = api.uploadDocument(solicitudId, tipoBody, archivoPart)
-            if (response.success != true) {
-                throw SolicitudHttpException(400, response.message ?: "Error al subir documento")
-            }
-            val data =
-                response.data
-                    ?: throw SolicitudHttpException(400, response.message ?: "El servidor no devolvió datos del documento subido.")
-            val nombre =
-                data.nombreArchivo
-                    ?: throw SolicitudHttpException(400, "El servidor no devolvió el nombre del archivo subido.")
-            val tamano =
-                data.tamanoBytes
-                    ?: throw SolicitudHttpException(400, "El servidor no devolvió el tamaño del archivo subido.")
-            return UploadedDocument(
-                type = type,
-                fileName = nombre,
-                sizeBytes = tamano,
-            )
-        } catch (e: HttpException) {
-            throw e.toFriendlyException()
-        } catch (e: SolicitudHttpException) {
-            throw e
-        } catch (_: IOException) {
-            throw Exception("No se pudo conectar con el servidor.")
-        }
-    }
-
-    override suspend fun finalizarSolicitud(solicitudId: String) {
-        try {
-            val response = api.finalizarSolicitud(solicitudId)
-            if (response.success != true) {
-                throw SolicitudHttpException(400, response.message ?: "Error al finalizar la solicitud")
-            }
-        } catch (e: HttpException) {
-            throw e.toFriendlyException()
-        } catch (e: SolicitudHttpException) {
-            throw e
-        } catch (_: IOException) {
-            throw Exception("No se pudo conectar con el servidor.")
-        }
-    }
-}
 
 fun HttpException.toFriendlyException(): SolicitudHttpException {
     val code = code()
@@ -209,6 +262,40 @@ fun HttpException.toFriendlyException(): SolicitudHttpException {
             else -> serverMsg ?: "Error del servidor ($code)."
         }
     return SolicitudHttpException(code, message)
+}
+
+private fun BorradorSolicitud.toRequestDto(): CrearSolicitudRequestDto {
+    val dg = datosGenerales
+    val hogar = tuHogar
+    val comp = compromiso
+
+    return CrearSolicitudRequestDto(
+        idPerro = idPerro,
+        ocupacion = dg?.ocupacion?.trim() ?: "",
+        tuvoMascotas = hogar?.hadPet,
+        otrasMascotas = hogar?.otherPets,
+        motivoAdopcion = hogar?.whyAdopt?.trim() ?: "",
+        dondeVivira = hogar?.whereLive?.trim() ?: "",
+        personasEnCasa = hogar?.peopleInHouse ?: 1,
+        todosDeAcuerdo = hogar?.allAgree,
+        tipoVivienda =
+            when (hogar?.houseType) {
+                HouseType.CASA -> "Casa"
+                HouseType.DEPARTAMENTO -> "Departamento"
+                HouseType.OTRO -> "Otro"
+                null -> "Casa"
+            },
+        jardinPatio = hogar?.hasGarden?.trim() ?: "",
+        caseroAcepta = hogar?.petAccept,
+        sobreMascotas = hogar?.aboutPets?.trim() ?: "",
+        cuidadosBasicos = comp?.petNeeds?.trim() ?: "",
+        opinionEsterilizacion = comp?.petSterilization?.trim() ?: "",
+        tieneVeterinario = comp?.hasVet,
+        detalleVeterinario = comp?.vetDetail?.trim() ?: "",
+        tiempoSolo = comp?.timeAlone?.trim() ?: "",
+        rutinaDiaria = comp?.dailyRoutine?.trim() ?: "",
+        manejoComportamiento = comp?.dogManagement?.trim() ?: "",
+    )
 }
 
 class SolicitudHttpException(

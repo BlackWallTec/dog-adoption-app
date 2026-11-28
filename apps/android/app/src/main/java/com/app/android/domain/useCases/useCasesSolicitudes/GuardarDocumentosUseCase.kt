@@ -19,13 +19,20 @@ class GuardarDocumentosUseCase
         private val borrador: BorradorRepositoryInt,
     ) {
         operator fun invoke(documentos: DocumentosSolicitud): ErroresDocumentos {
+            val edicion = borrador.borrador.value?.edicion
             val errores =
                 ErroresDocumentos(
-                    identificacion = validarDocumento(documentos.identificacion, "identificación"),
+                    identificacion =
+                        validarDocumento(
+                            documentos.identificacion,
+                            "identificación",
+                            yaEnServidor = edicion?.tieneIneEnServidor == true,
+                        ),
                     comprobanteDomicilio =
                         validarDocumento(
                             documentos.comprobanteDomicilio,
                             "comprobante de domicilio",
+                            yaEnServidor = edicion?.tieneDomicilioEnServidor == true,
                         ),
                 )
             if (!errores.hayErrores) {
@@ -37,8 +44,9 @@ class GuardarDocumentosUseCase
         private fun validarDocumento(
             doc: DocumentoLocal?,
             nombreCampo: String,
+            yaEnServidor: Boolean = false, // si en edición es igual a null = "me quedo con el que ya subí"
         ): String? {
-            if (doc == null) return "Adjunta tu $nombreCampo"
+            if (doc == null) return if (yaEnServidor) null else "Adjunta tu $nombreCampo"
             if (doc.mimeType !in FORMATOS_PERMITIDOS) return "Formato no permitido (usa PDF, JPG o PNG)"
             if (doc.tamanoBytes > TAMANO_MAX_BYTES) return "El archivo $nombreCampo supera los 5MB"
             if (doc.tamanoBytes < 0L) return "El archivo $nombreCampo no es válido"

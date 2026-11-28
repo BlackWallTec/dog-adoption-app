@@ -8,6 +8,7 @@ import com.app.android.domain.entities.entitiesSolicitudes.DocumentoLocal
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentosSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.useCases.useCasesSolicitudes.GetDocumentosUseCase
+import com.app.android.domain.useCases.useCasesSolicitudes.GetEdicionUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.GuardarDocumentosUseCase
 import com.app.android.domain.useCases.useCasesSolicitudes.UploadDocumentUseCase
 import com.app.android.presentation.navigation.Screen
@@ -25,6 +26,7 @@ class UploadDocumentsViewModel
     constructor(
         private val getDocumentosUseCase: GetDocumentosUseCase,
         private val guardarDocumentosUseCase: GuardarDocumentosUseCase,
+        private val getEdicionUseCase: GetEdicionUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(UploadDocumentsUiState())
         val uiState: StateFlow<UploadDocumentsUiState> = _uiState.asStateFlow()
@@ -36,21 +38,32 @@ class UploadDocumentsViewModel
         private fun cargarDocumentosGuardados() {
             try {
                 val docs = getDocumentosUseCase()
+                val edicion = getEdicionUseCase()
                 _uiState.update { state ->
                     val newSlots = state.slots.toMutableMap()
-
-                    docs.identificacion?.let { doc ->
-                        newSlots[DocumentType.INE] = doc.toSlot()
-                    }
-                    docs.comprobanteDomicilio?.let { doc ->
-                        newSlots[DocumentType.DOMICILIO] = doc.toSlot()
-                    }
+                    // Si lo eligió en esta sesión se muestra ese; si no y ya está en el servidor, "enviado anteriormente"
+                    newSlots[DocumentType.INE] =
+                        docs.identificacion?.toSlot()
+                            ?: slotEnviadoAnteriormente(edicion?.tieneIneEnServidor == true)
+                    newSlots[DocumentType.DOMICILIO] =
+                        docs.comprobanteDomicilio?.toSlot()
+                            ?: slotEnviadoAnteriormente(edicion?.tieneDomicilioEnServidor == true)
                     state.copy(slots = newSlots)
                 }
             } catch (_: Exception) {
                 // Si no hay borrador o esta vacio
             }
         }
+
+        private fun slotEnviadoAnteriormente(existe: Boolean): DocumentSlot =
+            if (existe) {
+                DocumentSlot(
+                    fileName = "Documento enviado anteriormente",
+                    fileInfo = "Ya está en tu solicitud · Toca para reemplazarlo",
+                )
+            } else {
+                DocumentSlot()
+            }
 
         // 1. Guarda el archivo ÚNICAMENTE de forma local (Sin petición de red)
         fun onFileSelected(

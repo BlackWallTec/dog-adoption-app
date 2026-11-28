@@ -26,3 +26,19 @@ sealed interface MisSolicitudesUiState {
         val mensaje: String,
     ) : MisSolicitudesUiState
 }
+
+sealed interface EdicionUiState {
+    data object Idle : EdicionUiState
+
+    data object Loading : EdicionUiState
+
+    data object Lista : EdicionUiState
+
+    data class NoEditable(
+        val mensaje: String,
+    ) : EdicionUiState
+
+    data class Error(
+        val mensaje: String,
+    ) : EdicionUiState
+}

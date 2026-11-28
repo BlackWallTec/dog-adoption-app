@@ -1,21 +1,5 @@
 package com.app.android.domain.entities.entitiesSolicitudes
 
-/*
-Pendientes a añadir en la BD:
-alter table public.solicitud_adopcion
-  drop constraint if exists compromiso_textos_max_1000;
-
-alter table public.solicitud_adopcion
-  add constraint compromiso_textos_max_300 check (
-    char_length(cuidados_basicos) <= 300
-    and char_length(opinion_esterilizacion) <= 300
-    and char_length(detalle_veterinario) <= 300
-    and char_length(tiempo_solo) <= 300
-    and char_length(rutina_diaria) <= 300
-    and char_length(manejo_comportamiento) <= 300
-  ) not valid;
- */
-
 data class Compromiso(
     // Paso 4 del Formulario | "Compromiso"
     val petNeeds: String = "", // Pregunta: Menciona los cuidados básicos de una mascota

@@ -65,4 +65,7 @@ apps/api/performance_test/performance_reports
 
 # Ignorar reportes de rendimiento, excepto el archivo .IGNORE
 /apps/api/performance_test/performance_reports/*
-!/apps/api/performance_test/performance_reports/REPORTES
+!/apps/api/performance_test/performance_reports/REPORTES".vitest/" 
+".vitest/" 
+".vitest/" 
+.vitest/

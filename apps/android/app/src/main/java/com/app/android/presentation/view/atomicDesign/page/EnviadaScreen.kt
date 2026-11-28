@@ -50,6 +50,7 @@ fun EnviadaScreen(
     onBackClick: () -> Unit,
     onVerSolicitudesClick: () -> Unit,
     modifier: Modifier = Modifier,
+    actualizada: Boolean = false,
     navSeleccionado: Int = 3, // 3 = "Solicitudes
     onNavSelect: (Int) -> Unit = {},
 ) {
@@ -97,7 +98,7 @@ fun EnviadaScreen(
                 )
             }
             Text(
-                text = "¡Solicitud enviada!",
+                text = if (actualizada) "¡Solicitud actualizada!" else "¡Solicitud enviada!",
                 color = InverseSurface,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
@@ -105,7 +106,13 @@ fun EnviadaScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
-                text = "Te notificaremos cuando haya novedades",
+                text =
+                    if (actualizada) {
+                        "Tu solicitud ya está de nuevo en revisión. " +
+                            "¡Te notificaremos cuando haya novedades!"
+                    } else {
+                        "Te notificaremos cuando haya novedades"
+                    },
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )

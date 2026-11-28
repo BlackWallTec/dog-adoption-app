@@ -4,16 +4,19 @@ import com.app.android.data.dtos.dtosSolicitudes.PerroSolicitudDto
 import com.app.android.data.dtos.dtosSolicitudes.SolicitudClienteDto
 import com.app.android.data.dtos.dtosSolicitudes.toDomain
 import com.app.android.data.dtos.dtosSolicitudes.toEstadoSolicitud
+import com.app.android.data.repoImp.repoImpSolicitudes.BorradorRepositoryImpl
 import com.app.android.domain.entities.entitiesSolicitudes.BorradorSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.DatosGenerales
 import com.app.android.domain.entities.entitiesSolicitudes.DocumentType
 import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.domain.entities.entitiesSolicitudes.PickedFile
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudCliente
+import com.app.android.domain.entities.entitiesSolicitudes.SolicitudParaEditar
 import com.app.android.domain.entities.entitiesSolicitudes.SolicitudResumen
 import com.app.android.domain.entities.entitiesSolicitudes.UploadedDocument
 import com.app.android.domain.repoInterface.repoIntSolicitudes.SolicitudRepositoryInt
 import com.app.android.domain.useCases.useCasesSolicitudes.GetMisSolicitudesUseCase
+import com.app.android.domain.useCases.useCasesSolicitudes.IniciarEdicionUseCase
 import com.app.android.presentation.util.utilSolicitudes.toItem
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.MisSolicitudesUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.MisSolicitudesViewModel
@@ -67,6 +70,13 @@ class MisSolicitudesUnitTest {
         ): UploadedDocument = throw NotImplementedError()
 
         override suspend fun finalizarSolicitud(solicitudId: String) = throw NotImplementedError()
+
+        override suspend fun getSolicitudParaEditar(idSolicitud: String): SolicitudParaEditar = throw NotImplementedError()
+
+        override suspend fun reenviarSolicitud(
+            idSolicitud: String,
+            borrador: BorradorSolicitud,
+        ) = throw NotImplementedError()
     }
 
     private val repositoryFake = FakeSolicitudRepository()
@@ -85,7 +95,14 @@ class MisSolicitudesUnitTest {
         zonaOriginal = TimeZone.getDefault()
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        viewModel = MisSolicitudesViewModel(useCase)
+        viewModel =
+            MisSolicitudesViewModel(
+                useCase,
+                IniciarEdicionUseCase(
+                    repositoryFake,
+                    BorradorRepositoryImpl(),
+                ),
+            )
     }
 
     @After
@@ -437,7 +454,14 @@ class MisSolicitudesUnitTest {
      */
     @Test
     fun `viewmodel_estado_inicial_es_loading`() {
-        val nuevoViewModel = MisSolicitudesViewModel(useCase)
+        val nuevoViewModel =
+            MisSolicitudesViewModel(
+                useCase,
+                IniciarEdicionUseCase(
+                    repositoryFake,
+                    BorradorRepositoryImpl(),
+                ),
+            )
         assertEquals(MisSolicitudesUiState.Loading, nuevoViewModel.uiState.value)
     }
 

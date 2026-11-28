@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.app.android.domain.entities.entitiesSolicitudes.EstadoSolicitud
 import com.app.android.presentation.view.atomicDesign.page.RequisitosScreen
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.RequisitosUiState
 import com.app.android.presentation.viewmodel.viewModelSolicitudes.RequisitosViewModel
@@ -16,6 +17,7 @@ fun RequisitosRoute(
     idPerro: String,
     onBack: () -> Unit, // regresar (a Catalogo)
     onIrADatosGenerales: () -> Unit, // navegar al paso 2 (ya no lleva id: todo está en el borrador)
+    onNavSelect: (Int) -> Unit = {},
     viewModel: RequisitosViewModel = hiltViewModel(),
 ) {
     val aceptado by viewModel.aceptado.collectAsState()
@@ -32,10 +34,21 @@ fun RequisitosRoute(
     // Traducimos el estado a un mensaje para la page
     val mensaje =
         when (val estado = uiState) {
-            is RequisitosUiState.Error -> estado.mensaje
-            is RequisitosUiState.Bloqueada ->
-                "Ya tienes una solicitud activa para este perro. Puedes revisarla en Solicitudes."
-            else -> null
+            is RequisitosUiState.Error -> {
+                estado.mensaje
+            }
+
+            is RequisitosUiState.Bloqueada -> {
+                if (estado.solicitud.estado == EstadoSolicitud.RECHAZADA) {
+                    "Tu solicitud para este perro fue rechazada. Si puedes corregirla, hazlo desde Solicitudes."
+                } else {
+                    "Ya tienes una solicitud activa para este perro. Puedes revisarla en Solicitudes."
+                }
+            }
+
+            else -> {
+                null
+            }
         }
 
     RequisitosScreen(
@@ -45,5 +58,6 @@ fun RequisitosRoute(
         errorMensaje = mensaje,
         onBackClick = onBack,
         onContinuarClick = { viewModel.onContinuar(idUsuario, idPerro) },
+        onNavSelect = onNavSelect,
     )
 }

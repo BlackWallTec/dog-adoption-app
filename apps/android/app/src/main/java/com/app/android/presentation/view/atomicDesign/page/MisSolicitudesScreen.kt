@@ -56,10 +56,12 @@ fun MisSolicitudesScreen(
     onNotificacionesClick: () -> Unit = {},
     navSeleccionado: Int = 3, // 3 = "Solicitudes"
     onNavSelect: (Int) -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = Surface,
+        snackbarHost = snackbarHost,
         // Esta pantalla no tiene flecha de regreso: solo la campanita a la derecha
         topBar = {
             Row(

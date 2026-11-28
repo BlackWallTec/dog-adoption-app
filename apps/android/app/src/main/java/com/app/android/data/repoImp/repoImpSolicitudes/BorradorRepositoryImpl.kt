@@ -30,6 +30,10 @@ class BorradorRepositoryImpl : BorradorRepositoryInt {
             )
     }
 
+    override fun reemplazar(nuevo: BorradorSolicitud) {
+        _borrador.value = nuevo
+    }
+
     override fun actualizar(cambio: (BorradorSolicitud) -> BorradorSolicitud) {
         // Si no hay borrador, no hace nada
         _borrador.update { actual -> actual?.let(cambio) }

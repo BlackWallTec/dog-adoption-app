@@ -12,6 +12,8 @@ data class BorradorSolicitud(
     val tuHogar: TuHogar? = null, // Paso 3 · Tu hogar
     val compromiso: Compromiso? = null, // Paso 4 · Compromiso
     val documentos: DocumentosSolicitud? = null, // Paso 5 · Documentos
+    val edicion: EdicionSolicitud? = null, // null = solicitud nueva; con valor
+    // = editando una rechazada
 )
 
 // Paso 5 · Documentos: archivos elegidos en el telefono, todavaa NO subidos
